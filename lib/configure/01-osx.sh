@@ -17,7 +17,7 @@ fi
 # ---------------------------
 execute "sudo nvram SystemAudioVolume=' '" "Disable Sound Effects on Boot"
 
-execute "efaults write NSGlobalDomain NSWindowResizeTime .001" "Get snappier save sheets"
+execute "defaults write NSGlobalDomain NSWindowResizeTime .001" "Get snappier save sheets"
 
 success "Hide the Time Machine, Volume, User, and Bluetooth icons"
   for domain in ~/Library/Preferences/ByHost/com.apple.systemuiserver.*; do
