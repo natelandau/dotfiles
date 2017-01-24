@@ -1,0 +1,17 @@
+# Ignore the backup directory if one is created
+dotfiles_backup/
+
+# Other ignores
+*.sublime-workspace
+
+# Don't sync the slap log. it is different for each computer.
+slap.log
+
+# ignore symlinks
+bin/convertMedia
+bin/convertMedia2
+bin/myJekyll
+bin/podcastPublish
+bin/purgeSABnzbdHistory.sh
+bin/removeSymlink
+bin/slackPost

@@ -1,0 +1,737 @@
+#!/usr/bin/env bash
+
+# ##################################################
+#
+version="1.0.0"              # Sets version variable
+#
+# HISTORY:
+#
+# * TODO - move imageoptim to packages.json and run npm install
+#
+# ##################################################
+
+
+function mainScript() {
+  configFileDependencies=(deployScript.yml package.json Gemfile Rakefile)
+  CLIDependencies=(http npm bundler ruby)
+
+  # Enable verbose logging
+  if ${verbose}; then v="-v"; fi
+
+  function errorHandling() {
+    # Confirm we are in a Jekyll site
+    if [[ ! -d ./_site || ! -f ./_config.yml ]]; then
+      error "Can't find a Jekyll site to deploy in the current directory. Exiting"
+      safeExit
+    fi
+    # Check for the necessary command line packages
+    for CLIDependency in "${CLIDependencies[@]}"; do
+      if [ ! "$(type -P "${CLIDependency}")" ]; then
+        case "${CLIDependency}" in
+          npm )
+            die "We need node. Install from here: https://nodejs.org/en/"
+            ;;
+          bundler )
+              warning "Expected to the 'bundler' gem."
+              seek_confirmation "Install 'Bundler'?"
+              if is_confirmed; then
+                gem install bundler
+              else
+                die "Can't continue without Bundler"
+              fi
+            ;;
+          * ) warning "We need '${CLIDependency}' to run"; safeExit
+            ;;
+        esac
+      fi
+    done
+    # Confirm we have a configuration file we can use
+    info "Checking dependencies"
+    for fileDependency in "${configFileDependencies[@]}"; do
+      if [ ! -f ./"${fileDependency}" ]; then
+        case "${fileDependency}" in
+          package.json )
+              warning "Expected to find './${fileDependency}'."
+              seek_confirmation "Run 'npm init'?"
+              if is_confirmed; then npm init; safeExit; else notice "Exiting"; safeExit; fi
+            ;;
+          * ) warning "We need '${fileDependency}' to run"; safeExit
+            ;;
+        esac
+      fi
+    done
+    # Use Bundler to ensure we have all the Gems we need
+    info "Running 'bundle check'"
+    if ! bundle check; then
+      seek_confirmation "Run 'bundle install'?"
+      if is_confirmed; then
+        bundle install
+      else
+        notice "Exiting"; safeExit
+      fi
+    fi
+    # Check node dependencies
+    info "Checking node dependencies"
+    npm install
+    # Add the local 'node_modules' directory to our $PATH
+    PATH=$(npm bin):$PATH
+  }
+
+  function getConfigVariables() {
+    ## GRAB CONFIGURATION VARIABLES FOR THIS SCRIPT ##
+    tmpConfig="${tmpDir}/configVariables.sh"
+    configFile="./deployScript.yml"
+    # Populate configuration variables
+    parse_yaml "${configFile}" > "${tmpConfig}"
+    source "${tmpConfig}"
+    if "${verbose}"; then notice "Printing configuration variables"; cat "${tmpConfig}"; fi
+  }
+
+  function compressImages() {
+    local TMPLOG
+    local image
+
+    # SET FUNCTION VARIABLES
+    # -----------------------
+    function compressImageDependencies() {
+
+      # In case use puny png to compress PNG files
+      if [ ! -e ~/.puny_png_api_key ]; then
+        if [ ! -e "${siteDir}"/.puny_png_api_key ]; then
+          die "No Puny PNG api key found."
+        else
+          ln -s "${siteDir}"/.puny_png_api_key ${HOME}/.puny_png_api_key
+          notice "Symlinked ~/.puny_png_api_key"
+        fi
+      fi
+    }
+
+    function doCompressImages() {
+      # Set a temporary file log
+      TMPLOG="${tmpDir}/tmpImageLog.txt"
+
+      # Finds all PNGs and JPGs and adds them to tmp.txt
+      cd "${siteImgDir}"; find . \( -iname \*.png -o -iname \*.jpg \) >> "${TMPLOG}"
+
+      # Do the conversion on new images only
+      ii=0
+      while read image; do
+        if ! grep "^${image}$" "${imageLog}" &> /dev/null ; then
+          notice "Compressing ${image}"
+
+          # Compress PNGs
+          if [ "${image##*.}" = "png" ]; then
+            # Move image to temp dir
+            mv $v "${image}" "${tmpDir}"/$(basename "${image}")
+            # Compress image with imageOptim
+            imageOptim -a -q -d "$tmpDir"
+            # Move image back to original location
+            mv $v "${tmpDir}"/$(basename "${image}") "${image}"
+            # Add image to LOG file so it won't be compressed again
+            echo "${image}" >> "${imageLog}"
+          fi
+
+          # Compress JPGs
+          if [ "${image##*.}" = "jpg" ]; then
+            # Move image to temp dir
+            mv $v "${image}" "${tmpDir}"/$(basename "${image}")
+            # Compress image with imageOptim
+            imageOptim -j -q -d "${tmpDir}"
+            # Move image back to original location
+            mv $v "${tmpDir}"/$(basename "${image}") "${image}"
+            # Add image to LOG file so it won't be compressed again
+            echo "${image}" >> "${imageLog}"
+          fi
+
+          success "Compressed ${image}"
+          ii=$((ii+1))
+        fi
+      done < "${TMPLOG}"
+
+      # CD back to the site directory
+      cd "${siteDir}"
+    }
+
+    function rebuildImageLog() {
+      # Finds all images and adds them to .imagelog
+      # This will rebuild the logfile from scratch
+      cd "${siteImgDir}"; find . \( -iname \*.png -o -iname \*.jpg \) >> "${imageLog}"
+    }
+
+    # RUN COMPRESSIMAGES
+    # --------------------
+    notice "Searching for images to compress"
+    # Ensure we have the software we need
+    compressImageDependencies
+    # Compress images
+    doCompressImages
+    # Rebuild the log from scratch
+    #rebuildImageLog
+    if [ $ii == 0 ]; then notice "Compress image script ran successfully.  No images found to compress."; fi
+  }
+
+  function buildProduction() {
+    notice "Building production site"
+
+    # Delete existing files in the directory
+    notice "Deleting any existing files"
+    rm -rfd $v "${productionBuildDir:?}"/*
+    cd "${siteDir}"
+
+    # Build the site with the production yml file.
+    info "Running grunt build process: 'grunt prod'"
+    caffeinate -ism grunt prod
+    success "Site built with production settings."
+  }
+
+  function testSite() {
+    if ${verbose}; then verbosity="--verbose"; fi
+
+    info "Testing local production site"
+    # Tests site with CLI installed from 'html_proofer' gem
+    caffeinate -ism htmlproof "${productionBuildDir}" ${verbosity} \
+        --disable-external \
+        --allow-hash-href \
+        --ext .html
+    # test favicons on all pages except 'amp'
+    info "Testing favicons"
+    caffeinate -ism htmlproof "${productionBuildDir}" ${verbosity} \
+        --disable-external \
+        --check-favicon \
+        --allow-hash-href \
+        --file-ignore /amp/ \
+        --checks-to-ignore ImageCheck,LinkCheck,ScriptCheck \
+        --ext .html
+    success "Site passed local testing"
+  }
+
+  function verifyCleanWorkingDirectory() {
+    if ! git status | grep "working directory clean" &> /dev/null; then
+      warning "You have uncommitted changes, you may have forgotten something"
+      seek_confirmation "Continue with deployment?"
+      if is_not_confirmed; then
+        notice "Deploy aborted"
+        safeExit
+      fi
+    fi
+  }
+
+  function deploySite() {
+    # Respect flags
+    if ${dryrun}; then dry_run="--dry-run"; fi
+    if ${forcePush}; then force_push="--force"; fi
+
+    notice "Deploying site"
+    deployCommand="s3_website push --site ${productionBuildDir} ${dry_run} ${force_push}"
+    eval "${deployCommand}"
+  }
+
+  function pingAndNotify() {
+    # Notify services about new content
+    for i in {1..10..1}
+    do
+      caffeinate -ism sleep 1
+      ((t=11-i))
+      echo "Waiting for files before we notify services...$t"
+    done
+    caffeinate -ism rake notify
+    success "External services pinged"
+  }
+
+  function testLiveLinks() {
+    notice "Testing Live Site Links"
+    tmpFile="${tmpDir}/linkfile.txt"
+    linkFile="${tmpFile}-dedupe.txt"
+
+    for url in "${urlsToTest[@]}"; do
+      echo "${url}" >> "${tmpFile}"
+      http --follow "${url}" | grep -o -E 'href="([^"#]+)"' | cut -d'"' -f2 >> "${tmpFile}"
+    done
+
+    # Remove duplicate lines
+    sort -u "${tmpFile}" > "${linkFile}"
+    # Count the number of links to be tested
+    numOfLines=$(wc -l < "${linkFile}")
+
+    errorCount=0
+    while read line; do
+      progressBar "${numOfLines}"
+
+      # Grab the domain of the line being parsed and only work on internal links
+      domainOfLine=$(echo "${line}" | awk -F/ '{print $3}')
+      if [[ "${domainOfLine}" != "${domainToTest}" ]]; then
+        continue
+      fi
+
+    if http --check-status --ignore-stdin --follow --timeout=2.5 HEAD "${line}" &> /dev/null ; then
+      verbose "200 Response OK: ${line}"
+    else
+        case $? in
+            2) error "Request timed out: ${line}"; errorCount=$((errorCount+1)) ;;
+            3) warning "Unexpected HTTP 3xx Redirection: ${line}"; errorCount=$((errorCount+1)) ;;
+            4) error "HTTP 4xx Client Error: ${line}"; errorCount=$((errorCount+1)) ;;
+            5) error "HTTP 5xx Server Error: ${line}"; errorCount=$((errorCount+1)) ;;
+            *) error "Other Error: ${line}"; errorCount=$((errorCount+1)) ;;
+        esac
+    fi
+    done < "${linkFile}"
+
+    if [ "${errorCount}" -eq 0 ]; then
+      success "Checked site and found ${errorCount} errors out of ${numOfLines} links"
+    else
+      warning "Checked site and found ${errorCount} errors out of ${numOfLines} links"
+    fi
+  }
+
+  function testLiveAfterDeploy() {
+    for i in {1..10..1}; do
+      ((t=11-i))
+      echo "Waiting for Cloudfront to invalidate it's cache so we can test links...$t minutes left"
+      caffeinate -ism sleep 60
+    done
+    testLiveLinks
+  }
+
+  # RUN THE FUNCTIONS
+  # --------------------
+
+  cd "${siteDir}"               # Ensure we're in the site directory
+  getConfigVariables            # Source the configuration variables
+
+  # Run subroutines only when requested
+  if ${compressImagesOnly}; then compressImages; safeExit; fi
+  if ${pingServices}; then pingAndNotify; safeExit; fi
+  if ${testLocalBuild}; then testSite; safeExit; fi
+  if ${testLiveSite}; then testLiveLinks; safeExit; fi
+  if ${buildSite}; then buildProduction; testSite; safeExit; fi
+
+  verifyCleanWorkingDirectory   # Confirm we have no changes that are not committed to GIT
+  errorHandling                 # Confirm we have all the necessary prerequisites to run the script
+  # compressImages              # Compress any images. No longer used in deploys. moved to grunt
+  buildProduction               # Build the production site
+  deploySite                    # Push the site to S3
+
+  # Notify services about new content
+  if ! ${dryrun} && ! ${minorDeploy}; then pingAndNotify; fi
+
+  # Lastly we test links on the live site to ensure we didn't break it
+  if ! ${dryrun} && ${fullDeploy} ; then testLiveAfterDeploy; fi
+}
+
+## SET SCRIPTNAME VARIABLES ##
+scriptName=$(basename "$0") #Set Script Name variable
+
+function trapCleanup() {
+  # trapCleanup Function
+  # -----------------------------------
+  # Any actions that should be taken if the script is prematurely
+  # exited.  Always call this function at the top of your script.
+  # -----------------------------------
+  echo ""
+  # Delete temp files, if any
+  if [ -d "${tmpDir}" ] ; then
+    rm -r "${tmpDir}"
+  fi
+  die "Exit trapped. In function: '${FUNCNAME[*]}'"
+}
+
+function safeExit() {
+  # safeExit
+  # -----------------------------------
+  # Non destructive exit for when script exits naturally.
+  # Usage: Add this function at the end of every script.
+  # -----------------------------------
+  # Delete temp files, if any
+  if [ -d "${tmpDir}" ] ; then
+    rm -r "${tmpDir}"
+  fi
+  trap - INT TERM EXIT
+  exit
+}
+
+
+# Set Flags
+# -----------------------------------
+# Flags which can be overridden by user input.
+# Default values are below
+# -----------------------------------
+quiet=false
+printLog=false
+verbose=false
+forcePush=false
+strict=false
+debug=false
+args=()
+
+buildSite=false
+dryrun=false
+fullDeploy=false
+minorDeploy=false
+postDeploy=false
+testLocalBuild=false
+testLiveSite=false
+pingServices=false
+compressImagesOnly=false
+
+# Set Colors
+bold=$(tput bold)
+reset=$(tput sgr0)
+purple=$(tput setaf 171)
+red=$(tput setaf 1)
+green=$(tput setaf 76)
+tan=$(tput setaf 3)
+blue=$(tput setaf 38)
+underline=$(tput sgr 0 1)
+
+# Set Temp Directory
+# -----------------------------------
+# Create temp directory with three random numbers and the process ID
+# in the name.  This directory is removed automatically at exit.
+# -----------------------------------
+tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
+(umask 077 && mkdir "${tmpDir}") || {
+  die "Could not create temporary directory! Exiting."
+}
+
+# Logging
+# -----------------------------------
+# Log is only used when the '-l' flag is set.
+#
+# To never save a logfile change variable to '/dev/null'
+# Save to Desktop use: $HOME/Desktop/${scriptBasename}.log
+# Save to standard user log location use: $HOME/Library/Logs/${scriptBasename}.log
+# -----------------------------------
+logFile="${HOME}/Library/Logs/${scriptBasename}.log"
+
+
+# Options and Usage
+# -----------------------------------
+# Print usage
+usage() {
+echo -n "${bold}${scriptName} ${version} [OPTION]... [FILE]...${reset}
+
+This script will deploy a Jekyll Web site to Amazon S3. It can compress images,
+check for broken links, minify files, deploy to Amazon S3, notify services of new
+content, etc.
+
+All local settings are read from a YAML file to be placed at the root of your site.
+This file must be called 'deployScript.yml'.
+
+ ${bold}Deployments:${reset}
+  -f, --full        Deploys optimized for large changes - run all subroutines.
+  -p, --post        Deploys optimized for new post publishing
+  -m, --minor       Deploys optimized for minor updates to the site
+
+
+ ${bold}Subroutines:${reset}
+  -b, --build       Builds the product site and exits
+  -t, --testLocal   Runs tests the local build of the site prior to pushing
+  -p, --ping        Pings pubsubhub, google, pingomatic, etc. about new content and exits
+  -T, --testLive    Tests the live production site for broken links, images, and other issues
+  -C, --images      Compresses images only.
+
+ ${bold}Deployment Options:${reset}
+  -n, --dryrun      Does not deploy any changes to S3.
+      --force       Pushes to Amazon S3 with the '--force' option. This pushes changes to
+                    the S3 object metadata of existing files
+
+ ${bold}Script Options:${reset}
+  -q, --quiet       Quiet (no output)
+  -l, --log         Print log to file
+  -v, --verbose     Output more information. (Items echoed to 'verbose')
+  -d, --debug       Runs script in BASH debug mode (set -x)
+  -h, --help        Display this help and exit
+      --version     Output version information and exit
+
+ ${bold}Sample Usage:${reset}
+ To deploy the site after a new post is written
+
+  $ deployScript -p
+
+ To test the live site only (no code pushed, no build routines)
+
+  $ deployScript -t
+
+
+${bold}Configuration File:${reset}
+Below is a sample configuration file. Edit these variables and add them to the
+root directory of your site as ${bold}'deployScript.yml'${reset}
+
+siteDir             : \${HOME}/Sites/YourSite
+siteImgDir          : \${siteDir}/img
+imageLog            : \${siteDir}/.imageLog
+productionYML       : _config_production.yml
+productionBuildDir  : \${siteDir}/_siteProd
+robotsFile          : \${productionBuildDir}/robots.txt
+domainToTest        : yourSite.com
+urlsToTest:
+  - https://YourSite.com/
+  - https://YourSite.com/page/2/
+
+"
+}
+
+# Iterate over options breaking -ab into -a -b when needed and --foo=bar into
+# --foo bar
+optstring=h
+unset options
+while (($#)); do
+  case $1 in
+    # If option is of type -ab
+    -[!-]?*)
+      # Loop over each character starting with the second
+      for ((i=1; i < ${#1}; i++)); do
+        c=${1:i:1}
+
+        # Add current char to options
+        options+=("-$c")
+
+        # If option takes a required argument, and it's not the last char make
+        # the rest of the string its argument
+        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+          options+=("${1:i+1}")
+          break
+        fi
+      done
+      ;;
+
+    # If option is of type --foo=bar
+    --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
+    # add --endopts for --
+    --) options+=(--endopts) ;;
+    # Otherwise, nothing special
+    *) options+=("$1") ;;
+  esac
+  shift
+done
+set -- "${options[@]}"
+unset options
+
+# Print help if no arguments were passed.
+# Uncomment to force arguments when invoking the script
+# -------------------------------------
+[[ $# -eq 0 ]] && set -- "--help"
+
+# Read the options and set stuff
+while [[ $1 = -?* ]]; do
+  case $1 in
+    -n|--dryrun) dryrun=true ;;
+    -b|--build) buildSite=true ;;
+    -f|--full) fullDeploy=true ;;
+    -p|--post) postDeploy=true ;;
+    -m|--minor) minorDeploy=true ;;
+    -t|--testLocal) testLocalBuild=true ;;
+    -T|--testLive) testLiveSite=true ;;
+    -P|--ping) pingServices=true ;;
+    -C|--images) compressImagesOnly=true ;;
+    --force) forcePush=true ;;
+
+    -h|--help) usage; safeExit ;;
+    -v|--verbose) verbose=true ;;
+    -l|--log) printLog=true ;;
+    -q|--quiet) quiet=true ;;
+    -d|--debug) debug=true;;
+    --version) echo "$(basename "$0") ${version}"; safeExit ;;
+    --strict) strict=true;;
+    --endopts) shift; break ;;
+    *) die "invalid option: '$1'." ;;
+  esac
+  shift
+done
+
+# Store the remaining part as arguments.
+args+=("$@")
+
+
+# Logging
+function _alert() {
+  if [ "${1}" = "emergency" ]; then local color="${bold}${red}"; fi
+  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
+  if [ "${1}" = "warning" ]; then local color="${red}"; fi
+  if [ "${1}" = "success" ]; then local color="${green}"; fi
+  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
+  if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
+  if [ "${1}" = "input" ]; then local color="${bold}"; printLog="false"; fi
+  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
+  # Don't use colors on pipes or non-recognized terminals
+  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
+
+  # Print to $logFile
+  if ${printLog}; then
+    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%9s]" "${1}") ${_message}" >> "${logFile}";
+  fi
+
+  # Print to console when script is not 'quiet'
+  if ${quiet}; then
+   return
+  else
+   echo -e "$(date +"%r") ${color}$(printf "[%9s]" "${1}") ${_message}${reset}";
+  fi
+}
+
+function die ()       { local _message="${*} Exiting."; echo "$(_alert emergency)"; safeExit;}
+function error ()     { local _message="${*}"; echo "$(_alert error)"; }
+function warning ()   { local _message="${*}"; echo "$(_alert warning)"; }
+function notice ()    { local _message="${*}"; echo "$(_alert notice)"; }
+function info ()      { local _message="${*}"; echo "$(_alert info)"; }
+function debug ()     { local _message="${*}"; echo "$(_alert debug)"; }
+function success ()   { local _message="${*}"; echo "$(_alert success)"; }
+function input()      { local _message="${*}"; echo -n "$(_alert input)"; }
+function header()     { local _message="========== ${*} ==========  "; echo "$(_alert header)"; }
+
+# Log messages when verbose is set to "true"
+verbose() { if ${verbose}; then debug "$@"; fi }
+
+function seek_confirmation() {
+  # SEEKING CONFIRMATION
+  # ------------------------------------------------------
+  # Asks questions of a user and then does something with the answer.
+  # y/n are the only possible answers.
+  #
+  # USAGE:
+  # seek_confirmation "Ask a question"
+  # if is_confirmed; then
+  #   some action
+  # else
+  #   some other action
+  # fi
+  #
+  # Credt: https://github.com/kevva/dotfiles
+  # ------------------------------------------------------
+  # echo ""
+  input "$@"
+  read -p " (y/n) " -n 1
+  echo ""
+}
+
+function is_confirmed() {
+  if [[ "${REPLY}" =~ ^[Yy]$ ]]; then
+    return 0
+  fi
+  return 1
+}
+
+function is_not_confirmed() {
+  if [[ "${REPLY}" =~ ^[Nn]$ ]]; then
+    return 0
+  fi
+  return 1
+}
+
+function progressBar() {
+  # progressBar
+  # -----------------------------------
+  # Prints a progress bar within a for/while loop.
+  # To use this function you must pass the total number of
+  # times the loop will run to the function.
+  #
+  # usage:
+  #   for number in $(seq 0 100); do
+  #     sleep 1
+  #     progressBar 100
+  #   done
+  # -----------------------------------
+  if ${quiet}; then
+    return
+  fi
+
+  local width
+  width=30
+  bar_char="#"
+
+  # Don't run this function when scripts are running in verbose mode
+  if ${verbose}; then return; fi
+
+  # Reset the count
+  if [ -z "${progressBarProgress}" ]; then
+    progressBarProgress=0
+  fi
+
+  # Do nothing if the output is not a terminal
+  if [ ! -t 1 ]; then
+      echo "Output is not a terminal" 1>&2
+      return
+  fi
+  # Hide the cursor
+    tput civis
+    trap 'tput cnorm; exit 1' SIGINT
+
+  if [ ! "${progressBarProgress}" -eq $(( $1 - 1 )) ]; then
+    # Compute the percentage.
+    perc=$(( progressBarProgress * 100 / $1 ))
+    # Compute the number of blocks to represent the percentage.
+    num=$(( progressBarProgress * width / $1 ))
+    # Create the progress bar string.
+    bar=
+    if [ ${num} -gt 0 ]; then
+        bar=$(printf "%0.s${bar_char}" $(seq 1 ${num}))
+    fi
+    # Print the progress bar.
+    progressBarLine=$(printf "%s [%-${width}s] (%d%%)" "Running Process" "${bar}" "${perc}")
+    echo -en "${progressBarLine}\r"
+    progressBarProgress=$(( progressBarProgress + 1 ))
+  else
+    # Clear the progress bar when complete
+    echo -ne "${width}%\033[0K\r"
+    unset progressBarProgress
+  fi
+
+  tput cnorm
+}
+
+function parse_yaml() {
+  # Function to parse YAML files and add values to variables. Send it to a temp file and source it
+  # https://gist.github.com/epiloque/8cf512c6d64641bde388
+  #
+  # Usage:
+  #     $ parse_yaml sample.yml > /some/tempfile
+  #
+  # parse_yaml accepts a prefix argument so that imported settings all have a common prefix
+  # (which will reduce the risk of namespace collisions).
+  #
+  #     $ parse_yaml sample.yml "CONF_"
+
+  local prefix=$2
+  local s
+  local w
+  local fs
+  s='[[:space:]]*'
+  w='[a-zA-Z0-9_]*'
+  fs="$(echo @|tr @ '\034')"
+  sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
+      -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$1" |
+  awk -F"$fs" '{
+  indent = length($1)/2;
+  vname[indent] = $2;
+  for (i in vname) {if (i > indent) {delete vname[i]}}
+      if (length($3) > 0) {
+          vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+          printf("%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, $3);
+      }
+  }' | sed 's/_=/+=/g'
+}
+
+# Trap bad exits with your cleanup function
+trap trapCleanup EXIT INT TERM
+
+# Set IFS to preferred implementation
+IFS=$'\n\t'
+
+# Exit on error. Append '||true' when you run the script if you expect an error.
+set -o errexit
+
+# Run in debug mode, if set
+if ${debug}; then set -x ; fi
+
+# Exit on empty variable
+if ${strict}; then set -o nounset ; fi
+
+# Bash will remember & return the highest exitcode in a chain of pipes.
+# This way you can catch the error in case mysqldump fails in `mysqldump |gzip`, for example.
+set -o pipefail
+
+# Run your script
+mainScript
+
+# Exit cleanly
+safeExit

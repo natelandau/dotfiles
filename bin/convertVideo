@@ -1,0 +1,638 @@
+#!/usr/bin/env bash
+
+# ##################################################
+#
+version="1.0.0"              # Sets version variable
+#
+# A script to convert video files from one format/size to another. In essence, this is
+# a wrapper for FFMPEG
+#
+# HISTORY:
+#
+# * 2016-12-27 - v1.0.0  - First Creation
+# * 2017-01-17 - v1.0.1  - Added 'execute()' function for better
+#                          dryrun and verbose handling.
+#                          Simplified 'seek_confirmation()' function
+#
+# ##################################################
+
+function mainScript() {
+  # File extension mappings - ie - are we working with a video file?
+  videoTypes=(mp4 mov avi mkv wmv flv ogg m4p m4v 3gp divx)
+  #videoTypes=(png)
+  # Dependencies which need to be installed for this script to function
+  CLIDependencies=(ffmpeg jq http)
+
+  function createTestFiles() {
+    # createTestFiles() This script can download a few video to use for testing
+    testFileDir="$HOME/Desktop/testFiles"
+    if ! [ -d "${testFileDir}" ]; then
+      verbose "Creating test directory"
+      mkdir "${testFileDir}"
+    fi
+
+    notice "Downloading test files"
+    cd "${testFileDir}"
+    http -d --body http://www.sample-videos.com/video/flv/360/big_buck_bunny_360p_1mb.flv
+    http -d --body http://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_1mb.mp4
+    http -d --body http://www.sample-videos.com/video/mp4/480/big_buck_bunny_480p_1mb.mp4
+    http -d --body http://www.sample-videos.com/video/mkv/720/big_buck_bunny_720p_1mb.mkv
+    http -d --body http://www.sample-videos.com/audio/mp3/india-national-anthem.mp3
+    http -d --body http://samples.mplayerhq.hu/avi/imaadpcm.avi
+    if type -P youtube-dl > /dev/null; then
+      youtube-dl -f "[height <=? 720]" -o test-720p.mp4 https://www.youtube.com/watch?v=1-UdWS4RAA4
+      youtube-dl -o test-1080p.mp4 https://www.youtube.com/watch?v=1-UdWS4RAA4
+    fi
+    info "Addition videos can be found at: http://www.h264info.com/clips.html"
+    safeExit
+  }
+  if ${testFiles}; then createTestFiles; fi
+
+  function errorHandling() {
+
+    # Add homebrew and ~/bin to $PATH so the script can find executables
+    PATHS=(/usr/local/bin $HOME/bin);
+    for newPath in "${PATHS[@]}"; do
+      if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
+        PATH="$newPath:$PATH"
+     fi
+    done
+
+    # Check for the necessary command line packages
+    verbose "Checking dependencies..."
+    for CLIDependency in "${CLIDependencies[@]}"; do
+      if ! type -P "${CLIDependency}" > /dev/null; then
+        warning "We need '${CLIDependency}' to run. Please install..."; safeExit;
+      fi
+    done
+
+    # Confirm we have at least one video file. Add videos to ${filesToConvert[@]}
+    verbose "Confirming we have video files to work on..."
+    for file in "${args[@]}"; do
+      local extension="${file##*.}" # Grab extension of file
+      if in_array "${extension,,}" "${videoTypes[@]}"; then
+        filesToConvert+=("${file}")
+      fi
+    done
+    if [ ${#filesToConvert[@]} -eq 0 ]; then
+      error "Please specify at least one video file. Exiting."
+      safeExit
+    fi
+
+    # Ensure a user sets an output format since we don't have a default.
+    if [[ -z "${outputFormat}" ]]; then
+      notice "No output format specified. Defaulting to 'mp4'"
+      outputFormat="mp4"
+    else # Confirm user specified output file is a video file
+      if ! in_array "${outputFormat}" "${videoTypes[@]}"; then
+        warning "Specified output format '${outputFormat}' is not valid. Exiting."
+        safeExit
+      fi
+    fi
+  }
+  errorHandling
+
+  function parseFileJson() {
+    # parseFileJson() Uses 'ffprobe' to gather all relevant information about a file in JSON format
+
+    local informationFile="${tmpDir}/${RANDOM}.${file////}.json"  # Create the temporary JSON file
+
+    # verbose "\t Reading audio data and writing JSON to tmp"
+
+    # Output the JSON file
+    ffprobe -v quiet -print_format json -show_format -show_streams "${file}" >> "${informationFile}"
+
+    # If the '--probe' flag is set, we print information to the screen and exit.
+    if "${probe}"; then
+      success "probe"
+      cat "${informationFile}"
+      skipFile=true
+      return 0
+    fi
+
+    # Read the necessary information from the JSON
+    format="$(jq -r ".format.format_long_name" "${informationFile}")"
+    # formatName="$(jq -r ".format.format_name" "${informationFile}")"
+    # jsonFilename="$(jq -r ".format.filename" "${informationFile}")"
+    # formatBit_Rate="$(jq -r ".format.bit_rate" "${informationFile}")"
+    # numStreams="$(jq -r ".format.nb_streams" "${informationFile}")"
+
+    if jq -e '.streams[] | select(.codec_type=="video")' "${informationFile}" > /dev/null; then
+      videoHeight=$(jq -r '.streams[] | select(.codec_type=="video" and .codec_name!="mjpeg") | .height' "${informationFile}")
+      videoWidth=$(jq -r '.streams[] | select(.codec_type=="video" and .codec_name!="mjpeg") | .width' "${informationFile}")
+      videoCodec=$(jq -r '.streams[] | select(.codec_type=="video" and .codec_name!="mjpeg") | .codec_name' "${informationFile}")
+      videoCodecLong=$(jq -r '.streams[] | select(.codec_type=="video" and .codec_name!="mjpeg") | .codec_long_name' "${informationFile}")
+      # videoFoundFlag=true  # Used for error handling to confirm we found a video stream
+    fi
+    if jq -e '.streams[] | select(.codec_type=="audio")' "${informationFile}" > /dev/null; then
+      audioCodec=$(jq -r '.streams[] | select(.codec_type=="audio") | .codec_name' "${informationFile}")
+      audioCodecLong=$(jq -r '.streams[] | select(.codec_type=="audio") | .codec_long_name' "${informationFile}")
+      audioSampleRate=$(jq -r '.streams[] | select(.codec_type=="audio") | .sample_rate' "${informationFile}")
+      audioBitRate=$(jq -r '.streams[] | select(.codec_type=="audio") | .bit_rate' "${informationFile}")
+      # audioFoundFlag=true  # Used for error handling to confirm we found an audio stream
+    fi
+
+    verbose "\t -- JSON Data --"
+    verbose "\t format:\t $format"
+    #verbose "\t jsonFilename:\t $jsonFilename"
+    #verbose "\t bit rate:\t $formatBit_Rate"
+    verbose "\t videoHeight:\t $videoHeight"
+    verbose "\t videoWidth:\t $videoWidth"
+    verbose "\t videoCodec:\t $videoCodec"
+    verbose "\t vCodecLong:\t $videoCodecLong"
+    verbose "\t audioCodec:\t $audioCodec"
+    verbose "\t aCodecLong:\t $audioCodecLong"
+    verbose "\t aSampleRate:\t $audioSampleRate"
+    verbose "\t audioBitRate:\t $audioBitRate"
+  }
+
+  function setConversionVariables() {
+    # convertVideo()  Sets the variables that will be passed to FFMPEG
+
+    verbose "\t -- Conversion Variables --"
+
+    function setAudio() {
+      if ffmpeg -version | grep enable-libfdk-aac >/dev/null; then
+        aacEncoder="libfdk_aac"
+      else
+        aacEncoder="libfaac"
+      fi
+
+      # Copy audio streams if already in aac format
+      supportedAudioCodecs=(aac ac3 eac3)
+      if [[ "${supportedAudioCodecs[*]}" =~ ${audioCodec} ]]; then
+        videoAudioCommand="-c:a copy"
+      elif [[ ${audioBitRate} -gt 163840 ]]; then # Downgrade to 160k
+          videoAudioCommand="-c:a ${aacEncoder} -b:a 160k" #163840 (160k in bytes)
+      else # Convert to aac but leave bitrate alone
+        newBitRate=$((audioBitRate/1024))
+        videoAudioCommand="-c:a ${aacEncoder} -b:a ${newBitRate}k"
+      fi
+
+      verbose "\t audioCommand:\t $videoAudioCommand"
+    }
+    setAudio
+
+    function setVideoSize() {
+      # Do something when a user specifies a size
+
+      # Is input video a known preset size?
+      if [[ "${videoHeight}" == "858" ]] || [[ "${videoWidth}" == "2048" ]]; then
+        local existingSize="2k" && verbose "\t existingSize:\t $existingSize"
+      fi
+      if [[ "${videoHeight}" == "1080" ]] || [[ "${videoWidth}" == "1920" ]]; then
+        local existingSize="1080p" && verbose "\t existingSize:\t $existingSize"
+      fi
+      if [[ "${videoHeight}" == "720" ]] || [[ "${videoWidth}" == "1280" ]]; then
+        local existingSize="720p" && verbose "\t existingSize:\t $existingSize"
+      fi
+      if [[ "${videoWidth}" == "720" ]] || [[ "${videoHeight}" == "576" ]]; then
+        local existingSize="DVPAL" && verbose "\t existingSize:\t $existingSize"
+      fi
+
+      #Don't resize videos to their same size
+      if [[ "${outputVideoSize}" =~ 720 ]]; then
+        if [[ "$existingSize" == "720p" ]]; then
+          info "\t file already 720p. Will not resize to self."
+          return
+        fi
+      elif [[ "${outputVideoSize}" =~ 1080 ]]; then
+        if [[ "$existingSize" == "1080p" ]]; then
+          info "\t file already 1080p. Will not resize to self."
+          return
+        fi
+      fi
+
+      # Create video scaling variables for FFMPEG
+      if [[ "${outputVideoSize}" =~ 4k ]]; then
+        userWidth="4096"
+        userHeight="2160"
+        videoSize="4096:-1"
+      elif [[ "${outputVideoSize}" =~ 2k ]]; then
+        userWidth="2048"
+        userHeight="1080"
+        videoSize="2048:-1"
+      elif [[ "${outputVideoSize}" =~ 1080 ]]; then
+        userWidth="1920"
+        userHeight="1080"
+        videoSize="1920:-1"
+      elif [[ "${outputVideoSize}" =~ 720 ]]; then
+        userWidth="1280"
+        userHeight="720"
+        videoSize="1280:-1"
+      elif [[ "${outputVideoSize}" =~ pal ]]; then
+        userWidth="720"
+        userHeight="576"
+      else
+        # break user's video size into a height and width
+        userWidth=$(echo ${outputVideoSize} | cut -f1 -dx)
+        userHeight=$(echo ${outputVideoSize} | cut -f2 -dx)
+      fi
+
+      # Convert from widths to create correct scaling variable for ffmpeg
+      if [ "$userWidth" -eq 4096 ]; then
+        videoSize="4096:-1"
+      elif [ "$userWidth" -eq 2048 ]; then
+        videoSize="2048:-1"
+      elif [ "$userWidth" -eq 1920 ]; then
+        videoSize="1920:-1"
+      elif [ "$userWidth" -eq 1280 ]; then
+        videoSize="1280:-1"
+      elif [ "$userWidth" -eq 720 ]; then
+        videoSize="720:-1"
+      else
+        videoSize="${userWidth}:-1"
+      fi
+
+      # Confirm if user wants to upscale their video
+      if [ "${userWidth}" -gt "${videoWidth}" ] || [ "${userHeight}" -gt "${videoHeight}" ]; then
+        if ! seek_confirmation "Upscale ${file} to ${outputVideoSize}? It is currently ${videoWidth}x${videoHeight}."; then return; fi
+      fi
+
+
+      # Finally, set the resize variable
+      videoResize="-vf scale=${videoSize}" && verbose "\t videoResize:\t -vf scale=${outputVideoSize}"
+
+
+      verbose "\t outputVideoSize:\t ${outputVideoSize}"
+    }
+    if [ -n "${outputVideoSize}" ]; then setVideoSize; fi
+
+    function setVideoCommand() {
+      # Copy h264 when possible
+      # Save precious time by not re-encoding files that are already H264.
+      # ###########################
+      if [[ "${videoCodec}" == "h264" ]] && [[ -z "${videoResize}" ]]; then
+        videoCommand="-c:v copy" && verbose "\t videoCommand:\t -c:v copy"
+      else
+        videoCommand="-c:v libx264 -crf 18 -preset slow" && verbose "\t videoCommand:\t -c:v libx264 -crf 18 -preset slow"
+      fi
+    }
+    setVideoCommand
+
+    # Don't convert to self if no other options set
+    if [[ -z ${outputVideoSize} && "${outputFormat}" == "${file##*.}" && ! ${probe} ]]; then
+      warning "\t Can't convert a '${file##*.}' file to itself. Skipping..."
+      skipFile=true
+    fi
+  }
+
+  function setOutputFile() {
+    # setOutputFile() creates the name of new file to be generated by the conversion
+
+    outputDir=$(dirname "${file}")
+    baseFileName=$(basename "${file%.*}")
+    output="${baseFileName}.${outputFormat}"
+
+    if [ -e "${outputDir}/${output}" ]; then
+      # Increment file until it doesn't exist
+      num=2
+      while [[ -e "${outputDir}/${baseFileName} ${num}.${outputFormat}" ]]; do
+        (( num++ ))
+      done
+      output="${baseFileName} ${num}.${outputFormat}"
+    fi
+
+    # Add the output directory
+    output="${outputDir}/${output}"
+    verbose "\t newFileName:\t ${output}"
+  }
+
+  function doConvert() {
+    verbose "\t beginning conversion..."
+
+    if ${verbose}; then v="-v" ; fi
+
+    # Respect the 'Quiet' flag
+    if "${quiet}"; then
+      verbose "\t running in quiet mode"
+      ffquiet="-loglevel quiet"
+    fi
+
+    # Respect the 'logfile' flag
+    if ${printLog}; then ffmpegLog=">> ${logFile}"; fi
+
+    execute 'caffeinate -ism ffmpeg -i "${file}" ${videoResize} ${videoCommand} ${videoAudioCommand} ${audioConvertCommand} "${output}" ${ffquiet}' "caffeinate -ism ffmpeg -i ${file} ${videoResize} ${videoCommand} ${videoAudioCommand} ${audioConvertCommand} ${output} ${ffquiet}"
+
+    # Unset variables to get ready for the next file
+      unset jsonFilename
+      unset formatBit_Rate
+      unset numStreams
+      unset videoCodec
+      unset videoCodecLong
+      unset format
+      unset formatName
+      unset videoHeight
+      unset videoWidth
+      unset videoPreset
+      unset audioCodec
+      unset audioCodecLong
+      unset audioSampleRate
+      unset audioBitRate
+  }
+
+  function deleteOriginalFile() {
+    # first, ensure we don't delete the originals if we're in a safe run
+    if ${safeRun}; then return; fi
+    verbose "\t deleting original file"
+    rm -f "${file}"
+  }
+
+  # Convert files
+  for file in "${filesToConvert[@]}"; do
+    skipFile=false
+    info "Working on: $file"
+    parseFileJson
+    setConversionVariables
+    if ${skipFile}; then continue; fi # Skip files if flagged
+    setOutputFile
+    doConvert
+    if ${deleteOriginal}; then deleteOriginalFile; fi
+  done
+
+} # end MainScript()
+
+function trapCleanup() {
+  # trapCleanup Function
+  # -----------------------------------
+  # Any actions that should be taken if the script is prematurely
+  # exited.  Always call this function at the top of your script.
+  # -----------------------------------
+  echo ""
+  # Delete temp files, if any
+  if [ -d "${tmpDir}" ] ; then
+    rm -r "${tmpDir}"
+  fi
+  die "Exit trapped. In function: '${FUNCNAME[*]}'"
+}
+
+function safeExit() {
+  if [ -d "${tmpDir}" ] ; then
+    rm -r "${tmpDir}"
+  fi
+  trap - INT TERM EXIT
+  exit
+}
+
+function in_array() {
+  # Determine if a value is in an array.
+  # Usage: if in_array "VALUE" "${ARRAY[@]}"; then ...
+  local value="$1"; shift
+  for arrayItem in "$@"; do
+      [[ "${arrayItem}" == "${value}" ]] && return 0
+  done
+  return 1
+}
+
+# Set Base Variables
+# ----------------------
+scriptName=$(basename "$0")
+
+# Set Flags
+quiet=false
+printLog=false
+verbose=false
+force=false
+strict=false
+debug=false
+
+deleteOriginal=false
+safeRun=false
+testFiles=false
+probe=false
+safeRun=false
+args=()
+
+# Set Colors
+bold=$(tput bold)
+reset=$(tput sgr0)
+purple=$(tput setaf 171)
+red=$(tput setaf 1)
+green=$(tput setaf 76)
+tan=$(tput setaf 3)
+blue=$(tput setaf 38)
+underline=$(tput sgr 0 1)
+
+# Set Temp Directory
+tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
+(umask 077 && mkdir "${tmpDir}") || {
+  die "Could not create temporary directory! Exiting."
+}
+
+# Logging
+logFile="${HOME}/Library/Logs/${scriptBasename}.log"
+
+# Options and Usage
+# -----------------------------------
+# Print usage
+usage() {
+  echo -n "${scriptName} [OPTION]... [FILE]...
+
+  This script takes user specified video(s) and converts them to different
+  formats using FFMPEG. It was written to eliminate the need to remember specific
+  FFMPEG commands.
+
+${bold}File Options:${reset}
+  -o, --output      Specify the output format for the file(s) to be converted to.
+                    ('mkv', 'mp4', 'm4a'). If not specified, default is 'mp4'.
+  --delete          Delete the original file after conversion.
+  --saveDir         Specify a folder for the converted files to be saved to.  Defaults to
+                    the directory the script is invoked in.
+
+ ${bold}Options:${reset}
+  --testFiles       Download test media files for use in debugging
+
+  -n,--safe         Runs the script without in safe mode (non-destructive).  Will simply
+                    print the commands to the terminal.
+
+  --probe           Outputs file metadata via ffprobe in JSON format. Does no conversion.
+
+  --size            Set the size of the target file.  Can be one of 'hd1080', 'hd720',
+                    or 'HeightxWidth' (ie. 1920x1080)
+
+
+  --force           Skip all user interaction.  Implied 'Yes' to all actions.
+  -q, --quiet       Quiet (no output)
+  -l, --log         Print log to file
+  -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
+  -v, --verbose     Output more information. (Items echoed to 'verbose')
+  -d, --debug       Runs script in BASH debug mode (set -x)
+  -h, --help        Display this help and exit
+      --version     Output version information and exit
+"
+}
+
+# Logging and Feedback
+# -----------------------------------------------------
+function _alert() {
+  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
+  if [ "${1}" = "warning" ]; then local color="${red}"; fi
+  if [ "${1}" = "success" ]; then local color="${green}"; fi
+  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
+  if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
+  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
+  if [ "${1}" = "input" ]; then local color="${bold}"; fi
+  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
+  # Don't use colors on pipes or non-recognized terminals
+  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
+
+  # Print to console when script is not 'quiet'
+  if ${quiet}; then return; else
+   echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
+  fi
+
+  # Print to Logfile
+  if ${printLog} && [ "${1}" != "input" ]; then
+    color=""; reset="" # Don't use colors in logs
+    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
+  fi
+}
+function die ()       { local _message="${*} Exiting."; echo -e "$(_alert error)"; safeExit;}
+function error ()     { local _message="${*}"; echo -e "$(_alert error)"; }
+function warning ()   { local _message="${*}"; echo -e "$(_alert warning)"; }
+function notice ()    { local _message="${*}"; echo -e "$(_alert notice)"; }
+function info ()      { local _message="${*}"; echo -e "$(_alert info)"; }
+function debug ()     { local _message="${*}"; echo -e "$(_alert debug)"; }
+function success ()   { local _message="${*}"; echo -e "$(_alert success)"; }
+function input()      { local _message="${*}"; echo -n "$(_alert input)"; }
+function dryrun()      { local _message="${*}"; echo -e "$(_alert dryrun)"; }
+function header()     { local _message="== ${*} ==  "; echo -e "$(_alert header)"; }
+function verbose()    { if ${verbose}; then debug "$@"; fi }
+
+# Iterate over options breaking -ab into -a -b when needed and --foo=bar into
+# --foo bar
+optstring=h
+unset options
+while (($#)); do
+  case $1 in
+    # If option is of type -ab
+    -[!-]?*)
+      # Loop over each character starting with the second
+      for ((i=1; i < ${#1}; i++)); do
+        c=${1:i:1}
+
+        # Add current char to options
+        options+=("-$c")
+
+        # If option takes a required argument, and it's not the last char make
+        # the rest of the string its argument
+        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+          options+=("${1:i+1}")
+          break
+        fi
+      done
+      ;;
+
+    # If option is of type --foo=bar
+    --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
+    # add --endopts for --
+    --) options+=(--endopts) ;;
+    # Otherwise, nothing special
+    *) options+=("$1") ;;
+  esac
+  shift
+done
+set -- "${options[@]}"
+unset options
+
+# Print help if no arguments were passed.
+# Uncomment to force arguments when invoking the script
+# -------------------------------------
+[[ $# -eq 0 ]] && set -- "--help"
+
+# Read the options and set stuff
+while [[ $1 = -?* ]]; do
+  case $1 in
+    --testFiles) testFiles=true ;;
+    -o|--output) shift; outputFormat="${1,,}" ;;
+    --probe) probe=true; safeRun=true ;;
+    --size) shift; outputVideoSize="$1" ;;
+    -n|--safe) safeRun=true ;;
+    --delete) deleteOriginal=true ;;
+
+    -h|--help) usage >&2; safeExit ;;
+    --version) echo "$(basename $0) ${version}"; safeExit ;;
+    -v|--verbose) verbose=true ;;
+    -l|--log) printLog=true ;;
+    -q|--quiet) quiet=true ;;
+    -s|--strict) strict=true;;
+    -d|--debug) debug=true;;
+    --force) force=true ;;
+    --endopts) shift; break ;;
+    *) die "invalid option: '$1'." ;;
+  esac
+  shift
+done
+
+function seek_confirmation() {
+  # Seeks a Yes or No answer to a question.  Usage:
+  #   if seek_confirmation "Answer this question"; then
+  #     something
+  #   fi
+  input "$@"
+  if "${force}"; then
+    verbose "Forcing confirmation with '--force' flag set"
+    return 0
+  else
+    while true; do
+      read -p " (y/n) " yn
+      case $yn in
+        [Yy]* ) return 0;;
+        [Nn]* ) return 1;;
+        * ) input "Please answer yes or no.";;
+      esac
+    done
+  fi
+}
+
+function execute() {
+  # execute - wrap an external command in 'execute' to push native output to /dev/null
+  #           and have control over the display of the results.  In "dryrun" mode these
+  #           commands are not executed at all. In Verbose mode, the commands are executed
+  #           with results printed to stderr and stdin
+  #
+  # usage:
+  #   execute "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
+  if $safeRun; then
+    dryrun "${2:-$1}"
+  else
+    if $verbose; then
+      eval "$1"
+    else
+      eval "$1" &> /dev/null
+    fi
+    if [ $? -eq 0 ]; then
+      success "${2:-$1}"
+    else
+      warning "${2:-$1}"
+    fi
+  fi
+}
+
+# Store the remaining part as arguments.
+args+=("$@")
+
+# Trap bad exits with your cleanup function
+trap trapCleanup EXIT INT TERM
+
+# Set IFS to preferred implementation
+IFS=$' \n\t'
+
+# Exit on error. Append '||true' when you run the script if you expect an error.
+#set -o errexit
+
+# Run in debug mode, if set
+if ${debug}; then set -x ; fi
+
+# Exit on empty variable
+if ${strict}; then set -o nounset ; fi
+
+# Bash will remember & return the highest exitcode in a chain of pipes.
+# This way you can catch the error in case mysqldump fails in `mysqldump |gzip`, for example.
+set -o pipefail
+
+# Run your script
+mainScript
+
+# Exit cleanly
+safeExit

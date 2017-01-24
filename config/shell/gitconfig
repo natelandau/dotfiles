@@ -1,0 +1,194 @@
+
+[alias]
+
+	# View abbreviated SHA, description, and history graph of the latest 20 commits
+	l = log --color --pretty=oneline -n 20 --graph --abbrev-commit
+
+	# View the current working tree status using the short format
+	s = status -s
+
+	# Show the diff between the latest commit and the current state
+	d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
+
+	# Pull in remote changes for the current repository and all its submodules
+	p = !"git pull; git submodule foreach git pull origin master"
+
+	# Clone a repository including all submodules
+	c = clone --recursive
+
+	# Commit all changes
+	ca = !git add -A && git commit -av
+
+	# Switch to a branch, creating it if necessary
+	go = "!f() { git checkout -b \"$1\" 2> /dev/null || git checkout \"$1\"; }; f"
+
+	# Show verbose output about tags, branches or remotes
+	tags = tag -l
+	branches = branch -a
+	remotes = remote -v
+
+	# Submodules Update
+  subpl = submodule update --init --recursive
+
+	# Mixed reset (affects HEAD and Index)
+	unstage = reset HEAD --
+
+	# Amend the currently staged files to the latest commit
+	amend = commit --amend --reuse-message=HEAD
+
+	# Interactive rebase with the given number of latest commits
+	reb = "!r() { git rebase -i HEAD~$1; }; r"
+
+	# Remove the old tag with this name and tag the latest commit with it.
+	retag = "!r() { git tag -d $1 && git push origin :refs/tags/$1 && git tag $1; }; r"
+
+	# Remove branches that have already been merged with master
+	# a.k.a. ‘delete merged’
+	dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
+
+[apply]
+
+	# Detect whitespace errors when applying a patch
+	 whitespace = fix
+
+[commit]
+
+	# https://help.github.com/articles/signing-commits-using-gpg/
+	# gpgsign = true
+
+[core]
+
+	# Use custom `.gitignore` and `.gitattributes`
+	excludesfile = ~/.gitignore
+	attributesfile = ~/.gitattributes
+
+	# Treat spaces before tabs and all kinds of trailing whitespace as an error
+	# [default] trailing-space: looks for spaces at the end of a line
+	# [default] space-before-tab: looks for spaces before tabs at the beginning of a line
+	whitespace = space-before-tab,-indent-with-non-tab,trailing-space
+
+	# Make `git rebase` safer on OS X
+	# More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
+		trustctime = false
+
+	# Prevent showing files whose names contain non-ASCII symbols as unversioned.
+	# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
+	precomposeunicode = false
+
+	# Set default editor
+	editor = subl -n -w
+
+[color]
+
+	# Use colors in Git commands that are capable of colored output when
+	# outputting to the terminal. (This is the default setting in Git ≥ 1.8.4.)
+	ui = auto
+
+[color "branch"]
+
+	current = yellow reverse
+	local = yellow
+	remote = green
+
+[color "diff"]
+
+	meta = yellow bold
+	frag = magenta bold # line info
+	old = red # deletions
+	new = green # additions
+
+[color "status"]
+
+	added = yellow
+	changed = green
+	untracked = cyan
+
+[diff "bin"]
+
+    # Use `hexdump` to diff binary files
+    textconv = hexdump -v -C
+
+[difftool "Kaleidoscope"]
+
+	cmd = ksdiff --partial-changeset --relative-path \"$MERGED\" -- \"$LOCAL\" \"$REMOTE\"
+
+[diff]
+
+	# Detect copies as well as renames
+	renames = copies
+	tool = Kaleidoscope
+
+[difftool]
+
+	prompt = false
+
+[help]
+
+	# Automatically correct and execute mistyped commands
+	autocorrect = 1
+
+
+# Use separate file for username / github token / etc
+[include]
+  path = ~/.gitconfig.local
+
+[log]
+
+  decorate = short
+
+[mergetool "Kaleidoscope"]
+
+	cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
+	trustExitCode = true
+	keepBackup = true
+	prompt = false
+
+[merge]
+
+	tool = Kaleidoscope
+	# Include summaries of merged commits in newly created merge commit messages
+	log = true
+
+[pretty]
+
+    custom = "%C(magenta)%h%C(red)%d %C(yellow)%ar %C(green)%s %C(yellow)(%an)"
+    #                     │        │            │            │             └─ author name
+    #                     │        │            │            └─ message
+    #                     │        │            └─ date (relative)
+    #                     │        └─ decorations (branch, heads or tags)
+    #                     └─ hash (abbreviated)
+
+[push]
+
+	default = simple
+
+	# Make `git push` push relevant annotated tags when pushing branches out.
+	followTags = true
+
+
+[pager]
+
+  status = true
+  show-branch = true
+
+
+# Rewrites of repo paths
+[url "git@github.com:"]
+  insteadOf = "gh:"
+  insteadOf = "git://github.com"
+  pushInsteadOf = "github:"
+  pushInsteadOf = "git://github.com/"
+  pushInsteadOf = "https://github.com/"
+
+[url "git://github.com/"]
+  insteadOf = "github:"
+
+[url "git@gist.github.com:"]
+  insteadOf = "gst:"
+  pushInsteadOf = "gist:"
+  pushInsteadOf = "git://gist.github.com/"
+  pushInsteadOf = "https://gist.github.com/"
+
+[url "git://gist.github.com/"]
+  insteadOf = "gist:"
+
