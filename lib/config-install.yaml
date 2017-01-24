@@ -11,7 +11,6 @@ config:
 symlinks:
   # format is - destination: source (source files are relative to 'install.sh')
   - ~/.httpie:        config/shell/httpie
-  - ~/.lesshst:       config/shell/lesshst
   - ~/.bashrc:        config/shell/bashrc
   - ~/.bash_profile:  config/shell/bash_profile
   - ~/.curlrc:        config/shell/curlrc
