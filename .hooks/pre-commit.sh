@@ -38,7 +38,7 @@ done
 if ${havesymlink}; then
   echo "Error: At least one symlink was added to the repo."
   echo "Error: It has been unstaged and added to .gitignore"
-  echo "Error: Please run the commit again."
+  echo "Error: Commit aborted..."
   exit 1
 fi
 
