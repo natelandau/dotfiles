@@ -187,12 +187,15 @@ function mainScript() {
       # ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     fi
 
-    #Show homebrew's prompts
+    #Show Brew Update can take forever if we're not bootstrapping. show the output
     saveVerbose=$verbose
     verbose=true
 
     # Make sure we’re using the latest Homebrew
     execute "brew update"
+
+    # Reset verbose settings
+    verbose=$saveVerbose
 
     # Upgrade any already-installed formulae
     execute "caffeinate -ism brew upgrade" "Upgrade existing formulae"
@@ -238,8 +241,6 @@ function mainScript() {
     execute "brew cleanup"
     execute "brew doctor"
 
-    # Reset verbose settings
-    verbose=$saveVerbose
   }
   if $config_doHomebrew; then installHomebrewPackages; fi
 
@@ -534,6 +535,7 @@ function execute() {
     dryrun "${2:-$1}"
   else
     set +e # don't exit on error
+    info "execute: '${2:-$1}' ..."
     if $verbose; then
       eval "$1"
     else
