@@ -5,17 +5,36 @@ function ffjson() {
   ffprobe -v quiet -print_format json -show_format -show_streams "$1"
 }
 
-function makegif() {
-  # Converts a QuickTime movie into an animated gif
-  if [ "$(type -P "gifsicle")" ] && [ "$(type -P "ffmpeg")" ]; then
-    if [ -z "$2" ]; then
-      ffmpeg -i "$1" -vf scale=720:-1 -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=1 > "$1".gif
-    else
-      ffmpeg -i "$1" -vf scale="$2":-1 -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=1 > "$1".gif
-    fi
-  else
-    echo "We must have 'gifsicle' and 'ffmpeg' installed to run.  Maybe you should install via Homebrew."
+
+function gifify {
+  # about 'Converts a .mov file into an into an animated GIF.'
+  #   From https://gist.github.com/SlexAxton/4989674#comment-1199058
+  #   Requirements (Mac OS X using Homebrew): brew install ffmpeg gifsicle imagemagick
+  # param '1: MOV file name'
+  # param '2: max width in pixels (optional)'
+  # example '$ gifify foo.mov'
+  # example '$ gifify foo.mov 600'
+
+  if [ -z "$1" ]; then
+    echo "$(tput setaf 1)No input file given. Example: gifify example.mov [max width (pixels)]$(tput sgr 0)"
+    return 1
   fi
+
+  output_file="${1%.*}.gif"
+
+  echo "$(tput setaf 2)Creating $output_file...$(tput sgr 0)"
+
+  if [ ! -z "$2" ]; then
+    maxsize="-vf scale=$2:-1"
+  else
+    maxsize=""
+  fi
+
+  ffmpeg -loglevel panic -i $1 $maxsize -r 10 -vcodec png gifify-tmp-%05d.png
+  convert +dither -layers Optimize gifify-tmp-*.png GIF:- | gifsicle --no-warnings --colors 256 --delay=10 --loop --optimize=3 --multifile - > $output_file
+  rm gifify-tmp-*.png
+
+  echo "$(tput setaf 2)Done.$(tput sgr 0)"
 }
 
 function imgSize() {
