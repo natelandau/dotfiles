@@ -15,13 +15,6 @@
   shopt -s nocaseglob;  # Case-insensitive globbing (used in pathname expansion)
   CDPATH=".:~"          # This defines where cd looks for targets
 
-  # This allows you to bookmark your favorite places across the file system
-  # Define a variable containing a path and you will be able to cd into it
-  # regardless of the directory you're in
-  shopt -s cdable_vars
-  export dotfiles="$HOME/dotfiles"
-  export dropbox="$HOME/Dropbox"
-
   ## SMARTER TAB-COMPLETION (Readline bindings) ##
   bind "set completion-ignore-case on" # Perform file completion in a case insensitive fashion
   bind "set completion-map-case on"    # Treat hyphens and underscores as equivalent
