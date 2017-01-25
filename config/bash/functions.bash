@@ -1,3 +1,4 @@
+function quiet () { $* &> /dev/null & }
 
 function su() {
   # su: Do sudo to a command, or do sudo to the last typed command if no argument given
@@ -6,6 +7,16 @@ function su() {
     else
         sudo "$@"
     fi
+}
+
+function browser() {
+  # Pipe html to a web browser
+  # example '$ echo "<h1>hi mom!</h1>" | browser'
+  # example '$ ron -5 man/rip.5.ron | browser'
+  local f
+  f="/tmp/browser.$RANDOM.html"
+  cat /dev/stdin > $f
+  open -a safari $f
 }
 
 escape() { echo "${@}" | sed 's/[]\.|$(){}?+*^]/\\&/g'; }

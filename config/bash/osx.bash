@@ -3,10 +3,10 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 
   ## ALIASES ##
   alias chrome='open -a Google\ Chrome'         # chrome:   Open item in Google Chrome browser
-  alias f='open -a Finder ./'                   # f:      Opens current directory in MacOS Finder
+  alias f='open -a Finder ./'                   # f:        Opens current directory in MacOS Finder
   alias cpwd='pwd|tr -d "\n"|pbcopy'            # cpwd:     Copy the current path to mac clipboard
-  alias cl="fc -e -|pbcopy"                     # cl:     Copy output of last command to mac clipboard
-  alias c="caffeinate -ism"
+  alias cl="fc -e -|pbcopy"                     # cl:       Copy output of last command to mac clipboard
+  alias caff="caffeinate -ism"                  # caff:     Run command without letting mac sleep
   alias cleanupDS="find . -type f -name '*.DS_Store' -ls -delete"
   alias finderShowHidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
   alias finderHideHidden='defaults write com.apple.finder AppleShowAllFiles FALSE'

@@ -38,6 +38,7 @@ homebrewTaps:
 homebrewPackages:
   # List of homebrew packages to install.
   - autoconf
+  - autojump
   - automake
   - bash
   - bash-completion

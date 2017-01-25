@@ -1,5 +1,4 @@
 
-alias j="jekyll"
 alias jf="ps aux | grep jekyll"     #jf: Finds PID of Jekyll to kill server
 
 function jb() {
