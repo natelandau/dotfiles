@@ -157,7 +157,6 @@ function halp() {
   # http://brettterpstra.com/2016/05/18/shell-tricks-halp-a-universal-help-tool/
   # Edited to run 'SCRIPT.sh -h' for my own personal scripts
 
-  local YELLOW="\033[0;33m" DEFAULT="\033[0;39m"
   local apro=0 helpstring="Usage: halp COMMAND"
 
   OPTIND=1
@@ -181,7 +180,7 @@ function halp() {
   cmdtest=$(type -t "${cmd}")
 
   if [ -z "$cmdtest" ]; then
-    echo -e "${YELLOW}'$cmd' is not a command$DEFAULT"
+    echo -e "${YELLOW}'$cmd' is not a command${RESET}"
     if [[ "$apro" == 1 ]]; then
       man -k "$cmd"
     else
@@ -193,19 +192,19 @@ function halp() {
     location=$(which "$cmd")
     bindir="${HOME}/bin/${cmd}"
     if [[ "${location}" == "${bindir}" ]]; then
-      echo -e "$YELLOW$cmd is a custom script:  $DEFAULT\n"
+      echo -e "${YELLOW}${cmd} is a custom script:  ${RESET}\n"
       $cmd -h
     else
       man "$cmd"
     fi
   elif [[ $cmdtest == "alias" ]]; then
-    echo -ne "$YELLOW$cmd is an alias:  $DEFAULT"
+    echo -ne "${YELLOW}${cmd} is an alias:  ${RESET}"
     alias "${cmd}"|sed -E "s/alias $cmd='(.*)'/\1/"
   elif [[ $cmdtest == "builtin" ]]; then
-    echo -ne "$YELLOW$cmd is a builtin command:  $DEFAULT"
+    echo -ne "${YELLOW}${cmd} is a builtin command:  ${RESET}"
     man $cmd
   elif [[ $cmdtest == "function" ]]; then
-    echo -e "$YELLOW$cmd is a function:  $DEFAULT"
+    echo -e "${YELLOW}${cmd} is a function:  ${RESET}"
     type "$cmd" | tail -n +2
   fi
 }
