@@ -318,13 +318,10 @@ function mainScript() {
 
     set +e # Don't quit install.sh when a sub-script fails
     # Always show command responses
-    saveVerbose=$verbose
-    verbose=true
     for script in ${configureScripts}/[0-9]*.sh; do
       . $script
     done
     set -e
-    verbose=$saveVerbose
   }
   if $config_doConfigure; then runConfigureScripts; fi
 
@@ -535,7 +532,7 @@ function execute() {
     dryrun "${2:-$1}"
   else
     set +e # don't exit on error
-    info "execute: '${2:-$1}' ..."
+    info "${2:-$1} ..."
     if $verbose; then
       eval "$1"
     else
