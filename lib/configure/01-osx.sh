@@ -19,20 +19,21 @@ execute "sudo nvram SystemAudioVolume=' '" "Disable Sound Effects on Boot"
 
 execute "defaults write NSGlobalDomain NSWindowResizeTime .001" "Get snappier save sheets"
 
-success "Hide the Time Machine, Volume, User, and Bluetooth icons"
-  for domain in ~/Library/Preferences/ByHost/com.apple.systemuiserver.*; do
-    defaults write "${domain}" dontAutoLoad -array \
-      "/System/Library/CoreServices/Menu Extras/TimeMachine.menu" \
-      "/System/Library/CoreServices/Menu Extras/Volume.menu" \
-      "/System/Library/CoreServices/Menu Extras/User.menu"
-  done
-  unset domain
+### THIS ISN'T WORKING ###
+# success "Hide the Time Machine, Volume, User, and Bluetooth icons"
+#   for domain in ~/Library/Preferences/ByHost/com.apple.systemuiserver.*; do
+#     defaults write "${domain}" dontAutoLoad -array \
+#       "/System/Library/CoreServices/Menu Extras/TimeMachine.menu" \
+#       "/System/Library/CoreServices/Menu Extras/Volume.menu" \
+#       "/System/Library/CoreServices/Menu Extras/User.menu"
+#   done
+#   unset domain
 
-  defaults write com.apple.systemuiserver menuExtras -array \
-    "/System/Library/CoreServices/Menu Extras/Bluetooth.menu" \
-    "/System/Library/CoreServices/Menu Extras/AirPort.menu" \
-    "/System/Library/CoreServices/Menu Extras/Battery.menu" \
-    "/System/Library/CoreServices/Menu Extras/Clock.menu"
+#   defaults write com.apple.systemuiserver menuExtras -array \
+#     "/System/Library/CoreServices/Menu Extras/Bluetooth.menu" \
+#     "/System/Library/CoreServices/Menu Extras/AirPort.menu" \
+#     "/System/Library/CoreServices/Menu Extras/Battery.menu" \
+#     "/System/Library/CoreServices/Menu Extras/Clock.menu"
 
 execute "defaults write NSGlobalDomain AppleHighlightColor -string '0.984300 0.929400 0.450900'" "Set highlight color to yellow"
 
