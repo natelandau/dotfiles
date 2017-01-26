@@ -14,14 +14,11 @@ if command -v ghi &> /dev/null; then
   alias task='ghi'
 fi
 
-# Clipboards id_rsa.pub
-alias sshCopy='pbcopy < ~/.ssh/id_rsa.pub'
-
 # Edit /etc/hosts file
 alias editHosts='sudo edit /etc/hosts'
 
 # Grabs headers from web page
-httpHeaders () { /usr/bin/curl -I -L "$@" ; }
+httpHeaders () { http -h "$@" ; }
 
 # Start an HTTP server from a directory, optionally specifying the port
 function server() {

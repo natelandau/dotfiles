@@ -19,8 +19,3 @@
   bind "set completion-ignore-case on" # Perform file completion in a case insensitive fashion
   bind "set completion-map-case on"    # Treat hyphens and underscores as equivalent
   bind "set show-all-if-ambiguous on"  # Display matches for ambiguous patterns at first tab press
-
-  # SSH auto-completion based on entries in known_hosts.
-  if [[ -e ~/.ssh/known_hosts ]]; then
-    complete -o default -W "$(cat ${HOME}/.ssh/known_hosts | sed 's/[, ].*//' | sort | uniq | grep -v '[0-9]')" ssh scp sftp
-  fi

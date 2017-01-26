@@ -181,7 +181,7 @@ function halp() {
   cmdtest=$(type -t "${cmd}")
 
   if [ -z "$cmdtest" ]; then
-    echo -e "${YELLOW}Not a command$DEFAULT"
+    echo -e "${YELLOW}'$cmd' is not a command$DEFAULT"
     if [[ "$apro" == 1 ]]; then
       man -k "$cmd"
     else
@@ -201,6 +201,9 @@ function halp() {
   elif [[ $cmdtest == "alias" ]]; then
     echo -ne "$YELLOW$cmd is an alias:  $DEFAULT"
     alias "${cmd}"|sed -E "s/alias $cmd='(.*)'/\1/"
+  elif [[ $cmdtest == "builtin" ]]; then
+    echo -ne "$YELLOW$cmd is a builtin command:  $DEFAULT"
+    man $cmd
   elif [[ $cmdtest == "function" ]]; then
     echo -e "$YELLOW$cmd is a function:  $DEFAULT"
     type "$cmd" | tail -n +2
