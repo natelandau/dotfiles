@@ -41,6 +41,23 @@ function mainScript() {
   }
   sourceFiles
 
+  function backupOriginalFile() {
+    local newFile
+    local backupDir
+
+    # Set backup directory location
+    backupDir="${baseDir}/dotfiles_backup"
+
+    if [[ ! -d "$backupDir" && "$dryrun" == false ]]; then
+      execute "mkdir $backupDir" "Creating backup directory"
+    fi
+
+    if [ -e "$1" ]; then
+      newFile="$(basename $1)"
+      execute "cp -R ${1} ${backupDir}/${newFile#.}" "Backing up: ${newFile}"
+    fi
+  }
+
   function createSymLinks() {
     # This function takes an input of the YAML variable containing the symlinks to be linked
     # and then creates the appropriate symlinks in the home directory. it will also backup existing files if there.
@@ -50,23 +67,6 @@ function mainScript() {
     local sourceFile=""
 
     header "Creating ${1:-symlinks}"
-
-    function backupOriginalFile() {
-      local newFile
-      local backupDir
-
-      # Set backup directory location
-      backupDir="${baseDir}/dotfiles_backup"
-
-      if [[ ! -d "$backupDir" && "$dryrun" == false ]]; then
-        execute "mkdir $backupDir"
-      fi
-
-      if [ -e "$1" ]; then
-        newFile="$(basename $1)"
-        execute "cp -R ${1} ${backupDir}/${newFile#.}" #"Backing up: ${newFile}"
-      fi
-    }
 
     # Confirm a user wants to proceed
     if ! $dryrun && ! $symlinksOK && ! seek_confirmation "Warning: This script will overwrite your current dotfiles. Continue?"; then
