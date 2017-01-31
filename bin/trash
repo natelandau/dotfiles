@@ -200,6 +200,7 @@ function mainScript() {
     for userFile in "${args[@]}"; do
       if [ ! -e "${userFile}" ]; then
         warning "${userFile}: No such file or directory"
+        haveError=true
         continue
       fi
       # determine if we'll tell Finder to trash the file via AppleScript (very easy, plus free undo
@@ -299,7 +300,11 @@ function safeExit() {
     rm -r "${tmpDir}"
   fi
   trap - INT TERM EXIT
-  exit
+  if ${haveError}; then
+    exit 1
+  else
+    exit 0
+  fi
 }
 
 # Set Flags
@@ -310,6 +315,7 @@ function safeExit() {
 list=false
 emptyTrash=false
 secureEmpty=false
+haveError=false
 
 quiet=false
 printLog=false
@@ -479,7 +485,7 @@ function _alert() {
   fi
 }
 
-function die ()       { local _message="${*} Exiting."; echo "$(_alert emergency)"; safeExit;}
+function die ()       { local _message="${*} Exiting."; echo "$(_alert emergency)"; haveError=true; safeExit;}
 function error ()     { local _message="${*}"; echo "$(_alert error)"; }
 function warning ()   { local _message="${*}"; echo "$(_alert warning)"; }
 function notice ()    { local _message="${*}"; echo "$(_alert notice)"; }
