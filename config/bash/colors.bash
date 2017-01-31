@@ -31,6 +31,10 @@
 #   10.  directory writable to others, with sticky bit
 #   11.  directory writable to others, without sticky bit
 
+function showAllColors() {
+  # will print all tput colors to terminal
+  ( x=$(tput op) y=$(printf %$((${COLUMNS}-6))s);for i in {0..256};do o=00$i;echo -e ${o:${#o}-3:3} $(tput setaf $i;tput setab $i)${y// /=}$x;done; )
+}
 
 # Add color to terminal
 export CLICOLOR=1
@@ -67,6 +71,7 @@ if [[ $(tput colors) -ge 256 ]] 2>/dev/null; then
   BLUE=$(tput setaf 38)
   RED=$(tput setaf 1)
   BLACK=$(tput setaf 233)
+  GRAY=$(tput setaf 241)
 else
   MAGENTA=$(tput setaf 5)
   ORANGE=$(tput setaf 4)
@@ -96,6 +101,7 @@ else
   RESET="\033[m"
 fi
 
+
 #Backgrounds
 BACKORANGE=$(tput setab 172)
 BACKMAGENTA=$(tput setab 9)
@@ -106,6 +112,7 @@ BACKWHITE=$(tput setab 15)
 BACKYELLOW=$(tput setab 3)
 BACKBLUE=$(tput setab 38)
 BACKRED=$(tput setab 1)
+BACKGRAY=$(tput setab 241)
 
 export MAGENTA
 export ORANGE
@@ -128,3 +135,5 @@ export BACKWHITE
 export BACKYELLOW
 export BACKBLUE
 export BACKRED
+export GRAY
+export BACKGRAY
