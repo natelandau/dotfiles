@@ -16,7 +16,7 @@ else
       baseFontName=$(basename "$font")
       destFile="${fontLocation}/${baseFontName}"
       if [ ! -e "$destFile" ]; then
-        execute "cp $font $destFile"
+        execute "cp '${font}' '$destFile'"
       fi
     done
 
