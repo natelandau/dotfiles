@@ -1,3 +1,5 @@
+# shellcheck disable=2154
+
 _configureITerm2_() {
   info "Configuring iTerm..."
 

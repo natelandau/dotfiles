@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=2181
 function execute() {
     $1 #&> /dev/null
     if [ $? -ne 0 ]; then
@@ -57,7 +58,7 @@ fi
 if which shellcheck >/dev/null; then
   for file in $(git diff --cached --name-only | grep -E '\.(sh|bash)$'); do
     if [ -f "$file" ]; then
-      execute "shellcheck --exclude=2016,2059,2001,2002,2148,1090,2162,2005,2034,2154,2086,2155,2181,2164,1083 $file"
+      execute "shellcheck --exclude=2016,2059,2001,2002,2148,1090,2162,2005,2034,2154,2086,2155,2181,2164,2120,2119,1083 $file"
     fi
   done
 fi

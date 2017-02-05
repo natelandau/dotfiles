@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=2154
 
 # ###############
 #
@@ -149,7 +150,7 @@ function _readFile_() {
   # Outputs each line in a variable named $result
   # ------------------------------------------------------
   local result
-  while read result
+  while read -r result
   do
     if $verbose; then
       verbose "${result}"
@@ -169,14 +170,14 @@ function locateSourceFile() {
 
   TARGET_FILE="$1"
 
-  cd "$(dirname $TARGET_FILE)"
+  cd "$(dirname $TARGET_FILE)" || die "Could not find TARGET FILE"
   TARGET_FILE="$(basename $TARGET_FILE)"
 
   # Iterate down a (possible) chain of symlinks
   while [ -L "$TARGET_FILE" ]
   do
     TARGET_FILE=$(readlink "$TARGET_FILE")
-    cd "$(dirname $TARGET_FILE)"
+    cd "$(dirname $TARGET_FILE)"  || die "Could not find TARGET FILE"
     TARGET_FILE="$(basename $TARGET_FILE)"
   done
 

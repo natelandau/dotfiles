@@ -1,3 +1,5 @@
+# shellcheck disable=2154
+
 _installGitHooks_() {
   info "Installing git hooks for this repository..."
 

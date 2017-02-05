@@ -56,10 +56,8 @@ else
 fi
 
 # Preferred implementation of shellcheck
-# We are excluding a number of errors here.  The list is:
-#   - 1090: Can't follow non-constant source.
-#   - 2162: Read without -r will mangle backslashes.
-#   - 2005: Useless echo? Instead of 'echo $(cmd)', just use 'cmd'.
-alias sc='shellcheck --exclude=1090,2162,2005,2034,2154,2086,2155,2181,2164,1083'
+alias sc='shellcheck --exclude=1090,2005,2034,2086,1083,2119,2120,2059,2001,2002,2148'
+
+
 
 

@@ -76,11 +76,9 @@ function mainScript() {
   _runBootstrapScripts_
 
   _doSymlinks_() {
-    if $config_doSymlinks; then
       filesToLink=("${symlinks[@]}") # array is populated from YAML
       _createSymlinks_ "Symlinks"
       unset filesToLink
-    fi
   }
   _executeFunction_ "_doSymlinks_" "Create symlinks?"
 
@@ -125,12 +123,14 @@ function mainScript() {
     execute "caffeinate -ism brew upgrade" "Upgrade existing formulae"
 
     # Install taps
+    # shellcheck disable=2154
     for tap in "${homebrewTaps[@]}"; do
       tap=$(echo "$tap" | cut -d'#' -f1 | _trim_) # remove comments if exist
       execute "brew tap $tap"
     done
 
     # Install packages
+    # shellcheck disable=2154
     for package in "${homebrewPackages[@]}"; do
 
       package=$(echo "$package" | cut -d'#' -f1 | _trim_) # remove comments if exist
@@ -146,6 +146,7 @@ function mainScript() {
     done
 
     # Install mac apps via homebrew cask
+    # shellcheck disable=2154
     for cask in "${homebrewCasks[@]}"; do
 
       cask=$(echo "$cask" | cut -d'#' -f1 | _trim_) # remove comments if exist
@@ -189,6 +190,7 @@ function mainScript() {
     verbose=true
 
     # If comments exist in the list of npm packaged to be installed remove them
+    # shellcheck disable=2154
     for package in "${nodePackages[@]}"; do
       npmPackages+=($(echo "$package" | cut -d'#' -f1 | _trim_) )
     done
@@ -210,6 +212,7 @@ function mainScript() {
 
     header "Installing global ruby gems"
 
+    # shellcheck disable=2154
     for gem in "${rubyGems[@]}"; do
 
       # Strip comments
@@ -300,7 +303,7 @@ tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
 }
 
 # Logging
-logFile="${HOME}/Library/Logs/${scriptBasename}.log"
+logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
 
 # Logging & Feedback
 # -----------------------------------------------------
@@ -433,7 +436,7 @@ function seek_confirmation() {
     return 0
   else
     while true; do
-      read -p " (y/n) " yn
+      read -rp " (y/n) " yn
       case $yn in
         [Yy]* ) return 0 ;;
         [Nn]* ) return 1 ;;
@@ -443,6 +446,7 @@ function seek_confirmation() {
   fi
 }
 
+# shellcheck disable=2181
 function execute() {
   # execute - wrap an external command in 'execute' to push native output to /dev/null
   #           and have control over the display of the results.  In "dryrun" mode these

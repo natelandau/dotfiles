@@ -7,7 +7,7 @@ _configureOSX_() {
   # Set Computer Name
   if seek_confirmation "Would you like to set your computer name (as done via System Preferences >> Sharing)?"; then
     input "What would you like the name to be? "
-    read COMPUTER_NAME
+    read -r COMPUTER_NAME
     execute "sudo scutil --set ComputerName $COMPUTER_NAME"
     execute "sudo scutil --set HostName $COMPUTER_NAME"
     execute "sudo scutil --set LocalHostName $COMPUTER_NAME"
