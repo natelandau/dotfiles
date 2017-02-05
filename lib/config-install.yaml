@@ -1,13 +1,3 @@
-config:
-  doBootstrap:  true
-  doSymlinks:   true
-  privateRepo:  true
-  doHomebrew:   true
-  doNode:       true
-  doRuby:       true
-  doConfigure:  true
-
-
 symlinks:
   # format is - destination: source (source files are relative to 'install.sh')
   - ~/.httpie:        config/shell/httpie

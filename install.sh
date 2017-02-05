@@ -2,9 +2,8 @@
 
 function mainScript() {
 
-  function findBaseDir() {
+  function _findBaseDir_() {
     # fincBaseDir locates the real directory of the script. similar to GNU readlink -n
-
     local SOURCE
     local DIR
     SOURCE="${BASH_SOURCE[0]}"
@@ -15,13 +14,12 @@ function mainScript() {
     done
     baseDir="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
   }
-  findBaseDir
+  _findBaseDir_
 
   # Set Variables
   utilsFile="${baseDir}/lib/utils.sh"
   configFile="${baseDir}/lib/config-install.yaml"
-  privateDir="${baseDir}/private"
-  privateConfig="private-install.yaml"
+  privateInstallScript="${baseDir}/private/privateInstall.sh"
 
   function sourceFiles() {
     if [ -f "$utilsFile" ]; then
@@ -31,94 +29,33 @@ function mainScript() {
     fi
     if [ -f "$configFile" ]; then
       yamlConfigVariables="$tmpDir/yamlConfigVariables.txt"
-      parse_yaml "$configFile" > "$yamlConfigVariables"
+      _parse_yaml_ "$configFile" > "$yamlConfigVariables"
       source "$yamlConfigVariables"
       # In verbose mode, echo the variables for debugging purposes
-      if $verbose; then verbose "-- Config Variables --"; readFile "$yamlConfigVariables"; fi
+      if $verbose; then verbose "-- Config Variables --"; _readFile_ "$yamlConfigVariables"; fi
     else
       die "Can't find $configFile"
     fi
   }
   sourceFiles
 
-  function backupOriginalFile() {
-    local newFile
-    local backupDir
+  # Sets the flags passed to the script as an array to pass
+  # on to child scripts
+  scriptFlags=()
+    ( $dryrun ) && scriptFlags+=(--dryrun)
+    ( $quiet ) && scriptFlags+=(--quiet)
+    ( $printLog ) && scriptFlags+=(--log)
+    ( $verbose ) && scriptFlags+=(--verbose)
+    ( $debug ) && scriptFlags+=(--debug)
+    ( $strict ) && scriptFlags+=(--strict)
 
-    # Set backup directory location
-    backupDir="${baseDir}/dotfiles_backup"
+  #### Run Script Segments ###
 
-    if [[ ! -d "$backupDir" && "$dryrun" == false ]]; then
-      execute "mkdir $backupDir" "Creating backup directory"
-    fi
-
-    if [ -e "$1" ]; then
-      newFile="$(basename $1)"
-      execute "cp -R ${1} ${backupDir}/${newFile#.}" "Backing up: ${newFile}"
-    fi
-  }
-
-  function createSymLinks() {
-    # This function takes an input of the YAML variable containing the symlinks to be linked
-    # and then creates the appropriate symlinks in the home directory. it will also backup existing files if there.
-
-    local link=""
-    local destFile=""
-    local sourceFile=""
-
-    header "Creating ${1:-symlinks}"
-
-    # Confirm a user wants to proceed
-    if ! $dryrun && ! $symlinksOK && ! seek_confirmation "Warning: This script will overwrite your current dotfiles. Continue?"; then
-      notice "Continuing without symlinks..."
-      return
-    else
-      symlinksOK=true
-    fi
-
-    # For each link do the following
-    for link in "${filesToLink[@]}"; do
-      verbose "Working on: $link"
-      # Parse destination and source
-      destFile=$(echo "$link" | cut -d':' -f1 | trim)
-      sourceFile=$(echo "$link" | cut -d':' -f2 | trim)
-      sourceFile=$(echo "$sourceFile" | cut -d'#' -f1 | trim) # remove comments if exist
-
-      # Fix files where $HOME is written as '~'
-      destFile="${destFile/\~/$HOME}"
-
-      # Grab the absolute path for the source
-      sourceFile="${baseDir}/$sourceFile"
-
-      # If we can't find a source file, skip it
-      if ! test -e "$sourceFile"; then
-        warning "Can't find '$sourceFile'."
-        continue
-      fi
-
-      # Now we symlink the files
-      if [ ! -e "$destFile" ]; then
-        execute "ln -fs $sourceFile $destFile" "symlink $sourceFile → $destFile"
-      elif [ -h "$destFile" ]; then
-        originalFile=$(locateSourceFile "$destFile")
-        backupOriginalFile "$originalFile"
-        if ! $dryrun; then rm -rf "$destFile"; fi
-        execute "ln -fs $sourceFile $destFile" "symlink $sourceFile → $destFile"
-      elif [ -e "$destFile" ]; then
-        backupOriginalFile "$destFile"
-        if ! $dryrun; then rm -rf "$destFile"; fi
-        execute "ln -fs $sourceFile $destFile" "symlink $sourceFile → $destFile"
-      else
-        warning "Error linking: $sourceFile → $destFile"
-      fi
-    done
-  }
-
-  function runBootstrapScripts() {
+  _runBootstrapScripts_() {
     local script
     local bootstrapScripts
 
-    header "Running bootstrap scripts"
+    notice "Confirming we have prerequisites..."
 
     bootstrapScripts="${baseDir}/lib/bootstrap"
     if [ ! -d "$bootstrapScripts" ]; then die "Can't find install scripts."; fi
@@ -136,43 +73,30 @@ function mainScript() {
     set -e
     verbose=$saveVerbose
   }
-  if $config_doBootstrap; then runBootstrapScripts; fi
+  _runBootstrapScripts_
 
-  if $config_doSymlinks; then
-    filesToLink=("${symlinks[@]}")
-    createSymLinks "Symlinks"
-    unset filesToLink
-  fi
-
-  function privateRepo() {
-
-    if ! [ -d "$privateDir" ]; then
-      warning "Can't find private directory. Skipping..."
-      havePrivateRepo=false
-      return
+  _doSymlinks_() {
+    if $config_doSymlinks; then
+      filesToLink=("${symlinks[@]}") # array is populated from YAML
+      _createSymlinks_ "Symlinks"
+      unset filesToLink
     fi
-    if ! [ -f "$privateDir/$privateConfig" ]; then
-      warning "Can't find private YAML. Skipping..."
-      havePrivateRepo=false
-      return
-    fi
-
-    # Source YAML Variables
-    prvtYamlConfigVariables="$tmpDir/prvtYamlConfigVariables.txt"
-    parse_yaml "$privateDir/$privateConfig" > "$prvtYamlConfigVariables"
-    source "$prvtYamlConfigVariables"
-    # In verbose mode, echo the variables for debugging purposes
-    if $verbose; then verbose "-- Private Config Variables --"; readFile "$prvtYamlConfigVariables"; fi
-
-    filesToLink=("${privateSymlinks[@]}")
-
-    createSymLinks "Private Symlinks"
-
-    unset filesToLink
   }
-  if $config_privateRepo; then privateRepo; fi
+  _executeFunction_ "_doSymlinks_" "Create symlinks?"
 
-  function installHomebrewPackages() {
+  _privateRepo_() {
+
+    if [ -f "$privateInstallScript" ]; then
+      if seek_confirmation "Run Private install script"; then
+        "$privateInstallScript" "${scriptFlags[*]}"
+      fi
+    else
+      warning "Could not find private install script"
+    fi
+  }
+  _privateRepo_
+
+  _installHomebrewPackages_() {
     local tap
     local package
     local cask
@@ -202,17 +126,17 @@ function mainScript() {
 
     # Install taps
     for tap in "${homebrewTaps[@]}"; do
-      tap=$(echo "$tap" | cut -d'#' -f1 | trim) # remove comments if exist
+      tap=$(echo "$tap" | cut -d'#' -f1 | _trim_) # remove comments if exist
       execute "brew tap $tap"
     done
 
     # Install packages
     for package in "${homebrewPackages[@]}"; do
 
-      package=$(echo "$package" | cut -d'#' -f1 | trim) # remove comments if exist
+      package=$(echo "$package" | cut -d'#' -f1 | _trim_) # remove comments if exist
 
       # strip flags from package names
-      testInstalled=$(echo "$package" | cut -d' ' -f1 | trim)
+      testInstalled=$(echo "$package" | cut -d' ' -f1 | _trim_)
 
       if brew ls --versions "$testInstalled" > /dev/null; then
         info "$testInstalled already installed"
@@ -224,10 +148,10 @@ function mainScript() {
     # Install mac apps via homebrew cask
     for cask in "${homebrewCasks[@]}"; do
 
-      cask=$(echo "$cask" | cut -d'#' -f1 | trim) # remove comments if exist
+      cask=$(echo "$cask" | cut -d'#' -f1 | _trim_) # remove comments if exist
 
       # strip flags from package names
-      testInstalled=$(echo "$cask" | cut -d' ' -f1 | trim)
+      testInstalled=$(echo "$cask" | cut -d' ' -f1 | _trim_)
 
       if brew cask ls "$testInstalled" &> /dev/null; then
         info "$testInstalled already installed"
@@ -240,11 +164,10 @@ function mainScript() {
     # cleanup after ourselves
     execute "brew cleanup"
     execute "brew doctor"
-
   }
-  if $config_doHomebrew; then installHomebrewPackages; fi
+  _executeFunction_ "_installHomebrewPackages_" "Install Homebrew Packages"
 
-  function installNodePackages() {
+  _installNodePackages_() {
     local package
     local npmPackages
     local modules
@@ -267,11 +190,11 @@ function mainScript() {
 
     # If comments exist in the list of npm packaged to be installed remove them
     for package in "${nodePackages[@]}"; do
-      npmPackages+=($(echo "$package" | cut -d'#' -f1 | trim) )
+      npmPackages+=($(echo "$package" | cut -d'#' -f1 | _trim_) )
     done
 
     # Install packages that do not already exist
-    modules=($(setdiff "${npmPackages[*]}" "${installed[*]}"))
+    modules=($(_setdiff_ "${npmPackages[*]}" "${installed[*]}"))
     if (( ${#modules[@]} > 0 )); then
       pushd $HOME > /dev/null; execute "npm install -g ${modules[*]}"; popd > /dev/null;
     else
@@ -281,19 +204,19 @@ function mainScript() {
     # Reset verbose settings
     verbose=$saveVerbose
   }
-  if $config_doNode; then installNodePackages; fi
+  _executeFunction_ "_installNodePackages_" "Install Node Packages"
 
-  function installRubyPackages() {
+  _installRubyPackages_() {
 
     header "Installing global ruby gems"
 
     for gem in "${rubyGems[@]}"; do
 
       # Strip comments
-      gem=$(echo "$gem" | cut -d'#' -f1 | trim)
+      gem=$(echo "$gem" | cut -d'#' -f1 | _trim_)
 
       # strip flags from package names
-      testInstalled=$(echo "$gem" | cut -d' ' -f1 | trim)
+      testInstalled=$(echo "$gem" | cut -d' ' -f1 | _trim_)
 
       if ! gem list $testInstalled -i >/dev/null; then
         pushd $HOME > /dev/null; execute "gem install $gem" "install $gem"; popd > /dev/null;
@@ -303,9 +226,9 @@ function mainScript() {
 
     done
   }
-  if $config_doRuby; then installRubyPackages; fi
+  _executeFunction_ "_installRubyPackages_" "Install Ruby Packages"
 
-  function runConfigureScripts() {
+  _runConfigureScripts_() {
     local script
     local configureScripts
 
@@ -323,17 +246,17 @@ function mainScript() {
     done
     set -e
   }
-  if $config_doConfigure; then runConfigureScripts; fi
+  _runConfigureScripts_
+
+  success "install.sh has completed"
 
 } ## End mainscript
 
-function trapCleanup() {
+function _trapCleanup_() {
   echo ""
   # Delete temp files, if any
-  if [ -d "${tmpDir}" ] ; then
-    rm -r "${tmpDir}"
-  fi
-  die "Exit trapped. In function: '${FUNCNAME[*]}'"
+  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
+  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
 function safeExit() {
@@ -547,13 +470,13 @@ function execute() {
   fi
 }
 # Trap bad exits with your cleanup function
-trap trapCleanup EXIT INT TERM
+trap _trapCleanup_ EXIT INT TERM
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-#set -o errexit
+set -o errexit
 
 # Run in debug mode, if set
 if ${debug}; then set -x ; fi

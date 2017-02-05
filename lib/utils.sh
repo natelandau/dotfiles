@@ -6,26 +6,108 @@
 #
 # ###############
 
-function ltrim() {
+function _backupOriginalFile_() {
+  local newFile
+  local backupDir
+
+  # Set backup directory location
+  backupDir="${baseDir}/dotfiles_backup"
+
+  if [[ ! -d "$backupDir" && "$dryrun" == false ]]; then
+    execute "mkdir $backupDir" "Creating backup directory"
+  fi
+
+  if [ -e "$1" ]; then
+    newFile="$(basename $1)"
+    execute "cp -R ${1} ${backupDir}/${newFile#.}" "Backing up: ${newFile}"
+  fi
+}
+
+function _executeFunction_() {
+  local functionName="$1"
+  local functionDesc="${2:-next step?}"
+
+  if seek_confirmation "${functionDesc}?"; then
+    "${functionName}"
+  fi
+}
+
+function _createSymlinks_() {
+  # This function takes an input of the YAML variable containing the symlinks to be linked
+  # and then creates the appropriate symlinks in the home directory. it will also backup existing files if there.
+
+  local link=""
+  local destFile=""
+  local sourceFile=""
+
+  header "Creating ${1:-symlinks}"
+
+  # Confirm a user wants to proceed
+  if ! $dryrun && ! $symlinksOK && ! seek_confirmation "Warning: This script will overwrite your current dotfiles. Continue?"; then
+    notice "Continuing without symlinks..."
+    return
+  else
+    symlinksOK=true
+  fi
+
+  # For each link do the following
+  for link in "${filesToLink[@]}"; do
+    verbose "Working on: $link"
+    # Parse destination and source
+    destFile=$(echo "$link" | cut -d':' -f1 | _trim_)
+    sourceFile=$(echo "$link" | cut -d':' -f2 | _trim_)
+    sourceFile=$(echo "$sourceFile" | cut -d'#' -f1 | _trim_) # remove comments if exist
+
+    # Fix files where $HOME is written as '~'
+    destFile="${destFile/\~/$HOME}"
+
+    # Grab the absolute path for the source
+    sourceFile="${baseDir}/$sourceFile"
+
+    # If we can't find a source file, skip it
+    if ! test -e "$sourceFile"; then
+      warning "Can't find '$sourceFile'."
+      continue
+    fi
+
+    # Now we symlink the files
+    if [ ! -e "$destFile" ]; then
+      execute "ln -fs $sourceFile $destFile" "symlink $sourceFile → $destFile"
+    elif [ -h "$destFile" ]; then
+      originalFile=$(locateSourceFile "$destFile")
+      _backupOriginalFile_ "$originalFile"
+      if ! $dryrun; then rm -rf "$destFile"; fi
+      execute "ln -fs $sourceFile $destFile" "symlink $sourceFile → $destFile"
+    elif [ -e "$destFile" ]; then
+      _backupOriginalFile_ "$destFile"
+      if ! $dryrun; then rm -rf "$destFile"; fi
+      execute "ln -fs $sourceFile $destFile" "symlink $sourceFile → $destFile"
+    else
+      warning "Error linking: $sourceFile → $destFile"
+    fi
+  done
+}
+
+function _ltrim_() {
   # Removes all leading whitespace (from the left).
   local char=${1:-[:space:]}
     sed "s%^[${char//%/\\%}]*%%"
 }
 
-function rtrim() {
+function _rtrim_() {
   # Removes all trailing whitespace (from the right).
   local char=${1:-[:space:]}
   sed "s%[${char//%/\\%}]*$%%"
 }
 
-function trim() {
+function _trim_() {
   # Removes all leading/trailing whitespace
   # Usage examples:
-  #     echo "  foo  bar baz " | trim  #==> "foo  bar baz"
-  ltrim "$1" | rtrim "$1"
+  #     echo "  foo  bar baz " | _trim_  #==> "foo  bar baz"
+  _ltrim_ "$1" | _rtrim_ "$1"
 }
 
-function parse_yaml() {
+function _parse_yaml_() {
   # Function to parse YAML files and add values to variables. Send it to a temp file and source it
   # https://gist.github.com/DinoChiesa/3e3c3866b51290f31243 which is derived from
   # https://gist.github.com/epiloque/8cf512c6d64641bde388
@@ -60,15 +142,7 @@ function parse_yaml() {
     }' | sed 's/_=/+=/g'
 }
 
-function json2yaml() {
-  python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < "$1"
-}
-
-function yaml2json() {
-  python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "$1"
-}
-
-function readFile() {
+function _readFile_() {
   # readFile
   # ------------------------------------------------------
   # Function to read a line from a file.
@@ -113,7 +187,7 @@ function locateSourceFile() {
   echo "$RESULT"
 }
 
-function setdiff() {
+function _setdiff_() {
   # Given strings containing space-delimited words A and B, "setdiff A B" will
   # return all words in A that do not exist in B. Arrays in bash are insane
   # (and not in a good way).
