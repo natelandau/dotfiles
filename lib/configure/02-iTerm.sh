@@ -5,6 +5,7 @@ _configureITerm2_() {
 
   if ! [ -e /Applications/iTerm.app ]; then
     warning "Could not find iTerm.app. Please install iTerm and run this again."
+    return
   else
 
     # iTerm config files location

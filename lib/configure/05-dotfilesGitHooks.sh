@@ -6,14 +6,16 @@ _installGitHooks_() {
   GITROOT=$(git rev-parse --show-toplevel 2> /dev/null)
 
   if [ "${GITROOT}" == "" ]; then
-    die "This does not appear to be a git repo."
+    warning "This does not appear to be a git repo."
+    return
   fi
 
   # Location of hooks
   hooksLocation="${baseDir}/.hooks"
 
   if ! [ -d "$hooksLocation" ]; then
-    die "Can't find hooks. Exiting."
+    warning "Can't find hooks. Exiting."
+    return
   fi
 
   for hook in ${hooksLocation}/*.sh; do
