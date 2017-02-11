@@ -18,7 +18,7 @@ function mainScript() {
 
   # Set Variables
   utilsFile="${baseDir}/lib/utils.sh"
-  configFile="${baseDir}/lib/config-install.yaml"
+  configFile="${baseDir}/install-config.yaml"
   privateInstallScript="${baseDir}/private/privateInstall.sh"
 
   function sourceFiles() {
