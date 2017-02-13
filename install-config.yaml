@@ -12,6 +12,7 @@ symlinks:
   - ~/.inputrc:       config/shell/inputrc
   - ~/.profile:       config/shell/profile
   - ~/.slap:          config/shell/slap
+  - ~/.sed:           config/sed
   # Move my bin/ folder to homeDir
   - ~/bin:            bin
 

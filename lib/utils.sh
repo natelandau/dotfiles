@@ -43,14 +43,6 @@ function _createSymlinks_() {
 
   header "Creating ${1:-symlinks}"
 
-  # Confirm a user wants to proceed
-  if ! $dryrun && ! $symlinksOK && ! seek_confirmation "Warning: This script will overwrite your current dotfiles. Continue?"; then
-    notice "Continuing without symlinks..."
-    return
-  else
-    symlinksOK=true
-  fi
-
   # For each link do the following
   for link in "${filesToLink[@]}"; do
     verbose "Working on: $link"

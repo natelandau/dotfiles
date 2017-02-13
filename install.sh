@@ -18,10 +18,10 @@ function mainScript() {
 
   # Set Variables
   utilsFile="${baseDir}/lib/utils.sh"
-  configFile="${baseDir}/lib/config-install.yaml"
+  configFile="${baseDir}/install-config.yaml"
   privateInstallScript="${baseDir}/private/privateInstall.sh"
 
-  function sourceFiles() {
+  function _sourceFiles_() {
     if [ -f "$utilsFile" ]; then
       source "$utilsFile"
     else
@@ -37,7 +37,7 @@ function mainScript() {
       die "Can't find $configFile"
     fi
   }
-  sourceFiles
+  _sourceFiles_
 
   # Sets the flags passed to the script as an array to pass
   # on to child scripts
@@ -283,7 +283,6 @@ force=false
 strict=false
 debug=false
 dryrun=false
-symlinksOK=false
 args=()
 
 # Set Colors
