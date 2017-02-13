@@ -48,7 +48,7 @@ function _pauseScript_() {
     notice "Continuing..."
   else
     warning "Exiting Script."
-    safeExit
+    _safeExit_
   fi
 }
 
@@ -289,7 +289,7 @@ function _httpStatus_() {
        503) status="Server Error: Service Unavailable" ;;
        504) status="Server Error: Gateway Timeout within ${timeout} seconds" ;;
        505) status="Server Error: HTTP Version Not Supported" ;;
-       *)   echo " !!  httpstatus: status not defined." && safeExit ;;
+       *)   echo " !!  httpstatus: status not defined." && _safeExit_ ;;
   esac
 
 
@@ -299,7 +299,7 @@ function _httpStatus_() {
        -s)       echo "${code} ${status}" ;;
        --code)   echo "${code}"         ;;
        -c)       echo "${code}"         ;;
-       *)        echo " !!  httpstatus: bad flag" && safeExit;;
+       *)        echo " !!  httpstatus: bad flag" && _safeExit_;;
   esac
 
   IFS="${saveIFS}"

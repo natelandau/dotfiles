@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-version="1.0.0"              # Sets version variable
+version="1.0.0"
 
 function _mainScript_() {
  echo -n
@@ -14,7 +14,7 @@ function _trapCleanup_() {
   die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
-function safeExit() {
+function _safeExit_() {
   # Delete temp files, if any
   [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   trap - INT TERM EXIT
@@ -26,24 +26,14 @@ function safeExit() {
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false
-printLog=false
-verbose=false
-force=false
-strict=false
-dryrun=false
-debug=false
-args=()
+quiet=false;      printLog=false;       verbose=false;
+force=false;      strict=false;         dryrun=false;
+debug=false;      args=();
 
 # Set Colors
-bold=$(tput bold)
-reset=$(tput sgr0)
-purple=$(tput setaf 171)
-red=$(tput setaf 1)
-green=$(tput setaf 76)
-tan=$(tput setaf 3)
-blue=$(tput setaf 38)
-underline=$(tput sgr 0 1)
+bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
+red=$(tput setaf 1);      green=$(tput setaf 76);      tan=$(tput setaf 3);
+blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
 
 # Set Temp Directory
 tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
@@ -54,7 +44,7 @@ tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
 # Logging & Feedback
 logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
 
-function _alert() {
+function _alert_() {
   if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
   if [ "${1}" = "warning" ]; then local color="${red}"; fi
   if [ "${1}" = "success" ]; then local color="${green}"; fi
@@ -78,16 +68,16 @@ function _alert() {
   fi
 }
 
-function die ()       { local _message="${*} Exiting."; echo -e "$(_alert error)"; safeExit "1";}
-function error ()     { local _message="${*}"; echo -e "$(_alert error)"; }
-function warning ()   { local _message="${*}"; echo -e "$(_alert warning)"; }
-function notice ()    { local _message="${*}"; echo -e "$(_alert notice)"; }
-function info ()      { local _message="${*}"; echo -e "$(_alert info)"; }
-function debug ()     { local _message="${*}"; echo -e "$(_alert debug)"; }
-function success ()   { local _message="${*}"; echo -e "$(_alert success)"; }
-function dryrun()     { local _message="${*}"; echo -e "$(_alert dryrun)"; }
-function input()      { local _message="${*}"; echo -n "$(_alert input)"; }
-function header()     { local _message="== ${*} ==  "; echo -e "$(_alert header)"; }
+function die ()       { local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
+function error ()     { local _message="${*}"; echo -e "$(_alert_ error)"; }
+function warning ()   { local _message="${*}"; echo -e "$(_alert_ warning)"; }
+function notice ()    { local _message="${*}"; echo -e "$(_alert_ notice)"; }
+function info ()      { local _message="${*}"; echo -e "$(_alert_ info)"; }
+function debug ()     { local _message="${*}"; echo -e "$(_alert_ debug)"; }
+function success ()   { local _message="${*}"; echo -e "$(_alert_ success)"; }
+function dryrun()     { local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
+function input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
+function header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
 function verbose()    { if ${verbose}; then debug "$@"; fi }
 
 
@@ -157,8 +147,8 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    -h|--help) usage >&2; safeExit ;;
-    --version) echo "$(basename $0) ${version}"; safeExit ;;
+    -h|--help) usage >&2; _safeExit_ ;;
+    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     -u|--username) shift; username=${1} ;;
     -p|--password) shift; echo "Enter Pass: "; stty -echo; read PASS; stty echo;
       echo ;;
@@ -233,7 +223,7 @@ trap _trapCleanup_ EXIT INT TERM
 IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-# if using 'execute' this must be disabled for warnings to be shown if tasks fail
+# if using the 'execute' function this must be disabled for warnings to be shown if tasks fail
 #set -o errexit
 
 # Run in debug mode, if set
@@ -249,4 +239,4 @@ set -e
 _mainScript_
 
 # Exit cleanly
-safeExit
+_safeExit_
