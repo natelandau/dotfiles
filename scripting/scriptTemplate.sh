@@ -150,7 +150,7 @@ while [[ $1 = -?* ]]; do
     -h|--help) usage >&2; _safeExit_ ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     -u|--username) shift; username=${1} ;;
-    -p|--password) shift; echo "Enter Pass: "; stty -echo; read PASS; stty echo;
+    -p|--password) shift; echo "Enter Pass: "; stty -echo; read -r PASS; stty echo;
       echo ;;
     -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;
@@ -180,7 +180,7 @@ function seek_confirmation() {
     return 0
   else
     while true; do
-      read -p " (y/n) " yn
+      read -pr " (y/n) " yn
       case $yn in
         [Yy]* ) return 0;;
         [Nn]* ) return 1;;
@@ -201,18 +201,18 @@ function execute() {
   if ${dryrun}; then
     dryrun "${2:-$1}"
   else
-    set +e # don't exit script if execute fails
+    #set +e # don't exit script if execute fails
     if $verbose; then
       $1
     else
       $1 &> /dev/null
     fi
-    set -e
     if [ $? -eq 0 ]; then
       success "${2:-$1}"
     else
       warning "${2:-$1}"
     fi
+    # set -e
   fi
 }
 
