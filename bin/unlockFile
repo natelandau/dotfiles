@@ -1,66 +1,50 @@
 #!/usr/bin/env bash
 
-function mainScript() {
+version="1.0.0"
+
+function _mainScript_() {
   # This script will list all open processes for the given file and give you an option to quit them.
   declare -a PROCS
 
-# if ! $(fuser -f "$@" &> /dev/null); then
-#   warning "exit"
-# fi
-# safeExit
+  # Exit if the specified arg is not a file
+  ! [ -f "$userFile" ] && die "${userFile}: No such file."
 
-notice "args: ${args[@]}"
-
-echo "working on '${args[1]}'"
-
-fuser -fu "$1"
-safeExit
-
-  s=$(fuser -f "$1")
+  s=$(fuser -f "$userFile")
   PROCS=( $s )
 
   if [ "${#PROCS[@]}" == 0 ] ; then
-    notice "File '$1' is not open."
+    warning "File '$userFile' is not open."
   else
     for element in "${PROCS[@]}"; do
       ps "$element"
     done
 
-    echo ""
+    #echo ""
     input "Type the PID number to kill a given process, 'a' to kill all or 'q' to quit: "
-    read REPLY
+    read -r REPLY
 
     if [ "$REPLY" == "a" ] || [ "$REPLY" == "A" ] ; then
       for element in "${PROCS[@]}"; do
-       kill "$element" || die "Error killing processes.";
+       execute "kill $element" || die "Error killing processes.";
       done
-      success "All processes killed."
     elif [ "$REPLY" == "q" ] || [ "$REPLY" == "Q" ]; then
       notice "User canceled. Exiting."
-      safeExit
+      _safeExit_
     else
-      kill "$REPLY" || die "Error killing process '${REPLY}'"
-      success "Process killed"
+      execute "kill $REPLY" || die "Error killing process '${REPLY}'"
     fi
   fi
 
 }
 
-function trapCleanup() {
+function _trapCleanup_() {
   echo ""
-  # Delete temp files, if any
-  if [ -d "${tmpDir}" ] ; then
-    rm -r "${tmpDir}"
-  fi
-  die "Exit trapped. In function: '${FUNCNAME[*]}'"
+  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
-function safeExit() {
-  if [ -d "${tmpDir}" ] ; then
-    rm -r "${tmpDir}"
-  fi
+function _safeExit_() {
   trap - INT TERM EXIT
-  exit
+  exit ${1:-0}
 }
 
 # Set Base Variables
@@ -68,65 +52,42 @@ function safeExit() {
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false
-printLog=false
-verbose=false
-strict=false
-debug=false
-args=()
+verbose=true;        debug=false;        args=();
+dryrun=false;
 
 # Set Colors
-bold=$(tput bold)
-reset=$(tput sgr0)
-purple=$(tput setaf 171)
-red=$(tput setaf 1)
-green=$(tput setaf 76)
-tan=$(tput setaf 3)
-blue=$(tput setaf 38)
-underline=$(tput sgr 0 1)
+bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
+red=$(tput setaf 1);      green=$(tput setaf 76);      tan=$(tput setaf 3);
+blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
 
-# Set Temp Directory
-# -----------------------------------
-tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
-(umask 077 && mkdir "${tmpDir}") || {
-  die "Could not create temporary directory! Exiting."
-}
-
-# Logging and Colors
-# -----------------------------------------------------
-function _alert() {
+function _alert_() {
   if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
   if [ "${1}" = "warning" ]; then local color="${red}"; fi
   if [ "${1}" = "success" ]; then local color="${green}"; fi
   if [ "${1}" = "debug" ]; then local color="${purple}"; fi
   if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
   if [ "${1}" = "input" ]; then local color="${bold}"; fi
+  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
   if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
   # Don't use colors on pipes or non-recognized terminals
   if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
 
-  # Print to console when script is not 'quiet'
-  if ${quiet}; then return; else
-   echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
-  fi
+  echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
 
-  # Print to Logfile
-  if ${printLog} && [ "${1}" != "input" ]; then
-    color=""; reset="" # Don't use colors in logs
-    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
-  fi
 }
 
-function die ()       { local _message="${*} Exiting."; echo -e "$(_alert error)"; safeExit;}
-function error ()     { local _message="${*}"; echo -e "$(_alert error)"; }
-function warning ()   { local _message="${*}"; echo -e "$(_alert warning)"; }
-function notice ()    { local _message="${*}"; echo -e "$(_alert notice)"; }
-function info ()      { local _message="${*}"; echo -e "$(_alert info)"; }
-function debug ()     { local _message="${*}"; echo -e "$(_alert debug)"; }
-function success ()   { local _message="${*}"; echo -e "$(_alert success)"; }
-function input()      { local _message="${*}"; echo -n "$(_alert input)"; }
-function header()     { local _message="== ${*} ==  "; echo -e "$(_alert header)"; }
+function die ()       { local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
+function error ()     { local _message="${*}"; echo -e "$(_alert_ error)"; }
+function warning ()   { local _message="${*}"; echo -e "$(_alert_ warning)"; }
+function notice ()    { local _message="${*}"; echo -e "$(_alert_ notice)"; }
+function info ()      { local _message="${*}"; echo -e "$(_alert_ info)"; }
+function debug ()     { local _message="${*}"; echo -e "$(_alert_ debug)"; }
+function success ()   { local _message="${*}"; echo -e "$(_alert_ success)"; }
+function dryrun()     { local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
+function input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
+function header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
 function verbose()    { if ${verbose}; then debug "$@"; fi }
+
 
 # Options and Usage
 # -----------------------------------
@@ -136,7 +97,7 @@ usage() {
 This script takes a user specified filename and finds processes that are keeping
 the file in use. It will then give you the option to kill those processes.
 
-This can be very useful when a file can't be emptied by the trash or is "in use"
+This can be very useful when a file can't be emptied by the trash or is 'in use'
 by macOS.
 
 Adapted from: http://applehelpwriter.com/2016/08/20/how-to-fix-file-in-use-problem/
@@ -145,6 +106,7 @@ Adapted from: http://applehelpwriter.com/2016/08/20/how-to-fix-file-in-use-probl
 
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
+  -n, --dryrun      Non-destructive. Makes no permanent changes.
   -h, --help        Display this help and exit
 "
 }
@@ -193,33 +155,74 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-
-    -h|--help) usage >&2; safeExit ;;
-    --version) echo "$(basename $0) ${version}"; safeExit ;;
+    -h|--help) usage >&2; _safeExit_ ;;
+    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     -v|--verbose) verbose=true ;;
-    -l|--log) printLog=true ;;
-    -q|--quiet) quiet=true ;;
+    -n|--dryrun) dryrun=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
-    --force) force=true ;;
     --endopts) shift; break ;;
     *) die "invalid option: '$1'." ;;
   esac
   shift
 done
 
-# Store the remaining part as arguments.
-args+=("$@")
+# Store the remaining part as an argument.
+#args+=("$@")
+userFile="$1"
 
+
+function seek_confirmation() {
+  # Seeks a Yes or No answer to a question.  Usage:
+  #   if seek_confirmation "Answer this question"; then
+  #     something
+  #   fi
+  input "$@"
+  while true; do
+    read -pr " (y/n) " yn
+    case $yn in
+      [Yy]* ) return 0;;
+      [Nn]* ) return 1;;
+      * ) input "Please answer yes or no.";;
+    esac
+  done
+}
+
+function execute() {
+  # execute - wrap an external command in 'execute' to push native output to /dev/null
+  #           and have control over the display of the results.  In "dryrun" mode these
+  #           commands are not executed at all. In Verbose mode, the commands are executed
+  #           with results printed to stderr and stdin
+  #
+  # usage:
+  #   execute "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
+  if ${dryrun}; then
+    dryrun "${2:-$1}"
+  else
+    #set +e # don't exit script if execute fails
+    if $verbose; then
+      $1
+    else
+      $1 &> /dev/null
+    fi
+    if [ $? -eq 0 ]; then
+      success "${2:-$1}"
+    else
+      warning "${2:-$1}"
+    fi
+    # set -e
+  fi
+}
 
 # Trap bad exits with your cleanup function
-trap trapCleanup EXIT INT TERM
+trap _trapCleanup_ EXIT INT TERM
 
 # Set IFS to preferred implementation
-IFS=$'\n\t'
+IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-set -o errexit
+# if using the 'execute' function this must be disabled for warnings to be shown if tasks fail
+#set -o errexit
 
 # Run in debug mode, if set
 if ${debug}; then set -x ; fi
@@ -227,12 +230,11 @@ if ${debug}; then set -x ; fi
 # Exit on empty variable
 if ${strict}; then set -o nounset ; fi
 
-# Bash will remember & return the highest exitcode in a chain of pipes.
-# This way you can catch the error in case mysqldump fails in `mysqldump |gzip`, for example.
-set -o pipefail
+# Exit the script if a command fails
+set -e
 
 # Run your script
-mainScript
+_mainScript_
 
 # Exit cleanly
-safeExit
+_safeExit_
