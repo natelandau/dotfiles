@@ -1,31 +1,53 @@
 #!/usr/bin/env bash
 
-# ##################################################
-#
-version="1.0.0"
-#
-# HISTORY:
-#
-# * 2016-03-29 - v1.0.0   - First Creation
-# * 2016-12-30 - v1.1.0   - Added 'nonInteractive' mode
-# ##################################################
+version="1.1.0"
 
+function _mainScript_() {
 
-function mainScript() {
-  if ${verbose}; then v="-v"; fi
-
-  function errorHandling() {
+  function _errorHandling_() {
     # This script requires the Linux gdate (as opposed to native 'date' in OSX)
     # Here we see if it's installed. If not, we install it with homebrew.
-    if ! type -P gdate > /dev/null; then
+    if ! command -v gdate &> /dev/null; then
       warning "Need 'gdate' to continue. Installing via homebrew."
       brew install coreutils
       success "'coreutils' package installed. Exiting."
-      havehaveError=true
-      safeExit
+      _safeExit_ "1"
     fi
   }
-  errorHandling
+  _errorHandling_
+
+  function _createTestFiles_() {
+    filenamesForTesting=(
+      "2016-01-01 Already datestamped.txt"
+      "YYY MM DD 2016 03 19 file.txt"
+      "MM-DD-YYYY 02 02 2016.txt"
+      "MMDDYYYY 01202015 file.txt"
+      "YYYYMMDD 2013-08-21.txt"
+      "MMDDYY file 110216.txt"
+      "YYMMDD 160228.txt"
+      "MM-DD-YY 05-27-16 file.txt"
+      "YY-MM-DD 16-05-27.txt"
+      "M DD YY 7 19 15 test.txt"
+      "M D YY 2 5 16.txt"
+      "month-DD-YY March 19, 74 test.txt"
+      "month-DD-YYYY file january 01 2016.txt"
+      "f*r_testing&with   special^chars_-___.txt"
+      "name with long number 123456789101112 test.txt"
+      "Ambiguous date 11-02-12.txt"
+      )
+    notice "Creating test files..."
+    for testFile in "${filenamesForTesting[@]}"; do
+      if ${dryrun}; then
+        info "Would have created: '$testFile'"
+      else
+        touch "${testFile}"
+        verbose "creating: '$testFile'"
+    fi
+    done
+    success "Test files created"
+    _safeExit_
+  }
+  if "${createTestFiles}"; then _createTestFiles_; fi
 
   function realpath() {
     # Convert a relative path to an absolute path.
@@ -88,167 +110,98 @@ function mainScript() {
         echo "${abs_path}"
       fi
     fi
-
     ${successPath}
   }
 
-  function ignoreCertainFiles() {
+  function _isGoodFile_() {
+
+    #Bypass file check when testing input
+    if $testOutput; then return 0; fi
 
     # Ensure file exists
     if [ ! -e "${userFile}" ]; then
-      warning "${userFile}: No such file or directory"
-      ignoreFile=true
-      if [ "${#args[@]}" -eq 1 ]; then haveError=true; fi
-      return
+      errorMessage="${userFile}: No such file or directory."
+      return 1
     fi
-    # Ignore directories -- unless they are omnigraffle files (ugh)
-    if [[ -d "${userFile}" && "${userFile##*.}" != "graffle" ]]; then
-      verbose "${userFile}: is a directory"
-      ignoreFile=true
-      if [ "${#args[@]}" -eq 1 ]; then haveError=true; fi
-      return
+    # Ignore directories
+    if [ -d "${userFile}" ]; then
+      errorMessage="${userFile}: is a directory. Ignoring."
+      return 1
     fi
     # Ignore dotfiles
     regex="^\..*"
     if [[ "${userFile}" =~ ${regex} ]]; then
-      verbose "${userFile}: is a dotfile"
-      ignoreFile=true
-      if [ "${#args[@]}" -eq 1 ]; then haveError=true; fi
-      return
+      errorMessage="${userFile}: is a dotfile. Ignoring."
+      return 1
     fi
     # Don't act on files without extensions
     if [[ "${userFile##*.}" == "" || "${userFile##*.}" == "${userFile}" ]]; then
-      verbose "${userFile}: we need a file extension"
-      ignoreFile=true
-      if [ "${#args[@]}" -eq 1 ]; then haveError=true; fi
-      return
+      errorMessage="${userFile}: we need a file extension"
+      return 1
     fi
     # Ignore certain file types
     regex="dmg"
     if [[ "${userFile##*.}" =~ ${regex} ]]; then
-      verbose "'.${userFile##*.}' is not a supported extension"
-      ignoreFile=true
-      if [ "${#args[@]}" -eq 1 ]; then haveError=true; fi
-      return
+      errorMessage="'.${userFile##*.}' is not a supported extension"
+      return 1
     fi
+    return 0
   }
 
-  function parseFilename() {
+  function _parseFilename_() {
     # Here we parse the user's file into it's directory, basename, and extension.
 
     # Grab the directory
     filePath="$(realpath "${userFile}")" #&& verbose "\t filePath: $filePath"
     # use the basename of the userFile going forward since the path is now in $filePath
     userFile=$(basename "${userFile}")
+
     # Grab the Filename without the extension
     baseFilename="${userFile%.*}" #&& verbose "\t baseFilename: $baseFilename"
+
     # Grab the extension
     extension="${userFile##*.}" #&& verbose "\t extension: $extension"
+
     # Keep track of the original file for future comparison
     originalFile="${baseFilename}.${extension}"
     originalFileWithPath="${filePath}${userFile}"
   }
 
-  function cleanFilename() {
+  function _clean_() {
     # This function attempts to clean common (or less common) Filename issues.
-
-    # Ensure file extensions are lowercase
-    extension=$(echo "${extension}" | tr '[:upper:]' '[:lower:]')
-
-    # JPEG to jpg
-    if [[ "${extension}" == "jpeg" ]]; then
-      verbose "\t jpeg --> jpg"
-      extension="jpg"
-    fi
+    local string="$1"
 
     # Clean special characters
-    baseFilename=$(echo "${baseFilename}" | sed -E 's/[_|\.|:]/-/g' | tr -cd 'A-Za-z0-9 &-' | sed -E 's/[-]{2,}/-/g')
+    string=$(echo "${string}" | sed -E 's/[_|\.|:]/-/g' | tr -cd 'A-Za-z0-9 &-' | sed -E 's/[-]{2,}/-/g')
 
     # Trim unneeded whitespace
-    baseFilename=$(echo "${baseFilename}" | tr -s " " | sed -E 's/ _ | - /-/g')
+    string=$(echo "${string}" | tr -s " " | sed -E 's/ _ | - /-/g')
 
     # Trim unneeded characters from beginning and end
-    baseFilename=$(echo "${baseFilename}" | sed -E 's/[^A-Za-z0-9]$//g' | sed -E 's/^[^A-Za-z0-9]//g' | sed -E 's/ -/ /g')
+    string=$(echo "${string}" | sed -E 's/[^A-Za-z0-9]$//g' | sed -E 's/^[^A-Za-z0-9]//g' | sed -E 's/ -/ /g')
 
-    # If $lowerCase is set, transform the file to all lower case characers
+    # If $lowerCase is set, transform the file to all lower-case characters
     if ${lowerCase}; then
-      baseFilename=$(echo "${baseFilename}" | tr '[:upper:]' '[:lower:]')
+      string=$(echo "${string}" | tr '[:upper:]' '[:lower:]')
     fi
 
-    #verbose "\t cleaned name: $baseFilename"
+    echo "$string"
   }
 
-  function addDatestamp() {
+  function _findDate_() {
     # This function parses file names looking for a date in a recognizable format.
     # When a date is found we normalize it into YYYY-MM-DD format. If no date is found,
     # we add one.
 
-    nodate=false
-    unset origDate
-
     # Exit before adding a date when "clean only" flag is set
-    if "${cleanOnly}"; then verbose "In clean only mode, no writing dates"; return; fi
-
-      # if [ -n "${nodate}" ]; then
-      # warning "nodate: $nodate"
-      # fi
-
-    function changeDate() {
-      if ${nodate}; then
-        if ${removeDates}; then return; fi # if $removeDates=true don't append a new date
-        baseFilename="${correctDate} ${baseFilename}"
-        nodate=false
-      else
-        # Grab existing date based on the regex from the Filename
-        origDate=$(echo "${baseFilename}" | grep -Eo "${regex}")
-        # Clean trailing characters from date (if any)
-        origDate="${origDate/%[- _]/}"
-
-        # Strip the existing date out of the Filename
-        sedCommand="echo ${baseFilename} | sed 's/${origDate}//g'"
-        baseFilename=$(eval "${sedCommand}")
-
-        # if $removeDates=true don't append a new date
-        if ${removeDates}; then return; fi
-
-        # format the existing date with '-' separators
-        origDate=$(echo "$origDate" | sed 's/[_ ]/-/g')
-
-        # Format the existing date into the new date based on the dateCommand variable passed
-        # from each RegEx below
-        getNewDate="echo ${origDate} | ${dateCommand}"
-        newDate=$(eval "${getNewDate}")
-        verbose "\t origdate: $origDate newDate: $newDate"
-
-        if [ -n "${correctDate}" ]; then
-          baseFilename="${correctDate} ${baseFilename}"
-        else
-          # format the new Filename
-          baseFilename="${newDate} ${baseFilename}"
-        fi
-      fi
-    }
-
-    # Don't reformat dates in files already in the format 'YYYY-MM-DD Filename'
-      regex="^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] "
-      if [[ "${baseFilename}" =~ ${regex} ]]; then
-        verbose "\t Has correct datestamp"
-        # Grab existing date based on the regex from the Filename
-        correctDate=$(echo "${baseFilename}" | grep -Eo "${regex}")
-        # Clean trailing characters from date (if any)
-        correctDate="${correctDate/%[- _]/}"
-
-        # Strip the existing date out of the Filename
-        sedCommand="echo ${baseFilename} | sed 's/${correctDate}//g'"
-        baseFilename=$(eval "${sedCommand}")
-      fi
+    if "${cleanOnly}"; then return; fi
 
     #Match "YYYY-MM-DD in Filename"
       regex="[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2}"
       if [[ "${baseFilename}" =~ ${regex} ]]; then
         verbose "\t match: YYYY-MM-DD"
         dateCommand="awk -v FS=- -v OFS=- '{print \$1,\$2,\$3}'"
-        changeDate
+        _changeFilename_ "$regex" "$dateCommand"
         return
       fi
 
@@ -257,7 +210,7 @@ function mainScript() {
       if [[ "${baseFilename}" =~ ${regex} ]]; then
         verbose "\t match: MM-DD-YYYY"
         dateCommand="awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-        changeDate
+        _changeFilename_ "$regex" "$dateCommand"
         return
       fi
 
@@ -273,7 +226,7 @@ function mainScript() {
           verbose "\t match: MMDDYYYY"
           dateCommand="sed -E 's/([0-9]{2})([0-9]{2})([0-9]{4})/\1-\2-\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
         fi
-        changeDate
+        _changeFilename_ "$regex" "$dateCommand"
         return
       fi
 
@@ -289,7 +242,7 @@ function mainScript() {
           verbose "\t match: MMDDYY"
           dateCommand="sed -E 's/([0-9]{2})([0-9]{2})([0-9]{2})/\1-\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
         fi
-        changeDate
+        _parseFilename_ "$regex" "$dateCommand"
         return
       fi
 
@@ -304,7 +257,7 @@ function mainScript() {
           verbose "\t match: MM-DD-YY"
           dateCommand="awk -v FS=- -v OFS=- '{print 20\$3,\$1,\$2}'"
         fi
-        changeDate
+        _changeFilename_ "$regex" "$dateCommand"
         return
       fi
 
@@ -313,7 +266,7 @@ function mainScript() {
       if [[ "${baseFilename}" =~ ${regex} ]]; then
         verbose "\t match: M DD YY "
         dateCommand="sed -E 's/([0-9])[_ -]([0-9]{2})[_ -]([0-9]{2})/0\1-\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-        changeDate
+        _changeFilename_ "$regex" "$dateCommand"
         return
       fi
 
@@ -322,7 +275,7 @@ function mainScript() {
       if [[ "${baseFilename}" =~ ${regex} ]]; then
         verbose "\t match: M D YY "
         dateCommand="sed -E 's/([0-9])[_ -]([0-9])[_ -]([0-9]{2})/0\1-0\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-        changeDate
+        _changeFilename_ "$regex" "$dateCommand"
         return
       fi
 
@@ -331,7 +284,7 @@ function mainScript() {
       if [[ "${baseFilename}" =~ ${regex} ]]; then
         verbose "\t match: Month-DD-YYYY"
         dateCommand='{ read ddate ; gdate -d "$ddate" +%Y-%m-%d ; }'
-        changeDate
+        _changeFilename_ "$regex" "$dateCommand"
         return
       fi
 
@@ -340,7 +293,7 @@ function mainScript() {
       if [[ "${baseFilename}" =~ ${regex} ]]; then
         verbose "\t match: Month-DD-YY"
         dateCommand='awk -v FS=- -v OFS=- "{print \$1,\$2,20\$3}" | { read ddate ; gdate -d "$ddate" +%Y-%m-%d ; }'
-        changeDate
+        _changeFilename_ "$regex" "$dateCommand"
         return
       fi
 
@@ -349,12 +302,9 @@ function mainScript() {
       if [[ "${baseFilename}" =~ ${regex} ]]; then
         verbose "\t match: Month-YYYY"
         dateCommand='echo "01 $origDate" | { read ddate ; gdate -d "$ddate" +%Y-%m-%d ; }'
-        changeDate
+        _changeFilename_ "$regex" "$dateCommand"
         return
       fi
-
-    # If the file already had a correct date add it back to the filename
-    if [ -n "${correctDate}" ]; then nodate=true; changeDate; return; fi
 
     # Act on files which don't match known patterns
     verbose "\t No recognized date in filename. Using creation date or today"
@@ -362,7 +312,7 @@ function mainScript() {
     # Add a date to files which don't already have one.
     # use mdls to find the creation date of the file. if it exists, use that. if not, use today
     if ${removeDates}; then return; fi # don't do this step if we are trying to remove dates
-    if type -P mdls &> /dev/null; then
+    if command -v mdls &> /dev/null && ! $testOutput; then
       creationDate=$(mdls -raw -name kMDItemContentCreationDate "${originalFileWithPath}")
       if [[ "$creationDate" =~ null ]]; then
         newDate="$(date +%Y-%m-%d)"
@@ -372,161 +322,174 @@ function mainScript() {
     else
       newDate="$(date +%Y-%m-%d)"
     fi
-    baseFilename="${newDate} ${baseFilename}"
   }
 
-  function renameFiles() {
-    # This function renames the files. If the new Filename exists, we keep incrementing
+  function _changeFilename_() {
+    local regex="$1"
+    local dateCommand="$2"
+
+    # Grab existing date based on the regex from the Filename
+    origDate=$(echo "${baseFilename}" | grep -Eo "${regex}")
+    # Clean trailing characters from date (if any)
+    origDate="${origDate/%[- _]/}"
+
+    # Strip the existing date out of the Filename
+    sedCommand="echo ${baseFilename} | sed 's/${origDate}//g'"
+    baseFilename=$(eval "${sedCommand}") # no longer has a date in it
+
+    # format the existing date with '-' separators
+    origDate="${origDate//[. _]/-}"
+
+    # Format the existing date into the new date based on the dateCommand variable passed
+    # from each RegEx below
+    getNewDate="echo ${origDate} | ${dateCommand}"
+    newDate=$(eval "${getNewDate}")
+    verbose "\t origdate: $origDate newDate: $newDate"
+  }
+
+  function _rebuildFileName_() {
+    # piece the filename back together
+
+    # Ensure file extensions are lowercase
+    extension=$(echo "${extension}" | tr '[:upper:]' '[:lower:]')
+
+    # Add the date back to the filename if we're not removing dates
+    if ! ${removeDates}; then
+      baseFilename="${newDate} ${baseFilename}"
+    fi
+
+    # Clean the name again
+    baseFilename="$(_clean_ "$baseFilename")"
+
+    # Add the extension back to the filename
+    newFilename="${baseFilename}.${extension}"
+  }
+
+  function _renameFiles_() {
+    # Renames the files. If the new Filename exists, we keep incrementing
     # a number to append to the Filename to mimic Finder
 
-    local i=2 # incremental numbering of files starts at 2
-
-    # Build a new file name
-    newFilename="${baseFilename}.${extension}"
-
+    # If the filename has not changed then do nothing
     if [[ "${newFilename}" == "${originalFile}" ]]; then
-      if "${dryrun}"; then info "\t ${userFile} --> ${tan}No Change${reset}"
-      elif ${verbose}; then info "\t ${userFile}: No change"
-      elif [[ ${nodate} && ${printLog} ]]; then verbose "${userFile}: No change"
-      else notice "${userFile}: No change"
-      fi
-      return # If the filename has not changed then return
+      notice "${userFile}: No change"
+      return
+    fi
+
+    if [ ! -e "${newFilename}" ]; then
+      execute "mv '${originalFileWithPath}' '${filePath}${newFilename}'" "${userFile} --> ${newFilename}"
     else
-      if [ ! -e "${newFilename}" ]; then
-        if "${dryrun}"; then
-          info "\t ${userFile} --> ${blue}${newFilename}${reset}"
-        else
-          mv $v "${originalFileWithPath}" "${filePath}${newFilename}"
-          success "${userFile} --> ${newFilename}"
-        fi
-      else
-        incrementFilename="${baseFilename} ${i}.${extension}"
-        while [ -e "${incrementFilename}" ]; do
-          ((i=i+1))
-          incrementFilename="${baseFilename} ${i}.${extension}"
-        done
-        if "${dryrun}"; then
-          info "\t ${userFile} --> ${blue}${incrementFilename}${reset}"
-        else
-          mv $v "${originalFileWithPath}" "${filePath}${incrementFilename}"
-          newFilename="${incrementFilename}"
-          success "${userFile} --> ${incrementFilename}"
-        fi
-      fi
+      local i=2
+      newFilename="${baseFilename} ${i}.${extension}"
+      while [ -e "${newFilename}" ]; do
+        ((i=i+1))
+        newFilename="${baseFilename} ${i}.${extension}"
+      done
+      execute "mv '${originalFileWithPath}' '${filePath}${newFilename}'" "${userFile} --> ${newFilename}"
     fi
   }
-
-  function createTestFiles() {
-    filenamesForTesting=(
-      "2016-01-01 Already datestamped.txt"
-      "YYY MM DD 2016 03 19 file.txt"
-      "MM-DD-YYYY 02 02 2016.txt"
-      "MMDDYYYY 01202015 file.txt"
-      "YYYYMMDD 2013-08-21.txt"
-      "MMDDYY file 110216.txt"
-      "YYMMDD 160228.txt"
-      "MM-DD-YY 05-27-16 file.txt"
-      "YY-MM-DD 16-05-27.txt"
-      "M DD YY 7 19 15 test.txt"
-      "M D YY 2 5 16.txt"
-      "month-DD-YY March 19, 74 test.txt"
-      "month-DD-YYYY file january 01 2016.txt"
-      "f*r_testing&with   special^chars_-___.txt"
-      "name with long number 123456789101112 test.txt"
-      "Ambiguous date 11-02-12.txt"
-      )
-    notice "Creating test files..."
-    for testFile in "${filenamesForTesting[@]}"; do
-      if ${dryrun}; then
-        info "Would have created: '$testFile'"
-      else
-        touch "${testFile}"
-        verbose "creating: '$testFile'"
-    fi
-    done
-    success "Test files created"
-  }
-
-  # Tell users if we're doing a dry run
-  if "${dryrun}"; then notice "Running a dry run"; fi
-
-  if "${createTestFiles}"; then
-    createTestFiles
-    safeExit
-  fi
 
   # Run the script functions
   for userFile in "${args[@]}"; do
-    verbose "${bold}${userFile}${reset}"
-    ignoreCertainFiles
-    if ${ignoreFile}; then ignoreFile=false; continue; fi;
-    parseFilename
-    cleanFilename # Clean before looking for dates
-    addDatestamp
-    cleanFilename # Clean again after adding the date
-    renameFiles
-    if ${nonInteractive}; then echo "${newFilename}" ; fi
+    verbose "file: ${bold}${userFile}${reset}"
+
+    if _isGoodFile_; then
+      _parseFilename_
+      baseFilename="$(_clean_ "$baseFilename")" # Clean the filename
+      _findDate_
+      _rebuildFileName_
+      _renameFiles_
+      if ${nonInteractive}; then echo "${newFilename}" ; fi
+    else
+      notice "$errorMessage" # Explain why file is skipped
+    fi
   done
+
+
+} # end _mainScript_
+
+function _trapCleanup_() {
+  echo ""
+  # Delete temp files, if any
+  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
+  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
-## SET SCRIPTNAME VARIABLES ##
+function _safeExit_() {
+  # Delete temp files, if any
+  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
+  trap - INT TERM EXIT
+  exit ${1:-0}
+}
+
+# Set Base Variables
+# ----------------------
 scriptName=$(basename "$0")
 
-function trapCleanup() {
-  # trapCleanup Function
-  # -----------------------------------
-  # Any actions that should be taken if the script is prematurely
-  # exited.  Always call this function at the top of your script.
-  # -----------------------------------
-  echo ""
-  die "Exit trapped.  file: '${userFile}' In function: '${FUNCNAME[*]}'"
-  haveError=true
-  safeExit
+# Set Flags
+quiet=false;      printLog=false;       verbose=false;
+force=false;      strict=false;         dryrun=false;
+debug=false;      args=();
+
+cleanOnly=false;  nonInteractive=false; lowerCase=false;
+ignoreFile=false; removeDates=false;    createTestFiles=false;
+testOutput=false;
+
+
+
+# Set Colors
+bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
+red=$(tput setaf 1);      green=$(tput setaf 76);      tan=$(tput setaf 3);
+blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
+
+# Set Temp Directory
+tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
+(umask 077 && mkdir "${tmpDir}") || {
+  die "Could not create temporary directory! Exiting."
 }
 
-function safeExit() {
+# Logging & Feedback
+logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
 
-  trap - INT TERM EXIT
-  if "${haveError}"; then
-    exit 1
-  else
-    exit 0
+function _alert_() {
+  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
+  if [ "${1}" = "warning" ]; then local color="${red}"; fi
+  if [ "${1}" = "success" ]; then local color="${green}"; fi
+  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
+  if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
+  if [ "${1}" = "input" ]; then local color="${bold}"; fi
+  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
+  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
+  # Don't use colors on pipes or non-recognized terminals
+  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
+
+  # Print to console when script is not 'quiet'
+  if ${quiet}; then return; else
+   echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
+  fi
+
+  # Print to Logfile
+  if ${printLog} && [ "${1}" != "input" ]; then
+    color=""; reset="" # Don't use colors in logs
+    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
   fi
 }
 
-function setPATH() {
-  # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
-  PATHS=(/usr/local/bin $HOME/bin);
-  for newPath in "${PATHS[@]}"; do
-    if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
-      PATH="$newPath:$PATH"
-   fi
- done
-}
-setPATH
+function die ()       { if ${nonInteractive}; then _safeExit_ "1"; fi; local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
+function error ()     { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ error)"; }
+function warning ()   { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ warning)"; }
+function notice ()    { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ notice)"; }
+function info ()      { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ info)"; }
+function debug ()     { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ debug)"; }
+function success ()   { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ success)"; }
+function dryrun()     { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
+function input()      { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -n "$(_alert_ input)"; }
+function header()     { if ${nonInteractive}; then return; fi; local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
+function verbose()    { if ${verbose}; then debug "$@"; fi }
 
-# Set Flags
+
+# Options and Usage
 # -----------------------------------
-cleanOnly=false
-nonInteractive=false
-lowerCase=false
-ignoreFile=false
-removeDates=false
-haveError=false
-dryrun=false
-quiet=false
-printLog=false
-verbose=false
-strict=false
-debug=false
-nodate=false
-createTestFiles=false
-args=()
-
-# Logging
-logFile="${HOME}/Library/Logs/${scriptName}.log"
-
-usage() {
+_usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
   '${scriptName}' performs various filename operations on the selected files.
@@ -546,20 +509,11 @@ usage() {
         In this scenario, the existing date is removed from the filename and is added
         to the front in the form YYYY-MM-DD. The known patterns are:
 
-          * MMDDYYYY
-          * YYYYMMDD
-          * MMDDYY
-          * YYMMDD
-          * MM-DD-YYYY
-          * MM-DD-YY
-          * YY-MM-DD
-          * M-DD-YY
-          * M-D-YY
-          * YYYY-MM-DD
-          * mon-DD-YYYY
-          * mon-DD-YY
-          * month-DD-YYYY
-          * month-DD-YY
+          * MMDDYYYY          * YYYYMMDD          * MMDDYY
+          * YYMMDD            * MM-DD-YYYY        * MM-DD-YY
+          * YY-MM-DD          * M-DD-YY           * M-D-YY
+          * YYYY-MM-DD        * mon-DD-YYYY       * mon-DD-YY
+          * month-DD-YYYY     * month-DD-YY
 
       2) The date the file was created.
       3) Today's date.
@@ -576,7 +530,9 @@ usage() {
                       output in this mode is an exit code and the cleaned name of the file
                       passed to the script
 
-    -T, --test        Creates a set of files for testing the script
+    -S, --samples     Creates a set of files for testing the script
+
+    -T, --test        Takes a string of input and shows the result that the script would produce
 
     -n, --dryrun      Non-destructive run. Will report on changes that would have
                       been made.
@@ -595,53 +551,8 @@ usage() {
 
     Original Filename: 'filename.txt'
     Cleaned Filename : '2016-03-31 filename.txt'
-  "
+"
 }
-
-# Set Colors
-bold=$(tput bold)
-reset=$(tput sgr0)
-purple=$(tput setaf 171)
-red=$(tput setaf 1)
-green=$(tput setaf 76)
-tan=$(tput setaf 3)
-blue=$(tput setaf 38)
-
-function _alert() {
-  if ${nonInteractive}; then return; fi;
-  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
-  if [ "${1}" = "warning" ]; then local color="${red}"; fi
-  if [ "${1}" = "success" ]; then local color="${green}"; fi
-  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
-  if [ "${1}" = "header" ]; then local color="${bold}""${tan}"; fi
-  if [ "${1}" = "input" ]; then local color="${bold}"; fi
-  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
-  # Don't use colors on pipes or non-recognized terminals
-  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
-
-  # Print to console when script is not 'quiet'
-  if ${quiet}; then return; else
-   echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
-  fi
-
-  # Print to Logfile
-  if ${printLog} && [ "${1}" != "input" ]; then
-    color=""; reset="" # Don't use colors in logs
-    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
-  fi
-}
-
-function die ()       { if ${nonInteractive}; then return; fi; local _message="${*} Exiting."; echo -e "$(_alert error)"; safeExit;}
-function error ()     { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert error)"; }
-function warning ()   { if ${nonInteractive}; then return; fi;local _message="${*}"; echo -e "$(_alert warning)"; }
-function notice ()    { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert notice)"; }
-function info ()      { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert info)"; }
-function debug ()     { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert debug)"; }
-function success ()   { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert success)"; }
-function input()      { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -n "$(_alert input)"; }
-function header()     { if ${nonInteractive}; then return; fi; local _message="== ${*} ==  "; echo -e "$(_alert header)"; }
-function verbose()    { if ${nonInteractive}; then return; fi; if ${verbose}; then debug "$@"; fi }
-
 
 # Iterate over options breaking -ab into -a -b when needed and --foo=bar into
 # --foo bar
@@ -680,6 +591,8 @@ set -- "${options[@]}"
 unset options
 
 # Print help if no arguments were passed.
+# Uncomment to force arguments when invoking the script
+# -------------------------------------
 [[ $# -eq 0 ]] && set -- "--help"
 
 # Read the options and set stuff
@@ -690,9 +603,10 @@ while [[ $1 = -?* ]]; do
     -L| --lower) lowerCase=true ;;
     -n|--dryrun) dryrun=true ;;
     --nonInteractive) nonInteractive=true ;;
-    -h|--help) usage >&2; safeExit ;;
-    -T|--test) createTestFiles=true ;;
-    --version) echo "$(basename $0) ${version}"; safeExit ;;
+    -h|--help) _usage_ >&2 ; _safeExit_ ;;
+    -T|--test) testOutput=true; dryrun=true ;;
+    -S|--samples) createTestFiles=true ;;
+    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     -v|--verbose) verbose=true ;;
     -l|--log) printLog=true ;;
     -q|--quiet) quiet=true ;;
@@ -707,14 +621,63 @@ done
 # Store the remaining part as arguments.
 args+=("$@")
 
+
+function seek_confirmation() {
+  # Seeks a Yes or No answer to a question.  Usage:
+  #   if seek_confirmation "Answer this question"; then
+  #     something
+  #   fi
+  input "$@"
+  if "${force}"; then
+    verbose "Forcing confirmation with '--force' flag set"
+    return 0
+  else
+    while true; do
+      read -pr " (y/n) " yn
+      case $yn in
+        [Yy]* ) return 0;;
+        [Nn]* ) return 1;;
+        * ) input "Please answer yes or no.";;
+      esac
+    done
+  fi
+}
+
+function execute() {
+  # execute - wrap an external command in 'execute' to push native output to /dev/null
+  #           and have control over the display of the results.  In "dryrun" mode these
+  #           commands are not executed at all. In Verbose mode, the commands are executed
+  #           with results printed to stderr and stdin
+  #
+  # usage:
+  #   execute "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
+  if ${dryrun}; then
+    dryrun "${2:-$1}"
+  else
+    #set +e # don't exit script if execute fails
+    if $verbose; then
+      eval "$1"
+    else
+      eval "$1" &> /dev/null
+    fi
+    if [ $? -eq 0 ]; then
+      success "${2:-$1}"
+    else
+      warning "${2:-$1}"
+    fi
+    # set -e
+  fi
+}
+
 # Trap bad exits with your cleanup function
-trap trapCleanup EXIT INT TERM
+trap _trapCleanup_ EXIT INT TERM
 
 # Set IFS to preferred implementation
-IFS=$'\n\t'
+IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-set -o errexit
+# if using the 'execute' function this must be disabled for warnings to be shown if tasks fail
+#set -o errexit
 
 # Run in debug mode, if set
 if ${debug}; then set -x ; fi
@@ -722,12 +685,11 @@ if ${debug}; then set -x ; fi
 # Exit on empty variable
 if ${strict}; then set -o nounset ; fi
 
-# Bash will remember & return the highest exitcode in a chain of pipes.
-# This way you can catch the error in case mysqldump fails in `mysqldump |gzip`, for example.
-set -o pipefail
+# Exit the script if a command fails
+set -e
 
 # Run your script
-mainScript
+_mainScript_
 
 # Exit cleanly
-safeExit
+_safeExit_
