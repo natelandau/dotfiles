@@ -52,7 +52,7 @@ function _safeExit_() {
 scriptName=$(basename "$0")
 
 # Set Flags
-verbose=true;        debug=false;        args=();
+verbose=false;        debug=false;        args=();
 dryrun=false;
 
 # Set Colors
@@ -170,23 +170,6 @@ done
 # Store the remaining part as an argument.
 #args+=("$@")
 userFile="$1"
-
-
-function seek_confirmation() {
-  # Seeks a Yes or No answer to a question.  Usage:
-  #   if seek_confirmation "Answer this question"; then
-  #     something
-  #   fi
-  input "$@"
-  while true; do
-    read -pr " (y/n) " yn
-    case $yn in
-      [Yy]* ) return 0;;
-      [Nn]* ) return 1;;
-      * ) input "Please answer yes or no.";;
-    esac
-  done
-}
 
 function execute() {
   # execute - wrap an external command in 'execute' to push native output to /dev/null
