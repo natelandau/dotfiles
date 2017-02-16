@@ -575,7 +575,7 @@ function seek_confirmation() {
     return 0
   else
     while true; do
-      read -p " (y/n) " yn
+      read -p -r " (y/n) " yn
       case $yn in
         [Yy]* ) return 0;;
         [Nn]* ) return 1;;
