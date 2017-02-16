@@ -13,5 +13,4 @@ bin/convertMedia2
 bin/myJekyll
 bin/podcastPublish
 bin/purgeSABnzbdHistory.sh
-bin/removeSymlink
 bin/slackPost
