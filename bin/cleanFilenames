@@ -409,14 +409,10 @@ function _mainScript_() {
 
 function _trapCleanup_() {
   echo ""
-  # Delete temp files, if any
-  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
 function _safeExit_() {
-  # Delete temp files, if any
-  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   trap - INT TERM EXIT
   exit ${1:-0}
 }
@@ -440,12 +436,6 @@ testOutput=false;
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
 red=$(tput setaf 1);      green=$(tput setaf 76);      tan=$(tput setaf 3);
 blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
-
-# Set Temp Directory
-tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
-(umask 077 && mkdir "${tmpDir}") || {
-  die "Could not create temporary directory! Exiting."
-}
 
 # Logging & Feedback
 logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
