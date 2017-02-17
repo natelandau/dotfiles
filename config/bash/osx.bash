@@ -63,6 +63,23 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     done < <(mdfind -onlyin . -0 "$query")
   }
 
+  function finderPath() {
+    # Gets the frontmost path from the Finder
+    #
+    # credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md
+
+    local finderPath
+
+    finderPath=$(osascript -e 'tell application "Finder"'\
+      -e "if (${1-1} <= (count Finder windows)) then"\
+      -e "get POSIX path of (target of window ${1-1} as alias)"\
+      -e 'else' \
+      -e 'get POSIX path of (desktop as alias)'\
+      -e 'end if' \
+      -e 'end tell';)
+
+      echo "$finderPath"
+}
 
   ## SPOTLIGHT MAINTENANCE ##
   alias spot-off="sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist"
