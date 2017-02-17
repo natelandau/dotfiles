@@ -304,3 +304,20 @@ function _httpStatus_() {
 
   IFS="${saveIFS}"
 }
+
+function _guiInput_() {
+  # Ask for user input using a Mac dialog box.
+  # Defaults to use the prompt: "Password". Pass an option to change that text.
+  #
+  # Credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md
+  guiPrompt="${1:-Password:}"
+  guiInput=$(osascript &> /dev/null <<EOF
+    tell application "System Events"
+        activate
+        text returned of (display dialog "${guiPrompt}" default answer "" with hidden answer)
+    end tell
+EOF
+  )
+
+  echo -n "${guiInput}"
+}
