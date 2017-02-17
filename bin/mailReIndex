@@ -3,20 +3,68 @@
 version="1.0.0"
 
 function _mainScript_() {
- echo -n
+  oldIFS="$IFS"
+  IFS=$'\n\t'
 
-}  # end _mainScript_
+  mailDataDir="${HOME}/Library/Mail/V4/MailData"
+  tmpDirectory="${HOME}/Desktop/tmpMailFiles"
+
+  function _errorHandling_() {
+    if [ ! -d "${mailDataDir}" ]; then
+      warning "Data expected at: ${mailDataDir}"
+      die "Can not find data."
+    fi
+    if [ ! -f "${mailDataDir}/Envelope Index" ]; then
+      warning "No envelope files found"
+      if ! seek_confirmation "Continue?"; then
+        _safeExit_
+      fi
+    fi
+  }
+  _errorHandling_
+
+  function _rebuildMail_() {
+
+    # First Quit Mail.app
+    notice "Quitting mail.app..."
+    execute "osascript -e 'quit app \"Mail\"'"
+
+    notice "Copying Envelope files to ${tmpDirectory}/..."
+    notice "Deleting Envelope files in ${mailDataDir}"
+    if [ ! -d "${tmpDirectory}" ]; then
+      execute "mkdir ${tmpDirectory}"
+    else
+      execute "rm -rf ${tmpDirectory}"
+      execute "mkdir ${tmpDirectory}"
+    fi
+
+    files="${mailDataDir}/Envelope Index*"
+      for file in ${files}; do
+        filename="$(basename "${file}")"
+        execute "cp ${file} ${tmpDirectory}/${filename}"
+        execute "rm ${file}"
+      done
+
+    notice "Opening Mail.app"
+    execute "open -a Mail"
+
+    info "Please wait until Mail rebuilds it's index..."
+    info "If this didn't fix your problem. Follow these steps to revert."
+    info "\t[1] - Quit Mail"
+    info "\t[2] - Copy the files from your desktop back to ${mailDataDir}"
+    info "\t[3] - Reopen Mail."
+  }
+  _rebuildMail_
+
+
+} # end _mainScript_
 
 function _trapCleanup_() {
   echo ""
-  # Delete temp files, if any
-  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
 function _safeExit_() {
-  # Delete temp files, if any
-  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   trap - INT TERM EXIT
   exit ${1:-0}
 }
@@ -35,15 +83,6 @@ bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
 red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
 blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
 
-# Set Temp Directory
-tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
-(umask 077 && mkdir "${tmpDir}") || {
-  die "Could not create temporary directory! Exiting."
-}
-
-# Logging & Feedback
-logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
-
 function _alert_() {
   if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
   if [ "${1}" = "warning" ]; then local color="${red}"; fi
@@ -61,11 +100,6 @@ function _alert_() {
    echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
   fi
 
-  # Print to Logfile
-  if ${printLog} && [ "${1}" != "input" ]; then
-    color=""; reset="" # Don't use colors in logs
-    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
-  fi
 }
 
 function die ()       { local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
@@ -86,14 +120,11 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This is a script template.  Edit this description to print help to users.
+This script allows you to easily rebuild your Mail.app envelope index.
+It will backup the old files to your Desktop
 
  ${bold}Options:${reset}
-  -u, --username    Username for script
-  -p, --password    User password
   -n, --dryrun      Non-destructive. Makes no permanent changes.
-  -q, --quiet       Quiet (no output)
-  -l, --log         Print log to file
   -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
@@ -149,12 +180,8 @@ while [[ $1 = -?* ]]; do
   case $1 in
     -h|--help) _usage_ >&2; _safeExit_ ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
-    -u|--username) shift; username=${1} ;;
-    -p|--password) shift; echo "Enter Pass: "; stty -echo; read -r PASS; stty echo;
-      echo ;;
     -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;
-    -l|--log) printLog=true ;;
     -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
