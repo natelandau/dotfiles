@@ -3,39 +3,61 @@
 version="1.0.0"
 
 function _mainScript_() {
-  # This script will list all open processes for the given file and give you an option to quit them.
-  declare -a PROCS
+  oldIFS="$IFS"
+  IFS=$'\n\t'
 
-  # Exit if the specified arg is not a file
-  ! [ -f "$userFile" ] && die "${userFile}: No such file."
+  mailDataDir="${HOME}/Library/Mail/V4/MailData"
+  tmpDirectory="${HOME}/Desktop/tmpMailFiles"
 
-  s=$(fuser -f "$userFile")
-  PROCS=( $s )
-
-  if [ "${#PROCS[@]}" == 0 ] ; then
-    warning "File '$userFile' is not open."
-  else
-    for element in "${PROCS[@]}"; do
-      ps "$element"
-    done
-
-    #echo ""
-    input "Type the PID number to kill a given process, 'a' to kill all or 'q' to quit: "
-    read -r REPLY
-
-    if [ "$REPLY" == "a" ] || [ "$REPLY" == "A" ] ; then
-      for element in "${PROCS[@]}"; do
-       execute "kill $element" || die "Error killing processes.";
-      done
-    elif [ "$REPLY" == "q" ] || [ "$REPLY" == "Q" ]; then
-      notice "User canceled. Exiting."
-      _safeExit_
-    else
-      execute "kill $REPLY" || die "Error killing process '${REPLY}'"
+  function _errorHandling_() {
+    if [ ! -d "${mailDataDir}" ]; then
+      warning "Data expected at: ${mailDataDir}"
+      die "Can not find data."
     fi
-  fi
+    if [ ! -f "${mailDataDir}/Envelope Index" ]; then
+      warning "No envelope files found"
+      if ! seek_confirmation "Continue?"; then
+        _safeExit_
+      fi
+    fi
+  }
+  _errorHandling_
 
-}
+  function _rebuildMail_() {
+
+    # First Quit Mail.app
+    notice "Quitting mail.app..."
+    execute "osascript -e 'quit app \"Mail\"'"
+
+    notice "Copying Envelope files to ${tmpDirectory}/..."
+    notice "Deleting Envelope files in ${mailDataDir}"
+    if [ ! -d "${tmpDirectory}" ]; then
+      execute "mkdir ${tmpDirectory}"
+    else
+      execute "rm -rf ${tmpDirectory}"
+      execute "mkdir ${tmpDirectory}"
+    fi
+
+    files="${mailDataDir}/Envelope Index*"
+      for file in ${files}; do
+        filename="$(basename "${file}")"
+        execute "cp ${file} ${tmpDirectory}/${filename}"
+        execute "rm ${file}"
+      done
+
+    notice "Opening Mail.app"
+    execute "open -a Mail"
+
+    info "Please wait until Mail rebuilds it's index..."
+    info "If this didn't fix your problem. Follow these steps to revert."
+    info "\t[1] - Quit Mail"
+    info "\t[2] - Copy the files from your desktop back to ${mailDataDir}"
+    info "\t[3] - Reopen Mail."
+  }
+  _rebuildMail_
+
+
+} # end _mainScript_
 
 function _trapCleanup_() {
   echo ""
@@ -52,12 +74,13 @@ function _safeExit_() {
 scriptName=$(basename "$0")
 
 # Set Flags
-verbose=false;        debug=false;        args=();
-dryrun=false;
+quiet=false;              printLog=false;             verbose=false;
+force=false;              strict=false;               dryrun=false;
+debug=false;              args=();
 
 # Set Colors
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
-red=$(tput setaf 1);      green=$(tput setaf 76);      tan=$(tput setaf 3);
+red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
 blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
 
 function _alert_() {
@@ -72,7 +95,10 @@ function _alert_() {
   # Don't use colors on pipes or non-recognized terminals
   if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
 
-  echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
+  # Print to console when script is not 'quiet'
+  if ${quiet}; then return; else
+   echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
+  fi
 
 }
 
@@ -91,23 +117,20 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 
 # Options and Usage
 # -----------------------------------
-usage() {
+_usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This script takes a user specified filename and finds processes that are keeping
-the file in use. It will then give you the option to kill those processes.
-
-This can be very useful when a file can't be emptied by the trash or is 'in use'
-by macOS.
-
-Adapted from: http://applehelpwriter.com/2016/08/20/how-to-fix-file-in-use-problem/
+This script allows you to easily rebuild your Mail.app envelope index.
+It will backup the old files to your Desktop
 
  ${bold}Options:${reset}
-
+  -n, --dryrun      Non-destructive. Makes no permanent changes.
+  -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
-  -n, --dryrun      Non-destructive. Makes no permanent changes.
   -h, --help        Display this help and exit
+      --version     Output version information and exit
+      --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
 }
 
@@ -150,26 +173,49 @@ unset options
 # Print help if no arguments were passed.
 # Uncomment to force arguments when invoking the script
 # -------------------------------------
-[[ $# -eq 0 ]] && set -- "--help"
+# [[ $# -eq 0 ]] && set -- "--help"
 
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    -h|--help) usage >&2; _safeExit_ ;;
+    -h|--help) _usage_ >&2; _safeExit_ ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
-    -v|--verbose) verbose=true ;;
     -n|--dryrun) dryrun=true ;;
+    -v|--verbose) verbose=true ;;
+    -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
+    --force) force=true ;;
     --endopts) shift; break ;;
     *) die "invalid option: '$1'." ;;
   esac
   shift
 done
 
-# Store the remaining part as an argument.
-#args+=("$@")
-userFile="$1"
+# Store the remaining part as arguments.
+args+=("$@")
+
+
+function seek_confirmation() {
+  # Seeks a Yes or No answer to a question.  Usage:
+  #   if seek_confirmation "Answer this question"; then
+  #     something
+  #   fi
+  input "$@"
+  if "${force}"; then
+    verbose "Forcing confirmation with '--force' flag set"
+    return 0
+  else
+    while true; do
+      read -r -p " (y/n) " yn
+      case $yn in
+        [Yy]* ) return 0;;
+        [Nn]* ) return 1;;
+        * ) input "Please answer yes or no.";;
+      esac
+    done
+  fi
+}
 
 function execute() {
   # execute - wrap an external command in 'execute' to push native output to /dev/null

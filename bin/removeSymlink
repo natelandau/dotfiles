@@ -3,37 +3,57 @@
 version="1.0.0"
 
 function _mainScript_() {
-  # This script will list all open processes for the given file and give you an option to quit them.
-  declare -a PROCS
 
-  # Exit if the specified arg is not a file
-  ! [ -f "$userFile" ] && die "${userFile}: No such file."
-
-  s=$(fuser -f "$userFile")
-  PROCS=( $s )
-
-  if [ "${#PROCS[@]}" == 0 ] ; then
-    warning "File '$userFile' is not open."
-  else
-    for element in "${PROCS[@]}"; do
-      ps "$element"
-    done
-
-    #echo ""
-    input "Type the PID number to kill a given process, 'a' to kill all or 'q' to quit: "
-    read -r REPLY
-
-    if [ "$REPLY" == "a" ] || [ "$REPLY" == "A" ] ; then
-      for element in "${PROCS[@]}"; do
-       execute "kill $element" || die "Error killing processes.";
-      done
-    elif [ "$REPLY" == "q" ] || [ "$REPLY" == "Q" ]; then
-      notice "User canceled. Exiting."
-      _safeExit_
-    else
-      execute "kill $REPLY" || die "Error killing process '${REPLY}'"
+  function _errorHandling_() {
+    # This script requires the Linux gdate (as opposed to native 'date' in OSX)
+    # Here we see if it's installed. If not, we install it with homebrew.
+    if ! command -v dirname &> /dev/null; then
+      warning "Need 'dirname' to continue. Installing via homebrew."
+      brew install coreutils
+      success "'coreutils' package installed. Exiting."
+      _safeExit_ "1"
     fi
-  fi
+  }
+  _errorHandling_
+
+  # Cofiguration variables:
+  manifest="${HOME}/.mackup/my-files.cfg"
+  ! [ -f "${manifest}" ] && die "Can not find ${manifest}."
+
+  links=( "${args[@]}" )
+
+  if [[ ${#links[@]} == 0 ]]; then die "No link specified"; fi
+
+  # Work through the links
+  for link in "${links[@]}"; do
+
+    # Confirm links is actually a symlink
+    if [ ! -h "${link}" ]; then # test that files are links(s)
+      die "'${link}': either does not exist or is not a symlink."
+    fi
+
+    dir=$(dirname "${link}")
+    reltarget=$(readlink "${link}")
+    case "${reltarget}" in
+        /*) abstarget="${reltarget}";;
+        *)  abstarget="${dir}"/"${reltarget}";;
+    esac
+    execute "rm -f ${link}" "Remove symlink"
+    execute "cp -af ${abstarget} ${link}" "Copy original in place of symlink"
+
+    # If requested, remove the originating file
+    if ${replaceSymlink}; then
+      if seek_confirmation "Delete originating file?"; then
+        execute "rm -rf ${abstarget}" "Delete original file"
+      fi
+    fi
+
+    if ${removeManifest}; then
+      execute "sed -e "s/${link}//g" -i .backup ${manifest}" "Remove '${link}' from ${manifest}"
+    fi
+
+  done
+
 
 }
 
@@ -52,8 +72,11 @@ function _safeExit_() {
 scriptName=$(basename "$0")
 
 # Set Flags
-verbose=false;        debug=false;        args=();
-dryrun=false;
+quiet=false;      printLog=false;       verbose=false;
+force=false;      strict=false;         dryrun=false;
+debug=false;      args=();
+
+replaceSymlink=false;           removeManifest=false;
 
 # Set Colors
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
@@ -72,7 +95,10 @@ function _alert_() {
   # Don't use colors on pipes or non-recognized terminals
   if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
 
-  echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
+  # Print to console when script is not 'quiet'
+  if ${quiet}; then return; else
+   echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
+  fi
 
 }
 
@@ -94,20 +120,28 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 usage() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This script takes a user specified filename and finds processes that are keeping
-the file in use. It will then give you the option to kill those processes.
+This script will replace symbolic links with their original file.  By default it will COPY
+a version of the original file over the symlink's location.  Specifying the flag '-r' will
+delete the source file of the symlink after copying itself to the symlink's location.
 
-This can be very useful when a file can't be emptied by the trash or is 'in use'
-by macOS.
-
-Adapted from: http://applehelpwriter.com/2016/08/20/how-to-fix-file-in-use-problem/
+In addition, this script can help you clean up files that are backed up using Mackup on
+a Macintosh computer.  If you are not familiar with Mackup, more information can be
+found here: https://github.com/lra/mackup . Specifying the -m feature will search the mackup
+configuration file for instances of your specified file and, if found, will remove it.  When
+this is invoked, a backup configuration file is created.
 
  ${bold}Options:${reset}
+  -m, --manifest    Remove file from Mackup manifest configuration file.
+  -r, --replace     Replaces the symlink with the original file AND removes the
+                    original after copying
 
+  -n, --dryrun      Non-destructive run. Makes no changes.
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
-  -n, --dryrun      Non-destructive. Makes no permanent changes.
   -h, --help        Display this help and exit
+  -q, --quiet       Quiet (no output)
+  -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
+      --version     Output version information and exit
 "
 }
 
@@ -155,10 +189,13 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
+    -m|--manifest) removeManifest=true ;;
+    -r|--replace) replaceSymlink=true ;;
     -h|--help) usage >&2; _safeExit_ ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
-    -v|--verbose) verbose=true ;;
     -n|--dryrun) dryrun=true ;;
+    -v|--verbose) verbose=true ;;
+    -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
     --endopts) shift; break ;;
@@ -167,9 +204,25 @@ while [[ $1 = -?* ]]; do
   shift
 done
 
-# Store the remaining part as an argument.
-#args+=("$@")
-userFile="$1"
+# Store the remaining part as arguments.
+args+=("$@")
+
+
+function seek_confirmation() {
+  # Seeks a Yes or No answer to a question.  Usage:
+  #   if seek_confirmation "Answer this question"; then
+  #     something
+  #   fi
+  input "$@"
+  while true; do
+    read -r -p " (y/n) " yn
+    case $yn in
+      [Yy]* ) return 0;;
+      [Nn]* ) return 1;;
+      * ) input "Please answer yes or no.";;
+    esac
+  done
+}
 
 function execute() {
   # execute - wrap an external command in 'execute' to push native output to /dev/null

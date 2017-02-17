@@ -7,23 +7,16 @@ version="1.0.0"              # Sets version variable
 # A script to convert video files from one format/size to another. In essence, this is
 # a wrapper for FFMPEG
 #
-# HISTORY:
-#
-# * 2016-12-27 - v1.0.0  - First Creation
-# * 2017-01-17 - v1.0.1  - Added 'execute()' function for better
-#                          dryrun and verbose handling.
-#                          Simplified 'seek_confirmation()' function
-#
 # ##################################################
 
-function mainScript() {
+function _mainScript_() {
   # File extension mappings - ie - are we working with a video file?
   videoTypes=(mp4 mov avi mkv wmv flv ogg m4p m4v 3gp divx)
   #videoTypes=(png)
   # Dependencies which need to be installed for this script to function
   CLIDependencies=(ffmpeg jq http)
 
-  function createTestFiles() {
+  function _createTestFiles_() {
     # createTestFiles() This script can download a few video to use for testing
     testFileDir="$HOME/Desktop/testFiles"
     if ! [ -d "${testFileDir}" ]; then
@@ -32,7 +25,7 @@ function mainScript() {
     fi
 
     notice "Downloading test files"
-    cd "${testFileDir}"
+    cd "${testFileDir}" || _safeExit_ "1"
     http -d --body http://www.sample-videos.com/video/flv/360/big_buck_bunny_360p_1mb.flv
     http -d --body http://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_1mb.mp4
     http -d --body http://www.sample-videos.com/video/mp4/480/big_buck_bunny_480p_1mb.mp4
@@ -44,11 +37,11 @@ function mainScript() {
       youtube-dl -o test-1080p.mp4 https://www.youtube.com/watch?v=1-UdWS4RAA4
     fi
     info "Addition videos can be found at: http://www.h264info.com/clips.html"
-    safeExit
+    _safeExit_
   }
-  if ${testFiles}; then createTestFiles; fi
+  if ${testFiles}; then _createTestFiles_; fi
 
-  function errorHandling() {
+  function _errorHandling_() {
 
     # Add homebrew and ~/bin to $PATH so the script can find executables
     PATHS=(/usr/local/bin $HOME/bin);
@@ -62,7 +55,7 @@ function mainScript() {
     verbose "Checking dependencies..."
     for CLIDependency in "${CLIDependencies[@]}"; do
       if ! type -P "${CLIDependency}" > /dev/null; then
-        warning "We need '${CLIDependency}' to run. Please install..."; safeExit;
+        die "We need '${CLIDependency}' to run. Please install..."
       fi
     done
 
@@ -75,8 +68,7 @@ function mainScript() {
       fi
     done
     if [ ${#filesToConvert[@]} -eq 0 ]; then
-      error "Please specify at least one video file. Exiting."
-      safeExit
+      die "Please specify at least one video file. Exiting."
     fi
 
     # Ensure a user sets an output format since we don't have a default.
@@ -85,14 +77,13 @@ function mainScript() {
       outputFormat="mp4"
     else # Confirm user specified output file is a video file
       if ! in_array "${outputFormat}" "${videoTypes[@]}"; then
-        warning "Specified output format '${outputFormat}' is not valid. Exiting."
-        safeExit
+        die "Specified output format '${outputFormat}' is not valid. Exiting."
       fi
     fi
   }
-  errorHandling
+  _errorHandling_
 
-  function parseFileJson() {
+  function _parseFileJson_() {
     # parseFileJson() Uses 'ffprobe' to gather all relevant information about a file in JSON format
 
     local informationFile="${tmpDir}/${RANDOM}.${file////}.json"  # Create the temporary JSON file
@@ -146,12 +137,12 @@ function mainScript() {
     verbose "\t audioBitRate:\t $audioBitRate"
   }
 
-  function setConversionVariables() {
+  function _setConversionVariables_() {
     # convertVideo()  Sets the variables that will be passed to FFMPEG
 
     verbose "\t -- Conversion Variables --"
 
-    function setAudio() {
+    function _setAudio_() {
       if ffmpeg -version | grep enable-libfdk-aac >/dev/null; then
         aacEncoder="libfdk_aac"
       else
@@ -171,9 +162,9 @@ function mainScript() {
 
       verbose "\t audioCommand:\t $videoAudioCommand"
     }
-    setAudio
+    _setAudio_
 
-    function setVideoSize() {
+    function _setVideoSize_() {
       # Do something when a user specifies a size
 
       # Is input video a known preset size?
@@ -256,9 +247,9 @@ function mainScript() {
 
       verbose "\t outputVideoSize:\t ${outputVideoSize}"
     }
-    if [ -n "${outputVideoSize}" ]; then setVideoSize; fi
+    if [ -n "${outputVideoSize}" ]; then _setVideoSize_; fi
 
-    function setVideoCommand() {
+    function _setVideoCommand_() {
       # Copy h264 when possible
       # Save precious time by not re-encoding files that are already H264.
       # ###########################
@@ -268,7 +259,7 @@ function mainScript() {
         videoCommand="-c:v libx264 -crf 18 -preset slow" && verbose "\t videoCommand:\t -c:v libx264 -crf 18 -preset slow"
       fi
     }
-    setVideoCommand
+    _setVideoCommand_
 
     # Don't convert to self if no other options set
     if [[ -z ${outputVideoSize} && "${outputFormat}" == "${file##*.}" && ! ${probe} ]]; then
@@ -277,8 +268,8 @@ function mainScript() {
     fi
   }
 
-  function setOutputFile() {
-    # setOutputFile() creates the name of new file to be generated by the conversion
+  function _setOutputFile_() {
+    # _setOutputFile_() creates the name of new file to be generated by the conversion
 
     outputDir=$(dirname "${file}")
     baseFileName=$(basename "${file%.*}")
@@ -298,7 +289,7 @@ function mainScript() {
     verbose "\t newFileName:\t ${output}"
   }
 
-  function doConvert() {
+  function _doConvert_() {
     verbose "\t beginning conversion..."
 
     if ${verbose}; then v="-v" ; fi
@@ -331,9 +322,9 @@ function mainScript() {
       unset audioBitRate
   }
 
-  function deleteOriginalFile() {
+  function _deleteOriginalFile_() {
     # first, ensure we don't delete the originals if we're in a safe run
-    if ${safeRun}; then return; fi
+    if ${dryrun}; then return; fi
     verbose "\t deleting original file"
     rm -f "${file}"
   }
@@ -342,36 +333,28 @@ function mainScript() {
   for file in "${filesToConvert[@]}"; do
     skipFile=false
     info "Working on: $file"
-    parseFileJson
-    setConversionVariables
+    _parseFileJson_
+    _setConversionVariables_
     if ${skipFile}; then continue; fi # Skip files if flagged
-    setOutputFile
-    doConvert
-    if ${deleteOriginal}; then deleteOriginalFile; fi
+    _setOutputFile_
+    _doConvert_
+    if ${deleteOriginal}; then _deleteOriginalFile_; fi
   done
 
 } # end MainScript()
 
-function trapCleanup() {
-  # trapCleanup Function
-  # -----------------------------------
-  # Any actions that should be taken if the script is prematurely
-  # exited.  Always call this function at the top of your script.
-  # -----------------------------------
+function _trapCleanup_() {
   echo ""
   # Delete temp files, if any
-  if [ -d "${tmpDir}" ] ; then
-    rm -r "${tmpDir}"
-  fi
-  die "Exit trapped. In function: '${FUNCNAME[*]}'"
+  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
+  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
-function safeExit() {
-  if [ -d "${tmpDir}" ] ; then
-    rm -r "${tmpDir}"
-  fi
+function _safeExit_() {
+  # Delete temp files, if any
+  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   trap - INT TERM EXIT
-  exit
+  exit ${1:-0}
 }
 
 function in_array() {
@@ -389,29 +372,17 @@ function in_array() {
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false
-printLog=false
-verbose=false
-force=false
-strict=false
-debug=false
+quiet=false;              printLog=false;               verbose=false;
+force=false;              strict=false;                 dryrun=false;
+debug=false;              args=();
 
-deleteOriginal=false
-safeRun=false
-testFiles=false
-probe=false
-safeRun=false
-args=()
+deleteOriginal=false;     dryrun=false;                testFiles=false;
+probe=false;
 
 # Set Colors
-bold=$(tput bold)
-reset=$(tput sgr0)
-purple=$(tput setaf 171)
-red=$(tput setaf 1)
-green=$(tput setaf 76)
-tan=$(tput setaf 3)
-blue=$(tput setaf 38)
-underline=$(tput sgr 0 1)
+bold=$(tput bold);        reset=$(tput sgr0);           purple=$(tput setaf 171);
+red=$(tput setaf 1);      green=$(tput setaf 76);       tan=$(tput setaf 3);
+blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
 
 # Set Temp Directory
 tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
@@ -419,13 +390,13 @@ tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
   die "Could not create temporary directory! Exiting."
 }
 
-# Logging
-logFile="${HOME}/Library/Logs/${scriptBasename}.log"
+# Logging & Feedback
+logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
 
 # Options and Usage
 # -----------------------------------
 # Print usage
-usage() {
+_usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
   This script takes user specified video(s) and converts them to different
@@ -442,9 +413,6 @@ ${bold}File Options:${reset}
  ${bold}Options:${reset}
   --testFiles       Download test media files for use in debugging
 
-  -n,--safe         Runs the script without in safe mode (non-destructive).  Will simply
-                    print the commands to the terminal.
-
   --probe           Outputs file metadata via ffprobe in JSON format. Does no conversion.
 
   --size            Set the size of the target file.  Can be one of 'hd1080', 'hd720',
@@ -453,6 +421,7 @@ ${bold}File Options:${reset}
 
   --force           Skip all user interaction.  Implied 'Yes' to all actions.
   -q, --quiet       Quiet (no output)
+  -n, --dryrun      Non-destructive. Makes no permanent changes.
   -l, --log         Print log to file
   -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
   -v, --verbose     Output more information. (Items echoed to 'verbose')
@@ -462,16 +431,14 @@ ${bold}File Options:${reset}
 "
 }
 
-# Logging and Feedback
-# -----------------------------------------------------
-function _alert() {
+function _alert_() {
   if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
   if [ "${1}" = "warning" ]; then local color="${red}"; fi
   if [ "${1}" = "success" ]; then local color="${green}"; fi
   if [ "${1}" = "debug" ]; then local color="${purple}"; fi
   if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
-  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
   if [ "${1}" = "input" ]; then local color="${bold}"; fi
+  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
   if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
   # Don't use colors on pipes or non-recognized terminals
   if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
@@ -487,16 +454,17 @@ function _alert() {
     echo -e "$(date +"%m-%d-%Y %r") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
   fi
 }
-function die ()       { local _message="${*} Exiting."; echo -e "$(_alert error)"; safeExit;}
-function error ()     { local _message="${*}"; echo -e "$(_alert error)"; }
-function warning ()   { local _message="${*}"; echo -e "$(_alert warning)"; }
-function notice ()    { local _message="${*}"; echo -e "$(_alert notice)"; }
-function info ()      { local _message="${*}"; echo -e "$(_alert info)"; }
-function debug ()     { local _message="${*}"; echo -e "$(_alert debug)"; }
-function success ()   { local _message="${*}"; echo -e "$(_alert success)"; }
-function input()      { local _message="${*}"; echo -n "$(_alert input)"; }
-function dryrun()      { local _message="${*}"; echo -e "$(_alert dryrun)"; }
-function header()     { local _message="== ${*} ==  "; echo -e "$(_alert header)"; }
+
+function die ()       { local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
+function error ()     { local _message="${*}"; echo -e "$(_alert_ error)"; }
+function warning ()   { local _message="${*}"; echo -e "$(_alert_ warning)"; }
+function notice ()    { local _message="${*}"; echo -e "$(_alert_ notice)"; }
+function info ()      { local _message="${*}"; echo -e "$(_alert_ info)"; }
+function debug ()     { local _message="${*}"; echo -e "$(_alert_ debug)"; }
+function success ()   { local _message="${*}"; echo -e "$(_alert_ success)"; }
+function dryrun()     { local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
+function input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
+function header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
 function verbose()    { if ${verbose}; then debug "$@"; fi }
 
 # Iterate over options breaking -ab into -a -b when needed and --foo=bar into
@@ -545,13 +513,13 @@ while [[ $1 = -?* ]]; do
   case $1 in
     --testFiles) testFiles=true ;;
     -o|--output) shift; outputFormat="${1,,}" ;;
-    --probe) probe=true; safeRun=true ;;
+    --probe) probe=true; dryrun=true ;;
     --size) shift; outputVideoSize="$1" ;;
-    -n|--safe) safeRun=true ;;
+    -n|--dryrun) dryrun=true ;;
     --delete) deleteOriginal=true ;;
 
-    -h|--help) usage >&2; safeExit ;;
-    --version) echo "$(basename $0) ${version}"; safeExit ;;
+    -h|--help) _usage_ >&2; _safeExit_ ;;
+    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     -v|--verbose) verbose=true ;;
     -l|--log) printLog=true ;;
     -q|--quiet) quiet=true ;;
@@ -575,7 +543,7 @@ function seek_confirmation() {
     return 0
   else
     while true; do
-      read -p " (y/n) " yn
+      read -r -p " (y/n) " yn
       case $yn in
         [Yy]* ) return 0;;
         [Nn]* ) return 1;;
@@ -593,9 +561,10 @@ function execute() {
   #
   # usage:
   #   execute "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
-  if $safeRun; then
+  if ${dryrun}; then
     dryrun "${2:-$1}"
   else
+    #set +e # don't exit script if execute fails
     if $verbose; then
       eval "$1"
     else
@@ -606,6 +575,7 @@ function execute() {
     else
       warning "${2:-$1}"
     fi
+    # set -e
   fi
 }
 
@@ -613,7 +583,7 @@ function execute() {
 args+=("$@")
 
 # Trap bad exits with your cleanup function
-trap trapCleanup EXIT INT TERM
+trap _trapCleanup_ EXIT INT TERM
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'
@@ -632,7 +602,7 @@ if ${strict}; then set -o nounset ; fi
 set -o pipefail
 
 # Run your script
-mainScript
+_mainScript_
 
 # Exit cleanly
 safeExit
