@@ -7,7 +7,7 @@ dotfiles_backup/
 # Don't sync the slap log. it is different for each computer.
 slap.log
 
-# ignore symlinks
+# Don't Commit Symlinks
 bin/convertMedia
 bin/convertMedia2
 bin/myJekyll

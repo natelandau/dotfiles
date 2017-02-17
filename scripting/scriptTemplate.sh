@@ -26,13 +26,13 @@ function _safeExit_() {
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false;      printLog=false;       verbose=false;
-force=false;      strict=false;         dryrun=false;
-debug=false;      args=();
+quiet=false;              printLog=false;             verbose=false;
+force=false;              strict=false;               dryrun=false;
+debug=false;              args=();
 
 # Set Colors
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
-red=$(tput setaf 1);      green=$(tput setaf 76);      tan=$(tput setaf 3);
+red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
 blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
 
 # Set Temp Directory
@@ -83,7 +83,7 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 
 # Options and Usage
 # -----------------------------------
-usage() {
+_usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
 This is a script template.  Edit this description to print help to users.
@@ -147,7 +147,7 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    -h|--help) usage >&2; _safeExit_ ;;
+    -h|--help) _usage_ >&2; _safeExit_ ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     -u|--username) shift; username=${1} ;;
     -p|--password) shift; echo "Enter Pass: "; stty -echo; read -r PASS; stty echo;
