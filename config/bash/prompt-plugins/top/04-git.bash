@@ -1,12 +1,10 @@
 segmentGit() {
   local fground=$whi
   local bground=$ora
-  local level=1  # '1' for top line. '2' for second.
   local enabled=true  # If false, this segment will be ignored
 
   local s=''
   local branchName=''
-
   # Check if the current directory is in a Git repository.
   if [ "$(git rev-parse --is-inside-work-tree &>/dev/null; echo "${?}")" == '0' ]; then
     # check if the current directory is in .git before running git checks
@@ -57,7 +55,7 @@ segmentGit() {
     local promptSegment="  ${1}${branchName}${s}"
 
     # Output to prompt
-    _parseSegments_ "${promptSegment} " "${fground}" "${bground}" "${level}" "${enabled}"
+  _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${enabled}"
   fi
 }
 segmentGit "$@"

@@ -2,7 +2,6 @@ segmentLastCommand() {
   local timerM=0
   local timerS=0
   local commandExitCode="$lastExit"
-  local level=1  # '1' for top line. '2' for second.
   local enabled=true  # If false, this segment will be ignored
 
   local commandEnded=$(date +'%s')
@@ -30,6 +29,6 @@ segmentLastCommand() {
   fi
 
   # Output to prompt
-  _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${level}" "${enabled}"
+  _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${enabled}"
 }
 segmentLastCommand

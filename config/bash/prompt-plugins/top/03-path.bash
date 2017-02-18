@@ -3,18 +3,17 @@ segmentPath() {
   local bground=$blu2
   local settings_path_max_length=40
   local segment_seperator="" # ❱/
-  local level=1  # '1' for top line. '2' for second.
   local enabled=true  # If false, this segment will be ignored
 
   local promptSegment
 
   _segmentLockedDir() {
-    local fground=$red
-    local bground=$blu2
+    local fground=$blck
+    local bground=$red
     local enabled=true
 
-    local promptSegment=" "
-    _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${level}" "${enabled}"
+    local promptSegment=""
+    _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${enabled}"
   }
 
   # if directory is locked, put a padlock in front of path
@@ -43,7 +42,7 @@ segmentPath() {
   fi
 
   # Output to prompt
-  _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${level}" "${enabled}"
+  _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${enabled}"
 
   unset path_value
   unset wdir
