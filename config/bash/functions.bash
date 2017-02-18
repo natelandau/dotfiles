@@ -1,5 +1,3 @@
-function quiet () { $* &> /dev/null & }
-
 function su() {
   # su: Do sudo to a command, or do sudo to the last typed command if no argument given
     if [[ $# == 0 ]]; then
@@ -109,7 +107,7 @@ squeeze() {
   sed "s%\(${char//%/\\%}\)\+%\1%g" | trim "$char"
 }
 
-function withBackoff {
+withBackoff() {
   # Retries a command a configurable number of times with backoff.
   # (http://stackoverflow.com/questions/8350942/how-to-re-run-the-curl-command-automatically-when-the-error-occurs/8351489#8351489)
   #
@@ -152,7 +150,7 @@ function withBackoff {
   return ${exitCode}
 }
 
-function halp() {
+halp() {
   # A little helper for man/alias/function info
   # http://brettterpstra.com/2016/05/18/shell-tricks-halp-a-universal-help-tool/
   # Edited to run 'SCRIPT.sh -h' for my own personal scripts
@@ -209,7 +207,7 @@ function halp() {
   fi
 }
 
-function repeat() {
+repeat() {
   # Repeat n times command.
   local i max
   max=$1; shift;
@@ -218,21 +216,38 @@ function repeat() {
   done
 }
 
-function explain () {
+explain () {
   # about 'explain any bash command via mankier.com manpage API'
   # example '$ explain                # interactive mode. Type commands to explain in REPL'
   # example '$ explain 'cmd -o | ...' # one quoted command to explain it.'
 
   if [ "$#" -eq 0 ]; then
-    while read  -p "Command: " cmd; do
-      curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$cmd"
+    while read -r -p "Command: " cmd; do
+      curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$cmd"
     done
     echo "Bye!"
   elif [ "$#" -eq 1 ]; then
-    curl -Gs "https://www.mankier.com/api/explain/?cols="$(tput cols) --data-urlencode "q=$1"
+    curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$1"
   else
     echo "Usage"
     echo "explain                  interactive mode."
     echo "explain 'cmd -o | ...'   one quoted command to explain it."
+  fi
+}
+
+execute() {
+  # execute - wrap an external command in 'execute' to push native output to /dev/null
+  #           and have control over the display of the results.  In "dryrun" mode these
+  #           commands are not executed at all. In Verbose mode, the commands are executed
+  #           with results printed to stderr and stdin
+  #
+  # usage:
+  #   execute "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
+
+  $1
+  if [ $? -eq 0 ]; then
+    success "${2:-$1}"
+  else
+    warning "${2:-$1}"
   fi
 }

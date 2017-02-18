@@ -318,6 +318,5 @@ function _guiInput_() {
     end tell
 EOF
   )
-
   echo -n "${guiInput}"
 }
