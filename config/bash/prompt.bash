@@ -84,7 +84,7 @@ _setPrompt_() {
 
 
   # If we don't have any bottom plugins, add a simple prompt
-  [ $iii -eq 0 ] && PS1+="\[$(tput setab $gry)\]\[$(tput setaf $whi)\] $ ${reset}" && oldBG=$gry
+  [ $iii -eq 0 ] && PS1+="\[$(tput setab $gry)\]\[$(tput setaf $whi)\]  ${reset}" && oldBG=$gry
 
   # Add a seperator at the end of the line
   [ -n "$oldBG" ] && PS1+="\[$(tput setaf $oldBG)\]$seperator ${reset}"
