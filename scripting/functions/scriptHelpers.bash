@@ -118,6 +118,8 @@ _parseYAML_() {
   # https://gist.github.com/DinoChiesa/3e3c3866b51290f31243 which is derived from
   # https://gist.github.com/epiloque/8cf512c6d64641bde388
   #
+  # Note that portions of strings containing a '#' are removed to allow for comments.
+  #
   # Usage:
   #     $ _parseYAML_ sample.yml > /some/tempfile
   #     $ source /some/tempfile
@@ -145,7 +147,7 @@ _parseYAML_() {
               vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
               printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
       }
-    }' | sed 's/_=/+=/g'
+    }' | sed 's/_=/+=/g' | sed 's/[[:space:]]*#.*"/"/g'
 }
 
 _makeCSV_() {
@@ -363,8 +365,8 @@ _decryptFile_() {
   decryptedFile="${2:-$1.decrypt}"
 
   if [ -z $PASS ]; then
-    _execute_ "openssl enc -aes-256-cbc -d -in ${fileToDecrypt} -out ${decryptedFile}" "Decrypt ${fileToEncrypt}"
+    _execute_ "openssl enc -aes-256-cbc -d -in ${fileToDecrypt} -out ${decryptedFile}" "Decrypt ${fileToDecrypt}"
   else
-    _execute_ "openssl enc -aes-256-cbc -d -in ${fileToDecrypt} -out ${decryptedFile} -k ${PASS}" "Decrypt ${fileToEncrypt}"
+    _execute_ "openssl enc -aes-256-cbc -d -in ${fileToDecrypt} -out ${decryptedFile} -k ${PASS}" "Decrypt ${fileToDecrypt}"
   fi
 }
