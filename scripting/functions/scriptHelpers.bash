@@ -10,7 +10,7 @@ gmtdate=$(LC_ALL=C date -u -R | sed 's/\+0000/GMT/') # Returns: Wed, 13 Jan 2016
 
 ### Functions ###
 
-function _pushover_() {
+_pushover_() {
   # Sends notifications view Pushover
   # IMPORTANT: The API Keys must be filled in
   #
@@ -41,7 +41,7 @@ function _pushover_() {
   "${PUSHOVERURL}" > /dev/null 2>&1
 }
 
-function _pauseScript_() {
+_pauseScript_() {
   # A simple function used to pause a script at any point and
   # only continue on user input
   if seek_confirmation "Ready to continue?"; then
@@ -52,7 +52,7 @@ function _pauseScript_() {
   fi
 }
 
-function _progressBar_() {
+_progressBar_() {
   # Prints a progress bar within a for/while loop.
   # To use this function you must pass the total number of
   # times the loop will run to the function.
@@ -113,7 +113,7 @@ function _progressBar_() {
   tput cnorm
 }
 
-function _parseYAML_() {
+_parseYAML_() {
   # Function to parse YAML files and add values to variables. Send it to a temp file and source it
   # https://gist.github.com/DinoChiesa/3e3c3866b51290f31243 which is derived from
   # https://gist.github.com/epiloque/8cf512c6d64641bde388
@@ -148,7 +148,7 @@ function _parseYAML_() {
     }' | sed 's/_=/+=/g'
 }
 
-function _makeCSV_() {
+_makeCSV_() {
   # Creates a new CSV file if one does not already exist.
   # Takes passed arguments and writes them as a header line to the CSV
   # Usage '_makeCSV_ column1 column2 column3'
@@ -172,7 +172,7 @@ function _makeCSV_() {
   _writeCSV_ "$@"
 }
 
-function _writeCSV_() {
+_writeCSV_() {
   # Takes passed arguments and writes them as a comma separated line
   # Usage '_writeCSV_ column1 column2 column3'
 
@@ -183,7 +183,7 @@ function _writeCSV_() {
   IFS=$saveIFS
 }
 
-function _convertSecs_() {
+_convertSecs_() {
   # Pass a number (seconds) into the function as this:
   # _convertSecs_ $TOTALTIME
   #
@@ -197,7 +197,7 @@ function _convertSecs_() {
   printf "%02d:%02d:%02d\n" $h $m $s
 }
 
-function _httpStatus_() {
+_httpStatus_() {
   # -----------------------------------
   # Shamelessly taken from: https://gist.github.com/rsvp/1171304
   #
@@ -305,7 +305,7 @@ function _httpStatus_() {
   IFS="${saveIFS}"
 }
 
-function _guiInput_() {
+_guiInput_() {
   # Ask for user input using a Mac dialog box.
   # Defaults to use the prompt: "Password". Pass an option to change that text.
   #
@@ -319,4 +319,52 @@ function _guiInput_() {
 EOF
   )
   echo -n "${guiInput}"
+}
+
+_encryptFile_() {
+  # Takes a file as argument $1 and encodes it using openSSL
+  # Argument $2 is the output name. if $2 is not specified, the
+  # output will be '$1.enc'
+  #
+  # If a variable '$PASS' has a value, we will use that as the password
+  # for the encrypted file. Otherwise we will ask.
+  #
+  # usage:  _encryptFile_ "somefile.txt" "encrypted_somefile.txt"
+
+  [ -z "$1" ] && die "_encodeFile_() needs an argument"
+  [ -f "${1}" ] || die "'${1}': Does not exist or is not a file"
+
+  local fileToEncrypt encryptedFile
+  fileToEncrypt="$1"
+  encryptedFile="${2:-$1.enc}"
+
+  if [ -z $PASS ]; then
+    _execute_ "openssl enc -aes-256-cbc -salt -in ${fileToEncrypt} -out ${encryptedFile}" "Encrypt ${fileToEncrypt}"
+  else
+    _execute_ "openssl enc -aes-256-cbc -salt -in ${fileToEncrypt} -out ${encryptedFile} -k ${PASS}" "Encrypt ${fileToEncrypt}"
+  fi
+}
+
+_decryptFile_() {
+  # Takes a file as argument $1 and decrypts it using openSSL.
+  # Argument $2 is the output name. If $2 is not specified, the
+  # output will be '$1.decrypt'
+  #
+  # If a variable '$PASS' has a value, we will use that as the password
+  # to decrypt the file. Otherwise we will ask
+  #
+  # usage:  _decryptFile_ "somefile.txt.enc" "decrypted_somefile.txt"
+
+  [ -z "$1" ] && die "_decryptFile_() needs an argument"
+  [ -f "${1}" ] || die "'${1}': Does not exist or is not a file"
+
+  local fileToDecrypt decryptedFile
+  fileToDecrypt="${1}"
+  decryptedFile="${2:-$1.decrypt}"
+
+  if [ -z $PASS ]; then
+    _execute_ "openssl enc -aes-256-cbc -d -in ${fileToDecrypt} -out ${decryptedFile}" "Decrypt ${fileToEncrypt}"
+  else
+    _execute_ "openssl enc -aes-256-cbc -d -in ${fileToDecrypt} -out ${decryptedFile} -k ${PASS}" "Decrypt ${fileToEncrypt}"
+  fi
 }
