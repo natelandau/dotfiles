@@ -336,9 +336,10 @@ _encryptFile_() {
   [ -z "$1" ] && die "_encodeFile_() needs an argument"
   [ -f "${1}" ] || die "'${1}': Does not exist or is not a file"
 
-  local fileToEncrypt encryptedFile
+  local fileToEncrypt encryptedFile defaultName
   fileToEncrypt="$1"
-  encryptedFile="${2:-$1.enc}"
+  defaultName="${1%.decrypt}"
+  encryptedFile="${2:-$defaultName.enc}"
 
   if [ -z $PASS ]; then
     _execute_ "openssl enc -aes-256-cbc -salt -in ${fileToEncrypt} -out ${encryptedFile}" "Encrypt ${fileToEncrypt}"
@@ -360,9 +361,10 @@ _decryptFile_() {
   [ -z "$1" ] && die "_decryptFile_() needs an argument"
   [ -f "${1}" ] || die "'${1}': Does not exist or is not a file"
 
-  local fileToDecrypt decryptedFile
+  local fileToDecrypt decryptedFile defaultName
   fileToDecrypt="${1}"
-  decryptedFile="${2:-$1.decrypt}"
+  defaultName="${1%.enc}"
+  decryptedFile="${2:-$defaultName.decrypt}"
 
   if [ -z $PASS ]; then
     _execute_ "openssl enc -aes-256-cbc -d -in ${fileToDecrypt} -out ${decryptedFile}" "Decrypt ${fileToDecrypt}"
