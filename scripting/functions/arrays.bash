@@ -1,4 +1,4 @@
-function _inArray_() {
+_inArray_() {
     # Determine if a value is in an array.
     # Usage: if _inArray_ "VALUE" "${ARRAY[@]}"; then ...
     local value="$1"; shift
@@ -8,7 +8,7 @@ function _inArray_() {
     return 1
 }
 
-function _join_() {
+_join_() {
   # joins items together with a user specified separator
   # Taken whole cloth from: http://stackoverflow.com/questions/1527049/bash-join-elements-of-an-array
   #
@@ -19,7 +19,7 @@ function _join_() {
   local IFS="${1}"; shift; echo "${*}";
 }
 
-function _setdiff_() {
+_setdiff_() {
   # Given strings containing space-delimited words A and B, "setdiff A B" will
   # return all words in A that do not exist in B. Arrays in bash are insane
   # (and not in a good way).

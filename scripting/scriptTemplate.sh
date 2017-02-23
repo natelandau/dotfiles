@@ -2,19 +2,19 @@
 
 version="1.0.0"
 
-function _mainScript_() {
+_mainScript_() {
  echo -n
 
 }  # end _mainScript_
 
-function _trapCleanup_() {
+_trapCleanup_() {
   echo ""
   # Delete temp files, if any
   [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
-function _safeExit_() {
+_safeExit_() {
   # Delete temp files, if any
   [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   trap - INT TERM EXIT
@@ -44,7 +44,7 @@ tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
 # Logging & Feedback
 logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
 
-function _alert_() {
+_alert_() {
   if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
   if [ "${1}" = "warning" ]; then local color="${red}"; fi
   if [ "${1}" = "success" ]; then local color="${green}"; fi
@@ -169,9 +169,9 @@ done
 args+=("$@")
 
 
-function seek_confirmation() {
+_seekConfirmation_() {
   # Seeks a Yes or No answer to a question.  Usage:
-  #   if seek_confirmation "Answer this question"; then
+  #   if _seekConfirmation_ "Answer this question"; then
   #     something
   #   fi
   input "$@"
@@ -190,14 +190,14 @@ function seek_confirmation() {
   fi
 }
 
-function execute() {
+_execute_() {
   # execute - wrap an external command in 'execute' to push native output to /dev/null
   #           and have control over the display of the results.  In "dryrun" mode these
   #           commands are not executed at all. In Verbose mode, the commands are executed
   #           with results printed to stderr and stdin
   #
   # usage:
-  #   execute "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
+  #   _execute_ "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
   if ${dryrun}; then
     dryrun "${2:-$1}"
   else

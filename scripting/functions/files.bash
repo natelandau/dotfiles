@@ -1,6 +1,6 @@
 
 
-function _locateSourceFile_() {
+_locateSourceFile_() {
   # locateSourceFile is fed a symlink and returns the originating file
   # usage: _locateSourceFile_ 'some/symlink'
 
@@ -28,7 +28,7 @@ function _locateSourceFile_() {
   echo "$RESULT"
 }
 
-function _readFile_() {
+_readFile_() {
   # Function to reads a file and prints each line.
   # Usage: _readFile_ "some/filename"
   local result
@@ -40,13 +40,13 @@ function _readFile_() {
   unset result
 }
 
-function _json2yaml_() {
+_json2yaml_() {
   # convert json files to yaml using python and PyYAML
   # usage: _json2yaml_ "dir/somefile.json"
   python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < "$1"
 }
 
-function _yaml2json_() {
+_yaml2json_() {
   # convert yaml files to json using python and PyYAML
   # usage: _yaml2json_ "dir/somefile.yaml"
   python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "$1"

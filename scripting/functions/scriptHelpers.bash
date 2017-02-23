@@ -44,7 +44,7 @@ _pushover_() {
 _pauseScript_() {
   # A simple function used to pause a script at any point and
   # only continue on user input
-  if seek_confirmation "Ready to continue?"; then
+  if _seekConfirmation_ "Ready to continue?"; then
     notice "Continuing..."
   else
     warning "Exiting Script."
@@ -167,7 +167,7 @@ _makeCSV_() {
   # Overwrite existing file? If not overwritten, new content is added
   # to the bottom of the existing file
   if [ -f "${csvFile}" ]; then
-    if seek_confirmation "${csvFile} already exists. Overwrite?"; then
+    if _seekConfirmation_ "${csvFile} already exists. Overwrite?"; then
       rm "${csvFile}"
     fi
   fi
