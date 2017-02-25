@@ -14,3 +14,5 @@ bin/myJekyll
 bin/podcastPublish
 bin/purgeSABnzbdHistory.sh
 bin/slackPost
+bin/iTunesSync.sh
+bin/mineSync.sh
