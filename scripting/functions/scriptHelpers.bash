@@ -10,6 +10,17 @@ gmtdate=$(LC_ALL=C date -u -R | sed 's/\+0000/GMT/') # Returns: Wed, 13 Jan 2016
 
 ### Functions ###
 
+_setPATH_() {
+  # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
+  PATHS=(/usr/local/bin $HOME/bin);
+  for newPath in "${PATHS[@]}"; do
+    if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
+      PATH="$newPath:$PATH"
+   fi
+ done
+}
+_setPATH_
+
 _pushover_() {
   # Sends notifications view Pushover
   # IMPORTANT: The API Keys must be filled in
