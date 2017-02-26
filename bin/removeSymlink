@@ -32,17 +32,18 @@ function _mainScript_() {
         /*) abstarget="${reltarget}";;
         *)  abstarget="${dir}"/"${reltarget}";;
     esac
-    execute "rm -f ${link}"
-    execute "cp -arf ${abstarget} ${link}"
+    [ -e "${abstarget}" ] || die "Can not find original file."
+
+    execute "rm -f \"${link}\""
+    execute "cp -rf \"${abstarget}\" \"${link}\""
 
     # If requested, remove the originating file
     if ${replaceSymlink}; then
       if seek_confirmation "Delete originating file?"; then
-        execute "rm -rf ${abstarget}"
+        execute "rm -rf \"${abstarget}\""
       fi
     fi
   done
-
 
 }
 
@@ -188,7 +189,6 @@ done
 # Store the remaining part as arguments.
 args+=("$@")
 
-
 function seek_confirmation() {
   # Seeks a Yes or No answer to a question.  Usage:
   #   if seek_confirmation "Answer this question"; then
@@ -216,18 +216,18 @@ function execute() {
   if ${dryrun}; then
     dryrun "${2:-$1}"
   else
-    #set +e # don't exit script if execute fails
+    set +e # don't exit script if execute fails
     if $verbose; then
-      $1
+      eval "$1"
     else
-      $1 &> /dev/null
+      eval "$1" &> /dev/null
     fi
     if [ $? -eq 0 ]; then
       success "${2:-$1}"
     else
       warning "${2:-$1}"
     fi
-    # set -e
+    set -e
   fi
 }
 
