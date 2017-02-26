@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-version="1.0.0"
+version="1.2.0"
 
 function _mainScript_() {
 
@@ -16,21 +16,15 @@ function _mainScript_() {
   }
   _errorHandling_
 
-  # Cofiguration variables:
-  manifest="${HOME}/.mackup/my-files.cfg"
-  ! [ -f "${manifest}" ] && die "Can not find ${manifest}."
-
   links=( "${args[@]}" )
 
-  if [[ ${#links[@]} == 0 ]]; then die "No link specified"; fi
+  [[ ${#links[@]} == 0 ]] && die "No link specified"
 
   # Work through the links
   for link in "${links[@]}"; do
 
-    # Confirm links is actually a symlink
-    if [ ! -h "${link}" ]; then # test that files are links(s)
-      die "'${link}': either does not exist or is not a symlink."
-    fi
+    # Confirm link is actually a symlink
+    [ -h "${link}" ] || die "'${link}': either does not exist or is not a symlink."
 
     dir=$(dirname "${link}")
     reltarget=$(readlink "${link}")
@@ -38,20 +32,15 @@ function _mainScript_() {
         /*) abstarget="${reltarget}";;
         *)  abstarget="${dir}"/"${reltarget}";;
     esac
-    execute "rm -f ${link}" "Remove symlink"
-    execute "cp -af ${abstarget} ${link}" "Copy original in place of symlink"
+    execute "rm -f ${link}"
+    execute "cp -arf ${abstarget} ${link}"
 
     # If requested, remove the originating file
     if ${replaceSymlink}; then
       if seek_confirmation "Delete originating file?"; then
-        execute "rm -rf ${abstarget}" "Delete original file"
+        execute "rm -rf ${abstarget}"
       fi
     fi
-
-    if ${removeManifest}; then
-      execute "sed -e "s/${link}//g" -i .backup ${manifest}" "Remove '${link}' from ${manifest}"
-    fi
-
   done
 
 
@@ -76,7 +65,7 @@ quiet=false;      printLog=false;       verbose=false;
 force=false;      strict=false;         dryrun=false;
 debug=false;      args=();
 
-replaceSymlink=false;           removeManifest=false;
+replaceSymlink=false;
 
 # Set Colors
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
@@ -124,14 +113,7 @@ This script will replace symbolic links with their original file.  By default it
 a version of the original file over the symlink's location.  Specifying the flag '-r' will
 delete the source file of the symlink after copying itself to the symlink's location.
 
-In addition, this script can help you clean up files that are backed up using Mackup on
-a Macintosh computer.  If you are not familiar with Mackup, more information can be
-found here: https://github.com/lra/mackup . Specifying the -m feature will search the mackup
-configuration file for instances of your specified file and, if found, will remove it.  When
-this is invoked, a backup configuration file is created.
-
  ${bold}Options:${reset}
-  -m, --manifest    Remove file from Mackup manifest configuration file.
   -r, --replace     Replaces the symlink with the original file AND removes the
                     original after copying
 
@@ -189,7 +171,6 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    -m|--manifest) removeManifest=true ;;
     -r|--replace) replaceSymlink=true ;;
     -h|--help) usage >&2; _safeExit_ ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
