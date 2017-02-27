@@ -73,9 +73,9 @@ _htmlEncode_() {
   [ -f "${sedFile}" ] && echo "${1}" | sed -f "${sedFile}" || return 1
 }
 
-_urlencode_() {
+_urlEncode_() {
   # URL encoding/decoding from: https://gist.github.com/cdown/1163649
-  # Usage: _urlencode_ <string>
+  # Usage: _urlEncode_ <string>
 
   local length="${#1}"
   for (( i = 0; i < length; i++ )); do
@@ -87,8 +87,8 @@ _urlencode_() {
   done
 }
 
-_urldecode_() {
-  # Usage: _urldecode_ <string>
+_urlDecode_() {
+  # Usage: _urlDecode_ <string>
 
   local url_encoded="${1//+/ }"
   printf '%b' "${url_encoded//%/\x}"

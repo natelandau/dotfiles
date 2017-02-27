@@ -18,11 +18,8 @@ _mainScript_() {
 
   _createTestFiles_() {
     # createTestFiles() This script can download a few video to use for testing
-    testFileDir="$HOME/Desktop/testFiles"
-    if ! [ -d "${testFileDir}" ]; then
-      verbose "Creating test directory"
-      mkdir "${testFileDir}"
-    fi
+    testFileDir="$HOME/tmp/testFiles"
+    ! [ -d "${testFileDir}" ] && _execute_ "mkdir \"${testFileDir}\""
 
     notice "Downloading test files"
     cd "${testFileDir}" || _safeExit_ "1"
@@ -68,7 +65,7 @@ _mainScript_() {
     verbose "Confirming we have video files to work on..."
     for file in "${args[@]}"; do
       local extension="${file##*.}" # Grab extension of file
-      if _in_array_ "${extension,,}" "${videoTypes[@]}"; then
+      if _inArray_ "${extension,,}" "${videoTypes[@]}"; then
         filesToConvert+=("${file}")
       fi
     done
@@ -81,7 +78,7 @@ _mainScript_() {
       notice "No output format specified. Defaulting to 'mp4'"
       outputFormat="mp4"
     else # Confirm user specified output file is a video file
-      if ! _in_array_ "${outputFormat}" "${videoTypes[@]}"; then
+      if ! _inArray_ "${outputFormat}" "${videoTypes[@]}"; then
         die "Specified output format '${outputFormat}' is not valid. Exiting."
       fi
     fi
@@ -242,7 +239,7 @@ _mainScript_() {
 
       # Confirm if user wants to upscale their video
       if [ "${userWidth}" -gt "${videoWidth}" ] || [ "${userHeight}" -gt "${videoHeight}" ]; then
-        if ! seek_confirmation "Upscale ${file} to ${outputVideoSize}? It is currently ${videoWidth}x${videoHeight}."; then return; fi
+        if ! _seekConfirmation_ "Upscale ${file} to ${outputVideoSize}? It is currently ${videoWidth}x${videoHeight}."; then return; fi
       fi
 
 
@@ -308,7 +305,7 @@ _mainScript_() {
     # Respect the 'logfile' flag
     if ${printLog}; then ffmpegLog=">> ${logFile}"; fi
 
-    execute 'caffeinate -ism ffmpeg -i "${file}" ${videoResize} ${videoCommand} ${videoAudioCommand} ${audioConvertCommand} "${output}" ${ffquiet}' "caffeinate -ism ffmpeg -i ${file} ${videoResize} ${videoCommand} ${videoAudioCommand} ${audioConvertCommand} ${output} ${ffquiet}"
+    _execute_ "caffeinate -ism ffmpeg -i \"${file}\" ${videoResize} ${videoCommand} ${videoAudioCommand} ${audioConvertCommand} \"${output}\" ${ffquiet}"
 
     # Unset variables to get ready for the next file
       unset jsonFilename
@@ -331,7 +328,7 @@ _mainScript_() {
     # first, ensure we don't delete the originals if we're in a safe run
     if ${dryrun}; then return; fi
     verbose "\t deleting original file"
-    rm -f "${file}"
+    _execute_ "rm -f \"${file}\""
   }
 
   # Convert files
@@ -362,12 +359,12 @@ _safeExit_() {
   exit ${1:-0}
 }
 
-_in_array_() {
+_inArray_() {
   # Determine if a value is in an array.
-  # Usage: if _in_array_ "VALUE" "${ARRAY[@]}"; then ...
+  # Usage: if _inArray_ "VALUE" "${ARRAY[@]}"; then ...
   local value="$1"; shift
   for arrayItem in "$@"; do
-      [[ "${arrayItem}" == "${value}" ]] && return 0
+    [[ "${arrayItem}" == "${value}" ]] && return 0
   done
   return 1
 }
@@ -537,9 +534,9 @@ while [[ $1 = -?* ]]; do
   shift
 done
 
-seek_confirmation() {
+_seekConfirmation_() {
   # Seeks a Yes or No answer to a question.  Usage:
-  #   if seek_confirmation "Answer this question"; then
+  #   if _seekConfirmation_ "Answer this question"; then
   #     something
   #   fi
   input "$@"
@@ -558,14 +555,14 @@ seek_confirmation() {
   fi
 }
 
-execute() {
-  # execute - wrap an external command in 'execute' to push native output to /dev/null
+_execute_() {
+  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
   #           and have control over the display of the results.  In "dryrun" mode these
   #           commands are not executed at all. In Verbose mode, the commands are executed
   #           with results printed to stderr and stdin
   #
   # usage:
-  #   execute "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
+  #   _execute_ "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
   if ${dryrun}; then
     dryrun "${2:-$1}"
   else
