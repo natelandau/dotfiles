@@ -191,21 +191,21 @@ _seekConfirmation_() {
 }
 
 _execute_() {
-  # execute - wrap an external command in 'execute' to push native output to /dev/null
+  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
   #           and have control over the display of the results.  In "dryrun" mode these
   #           commands are not executed at all. In Verbose mode, the commands are executed
   #           with results printed to stderr and stdin
   #
   # usage:
-  #   _execute_ "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
+  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
   if ${dryrun}; then
     dryrun "${2:-$1}"
   else
     #set +e # don't exit script if execute fails
     if $verbose; then
-      $1
+      eval "$1"
     else
-      $1 &> /dev/null
+      eval "$1" &> /dev/null
     fi
     if [ $? -eq 0 ]; then
       success "${2:-$1}"
