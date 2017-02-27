@@ -2,7 +2,7 @@
 
 version="1.0.0"
 
-function _mainScript_() {
+_mainScript_() {
   local user
   local uid
   local finder_pid
@@ -14,7 +14,7 @@ function _mainScript_() {
 
   if ${verbose}; then v="-v"; fi
 
-  function have_scriptable_finder() {
+  _have_scriptable_finder_() {
     # Determine whether we can script the Finder or not
     # We must have a valid PID for Finder, plus we cannot be in
     # `screen` (another thing that's broken)
@@ -25,7 +25,7 @@ function _mainScript_() {
     fi
   }
 
-  function _realpath_() {
+  _realpath_() {
     # Convert a relative path to an absolute path.
     #
     # From http://github.com/morgant/realpath
@@ -90,7 +90,7 @@ function _mainScript_() {
     ${successPath}
   }
 
-  function _listTrash_() {
+  _listTrash_() {
     local num_volumes
     local total_blocks
     local blocks
@@ -135,9 +135,9 @@ function _mainScript_() {
     info "${size} across ${num_volumes} volume(s)."
   }
 
-  function _emptyTheTrash_() {
+  _emptyTheTrash_() {
     # Determine if we can tell Finder to empty trash via AppleScript
-    if have_scriptable_finder; then
+    if _have_scriptable_finder_; then
       notice "Telling Finder to empty trash..."
       if /usr/bin/osascript -e "tell application \"Finder\" to empty trash" ; then
         success "Trash has been emptied"
@@ -148,7 +148,7 @@ function _mainScript_() {
     # If Finder isn't scriptable, we'll manually empty the trash ourselves
     else
       # Confirm that the user wants to empty the trash
-      if seek_confirmation "Are you sure you want to empty the trash (this cannot be undone)?"; then
+      if _seekConfirmation_ "Are you sure you want to empty the trash (this cannot be undone)?"; then
         notice "Emptying trash..."
         # delete the contents of user's .Trash folder
         find "/Users/${user}/.Trash" -depth 1 ! -depth 0 -print0 | xargs -0 rm $v -r
@@ -166,9 +166,9 @@ function _mainScript_() {
     fi
   }
 
-  function _secureEmptyTheTrash_() {
+  _secureEmptyTheTrash_() {
     # determine if we can tell Finder to securely empty trash via AppleScript
-    if have_scriptable_finder; then
+    if _have_scriptable_finder_; then
       notice "Telling Finder to securely empty trash... "
       if /usr/bin/osascript -e "tell application \"Finder\" to empty trash with security" ; then
         success "Trash has been securely emptied."
@@ -179,7 +179,7 @@ function _mainScript_() {
     # if Finder isn't scriptable, we'll manually empty the trash ourselves
     else
       # confirm that the user wants to securely empty the trash
-      if seek_confirmation "Are you sure you want to securely empty the trash (this REALLY cannot be undone)?"; then
+      if _seekConfirmation_ "Are you sure you want to securely empty the trash (this REALLY cannot be undone)?"; then
         # securely delete the contents of user's .Trash folder
         find "/Users/${user}/.Trash" -depth 1 ! -depth 0 -print0 | xargs -0 srm $v -r
         # securely delete the contents of the volume-specific .Trashes folders
@@ -196,7 +196,7 @@ function _mainScript_() {
     fi
   }
 
-  function _trashAFile_() {
+  _trashAFile_() {
     # Iterate over all files passed by user
     for userFile in "${args[@]}"; do
       if [ ! -e "${userFile}" ]; then
@@ -204,7 +204,7 @@ function _mainScript_() {
       fi
       # determine if we'll tell Finder to trash the file via AppleScript (very easy, plus free undo
       # support, but Finder must be running for the user and is DOES NOT work from within `screen`)
-    if have_scriptable_finder; then
+    if _have_scriptable_finder_; then
       # determine whether we have an absolute path name to the file or not
       if [ "${userFile:0:1}" = "/" ]; then
         local file="${userFile}"
@@ -270,14 +270,14 @@ function _mainScript_() {
   _trashAFile_
 }  # end _mainScript_
 
-function _trapCleanup_() {
+_trapCleanup_() {
   echo ""
   # Delete temp files, if any
   [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
-function _safeExit_() {
+_safeExit_() {
   # Delete temp files, if any
   [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   trap - INT TERM EXIT
@@ -309,7 +309,7 @@ tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
 # Logging & Feedback
 logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
 
-function _alert_() {
+_alert_() {
   if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
   if [ "${1}" = "warning" ]; then local color="${red}"; fi
   if [ "${1}" = "success" ]; then local color="${green}"; fi
@@ -348,7 +348,7 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 
 # Options and Usage
 # -----------------------------------
-usage() {
+_usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
  ${bold}Trash${reset} allows MacOS trashing of files instead of tempting fate with ${bold}rm${reset}.
@@ -421,7 +421,7 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    -h|--help) usage >&2; _safeExit_ ;;
+    -h|--help) _usage_ >&2; _safeExit_ ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     -l|--list) list=true ;;
     -s|--secure) secureEmpty=true ;;
@@ -442,10 +442,9 @@ done
 # Store the remaining part as arguments.
 args+=("$@")
 
-
-function seek_confirmation() {
+_seekConfirmation_() {
   # Seeks a Yes or No answer to a question.  Usage:
-  #   if seek_confirmation "Answer this question"; then
+  #   if _seekConfirmation_ "Answer this question"; then
   #     something
   #   fi
   input "$@"

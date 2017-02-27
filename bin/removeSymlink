@@ -2,9 +2,9 @@
 
 version="1.2.0"
 
-function _mainScript_() {
+_mainScript_() {
 
-  function _errorHandling_() {
+  _errorHandling_() {
     # This script requires the Linux gdate (as opposed to native 'date' in OSX)
     # Here we see if it's installed. If not, we install it with homebrew.
     if ! command -v dirname &> /dev/null; then
@@ -34,25 +34,25 @@ function _mainScript_() {
     esac
     [ -e "${abstarget}" ] || die "Can not find original file."
 
-    execute "rm -f \"${link}\""
-    execute "cp -rf \"${abstarget}\" \"${link}\""
+    _execute_ "rm -f \"${link}\""
+    _execute_ "cp -rf \"${abstarget}\" \"${link}\""
 
     # If requested, remove the originating file
     if ${replaceSymlink}; then
-      if seek_confirmation "Delete originating file?"; then
-        execute "rm -rf \"${abstarget}\""
+      if _seekConfirmation_ "Delete originating file?"; then
+        _execute_ "rm -rf \"${abstarget}\""
       fi
     fi
   done
 
 }
 
-function _trapCleanup_() {
+_trapCleanup_() {
   echo ""
   die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
-function _safeExit_() {
+_safeExit_() {
   trap - INT TERM EXIT
   exit ${1:-0}
 }
@@ -73,7 +73,7 @@ bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
 red=$(tput setaf 1);      green=$(tput setaf 76);      tan=$(tput setaf 3);
 blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
 
-function _alert_() {
+_alert_() {
   if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
   if [ "${1}" = "warning" ]; then local color="${red}"; fi
   if [ "${1}" = "success" ]; then local color="${green}"; fi
@@ -189,9 +189,9 @@ done
 # Store the remaining part as arguments.
 args+=("$@")
 
-function seek_confirmation() {
+_seekConfirmation_() {
   # Seeks a Yes or No answer to a question.  Usage:
-  #   if seek_confirmation "Answer this question"; then
+  #   if _seekConfirmation_ "Answer this question"; then
   #     something
   #   fi
   input "$@"
@@ -205,18 +205,18 @@ function seek_confirmation() {
   done
 }
 
-function execute() {
-  # execute - wrap an external command in 'execute' to push native output to /dev/null
+_execute_() {
+  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
   #           and have control over the display of the results.  In "dryrun" mode these
   #           commands are not executed at all. In Verbose mode, the commands are executed
   #           with results printed to stderr and stdin
   #
   # usage:
-  #   execute "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
+  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
   if ${dryrun}; then
     dryrun "${2:-$1}"
   else
-    set +e # don't exit script if execute fails
+    #set +e # don't exit script if execute fails
     if $verbose; then
       eval "$1"
     else
@@ -227,7 +227,7 @@ function execute() {
     else
       warning "${2:-$1}"
     fi
-    set -e
+    # set -e
   fi
 }
 
