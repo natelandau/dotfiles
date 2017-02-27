@@ -383,3 +383,50 @@ _decryptFile_() {
     _execute_ "openssl enc -aes-256-cbc -d -in ${fileToDecrypt} -out ${decryptedFile} -k ${PASS}" "Decrypt ${fileToDecrypt}"
   fi
 }
+
+_seekConfirmation_() {
+  # Seeks a Yes or No answer to a question.  Usage:
+  #   if _seekConfirmation_ "Answer this question"; then
+  #     something
+  #   fi
+  input "$@"
+  if "${force}"; then
+    verbose "Forcing confirmation with '--force' flag set"
+    return 0
+  else
+    while true; do
+      read -r -p " (y/n) " yn
+      case $yn in
+        [Yy]* ) return 0;;
+        [Nn]* ) return 1;;
+        * ) input "Please answer yes or no.";;
+      esac
+    done
+  fi
+}
+
+_execute_() {
+  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
+  #           and have control over the display of the results.  In "dryrun" mode these
+  #           commands are not executed at all. In Verbose mode, the commands are executed
+  #           with results printed to stderr and stdin
+  #
+  # usage:
+  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
+  if ${dryrun}; then
+    dryrun "${2:-$1}"
+  else
+    #set +e # don't exit script if execute fails
+    if $verbose; then
+      eval "$1"
+    else
+      eval "$1" &> /dev/null
+    fi
+    if [ $? -eq 0 ]; then
+      success "${2:-$1}"
+    else
+      warning "${2:-$1}"
+    fi
+    # set -e
+  fi
+}
