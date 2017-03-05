@@ -85,8 +85,9 @@ _progressBar_() {
   if "${verbose}"; then return; fi # Do nothing in verbose mode
   if [ ! -t 1 ]; then return; fi # Do nothing if the output is not a terminal
 
-  local width bar_char perc num bar progressBarLine barTitle
+  local width bar_char perc num bar progressBarLine barTitle n
 
+  n="$1" ; (( n = n - 1 )) ;
   barTitle="${2:-Running Process}"
   width=30
   bar_char="#"
@@ -100,7 +101,7 @@ _progressBar_() {
   tput civis
   trap 'tput cnorm; exit 1' SIGINT
 
-  if [ ! "${progressBarProgress}" -eq $1 ]; then
+  if [ ! "${progressBarProgress}" -eq $n ]; then
     #echo "progressBarProgress: $progressBarProgress"
     # Compute the percentage.
     perc=$(( progressBarProgress * 100 / $1 ))
@@ -112,7 +113,7 @@ _progressBar_() {
         bar=$(printf "%0.s${bar_char}" $(seq 1 ${num}))
     fi
     # Print the progress bar.
-    progressBarLine=$(printf "%s [%-${width}s] (%d%%)" "${barTitle}" "${bar}" "${perc}")
+    progressBarLine=$(printf "%s [%-${width}s] (%d%%)" "  ${barTitle}" "${bar}" "${perc}")
     echo -ne "${progressBarLine}\r"
     progressBarProgress=$(( progressBarProgress + 1 ))
   else
