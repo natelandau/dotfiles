@@ -201,7 +201,6 @@ _execute_() {
   if ${dryrun}; then
     dryrun "${2:-$1}"
   else
-    #set +e # don't exit script if execute fails
     if $verbose; then
       eval "$1"
     else
@@ -209,10 +208,11 @@ _execute_() {
     fi
     if [ $? -eq 0 ]; then
       success "${2:-$1}"
+      return 0
     else
       warning "${2:-$1}"
+      return 1
     fi
-    # set -e
   fi
 }
 
@@ -233,7 +233,7 @@ if ${debug}; then set -x ; fi
 if ${strict}; then set -o nounset ; fi
 
 # Exit the script if a command fails
-set -e
+#set -e
 
 # Run your script
 _mainScript_
