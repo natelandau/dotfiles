@@ -28,6 +28,47 @@ _locateSourceFile_() {
   echo "$RESULT"
 }
 
+_uniqueFileName_() {
+  # _uniqueFileName_ takes an input of a file and returns a unique filename.
+  # The use-case here is trying to write a file to a directory which may already
+  # have a file with the same name. To ensure unique filenames, we append a digit
+  # to files when necessary
+  #
+  # Inputs:
+  #
+  #   $1  The name of the file (may include a directory)
+  #
+  #   $2  Option separation character. Defaults to a space
+  #
+  # Usage:
+  #
+  #   _uniqueFileName "/some/dir/file.txt" "-"
+  #
+  #   Would return "/some/dir/file-2.txt"
+
+  local n origFull origName origExt newfile
+
+  origFull="$1"
+  spacer="${2:- }"
+  origName="${origFull%.*}"
+  origExt="${origFull##*.}"
+  newfile="${origName}.${origExt}"
+
+  # echo "origName: $origName"
+  # echo "origExt: $origExt"
+  # echo "newfile: $newfile"
+
+  if [ -e "${newfile}" ]; then
+    n=2
+    while [[ -e "${origName}${spacer}${n}.${origExt}" ]]; do
+      (( n++ ))
+    done
+    newfile="${origName}${spacer}${n}.${origExt}"
+  fi
+
+  echo "${newfile}"
+}
+
 _readFile_() {
   # Function to reads a file and prints each line.
   # Usage: _readFile_ "some/filename"
