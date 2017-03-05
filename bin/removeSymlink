@@ -32,10 +32,14 @@ _mainScript_() {
         /*) abstarget="${reltarget}";;
         *)  abstarget="${dir}"/"${reltarget}";;
     esac
-    [ -e "${abstarget}" ] || die "Can not find original file."
-
-    _execute_ "rm -f \"${link}\""
-    _execute_ "cp -rf \"${abstarget}\" \"${link}\""
+    if [ -e "${abstarget}" ]; then
+      _execute_ "rm -f \"${link}\""
+      _execute_ "cp -rf \"${abstarget}\" \"${link}\""
+    else
+      if _seekConfirmation_ "Can't find original, delete this link anyway?"; then
+        _execute_ "rm -f \"${link}\""
+      fi
+    fi
 
     # If requested, remove the originating file
     if ${replaceSymlink}; then
