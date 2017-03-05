@@ -68,10 +68,14 @@ _progressBar_() {
   # To use this function you must pass the total number of
   # times the loop will run to the function.
   #
+  # Takes two inputs:
+  #   $1 - The total number of items counted
+  #   $2 - The optional title of the progress bar
+  #
   # usage:
   #   for number in $(seq 0 100); do
   #     sleep 1
-  #     _progressBar_ 100
+  #     _progressBar_ "100" "Counting numbers"
   #   done
   # -----------------------------------
 
@@ -81,14 +85,9 @@ _progressBar_() {
   if "${verbose}"; then return; fi # Do nothing in verbose mode
   if [ ! -t 1 ]; then return; fi # Do nothing if the output is not a terminal
 
-  local width
-  local bar_char
-  local perc
-  local num
-  local bar
-  local progressBarLine
-  local progressBarProgress
+  local width bar_char perc num bar progressBarLine barTitle
 
+  barTitle="${2:-Running Process}"
   width=30
   bar_char="#"
 
@@ -101,23 +100,24 @@ _progressBar_() {
   tput civis
   trap 'tput cnorm; exit 1' SIGINT
 
-  if [ ! "${progressBarProgress}" -eq $(( $1 - 1 )) ]; then
+  if [ ! "${progressBarProgress}" -eq $1 ]; then
+    #echo "progressBarProgress: $progressBarProgress"
     # Compute the percentage.
     perc=$(( progressBarProgress * 100 / $1 ))
     # Compute the number of blocks to represent the percentage.
     num=$(( progressBarProgress * width / $1 ))
     # Create the progress bar string.
-    bar=
+    bar=""
     if [ ${num} -gt 0 ]; then
         bar=$(printf "%0.s${bar_char}" $(seq 1 ${num}))
     fi
     # Print the progress bar.
-    progressBarLine=$(printf "%s [%-${width}s] (%d%%)" "Running Process" "${bar}" "${perc}")
-    echo -en "${progressBarLine}\r"
+    progressBarLine=$(printf "%s [%-${width}s] (%d%%)" "${barTitle}" "${bar}" "${perc}")
+    echo -ne "${progressBarLine}\r"
     progressBarProgress=$(( progressBarProgress + 1 ))
   else
     # Clear the progress bar when complete
-    echo -ne "${width}%\033[0K\r"
+    echo -ne "\033[0K\r"
     unset progressBarProgress
   fi
 
