@@ -3,23 +3,23 @@ alias g='git'
 
 # Adding and Committing
 alias gm="git add .; git commit -m"     # Add and Commit git changes
-function ga() { git add "${@:-.}"; }    # Add all files by default
+ga() { git add "${@:-.}"; }    # Add all files by default
 alias gcm="git --no-pager commit -m "   # Git Commit - Short message
 alias gc="git --no-pager commit"        # Git Commit - Long message
 alias gshit='git add . ; git commit --amend' # Appends current changes to the last commit
 alias gap='git add -p' # step through each change, or hunk
 
 # Add and Commit a single specified file with a commit message
-function gac () { git add -A "$1";git commit -m "$2" ; }
+gac () { git add -A "$1";git commit -m "$2" ; }
 
 # Cloning, Fetching, Pushing, and Pulling
 alias gp='git push'
 alias gpush='git push'
 alias gu='git pull'
-function gpull() { git pull; git submodule foreach git pull origin master; }
+gpull() { git pull; git submodule foreach git pull origin master; }
 alias gfu="git fetch origin"      # Get updates from Origin
 alias gcl='git clone --recursive' # Clone with all submodules
-function gcheckout() { git checkout "${@:-master}"; } # Checkout master by default
+gcheckout() { git checkout "${@:-master}"; } # Checkout master by default
 
 # Status, Logs, and information
 alias gs="git --no-pager status -s --untracked-files=all" # Git Status
@@ -40,13 +40,13 @@ alias greset="git fetch --all;git reset --hard origin/master"
 
 alias undopush="git push -f origin HEAD^:master" # Undo a `git push`
 
-function applyGitIgnore() {
+applyGitIgnore() {
   # Applies changes to the git .ignorefile after the files
   # mentioned were already committed to the repo
   git ls-files -ci --exclude-standard -z | xargs -0 git rm --cached
 }
 
-function gitRevert() {
+gitRevert() {
   # Applies changes to HEAD that revert all changes after specified commit
   git reset "${1}"gg
   git reset --soft HEAD@{1}
@@ -54,17 +54,17 @@ function gitRevert() {
   git reset --hard
 }
 
-function gitRollback() {
+gitRollback() {
   # Resets the current HEAD to specified commit
 
-  function is_clean() {
+  is_clean() {
     if [[ $(git diff --shortstat 2> /dev/null | tail -n1) != "" ]]; then
       echo "Your branch is dirty, please commit your changes"
       kill -INT $$
     fi
   }
 
-  function commit_exists() {
+  commit_exists() {
     git rev-list --quiet "$1"
     status=$?
     if [ $status -ne 0 ]; then
@@ -73,7 +73,7 @@ function gitRollback() {
     fi
   }
 
-  function keep_changes() {
+  keep_changes() {
     while true
     do
       read -r -p "Do you want to keep all changes from rolled back revisions in your working tree? [Y/N]" RESP
@@ -128,7 +128,7 @@ alias gist-paste="gist --private --copy --paste --filename"
 alias gist-file="gist --private --copy"
 
 # Github integration
-function github() {
+github() {
   # Open github web page of current git repo
   local github_url
   if ! git remote -v >/dev/null; then
@@ -155,7 +155,7 @@ function github() {
   open "$github_url"
 }
 
-function gurl() {
+gurl() {
   local remote remotename host user_repo
 
   remotename="${*:-origin}"

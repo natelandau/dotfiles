@@ -1,12 +1,12 @@
 
-function ffjson() {
+ffjson() {
   # Use ffmpeg's built in file checker to output a JSON containing all
   # the stream information from a media file
   ffprobe -v quiet -print_format json -show_format -show_streams "$1"
 }
 
 
-function gifify {
+gifify() {
   # about 'Converts a .mov file into an into an animated GIF.'
   #   From https://gist.github.com/SlexAxton/4989674#comment-1199058
   #   Requirements (Mac OS X using Homebrew): brew install ffmpeg gifsicle imagemagick
@@ -37,7 +37,7 @@ function gifify {
   echo "$(tput setaf 2)Done.$(tput sgr 0)"
 }
 
-function imgSize() {
+imgSize() {
   # imgSize:  Quickly get image dimensions from the command line
   local width height
   if [[ -f $1 ]]; then
@@ -49,13 +49,13 @@ function imgSize() {
   fi
 }
 
-function 64enc() {
+64enc() {
   # Encode a given image file as base64 and output css background property to clipboard
   openssl base64 -in "$1" | awk -v ext="${1#*.}" '{ str1=str1 $0 }END{ print "background:url(data:image/"ext";base64,"str1");" }'|pbcopy
   echo "$1 encoded to clipboard"
 }
 
-function whereisthis() {
+whereisthis() {
   # Run on photos with embedded geo-data to get the coordinates
   # and open it in a Google map
   lat=$(mdls -raw -name kMDItemLatitude "$1")

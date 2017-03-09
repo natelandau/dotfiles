@@ -1,7 +1,7 @@
 
 alias jf="ps aux | grep jekyll"     #jf: Finds PID of Jekyll to kill server
 
-function jb() {
+jb() {
   # builds jekyll with _config.yml
   if [ -f ./"Gruntfile.coffee" ]; then
     echo "running: 'npm-exec grunt dev'"
@@ -13,7 +13,7 @@ function jb() {
   fi
 }
 
-function jbd() {
+jbd() {
   # builds jekyll with _config.yml and drafts
   if [ -f ./"Gruntfile.coffee" ]; then
     echo "running: 'npm-exec grunt devFuture'"
@@ -25,7 +25,7 @@ function jbd() {
   fi
 }
 
-function jbp() {
+jbp() {
   # builds jekyll with _config_production.yml
   if [ -f ./"Gruntfile.coffee" ]; then
     echo "running: 'npm-exec grunt prod'"
@@ -37,7 +37,7 @@ function jbp() {
   fi
 }
 
-function js() {
+js() {
   # Serves Jekyll with _config.yml and incremental builds
   if [ -f ./"Gruntfile.coffee" ]; then
     echo "running: 'npm-exec grunt serve'"
@@ -49,7 +49,7 @@ function js() {
   fi
 }
 
-function jss() {
+jss() {
   # Serves Jekyll with _config.yml and incremental builds
   if [ -f ./"Gruntfile.coffee" ]; then
     echo "running: 'npm-exec grunt serveStage'"
@@ -61,7 +61,7 @@ function jss() {
   fi
 }
 
-function jsd() {
+jsd() {
   # Serves Jekyll with _config.yml and incremental builds and drafts
   if [ -f ./"Gruntfile.coffee" ]; then
     echo "running: 'npm-exec grunt serveFuture'"

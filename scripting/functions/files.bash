@@ -46,7 +46,7 @@ _uniqueFileName_() {
   #
   #   Would return "/some/dir/file-2.txt"
 
-  local n origFull origName origExt newfile
+  local n origFull origName origExt newfile spacer
 
   origFull="$1"
   spacer="${2:- }"

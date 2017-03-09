@@ -6,7 +6,7 @@ else
 fi
 export VISUAL="$EDITOR"
 
-function q() {
+q () {
   # easy access to SublimeText
   if [ $# -eq 0 ]; then
     subl .;

@@ -6,7 +6,7 @@ alias make1mb='mkfile 1m ./1MB.dat'       # make1mb:    Creates a file of 1mb si
 alias make5mb='mkfile 5m ./5MB.dat'       # make5mb:    Creates a file of 5mb size (all zeros)
 alias make10mb='mkfile 10m ./10MB.dat'    # make10mb:   Creates a file of 10mb size (all zeros)
 
-function buf () {
+buf () {
   # buf :  Backup file with time stamp
   local filename
   local filetime
@@ -15,7 +15,7 @@ function buf () {
   cp -a "${filename}" "${filename}_${filetime}"
 }
 
-function extract() {
+extract() {
   local filename
   local foldername
   local fullpath
@@ -76,19 +76,22 @@ End-Of-Usage
 }
 
 
-function chgext() {
+chgext() {
   # chgext: Batch change extension
   #         For example 'chgext html php' will turn a directory of HTML files
   #         into PHP files.
+
+  local file
+
   for file in *.$1 ; do mv "$file" "${file%.$1}.$2" ; done
 }
 
-function j2y() {
+j2y() {
   # convert json files to yaml using python and PyYAML
   python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < "$1"
 }
 
-function y2j() {
+y2j() {
   # convert yaml files to json using python and PyYAML
   python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "$1"
 }

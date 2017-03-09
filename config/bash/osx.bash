@@ -18,24 +18,25 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   # Clean up LaunchServices to remove duplicates in the "Open With" menu
   alias cleanupLS="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder"
 
-  function unmountDrive() {
+  unmountDrive() {
     # unmountDrive - If an AFP drive is mounted, this will unmount the volume.
     if [ -d "$1" ]; then
       diskutil unmount "$1"
     fi
   }
 
-  function unquarantine() {
+  unquarantine() {
+    local attribute
     # unquarantine: Manually remove a downloaded app or file from the quarantine
     for attribute in com.apple.metadata:kMDItemDownloadedDate com.apple.metadata:kMDItemWhereFroms com.apple.quarantine; do
       xattr -r -d "$attribute" "$@"
     done
   }
 
-  function lst() {
+  lst() {
     # lst:  Search for files based on OSX native tags
     #       More info:  http://brettterpstra.com/2013/10/28/mavericks-tags-spotlight-and-terminal/
-    local query
+    local query bool
     # if the first argument is "all" (case insensitive),
     # a boolean AND search will be used. Defaults to OR.
     bool="OR"
@@ -63,7 +64,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     done < <(mdfind -onlyin . -0 "$query")
   }
 
-  function finderPath() {
+  finderPath() {
     # Gets the frontmost path from the Finder
     #
     # credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md

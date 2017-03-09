@@ -10,25 +10,25 @@ alias openPorts='sudo lsof -i | grep LISTEN'      # openPorts: All listening con
 alias showBlocked='sudo ipfw list'                # showBlocked:  All ipfw rules inc/ blocked IPs
 alias newDHCP='sudo ipconfig set en0 DHCP'        # newDHCP:    Renews DHCP lease
 
-function clearDNS() {
+clearDNS() {
   # clearDNS:   Clears the DNS cache to help fix networking errors
   sudo dscacheutil -flushcache && \
   sudo killall -HUP mDNSResponder
 }
 
-function down4me() {
+down4me() {
   # down4me:  checks whether a website is down for you, or everybody
   #           example '$ down4me http://www.google.com'
     curl -s "http://www.downforeveryoneorjustme.com/$1" | sed '/just you/!d;s/<[^>]*>//g'
 }
 
-function myip() {
+myip() {
   # myip:  displays your ip address, as seen by the Internet
-  res=$(curl -s checkip.dyndns.org | grep -Eo '[0-9\.]+')
-  echo -e "Your public IP is: ${echo_bold_green} $res ${echo_normal}"
+  res=$(curl -s checkip.dyndns.org | grep -Eo --color=never '[0-9\.]+')
+  echo -e "Your public IP is: ${BOLD}${YELLOW} $res ${RESET}"
 }
 
-function createTunnel() {
+createTunnel() {
   # createTunnel:  Create a ssh tunnel with arguments or querying for it.
   if [ $# -eq 3 ]
   then
@@ -44,10 +44,10 @@ function createTunnel() {
       localPort=$3
       remotePort=$4
     else
-      echo -n "User: "; read user
-      echo -n "host: "; read host
-      echo -n "Distant host: "; read remotePort
-      echo -n "Local port: "; read localPort
+      echo -n "User: "; read -r user
+      echo -n "host: "; read -r host
+      echo -n "Distant host: "; read -r remotePort
+      echo -n "Local port: "; read -r localPort
     fi
   fi
   ssh -N -f $user@$host -L ${localPort}:${host}:${remotePort}
