@@ -118,7 +118,9 @@ _progressBar_() {
     progressBarProgress=$(( progressBarProgress + 1 ))
   else
     # Clear the progress bar when complete
-    echo -ne "\033[0K\r"
+    #echo -ne "\033[0K\r"
+    tput el   # Clear the line
+
     unset progressBarProgress
   fi
 
