@@ -1,4 +1,4 @@
-function su() {
+su() {
   # su: Do sudo to a command, or do sudo to the last typed command if no argument given
     if [[ $# == 0 ]]; then
         sudo "$(history -p '!!')"
@@ -7,7 +7,7 @@ function su() {
     fi
 }
 
-function browser() {
+browser() {
   # Pipe html to a web browser
   # example '$ echo "<h1>hi mom!</h1>" | browser'
   # example '$ ron -5 man/rip.5.ron | browser'
@@ -219,19 +219,15 @@ repeat() {
 explain () {
   # about 'explain any bash command via mankier.com manpage API'
   # example '$ explain                # interactive mode. Type commands to explain in REPL'
-  # example '$ explain 'cmd -o | ...' # one quoted command to explain it.'
+  # example '$ explain cmd -o | ... # one command to explain it.'
 
   if [ "$#" -eq 0 ]; then
     while read -r -p "Command: " cmd; do
       curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$cmd"
     done
     echo "Bye!"
-  elif [ "$#" -eq 1 ]; then
-    curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$1"
   else
-    echo "Usage"
-    echo "explain                  interactive mode."
-    echo "explain 'cmd -o | ...'   one quoted command to explain it."
+    curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$*"
   fi
 }
 
