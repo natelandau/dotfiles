@@ -76,7 +76,7 @@ function gitRollback() {
   function keep_changes() {
     while true
     do
-      read -p "Do you want to keep all changes from rolled back revisions in your working tree? [Y/N]" RESP
+      read -r -p "Do you want to keep all changes from rolled back revisions in your working tree? [Y/N]" RESP
       case $RESP
       in
       [yY])
@@ -101,7 +101,7 @@ function gitRollback() {
 
     while true
     do
-      read -p "WARNING: This will change your history and move the current HEAD back to commit ${1}, continue? [Y/N]" RESP
+      read -r -p "WARNING: This will change your history and move the current HEAD back to commit ${1}, continue? [Y/N]" RESP
       case $RESP
         in
         [yY])
@@ -156,10 +156,12 @@ function github() {
 }
 
 function gurl() {
-  local remotename="${*:-origin}"
-  local remote="$(git remote -v | awk '/^'"$remotename"'.*\(push\)$/ {print $2}')"
+  local remote remotename host user_repo
+
+  remotename="${*:-origin}"
+  remote="$(git remote -v | awk '/^'"${remotename}"'.*\(push\)$/ {print $2}')"
   [[ "$remote" ]] || return
-  local host="$(echo "$remote" | perl -pe 's/.*@//;s/:.*//')"
-  local user_repo="$(echo "$remote" | perl -pe 's/.*://;s/\.git$//')"
-  echo "https://$host/$user_repo"
+  host="$(echo "$remote" | perl -pe 's/.*@//;s/:.*//')"
+  user_repo="$(echo "$remote" | perl -pe 's/.*://;s/\.git$//')"
+  echo "https://${host}/${user_repo}"
 }
