@@ -3,7 +3,8 @@
 version="1.0.0"
 
 _mainScript_() {
- echo -n
+
+  echo -n
 
 }  # end _mainScript_
 
@@ -57,7 +58,7 @@ _alert_() {
   if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
 
   # Print to console when script is not 'quiet'
-  if ${quiet}; then return; else
+  if ${quiet}; then tput cuu1 ; return; else # tput cuu1 moves cursor up one line
    echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
   fi
 
