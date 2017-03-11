@@ -307,7 +307,7 @@ _mainScript_() {
     # Add a date to files which don't already have one.
     # use mdls to find the creation date of the file. if it exists, use that. if not, use today
     if ${removeDates}; then return; fi # don't do this step if we are trying to remove dates
-    if command -v mdls &> /dev/null && ! $testOutput; then
+    if command -v mdls &> /dev/null; then
       creationDate=$(mdls -raw -name kMDItemContentCreationDate "${originalFileWithPath}")
       if [[ "$creationDate" =~ null ]]; then
         newDate="$(date +%Y-%m-%d)"
