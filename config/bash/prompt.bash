@@ -22,7 +22,7 @@ _setPrompt_() {
   seperator=""
   topPluginLocation=${HOME}/dotfiles/config/bash/prompt-plugins/top
   bottomPluginLocation=${HOME}/dotfiles/config/bash/prompt-plugins/bottom
-  PS1="\n" # Add a newline at the beginning of the prompt
+  PS1="" # Add a newline at the beginning of the prompt
   oldBG=""
 
   reset="\[$(tput sgr0)\]"
