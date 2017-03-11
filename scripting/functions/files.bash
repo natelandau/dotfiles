@@ -1,4 +1,48 @@
+_ext_() {
+  # Get the extension of the given filename.
+  #
+  # Usage: _ext_ [-n LEVELS] FILENAME
+  #
+  # Usage examples:
+  #   _ext_     foo.txt     #==> .txt
+  #   _ext_ -n2 foo.tar.gz  #==> .tar.gz
+  #   _ext_     foo.tar.gz  #==> .tar.gz
+  #   _ext_ -n1 foo.tar.gz  #==> .gz
 
+  local levels
+
+  unset OPTIND
+  while getopts ":n:" option; do
+    case $option in
+      n) levels=$OPTARG ;;
+    esac
+  done && shift $((OPTIND - 1))
+
+  local filename=${1##*/}
+
+  [[ $filename == *.* ]] || return
+
+  local fn=$filename
+  local exts ext
+
+  # Detect some common multi-extensions
+  if [[ ! $levels ]]; then
+    case $(tr '[:upper:]' '[:lower:]' <<<$filename) in
+      *.tar.gz|*.tar.bz2) levels=2 ;;
+    esac
+  fi
+
+  levels=${levels:-1}
+
+  for (( i=0; i<levels; i++ )); do
+    ext=.${fn##*.}
+    exts=$ext$exts
+    fn=${fn%$ext}
+    [[ "$exts" == "$filename" ]] && return
+  done
+
+  echo "$exts"
+}
 
 _locateSourceFile_() {
   # locateSourceFile is fed a symlink and returns the originating file
@@ -53,10 +97,6 @@ _uniqueFileName_() {
   origName="${origFull%.*}"
   origExt="${origFull##*.}"
   newfile="${origName}.${origExt}"
-
-  # echo "origName: $origName"
-  # echo "origExt: $origExt"
-  # echo "newfile: $newfile"
 
   if [ -e "${newfile}" ]; then
     n=2
