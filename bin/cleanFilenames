@@ -115,30 +115,25 @@ _mainScript_() {
 
     # Ensure file exists
     if [ ! -e "${userFile}" ]; then
-      errorMessage="${userFile}: No such file or directory."
-      return 1
+      die "${userFile}: No such file or directory."
     fi
     # Ignore directories
     if [ -d "${userFile}" ]; then
-      errorMessage="${userFile}: is a directory. Ignoring."
-      return 1
+      die "${userFile}: is a directory."
     fi
     # Ignore dotfiles
     regex="^\..*"
     if [[ "${userFile}" =~ ${regex} ]]; then
-      errorMessage="${userFile}: is a dotfile. Ignoring."
-      return 1
+      die "${userFile}: is a dotfile."
     fi
     # Don't act on files without extensions
     if [[ "${userFile##*.}" == "" || "${userFile##*.}" == "${userFile}" ]]; then
-      errorMessage="${userFile}: we need a file extension"
-      return 1
+      die "${userFile}: we need a file extension"
     fi
     # Ignore certain file types
     regex="dmg"
     if [[ "${userFile##*.}" =~ ${regex} ]]; then
-      errorMessage="'.${userFile##*.}' is not a supported extension"
-      return 1
+      die "'.${userFile##*.}' is not a supported extension"
     fi
     return 0
   }
@@ -394,8 +389,6 @@ _mainScript_() {
       _rebuildFileName_
       _renameFiles_
       if ${nonInteractive}; then echo "${newFilename}" ; fi
-    else
-      notice "$errorMessage" # Explain why file is skipped
     fi
   done
 
