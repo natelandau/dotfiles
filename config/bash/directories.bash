@@ -1,3 +1,13 @@
+# Two different sets of LS aliases because Gnu LS and macOS LS use different
+# flags for colors
+
+if [[ $(which ls) =~ gnubin ]]; then
+  alias ls="ls --color=auto"
+  alias ll='ls -FlAhp --color=auto'     # Preferred 'ls' implementation
+else
+  alias ls="ls -G"
+  alias ll='ls -FGlAhp'                 # Preferred 'ls' implementation
+fi
 
 # Show directory stack
 alias d="dirs -v -l"

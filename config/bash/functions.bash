@@ -46,6 +46,9 @@ htmlencode() {
   fi
 }
 
+# URL-encode strings
+#alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1]);"'
+
 urlencode() {
   # URL encoding/decoding from: https://gist.github.com/cdown/1163649
   # Usage: urlencode <string>

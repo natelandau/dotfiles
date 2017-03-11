@@ -80,7 +80,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
       -e 'end tell';)
 
       echo "$finderPath"
-}
+  }
 
   ## SPOTLIGHT MAINTENANCE ##
   alias spot-off="sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist"

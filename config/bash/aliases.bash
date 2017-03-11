@@ -19,21 +19,14 @@ alias kill='kill -9'                  # kill:     Preferred 'kill' implementatio
 alias ax='chmod a+x'                  # ax:     Make a file executable
 alias less='less -RXcqeN'             # Preferred 'less' implementation
 alias more='less'                     # more: use 'less' instead of 'more'
-alias top="top -R -F -s 10 -o rsize"
+alias top='top -R -F -s 10 -o rsize'
+alias path='echo -e ${PATH//:/\\n}'
 
-# Two different sets of LS aliases because Gnu LS and macOS LS use different
-# flags for colors
-
-if [[ $(which ls) =~ gnubin ]]; then
-  alias ll='ls -FlAhp --color=auto'     # Preferred 'ls' implementation
-  alias ls="ls --color=auto"
-else
-  alias ll='ls -FGlAhp'                 # Preferred 'ls' implementation
-  alias ls="ls -G"
-fi
 
 # Custom commands
 mcd () { mkdir -p "$1" ; cd "$1" || exit; }
+mkcd () { mkdir -p "$1" ; cd "$1" || exit; } # because I can never remember the command above
+
 mine() { ps "$@" -u "$USER" -o pid,%cpu,%mem,start,time,bsdtime,command ; }
 alias memHogs='ps wwaxm -o pid,stat,vsize,rss,time,command | head -10'
 alias cpuHogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'
