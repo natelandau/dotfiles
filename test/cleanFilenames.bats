@@ -361,5 +361,5 @@ helper() {
   run $cf --version
 
   assert_success
-  assert_output --regexp "cleanFilenames [0-9].[0-9].[0-9]"
+  assert_output --regexp "cleanFilenames [v|V]?[0-9]+\.[0-9]+\.[0-9]+"
 }
