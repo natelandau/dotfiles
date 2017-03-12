@@ -230,6 +230,15 @@ helper() {
   [ -f "NAME TO TEST.txt" ]
 }
 
+@test "Quiet mode" {
+  regex="\[  debug\]|\[ dryrun\]|\[success\]|\[  error\]"
+  touch "M D YY 2 5 16.txt"
+  run $cf -qv "M D YY 2 5 16.txt"
+  [ "$status" -eq 0 ]
+  [[ ! "$output" =~ $regex ]]
+  [ -f "2016-02-05 M D YY.txt" ]
+}
+
 @test "Iterating over files" {
   touch "M D YY 2 5 16.txt"
   touch "month-DD-YY March 19, 74 test.txt"
