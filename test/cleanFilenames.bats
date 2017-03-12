@@ -62,25 +62,11 @@ helper() {
   assert [ "$output" = "" ]
 }
 
-@test "noOpts prints usage" {
-  run $cf
-
-  assert_success
-  assert_output --partial "cleanFilenames [OPTION]... [FILE]..."
-}
-
-@test "-h prints usage" {
-  run $cf -h
-
-  assert_success
-  assert_output --partial "cleanFilenames [OPTION]... [FILE]..."
-}
-
-@test "bad option" {
+@test "Fail with bad args" {
   run "$cf" -K
 
   assert_failure
-  assert_output --partial 'invalid option'
+  assert_output --partial "[  error] invalid option: '-K'. Exiting."
 }
 
 @test "Fail when can't find file" {
@@ -186,8 +172,8 @@ helper() {
 
 @test "Special Chars" {
   touch "f*r_testing&with   special^chars_-___.txt"
-
   run $cf --nonInteractive "f*r_testing&with   special^chars_-___.txt"
+
   assert_success
   assert_output --partial 'fr-testing&with specialchars.txt'
 }
@@ -200,14 +186,6 @@ helper() {
   assert_output --partial 'name with long number 123456789101112 test.txt'
 }
 
-@test "Lowercase Names" {
-  touch "NAME TO LOWERCASE.txt"
-  run $cf -L --nonInteractive "NAME TO LOWERCASE.txt"
-
-  assert_success
-  assert_output --regexp '^[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2} name to lowercase.txt$'
-}
-
 @test "Unique filename increments" {
   touch "NAME TO LOWERCASE.txt"
   run $cf -LC --nonInteractive "NAME TO LOWERCASE.txt"
@@ -217,58 +195,13 @@ helper() {
   assert_file_exist 'name to lowercase 2.txt'
 }
 
-@test "Remove date" {
-  touch "test 01-01-2016 file.txt"
-  run $cf -R "test 01-01-2016 file.txt"
-
-  assert_success
-  assert_output --partial 'test 01-01-2016 file.txt --> test file.txt'
-  assert_file_exist "test file.txt"
-}
-
-@test "Files in Different Directories" {
+@test "Files in different directories" {
   touch "${testdir}/M D YY 2 5 16.txt"
   run $cf "${testdir}/M D YY 2 5 16.txt"
 
   assert_success
   assert_output --regexp '\[success\] M D YY 2 5 16\.txt --> 2016-02-05 M D YY\.txt'
   assert_file_exist "${testdir}/2016-02-05 M D YY.txt"
-}
-
-@test "Don't add date" {
-  touch "NAME TO TEST.txt"
-  run $cf -C "NAME TO TEST.txt"
-
-  assert_success
-  assert_output --regexp '^[0-9]{2}[:][0-9]{2}[:][0-9]{2} (PM|AM) \[ notice\] NAME TO TEST\.txt: No change'
-  assert_file_exist 'NAME TO TEST.txt'
-}
-
-@test "Dryrun" {
-  touch "YY-MM-DD 16-05-27.txt"
-  run $cf -n "YY-MM-DD 16-05-27.txt"
-
-  assert_success
-  assert_output --regexp '\[ dryrun\] YY-MM-DD 16-05-27\.txt --> 2016-05-27 YY-MM-DD\.txt'
-  assert_file_exist 'YY-MM-DD 16-05-27.txt'
-}
-
-@test "Verbose" {
-  touch "NAME TO TEST.txt"
-  run $cf -nv "NAME TO TEST.txt"
-
-  assert_success
-  assert_output --regexp '\[  debug\]'
-  assert_file_exist 'NAME TO TEST.txt'
-}
-
-@test "Quiet mode" {
-  touch "M D YY 2 5 16.txt"
-  run $cf -qv "M D YY 2 5 16.txt"
-
-  assert_success
-  refute_output --regexp '\[  debug\]|\[ dryrun\]|\[success\]|\[  error\]'
-  assert_file_exist '2016-02-05 M D YY.txt'
 }
 
 @test "Iterating over files" {
@@ -281,4 +214,152 @@ helper() {
   assert_file_exist '2016-02-05 M D YY.txt'
   assert_file_exist '2074-03-19 month-DD-YY test.txt'
   assert_file_exist '2016-01-01 month-DD-YYYY file.txt'
+}
+
+@test "Lowercase Names (-L)" {
+  touch "NAME TO LOWERCASE.txt"
+  run $cf -L --nonInteractive "NAME TO LOWERCASE.txt"
+
+  assert_success
+  assert_output --regexp '^[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2} name to lowercase.txt$'
+}
+
+@test "Lowercase Names (--lower)" {
+  touch "NAME TO LOWERCASE.txt"
+  run $cf --lower --nonInteractive "NAME TO LOWERCASE.txt"
+
+  assert_success
+  assert_output --regexp '[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2} name to lowercase.txt'
+}
+
+@test "Don't add date (-C)" {
+  touch "NAME TO TEST.txt"
+  run $cf -C "NAME TO TEST.txt"
+
+  assert_success
+  assert_output --regexp '^[0-9]{2}[:][0-9]{2}[:][0-9]{2} (PM|AM) \[ notice\] NAME TO TEST\.txt: No change'
+  assert_file_exist 'NAME TO TEST.txt'
+}
+
+@test "Don't add date (--clean)" {
+  touch "NAME TO TEST.txt"
+  run $cf --clean "NAME TO TEST.txt"
+
+  assert_success
+  assert_output --regexp '^[0-9]{2}[:][0-9]{2}[:][0-9]{2} (PM|AM) \[ notice\] NAME TO TEST\.txt: No change'
+  assert_file_exist 'NAME TO TEST.txt'
+}
+
+@test "Remove date (--removeDate)" {
+  touch "test 01-01-2016 file.txt"
+  run $cf --removeDate "test 01-01-2016 file.txt"
+
+  assert_success
+  assert_output --partial 'test 01-01-2016 file.txt --> test file.txt'
+  assert_file_exist "test file.txt"
+}
+
+@test "Remove date (-R)" {
+  touch "test 01-01-2016 file.txt"
+  run $cf -R "test 01-01-2016 file.txt"
+
+  assert_success
+  assert_output --partial 'test 01-01-2016 file.txt --> test file.txt'
+  assert_file_exist "test file.txt"
+}
+
+@test "Test functionality (-T)" {
+  run $cf -T "someTestFile 02-19-2007.txt"
+
+  assert_success
+  assert_output --partial "[ dryrun] someTestFile 02-19-2007.txt --> 2007-02-19 someTestFile.txt"
+}
+
+@test "Test functionality (--test)" {
+  run $cf --test "someTestFile.txt"
+
+  assert_success
+  assert_output --regexp "\[ dryrun\] someTestFile\.txt --> [0-9]{4}-[0-9]{2}-[0-9]{2} someTestFile\.txt"
+}
+
+@test "Dryrun (-n)" {
+  touch "YY-MM-DD 16-05-27.txt"
+  run $cf -n "YY-MM-DD 16-05-27.txt"
+
+  assert_success
+  assert_output --regexp '\[ dryrun\] YY-MM-DD 16-05-27\.txt --> 2016-05-27 YY-MM-DD\.txt'
+  assert_file_exist 'YY-MM-DD 16-05-27.txt'
+}
+
+@test "Dryrun (--dryrun)" {
+  touch "YY-MM-DD 16-05-27.txt"
+  run $cf --dryrun "YY-MM-DD 16-05-27.txt"
+
+  assert_success
+  assert_output --regexp '\[ dryrun\] YY-MM-DD 16-05-27\.txt --> 2016-05-27 YY-MM-DD\.txt'
+  assert_file_exist 'YY-MM-DD 16-05-27.txt'
+}
+
+@test "Usage (no args)" {
+  run $cf
+
+  assert_success
+  assert_line --index 0 "cleanFilenames [OPTION]... [FILE]..."
+}
+
+@test "usage (-h)" {
+  run $cf -h
+
+  assert_success
+  assert_line --index 0 "cleanFilenames [OPTION]... [FILE]..."
+}
+
+@test "usage (--help)" {
+  run $cf --help
+
+  assert_success
+  assert_line --index 0 "cleanFilenames [OPTION]... [FILE]..."
+}
+
+@test "Verbose (-v)" {
+  touch "NAME TO TEST.txt"
+  run $cf -nv "NAME TO TEST.txt"
+
+  assert_success
+  assert_output --regexp '\[  debug\]'
+  assert_file_exist 'NAME TO TEST.txt'
+}
+
+@test "Verbose (--verbose)" {
+  touch "NAME TO TEST.txt"
+  run $cf -n --verbose "NAME TO TEST.txt"
+
+  assert_success
+  assert_output --regexp '\[  debug\]'
+  assert_file_exist 'NAME TO TEST.txt'
+}
+
+@test "Quiet mode (-q)" {
+  touch "M D YY 2 5 16.txt"
+  run $cf -qv "M D YY 2 5 16.txt"
+
+  assert_success
+  refute_output --regexp '\[  debug\]|\[ dryrun\]|\[success\]|\[  error\]'
+  assert_file_exist '2016-02-05 M D YY.txt'
+}
+
+@test "Quiet mode (--quiet)" {
+  touch "M D YY 2 5 16.txt"
+  run $cf -v --quiet "M D YY 2 5 16.txt"
+
+  assert_success
+  refute_output --regexp '\[  debug\]|\[ dryrun\]|\[success\]|\[  error\]'
+  assert_file_exist '2016-02-05 M D YY.txt'
+}
+
+@test "Print version (--version)" {
+  run $cf --version
+
+  assert_success
+  assert_output --regexp "cleanFilenames [0-9].[0-9].[0-9]"
 }
