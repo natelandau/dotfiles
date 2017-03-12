@@ -16,6 +16,7 @@ gac () { git add -A "$1";git commit -m "$2" ; }
 alias gp='git push'
 alias gpush='git push'
 alias gu='git pull'
+alias gsubs='git submodule update --recursive --remote'
 gpull() { git pull; git submodule foreach git pull origin master; }
 alias gfu="git fetch origin"      # Get updates from Origin
 alias gcl='git clone --recursive' # Clone with all submodules
