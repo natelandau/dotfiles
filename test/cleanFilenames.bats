@@ -1,6 +1,10 @@
 #!/usr/bin/env bats
 # shellcheck disable
 
+load 'helpers/bats-support/load'
+load 'helpers/bats-file/load'
+load 'helpers/bats-assert/load'
+
 _setPATH_() {
   # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
   PATHS=(/usr/local/bin $HOME/bin);
@@ -20,87 +24,102 @@ fi
 
 
 cf="$HOME/bin/cleanFilenames"
-testdir="cleantest"
+
 
 setup() {
+  testdir="$(temp_make)"
   curPath="$PWD"
-  mkdir "$testdir"
-  cd "$testdir"
+
+  BATSLIB_FILE_PATH_REM="#${TEST_TEMP_DIR}"
+  BATSLIB_FILE_PATH_ADD='<temp>'
+
+  cd "${testdir}"
 }
 
 teardown() {
   cd $curPath
-  [ -d "$testdir" ] && rm -rf "$testdir"
+  #[ -d "$testdir" ] && rm -rf "$testdir"
+  temp_del "${testdir}"
 }
 
 helper() {
   local -r file="$1"
   local -r newfile="$2"
+  touch "${file}"
+  run "${cf}" --nonInteractive "${file}"
 
-  touch "$file"
-
-  run "$cf" --nonInteractive "$file"
-  [ "$status" -eq 0 ]
-  [ "$output" = "$newfile" ]
-  [ -f "$newfile" ]
+  assert_success
+  assert_output "${newfile}"
+  assert_file_exist "${newfile}"
 }
+
+######## run TESTS ##########
 
 @test "sanity" {
   run true
-  [ "$status" -eq 0 ]
-  [ "$output" = "" ]
+
+  assert_success
+  assert [ "$output" = "" ]
 }
 
 @test "noOpts prints usage" {
   run $cf
-  [ "$status" -eq 0 ]
-  [ "${lines[0]}" = "cleanFilenames [OPTION]... [FILE]..." ]
+
+  assert_success
+  assert_output --partial "cleanFilenames [OPTION]... [FILE]..."
 }
 
 @test "-h prints usage" {
   run $cf -h
-  [ "$status" -eq 0 ]
-  [ "${lines[0]}" = "cleanFilenames [OPTION]... [FILE]..." ]
+
+  assert_success
+  assert_output --partial "cleanFilenames [OPTION]... [FILE]..."
 }
 
-@test "-bad option" {
-  run $cf -K
-  [ "$status" -eq 1 ]
-  [[ "${lines[0]}" =~ 'invalid option' ]]
+@test "bad option" {
+  run "$cf" -K
+
+  assert_failure
+  assert_output --partial 'invalid option'
 }
 
 @test "Fail when can't find file" {
   run $cf "some non-existant file.txt"
-  [ "$status" -eq 1 ]
-  [[ "${lines[0]}" =~ 'No such file or directory' ]]
+
+  assert_failure
+  assert_output --partial 'No such file or directory'
 }
 
 @test "Fail on directories" {
   mkdir "testToFail"
   run $cf "testToFail"
-  [ "$status" -eq 1 ]
-  [[ "${lines[0]}" =~ 'is a directory' ]]
+
+  assert_failure
+  assert_output --partial 'is a directory'
 }
 
 @test "Fail on dotfiles" {
   touch ".testdotfile"
   run $cf ".testdotfile"
-  [ "$status" -eq 1 ]
-  [[ "${lines[0]}" =~ 'is a dotfile' ]]
+
+  assert_failure
+  assert_output --partial 'is a dotfile'
 }
 
 @test "Fail without extensions" {
   touch "testfile"
   run $cf "testfile"
-  [ "$status" -eq 1 ]
-  [[ "${lines[0]}" =~ 'we need a file extension' ]]
+
+  assert_failure
+  assert_output --partial 'we need a file extension'
 }
 
 @test "Fail with DMG files" {
   touch "testfile.dmg"
   run $cf "testfile.dmg"
-  [ "$status" -eq 1 ]
-  [[ "${lines[0]}" =~ 'is not a supported extension' ]]
+
+  assert_failure
+  assert_output --partial 'is not a supported extension'
 }
 
 @test "Already datestamped" {
@@ -167,76 +186,89 @@ helper() {
 
 @test "Special Chars" {
   touch "f*r_testing&with   special^chars_-___.txt"
+
   run $cf --nonInteractive "f*r_testing&with   special^chars_-___.txt"
-  [ "$status" -eq 0 ]
-  [[ "$output" =~ 'fr-testing&with specialchars.txt' ]]
+  assert_success
+  assert_output --partial 'fr-testing&with specialchars.txt'
 }
 
 @test "Long numbers" {
   touch "name with long number 123456789101112 test.txt"
+
   run $cf --nonInteractive "name with long number 123456789101112 test.txt"
-  [ "$status" -eq 0 ]
-  [[ "$output" =~ 'name with long number 123456789101112 test.txt' ]]
+  assert_success
+  assert_output --partial 'name with long number 123456789101112 test.txt'
 }
 
 @test "Lowercase Names" {
-  regex="^[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2} name to lowercase.txt$"
   touch "NAME TO LOWERCASE.txt"
   run $cf -L --nonInteractive "NAME TO LOWERCASE.txt"
-  [ "$status" -eq 0 ]
-  [[ "$output" =~ $regex ]]
+
+  assert_success
+  assert_output --regexp '^[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2} name to lowercase.txt$'
 }
 
 @test "Unique filename increments" {
   touch "NAME TO LOWERCASE.txt"
   run $cf -LC --nonInteractive "NAME TO LOWERCASE.txt"
-  [ "$status" -eq 0 ]
-  [ "$output" = "name to lowercase 2.txt" ]
-  [ -f "name to lowercase 2.txt" ]
+
+  assert_success
+  assert_output "name to lowercase 2.txt"
+  assert_file_exist 'name to lowercase 2.txt'
 }
 
 @test "Remove date" {
   touch "test 01-01-2016 file.txt"
   run $cf -R "test 01-01-2016 file.txt"
-  [ "$status" -eq 0 ]
-  [[ "$output" =~ 'test file.txt' ]]
-  [ -f "test file.txt" ]
+
+  assert_success
+  assert_output --partial 'test 01-01-2016 file.txt --> test file.txt'
+  assert_file_exist "test file.txt"
+}
+
+@test "Files in Different Directories" {
+  touch "${testdir}/M D YY 2 5 16.txt"
+  run $cf "${testdir}/M D YY 2 5 16.txt"
+
+  assert_success
+  assert_output --regexp '\[success\] M D YY 2 5 16\.txt --> 2016-02-05 M D YY\.txt'
+  assert_file_exist "${testdir}/2016-02-05 M D YY.txt"
 }
 
 @test "Don't add date" {
-  regex="^[0-9]{2}[:][0-9]{2}[:][0-9]{2} (PM|AM) \[ notice\] NAME TO TEST\.txt: No change"
   touch "NAME TO TEST.txt"
   run $cf -C "NAME TO TEST.txt"
-  [ "$status" -eq 0 ]
-  [[ "$output" =~ $regex ]]
-  [ -f "NAME TO TEST.txt" ]
+
+  assert_success
+  assert_output --regexp '^[0-9]{2}[:][0-9]{2}[:][0-9]{2} (PM|AM) \[ notice\] NAME TO TEST\.txt: No change'
+  assert_file_exist 'NAME TO TEST.txt'
 }
 
 @test "Dryrun" {
-  regex="\[ dryrun\] YY-MM-DD 16-05-27\.txt --> 2016-05-27 YY-MM-DD\.txt"
   touch "YY-MM-DD 16-05-27.txt"
   run $cf -n "YY-MM-DD 16-05-27.txt"
-  [ "$status" -eq 0 ]
-  [[ "$output" =~ $regex ]]
-  [ -f "YY-MM-DD 16-05-27.txt" ]
+
+  assert_success
+  assert_output --regexp '\[ dryrun\] YY-MM-DD 16-05-27\.txt --> 2016-05-27 YY-MM-DD\.txt'
+  assert_file_exist 'YY-MM-DD 16-05-27.txt'
 }
 
 @test "Verbose" {
-  regex="\[  debug\]"
   touch "NAME TO TEST.txt"
   run $cf -nv "NAME TO TEST.txt"
-  [ "$status" -eq 0 ]
-  [[ "${lines[0]}" =~ $regex ]]
-  [ -f "NAME TO TEST.txt" ]
+
+  assert_success
+  assert_output --regexp '\[  debug\]'
+  assert_file_exist 'NAME TO TEST.txt'
 }
 
 @test "Quiet mode" {
-  regex="\[  debug\]|\[ dryrun\]|\[success\]|\[  error\]"
   touch "M D YY 2 5 16.txt"
   run $cf -qv "M D YY 2 5 16.txt"
-  [ "$status" -eq 0 ]
-  [[ ! "$output" =~ $regex ]]
-  [ -f "2016-02-05 M D YY.txt" ]
+
+  assert_success
+  refute_output --regexp '\[  debug\]|\[ dryrun\]|\[success\]|\[  error\]'
+  assert_file_exist '2016-02-05 M D YY.txt'
 }
 
 @test "Iterating over files" {
@@ -244,8 +276,9 @@ helper() {
   touch "month-DD-YY March 19, 74 test.txt"
   touch "month-DD-YYYY file january 01 2016.txt"
   run $cf *.txt
-  [ "$status" -eq 0 ]
-  [ -f "2016-02-05 M D YY.txt" ]
-  [ -f "2074-03-19 month-DD-YY test.txt" ]
-  [ -f "2016-01-01 month-DD-YYYY file.txt" ]
+
+  assert_success
+  assert_file_exist '2016-02-05 M D YY.txt'
+  assert_file_exist '2074-03-19 month-DD-YY test.txt'
+  assert_file_exist '2016-01-01 month-DD-YYYY file.txt'
 }
