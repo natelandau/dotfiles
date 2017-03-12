@@ -16,34 +16,6 @@ _mainScript_() {
   }
   _errorHandling_
 
-  _createTestFiles_() {
-    filenamesForTesting=(
-      "2016-01-01 Already datestamped.txt"
-      "YYY MM DD 2016 03 19 file.txt"
-      "MM-DD-YYYY 02 02 2016.txt"
-      "MMDDYYYY 01202015 file.txt"
-      "YYYYMMDD 2013-08-21.txt"
-      "MMDDYY file 110216.txt"
-      "YYMMDD 160228.txt"
-      "MM-DD-YY 05-27-16 file.txt"
-      "YY-MM-DD 16-05-27.txt"
-      "M DD YY 7 19 15 test.txt"
-      "M D YY 2 5 16.txt"
-      "month-DD-YY March 19, 74 test.txt"
-      "month-DD-YYYY file january 01 2016.txt"
-      "f*r_testing&with   special^chars_-___.txt"
-      "name with long number 123456789101112 test.txt"
-      "Ambiguous date 11-02-12.txt"
-      )
-    notice "Creating test files..."
-    for testFile in "${filenamesForTesting[@]}"; do
-      _execute_ "touch \"${testFile}\""
-    done
-    success "Test files created"
-    _safeExit_
-  }
-  if "${createTestFiles}"; then _createTestFiles_; fi
-
   realpath() {
     # Convert a relative path to an absolute path.
     #
@@ -415,8 +387,7 @@ force=false;      strict=false;         dryrun=false;
 debug=false;      args=();
 
 cleanOnly=false;  nonInteractive=false; lowerCase=false;
-ignoreFile=false; removeDates=false;    createTestFiles=false;
-testOutput=false;
+ignoreFile=false; removeDates=false;    testOutput=false;
 
 # Set Colors
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
@@ -506,8 +477,6 @@ _usage_() {
                       output in this mode is an exit code and the cleaned name of the file
                       passed to the script
 
-    -S, --samples     Creates a set of files for testing the script
-
     -T, --test        Takes a string of input and shows the result that the script would produce
 
     -n, --dryrun      Non-destructive run. Will report on changes that would have
@@ -581,7 +550,6 @@ while [[ $1 = -?* ]]; do
     --nonInteractive) nonInteractive=true ;;
     -h|--help) _usage_ >&2 ; _safeExit_ ;;
     -T|--test) testOutput=true; dryrun=true ;;
-    -S|--samples) createTestFiles=true ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     -v|--verbose) verbose=true ;;
     -l|--log) printLog=true ;;

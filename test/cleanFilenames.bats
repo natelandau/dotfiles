@@ -103,16 +103,6 @@ helper() {
   [[ "${lines[0]}" =~ 'is not a supported extension' ]]
 }
 
-@test "Create testfiles" {
-  mkdir "$testdir"
-  cd "$testdir"
-  run $cf --samples
-  [ "$status" -eq 0 ]
-  [[ "${lines[0]}" =~ 'Creating test files...' ]]
-  [ -e "2016-01-01 Already datestamped.txt" ]
-  [ -e "YYY MM DD 2016 03 19 file.txt" ]
-}
-
 @test "Already datestamped" {
   helper "2016-01-01 Already datestamped.txt" "2016-01-01 Already datestamped.txt"
 }
