@@ -64,9 +64,9 @@ homebrewPackages:
   - ssh-copy-id         # Add a public key to a remote machine's authorized_keys file
   - sqlite
   - terminal-notifier
-  - thefuck             # Programatically correct mistyped console commands
+  - thefuck             # Programmatically correct mistyped console commands
   - tldr                # Better man pages
-  - tree                # Display directories as trees (boptional color/HTML output)
+  - tree                # Display directories as trees (optional color/HTML output)
   - unison              # Rsync like tool
   - wifi-password       # Show the current WiFi network password
 
