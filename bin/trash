@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-version="1.0.0"
+version="2.0.0"
 
 _mainScript_() {
   local user
@@ -12,16 +12,18 @@ _mainScript_() {
   #shellcheck disable=2009
   finder_pid=$(ps -u "$user" | grep /System/Library/CoreServices/Finder.app | grep -v grep | awk '{print $1}')
 
-  if ${verbose}; then v="-v"; fi
-
   _have_scriptable_finder_() {
     # Determine whether we can script the Finder or not
     # We must have a valid PID for Finder, plus we cannot be in
     # `screen` (another thing that's broken)
     if [[ (${finder_pid} -gt 1) && ("$STY" == "") ]]; then
-      true
+      if ${bypassFinder}; then
+        return 1
+      else
+        return 0
+      fi
     else
-      false
+      return 1
     fi
   }
 
@@ -72,7 +74,8 @@ _mainScript_() {
         fi
 
         # get the absolute path of the current directory & change back to previous directory
-        local abs_path="$(pwd -P)"
+        local abs_path
+        abs_path="$(pwd -P)"
         cd "-" &>/dev/null
 
         # Append base filename to absolute path
@@ -139,60 +142,26 @@ _mainScript_() {
     # Determine if we can tell Finder to empty trash via AppleScript
     if _have_scriptable_finder_; then
       notice "Telling Finder to empty trash..."
-      if /usr/bin/osascript -e "tell application \"Finder\" to empty trash" ; then
-        success "Trash has been emptied"
-        _safeExit_
-      else
-        die "Unable to empty trash"
-      fi
-    # If Finder isn't scriptable, we'll manually empty the trash ourselves
+      _execute_ "/usr/bin/osascript -e 'tell application \"Finder\" to empty trash'" "Trash emptied"
     else
-      # Confirm that the user wants to empty the trash
-      if _seekConfirmation_ "Are you sure you want to empty the trash (this cannot be undone)?"; then
-        notice "Emptying trash..."
-        # delete the contents of user's .Trash folder
-        find "/Users/${user}/.Trash" -depth 1 ! -depth 0 -print0 | xargs -0 rm $v -r
-        # delete the contents of the volume-specific .Trashes folders
-        for file in /Volumes/*; do
-          if [ -d "${file}" ]; then
-            folder="${file}/.Trashes/${uid}"
-            if [ -d "${folder}" ]; then
-              find "${folder}" -depth 1 ! -depth 0 -print0 | xargs -0 rm $v -r
-            fi
-          fi
-        done
-        success "Trash has been emptied"
-      fi
-    fi
-  }
+       notice "Emptying trash..."
 
-  _secureEmptyTheTrash_() {
-    # determine if we can tell Finder to securely empty trash via AppleScript
-    if _have_scriptable_finder_; then
-      notice "Telling Finder to securely empty trash... "
-      if /usr/bin/osascript -e "tell application \"Finder\" to empty trash with security" ; then
-        success "Trash has been securely emptied."
-        _safeExit_
-      else
-        die "Could not empty trash."
-      fi
-    # if Finder isn't scriptable, we'll manually empty the trash ourselves
-    else
-      # confirm that the user wants to securely empty the trash
-      if _seekConfirmation_ "Are you sure you want to securely empty the trash (this REALLY cannot be undone)?"; then
-        # securely delete the contents of user's .Trash folder
-        find "/Users/${user}/.Trash" -depth 1 ! -depth 0 -print0 | xargs -0 srm $v -r
-        # securely delete the contents of the volume-specific .Trashes folders
-        for file in /Volumes/*; do
-          if [ -d "$file" ]; then
-            folder="${file}/.Trashes/${uid}"
-            if [ -d "${folder}" ]; then
-              find "${folder}" -depth 1 ! -depth 0 -print0 | xargs -0 srm $v -r
-            fi
+      # delete the contents of user's .Trash folder
+      while read -r fileToTrash; do
+        [ -e "$fileToTrash" ] && _execute_ "rm -rf \"$fileToTrash\""
+      done< <(find "/Users/${user}/.Trash" -depth 1 ! -depth 0)
+
+      # delete the contents of the volume-specific .Trashes folders
+      for volume in /Volumes/*; do
+        if [ -d "${volume}" ]; then
+          folder="${volume}/.Trashes/${uid}"
+          if [ -d "${folder}" ]; then
+            while read -r fileToTrash; do
+              [ -e "$fileToTrash" ] && _execute_ "rm -rf \"$fileToTrash\""
+            done < <(find "${folder}" -depth 1 ! -depth 0)
           fi
-        done
-        success "Trash has been securely emptied."
-      fi
+        fi
+      done
     fi
   }
 
@@ -216,70 +185,36 @@ _mainScript_() {
           warning "Could not determine absolute path for '${userFile}'!"
         fi
       fi
-      verbose "Telling Finder to trash '${file}'..."
-      if /usr/bin/osascript -e "tell application \"Finder\" to delete POSIX file \"$file\"" &>/dev/null; then
-        success "'${userFile}' moved to trash"
-      else
-        warning "'${userFile}' not moved to trash"
-        continue
-      fi
-    # Finder isn't available for this user, so don't rely on it (we'll do all the dirty work ourselves)
+      verbose "Telling Finder to trash '${userFile}'..."
+
+      _execute_ "/usr/bin/osascript -e 'tell application \"Finder\" to delete POSIX file \"$file\"' &>/dev/null" "'${userFile}' moved to trash"
+
     else
+      verbose "Telling system to trash '${file}'..."
       local trash="/Users/${user}/.Trash/"
       # create the trash folder if necessary
       if [ ! -d "${trash}" ]; then
-        mkdir ${v} "${trash}"
+        _execute_ "mkdir \"${trash}\""
       fi
-      # move the file to the trash
-      if [ ! -e "${trash}${userFile}" ]; then
-        mv ${v} "${userFile}" "${trash}"
-      else
-        # determine if the filename has an extension
-        ext=false
-        case "${ }" in
-          *.*) ext=true ;;
-        esac
-
-        # keep incrementing a number to append to the filename to mimic Finder
-        local i=1
-        if $ext; then
-          new="${trash}${userFile%%.*} ${i}.${userFile##*.}"
-        else
-          new="${trash}${userFile} ${i}"
-        fi
-        while [ -e "${new}" ]; do
-          ((i=$i + 1))
-          if ${ext}; then
-            new="${trash}${userFile%%.*} ${i}.${userFile##*.}"
-          else
-            new="${trash}${userFile} ${i}"
-          fi
-        done
-
-        #move the file to the trash with the new name
-        mv ${v} "${userFile}" "${new}"
-      fi
+      local newBase="$(basename "${userFile}")"
+      local new="$(_uniqueFileName_ "${trash}${newBase}")"
+      _execute_ "mv \"${userFile}\" \"${new}\"" "'${userFile}' moved to trash"
     fi
     done
   }
 
   if ${list}; then _listTrash_; _safeExit_; fi
   if ${emptyTrash}; then _emptyTheTrash_; _safeExit_; fi
-  if ${secureEmpty}; then _secureEmptyTheTrash_; _safeExit_; fi
   # Default behavior without flags is to delete a file
   _trashAFile_
 }  # end _mainScript_
 
 _trapCleanup_() {
   echo ""
-  # Delete temp files, if any
-  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
 _safeExit_() {
-  # Delete temp files, if any
-  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   trap - INT TERM EXIT
   exit ${1:-0}
 }
@@ -290,21 +225,15 @@ scriptName=$(basename "$0")
 
 # Set Flags
 quiet=false;      printLog=false;       verbose=false;
-force=false;      strict=false;         dryrun=false;
+strict=false;     dryrun=false;
 debug=false;      args=();
 
-list=false;       emptyTrash=false;     secureEmpty=false
+list=false;       emptyTrash=false;    bypassFinder="false"
 
 # Set Colors
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
 red=$(tput setaf 1);      green=$(tput setaf 76);      tan=$(tput setaf 3);
 blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
-
-# Set Temp Directory
-tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
-(umask 077 && mkdir "${tmpDir}") || {
-  die "Could not create temporary directory! Exiting."
-}
 
 # Logging & Feedback
 logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
@@ -322,7 +251,7 @@ _alert_() {
   if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
 
   # Print to console when script is not 'quiet'
-  if ${quiet}; then return; else
+  if ${quiet}; then tput cuu1 ; return; else # tput cuu1 moves cursor up one line
    echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
   fi
 
@@ -359,15 +288,15 @@ _usage_() {
   - Correctly handles ${bold}trashing files on other volumes${reset}
   - Uses the ${bold}same filename renaming scheme as Finder${reset} for duplicate file names
   - Can ${bold}list trash contents${reset} w/disk usage summary
-  - ${bold}Empty trash${reset} (including securely) w/confirmation.
+  - ${bold}Empty trash${reset}.
   - Does not require Finder to be running.
 
  ${bold}Options:${reset}
   -l , --list         List trash contents
   -e, --empty         Empty trash contents
-  -s, --secure        Secure empty trash contents
-
-  --force             Skip all user interaction.  Implied 'Yes' to all actions.
+  -n, --dryrun        Non-destructive run. Will report on changes that would have
+                      been made.
+  --bypassFinder      Bypasses AppleScript. Runs pure unix commands.
   --log               Print log to file
   -q, --quiet         Quiet (no output)
   -v, --verbose       Output more information. (Items echoed to 'verbose')
@@ -423,16 +352,16 @@ while [[ $1 = -?* ]]; do
   case $1 in
     -h|--help) _usage_ >&2; _safeExit_ ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
-    -l|--list) list=true ;;
-    -s|--secure) secureEmpty=true ;;
-    -e|--empty) emptyTrash=true ;;
+    --bypassFinder) bypassFinder=true ;;
 
+    -l|--list) list=true ;;
+    -e|--empty) emptyTrash=true ;;
+    -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;
     --log) printLog=true ;;
     -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
-    --force) force=true ;;
     --endopts) shift; break ;;
     *) die "invalid option: '$1'." ;;
   esac
@@ -442,25 +371,67 @@ done
 # Store the remaining part as arguments.
 args+=("$@")
 
-_seekConfirmation_() {
-  # Seeks a Yes or No answer to a question.  Usage:
-  #   if _seekConfirmation_ "Answer this question"; then
-  #     something
-  #   fi
-  input "$@"
-  if "${force}"; then
-    verbose "Forcing confirmation with '--force' flag set"
-    return 0
+_execute_() {
+  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
+  #           and have control over the display of the results.  In "dryrun" mode these
+  #           commands are not executed at all. In Verbose mode, the commands are executed
+  #           with results printed to stderr and stdin
+  #
+  # usage:
+  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
+  if ${dryrun}; then
+    dryrun "${2:-$1}"
   else
-    while true; do
-      read -r -p " (y/n) " yn
-      case $yn in
-        [Yy]* ) return 0;;
-        [Nn]* ) return 1;;
-        * ) input "Please answer yes or no.";;
-      esac
-    done
+    if $verbose; then
+      eval "$1"
+    else
+      eval "$1" &> /dev/null
+    fi
+    if [ $? -eq 0 ]; then
+      success "${2:-$1}"
+      return 0
+    else
+      warning "${2:-$1}"
+      return 1
+    fi
   fi
+}
+
+_uniqueFileName_() {
+  # _uniqueFileName_ takes an input of a file and returns a unique filename.
+  # The use-case here is trying to write a file to a directory which may already
+  # have a file with the same name. To ensure unique filenames, we append a digit
+  # to files when necessary
+  #
+  # Inputs:
+  #
+  #   $1  The name of the file (may include a directory)
+  #
+  #   $2  Option separation character. Defaults to a space
+  #
+  # Usage:
+  #
+  #   _uniqueFileName "/some/dir/file.txt" "-"
+  #
+  #   Would return "/some/dir/file-2.txt"
+
+  local n origFull origName origExt newfile spacer
+
+  origFull="$1"
+  spacer="${2:- }"
+  origName="${origFull%.*}"
+  origExt="${origFull##*.}"
+  newfile="${origName}.${origExt}"
+
+  if [ -e "${newfile}" ]; then
+    n=2
+    while [[ -e "${origName}${spacer}${n}.${origExt}" ]]; do
+      (( n++ ))
+    done
+    newfile="${origName}${spacer}${n}.${origExt}"
+  fi
+
+  echo "${newfile}"
 }
 
 # Trap bad exits with your cleanup function
