@@ -86,7 +86,7 @@ _uniqueFileName_() {
   #
   # Usage:
   #
-  #   _uniqueFileName "/some/dir/file.txt" "-"
+  #   _uniqueFileName_ "/some/dir/file.txt" "-"
   #
   #   Would return "/some/dir/file-2.txt"
 
