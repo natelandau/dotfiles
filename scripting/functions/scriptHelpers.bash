@@ -15,6 +15,7 @@ _seekConfirmation_() {
   #   if _seekConfirmation_ "Answer this question"; then
   #     something
   #   fi
+
   input "$@"
   if "${force}"; then
     verbose "Forcing confirmation with '--force' flag set"

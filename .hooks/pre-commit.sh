@@ -99,5 +99,6 @@ _BATS_() {
     [ -f "${GITROOT}/test/scriptFunctions.bats" ] && _execute_ "${GITROOT}/test/scriptFunctions.bats"
   fi
 }
+_BATS_
 
 _safeExit_
