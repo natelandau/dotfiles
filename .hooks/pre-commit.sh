@@ -30,36 +30,40 @@ _execute_() {
 
 # Ensure that no symlinks are added. Here we add them to .gitignore
 GITROOT=$(git rev-parse --show-toplevel 2> /dev/null)
-gitIgnore="$GITROOT/.gitignore"
 
-# Work on files not yet staged
-havesymlink=false
-for f in $(git status --porcelain | grep '^??' | sed 's/^?? //'); do
-  if test -L "$f"; then
-    if ! grep "$f" "$gitIgnore"; then
-      echo -e "\n$f" >> "$gitIgnore"
+_ignoreSymlinks_() {
+  local gitIgnore="$GITROOT/.gitignore"
+  local havesymlink=false
+
+  # Work on files not yet staged
+  for f in $(git status --porcelain | grep '^??' | sed 's/^?? //'); do
+    if test -L "$f"; then
+      if ! grep "$f" "$gitIgnore"; then
+        echo -e "\n$f" >> "$gitIgnore"
+      fi
+      havesymlink=true
     fi
-    havesymlink=true
-  fi
-done
+  done
 
-# Work on files that were mistakenly staged
-for f in $(git status --porcelain | grep '^A' | sed 's/^A //'); do
-  if test -L "$f"; then
-    if ! grep "$f" "$gitIgnore"; then
-      git reset -q "$f"
-      echo -e "\n$f" >> "$gitIgnore"
+  # Work on files that were mistakenly staged
+  for f in $(git status --porcelain | grep '^A' | sed 's/^A //'); do
+    if test -L "$f"; then
+      if ! grep "$f" "$gitIgnore"; then
+        git reset -q "$f"
+        echo -e "\n$f" >> "$gitIgnore"
+      fi
+      havesymlink=true
     fi
-    havesymlink=true
-  fi
-done
+  done
 
-if ${havesymlink}; then
-  echo "Error: At least one symlink was added to the repo."
-  echo "Error: It has been unstaged and added to .gitignore"
-  echo "Error: Commit aborted..."
-  exit 1
-fi
+  if ${havesymlink}; then
+    echo "Error: At least one symlink was added to the repo."
+    echo "Error: It has been unstaged and added to .gitignore"
+    echo "Error: Commit aborted..."
+    exit 1
+  fi
+}
+_ignoreSymlinks_
 
 # if you only want to lint the staged changes, not any un-staged changes, use:
 # git show ":$file" | <command>
@@ -82,10 +86,18 @@ if which shellcheck >/dev/null; then
 fi
 
 # Run BATS where appropriate
-for file in $(git diff --cached --name-only | grep -E 'bin/'); do
-  filename="$(basename $file)"
-  filename="${filename%.*}"
-  [ -f "${GITROOT}/test/${filename}.bats" ] && _execute_ "${GITROOT}/test/${filename}.bats -t"
-done
+_BATS_() {
+  # Run BATS on bin/*
+  for file in $(git diff --cached --name-only | grep -E 'bin/'); do
+    filename="$(basename $file)"
+    filename="${filename%.*}"
+    [ -f "${GITROOT}/test/${filename}.bats" ] && _execute_ "${GITROOT}/test/${filename}.bats -t"
+  done
 
-exit 0
+  # Run BATS on script functions
+  if git diff --cached --name-only | grep -E 'scripting/functions/.*\.bash$' &>/dev/null; then
+    [ -f "${GITROOT}/test/scriptFunctions.bats" ] && _execute_ "${GITROOT}/test/scriptFunctions.bats"
+  fi
+}
+
+_safeExit_

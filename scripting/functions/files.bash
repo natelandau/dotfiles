@@ -132,3 +132,53 @@ _yaml2json_() {
   # usage: _yaml2json_ "dir/somefile.yaml"
   python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "$1"
 }
+
+_encryptFile_() {
+  # Takes a file as argument $1 and encodes it using openSSL
+  # Argument $2 is the output name. if $2 is not specified, the
+  # output will be '$1.enc'
+  #
+  # If a variable '$PASS' has a value, we will use that as the password
+  # for the encrypted file. Otherwise we will ask.
+  #
+  # usage:  _encryptFile_ "somefile.txt" "encrypted_somefile.txt"
+
+  [ -z "$1" ] && die "_encodeFile_() needs an argument"
+  [ -f "${1}" ] || die "'${1}': Does not exist or is not a file"
+
+  local fileToEncrypt encryptedFile defaultName
+  fileToEncrypt="$1"
+  defaultName="${1%.decrypt}"
+  encryptedFile="${2:-$defaultName.enc}"
+
+  if [ -z $PASS ]; then
+    _execute_ "openssl enc -aes-256-cbc -salt -in ${fileToEncrypt} -out ${encryptedFile}" "Encrypt ${fileToEncrypt}"
+  else
+    _execute_ "openssl enc -aes-256-cbc -salt -in ${fileToEncrypt} -out ${encryptedFile} -k ${PASS}" "Encrypt ${fileToEncrypt}"
+  fi
+}
+
+_decryptFile_() {
+  # Takes a file as argument $1 and decrypts it using openSSL.
+  # Argument $2 is the output name. If $2 is not specified, the
+  # output will be '$1.decrypt'
+  #
+  # If a variable '$PASS' has a value, we will use that as the password
+  # to decrypt the file. Otherwise we will ask
+  #
+  # usage:  _decryptFile_ "somefile.txt.enc" "decrypted_somefile.txt"
+
+  [ -z "$1" ] && die "_decryptFile_() needs an argument"
+  [ -f "${1}" ] || die "'${1}': Does not exist or is not a file"
+
+  local fileToDecrypt decryptedFile defaultName
+  fileToDecrypt="${1}"
+  defaultName="${1%.enc}"
+  decryptedFile="${2:-$defaultName.decrypt}"
+
+  if [ -z $PASS ]; then
+    _execute_ "openssl enc -aes-256-cbc -d -in ${fileToDecrypt} -out ${decryptedFile}" "Decrypt ${fileToDecrypt}"
+  else
+    _execute_ "openssl enc -aes-256-cbc -d -in ${fileToDecrypt} -out ${decryptedFile} -k ${PASS}" "Decrypt ${fileToDecrypt}"
+  fi
+}
