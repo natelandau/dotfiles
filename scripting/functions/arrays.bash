@@ -1,14 +1,16 @@
 _inArray_() {
-    # Determine if a value is in an array.
-    # Usage: if _inArray_ "VALUE" "${ARRAY[@]}"; then ...
-    local value="$1"; shift
-    for arrayItem in "$@"; do
-        [[ "${arrayItem}" == "${value}" ]] && return 0
-    done
-    return 1
+  # v1.0.0
+  # Determine if a value is in an array.
+  # Usage: if _inArray_ "VALUE" "${ARRAY[@]}"; then ...
+  local value="$1"; shift
+  for arrayItem in "$@"; do
+      [[ "${arrayItem}" == "${value}" ]] && return 0
+  done
+  return 1
 }
 
 _join_() {
+  # v1.0.0
   # joins items together with a user specified separator
   # Taken whole cloth from: http://stackoverflow.com/questions/1527049/bash-join-elements-of-an-array
   #
@@ -20,6 +22,7 @@ _join_() {
 }
 
 _setdiff_() {
+  # v1.0.0
   # Given strings containing space-delimited words A and B, "setdiff A B" will
   # return all words in A that do not exist in B. Arrays in bash are insane
   # (and not in a good way).

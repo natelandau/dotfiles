@@ -46,6 +46,7 @@ _squeeze_() {
 }
 
 _escape_() {
+  # v1.0.0
   # Escapes a string by adding \ before special chars
   # usage: _escape_ "Some text here"
 
@@ -54,42 +55,45 @@ _escape_() {
 }
 
 _htmlDecode_() {
+  # v1.0.0
   # Decode HTML characters with sed
   # Usage: _htmlDecode_ <string>
 
   local sedFile
-  sedFile="$HOME/.sed/htmlDecode.sed"
+  sedFile="${HOME}/.sed/htmlDecode.sed"
 
-  [ -f "${sedFile}" ] && echo "${1}" | sed -f "${sedFile}" || return 1
+  [ -f "${sedFile}" ] && { echo "${1}" | sed -f "${sedFile}" ; } || return 1
 }
 
 _htmlEncode_() {
+  # v1.0.0
   # Encode HTML characters with sed
   # Usage: _htmlEncode_ <string>
 
   local sedFile
-  sedFile="$HOME/.sed/htmlEncode.sed"
+  sedFile="${HOME}/.sed/htmlEncode.sed"
 
-  [ -f "${sedFile}" ] && echo "${1}" | sed -f "${sedFile}" || return 1
+  [ -f "${sedFile}" ] && { echo "${1}" | sed -f "${sedFile}" ; } || return 1
 }
 
 _urlEncode_() {
+  # v1.0.0
   # URL encoding/decoding from: https://gist.github.com/cdown/1163649
   # Usage: _urlEncode_ <string>
 
-  local length="${#1}"
-  for (( i = 0; i < length; i++ )); do
-    local c="${1:i:1}"
-    case $c in
-      [a-zA-Z0-9.~_-]) printf "%s" "$c" ;;
-      *) printf '%%%02X' "'$c"
-      esac
+  local LANG=C
+  for ((i=0;i<${#1};i++)); do
+    if [[ ${1:$i:1} =~ ^[a-zA-Z0-9\.\~_-]$ ]]; then
+      printf "${1:$i:1}"
+    else
+      printf '%%%02X' "'${1:$i:1}"
+    fi
   done
 }
 
 _urlDecode_() {
+  # v1.0.0
   # Usage: _urlDecode_ <string>
-
   local url_encoded="${1//+/ }"
-  printf '%b' "${url_encoded//%/\x}"
+  printf '%b' "${url_encoded//%/\\x}"
 }

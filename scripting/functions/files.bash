@@ -121,6 +121,43 @@ _readFile_() {
   unset result
 }
 
+_parseYAML_() {
+  # Function to parse YAML files and add values to variables. Send it to a temp file and source it
+  # https://gist.github.com/DinoChiesa/3e3c3866b51290f31243 which is derived from
+  # https://gist.github.com/epiloque/8cf512c6d64641bde388
+  #
+  # Note that portions of strings containing a '#' are removed to allow for comments.
+  #
+  # Usage:
+  #     $ _parseYAML_ sample.yml > /some/tempfile
+  #     $ source /some/tempfile
+  #
+  # _parseYAML_ accepts a prefix argument so that imported settings all have a common prefix
+  # (which will reduce the risk of name-space collisions).
+  #
+  #     $ _parseYAML_ sample.yml "CONF_"
+
+    local prefix=$2
+    local s
+    local w
+    local fs
+    s='[[:space:]]*'
+    w='[a-zA-Z0-9_]*'
+    fs="$(echo @|tr @ '\034')"
+    sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
+        -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$1" |
+    awk -F"$fs" '{
+      indent = length($1)/2;
+      if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
+      vname[indent] = $2;
+      for (i in vname) {if (i > indent) {delete vname[i]}}
+      if (length($3) > 0) {
+              vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+              printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
+      }
+    }' | sed 's/_=/+=/g' | sed 's/[[:space:]]*#.*"/"/g'
+}
+
 _json2yaml_() {
   # convert json files to yaml using python and PyYAML
   # usage: _json2yaml_ "dir/somefile.json"
@@ -134,6 +171,7 @@ _yaml2json_() {
 }
 
 _encryptFile_() {
+  # v1.0.0
   # Takes a file as argument $1 and encodes it using openSSL
   # Argument $2 is the output name. if $2 is not specified, the
   # output will be '$1.enc'
@@ -159,6 +197,7 @@ _encryptFile_() {
 }
 
 _decryptFile_() {
+  # v1.0.0
   # Takes a file as argument $1 and decrypts it using openSSL.
   # Argument $2 is the output name. If $2 is not specified, the
   # output will be '$1.decrypt'

@@ -8,9 +8,51 @@ today=$(LC_ALL=C date +"%m-%d-%Y")         # Returns: 06-14-2015
 longdate=$(LC_ALL=C date +"%a, %d %b %Y %H:%M:%S %z")  # Returns: Sun, 10 Jan 2016 20:47:53 -0500
 gmtdate=$(LC_ALL=C date -u -R | sed 's/\+0000/GMT/') # Returns: Wed, 13 Jan 2016 15:55:29 GMT
 
+bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
+red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
+blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
+
 ### Functions ###
 
+_alert_() {
+  # v1.0.0
+  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
+  if [ "${1}" = "warning" ]; then local color="${red}"; fi
+  if [ "${1}" = "success" ]; then local color="${green}"; fi
+  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
+  if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
+  if [ "${1}" = "input" ]; then local color="${bold}"; fi
+  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
+  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
+  # Don't use colors on pipes or non-recognized terminals
+  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
+
+  # Print to console when script is not 'quiet'
+  if ${quiet}; then tput cuu1 ; return; else # tput cuu1 moves cursor up one line
+   echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
+  fi
+
+  # Print to Logfile
+  if ${printLog} && [ "${1}" != "input" ]; then
+    color=""; reset="" # Don't use colors in logs
+    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
+  fi
+}
+
+function die ()       { local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
+function error ()     { local _message="${*}"; echo -e "$(_alert_ error)"; }
+function warning ()   { local _message="${*}"; echo -e "$(_alert_ warning)"; }
+function notice ()    { local _message="${*}"; echo -e "$(_alert_ notice)"; }
+function info ()      { local _message="${*}"; echo -e "$(_alert_ info)"; }
+function debug ()     { local _message="${*}"; echo -e "$(_alert_ debug)"; }
+function success ()   { local _message="${*}"; echo -e "$(_alert_ success)"; }
+function dryrun()     { local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
+function input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
+function header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
+function verbose()    { if ${verbose}; then debug "$@"; fi }
+
 _seekConfirmation_() {
+  # v1.0.0
   # Seeks a Yes or No answer to a question.  Usage:
   #   if _seekConfirmation_ "Answer this question"; then
   #     something
@@ -33,6 +75,7 @@ _seekConfirmation_() {
 }
 
 _execute_() {
+  # v1.0.0
   # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
   #           and have control over the display of the results.  In "dryrun" mode these
   #           commands are not executed at all. In Verbose mode, the commands are executed
@@ -174,43 +217,6 @@ _progressBar_() {
   tput cnorm
 }
 
-_parseYAML_() {
-  # Function to parse YAML files and add values to variables. Send it to a temp file and source it
-  # https://gist.github.com/DinoChiesa/3e3c3866b51290f31243 which is derived from
-  # https://gist.github.com/epiloque/8cf512c6d64641bde388
-  #
-  # Note that portions of strings containing a '#' are removed to allow for comments.
-  #
-  # Usage:
-  #     $ _parseYAML_ sample.yml > /some/tempfile
-  #     $ source /some/tempfile
-  #
-  # _parseYAML_ accepts a prefix argument so that imported settings all have a common prefix
-  # (which will reduce the risk of name-space collisions).
-  #
-  #     $ _parseYAML_ sample.yml "CONF_"
-
-    local prefix=$2
-    local s
-    local w
-    local fs
-    s='[[:space:]]*'
-    w='[a-zA-Z0-9_]*'
-    fs="$(echo @|tr @ '\034')"
-    sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$1" |
-    awk -F"$fs" '{
-      indent = length($1)/2;
-      if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
-      vname[indent] = $2;
-      for (i in vname) {if (i > indent) {delete vname[i]}}
-      if (length($3) > 0) {
-              vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-              printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
-      }
-    }' | sed 's/_=/+=/g' | sed 's/[[:space:]]*#.*"/"/g'
-}
-
 _makeCSV_() {
   # Creates a new CSV file if one does not already exist.
   # Takes passed arguments and writes them as a header line to the CSV
@@ -247,6 +253,7 @@ _writeCSV_() {
 }
 
 _convertSecs_() {
+  # v1.0.0
   # Pass a number (seconds) into the function as this:
   # _convertSecs_ $TOTALTIME
   #
@@ -254,6 +261,7 @@ _convertSecs_() {
   #   STARTTIME=$(date +"%s")
   #   ENDTIME=$(date +"%s")
   #   TOTALTIME=$(($ENDTIME-$STARTTIME)) # human readable time
+
   ((h=${1}/3600))
   ((m=(${1}%3600)/60))
   ((s=${1}%60))
@@ -261,7 +269,7 @@ _convertSecs_() {
 }
 
 _httpStatus_() {
-  # -----------------------------------
+  # v1.0.0
   # Shamelessly taken from: https://gist.github.com/rsvp/1171304
   #
   # Usage:  _httpStatus_ URL [timeout] [--code or --status] [see 4.]
@@ -277,10 +285,8 @@ _httpStatus_() {
   #         Example:  $ _httpStatus_ bit.ly
   #                   301 Redirection: Moved Permanently
   #
-  #         Example: $ _httpStatus_ www.google.com 100 -c
-  #                  200
-  #
-  # -----------------------------------
+  #         Example: $ _httpStatus_ www.google.com 100 -c 200
+
   local curlops
   local arg4
   local arg5
