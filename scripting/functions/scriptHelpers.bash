@@ -111,6 +111,21 @@ _setPATH_() {
  done
 }
 
+_findBaseDir_() {
+  #v1.0.0
+  # fincBaseDir locates the real directory of the script being run. similar to GNU readlink -n
+  # usage :  baseDir="$(_findBaseDir_)"
+  local SOURCE
+  local DIR
+  SOURCE="${BASH_SOURCE[0]}"
+  while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+  done
+  echo "$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+}
+
 _pushover_() {
   # Sends notifications view Pushover
   # IMPORTANT: The API Keys must be filled in

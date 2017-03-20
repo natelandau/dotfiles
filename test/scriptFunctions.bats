@@ -44,84 +44,9 @@ teardown() {
   temp_del "${testdir}"
 }
 
-@test "info" {
-  run info "testing"
-  assert_output --regexp "[0-9]+:[0-9]+:[0-9]+ (AM|PM) \[   info\] testing"
-}
-
-@test "error" {
-  run error "testing"
-  assert_output --regexp "\[  error\] testing"
-}
-
-@test "warning" {
-  run warning "testing"
-  assert_output --regexp "\[warning\] testing"
-}
-
-@test "success" {
-  run success "testing"
-  assert_output --regexp "\[success\] testing"
-}
-
-@test "notice" {
-  run notice "testing"
-  assert_output --regexp "\[ notice\] testing"
-}
-
-@test "header" {
-  run header "testing"
-  assert_output --regexp "\[ header\] == testing =="
-}
-
-@test "input" {
-  run input "testing"
-  assert_output --partial "[  input] testing"
-}
-
-@test "debug" {
-  run debug "testing"
-  assert_output --partial "[  debug] testing"
-}
-
-@test "die" {
-  run die "testing"
-  assert_line --index 0 --partial "[  error] testing Exiting."
-  assert_line --index 1 --partial "_safeExit_: command not found"
-}
-
-@test "quiet" {
-  quiet=true
-  run notice "testing"
-  assert_success
-  refute_output --partial "testing"
-  quiet=false
-}
-
-@test "verbose" {
-  run verbose "testing"
-  refute_output --regexp "\[  debug\] testing"
-
-  verbose=true
-  run verbose "testing"
-  assert_output --regexp "\[  debug\] testing"
-  verbose=false
-}
-
-@test "logging" {
-  printLog=true ; logFile="testlog"
-  notice "testing"
-  info "testing again"
-  success "last test"
-
-  assert_file_exist "${logFile}"
-
-  run cat "${logFile}"
-  assert_line --index 0 --partial "[ notice] testing"
-  assert_line --index 1 --partial "[   info] testing again"
-  assert_line --index 2 --partial "[success] last test"
-
-  printLog=false
+@test "_findBaseDir_" {
+  run _findBaseDir_
+  assert_output "${HOME}/dotfiles/scripting/functions"
 }
 
 @test "_encryptFile_" {
@@ -395,4 +320,84 @@ EOL
   run _readFile_ "testfile.txt"
   assert_line --index 0 'line 1'
   assert_line --index 2 'line 3'
+}
+
+@test "info" {
+  run info "testing"
+  assert_output --regexp "[0-9]+:[0-9]+:[0-9]+ (AM|PM) \[   info\] testing"
+}
+
+@test "error" {
+  run error "testing"
+  assert_output --regexp "\[  error\] testing"
+}
+
+@test "warning" {
+  run warning "testing"
+  assert_output --regexp "\[warning\] testing"
+}
+
+@test "success" {
+  run success "testing"
+  assert_output --regexp "\[success\] testing"
+}
+
+@test "notice" {
+  run notice "testing"
+  assert_output --regexp "\[ notice\] testing"
+}
+
+@test "header" {
+  run header "testing"
+  assert_output --regexp "\[ header\] == testing =="
+}
+
+@test "input" {
+  run input "testing"
+  assert_output --partial "[  input] testing"
+}
+
+@test "debug" {
+  run debug "testing"
+  assert_output --partial "[  debug] testing"
+}
+
+@test "die" {
+  run die "testing"
+  assert_line --index 0 --partial "[  error] testing Exiting."
+  assert_line --index 1 --partial "_safeExit_: command not found"
+}
+
+@test "quiet" {
+  quiet=true
+  run notice "testing"
+  assert_success
+  refute_output --partial "testing"
+  quiet=false
+}
+
+@test "verbose" {
+  run verbose "testing"
+  refute_output --regexp "\[  debug\] testing"
+
+  verbose=true
+  run verbose "testing"
+  assert_output --regexp "\[  debug\] testing"
+  verbose=false
+}
+
+@test "logging" {
+  printLog=true ; logFile="testlog"
+  notice "testing"
+  info "testing again"
+  success "last test"
+
+  assert_file_exist "${logFile}"
+
+  run cat "${logFile}"
+  assert_line --index 0 --partial "[ notice] testing"
+  assert_line --index 1 --partial "[   info] testing again"
+  assert_line --index 2 --partial "[success] last test"
+
+  printLog=false
 }
