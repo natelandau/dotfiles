@@ -1,4 +1,5 @@
 _ext_() {
+  # v1.0.0
   # Get the extension of the given filename.
   #
   # Usage: _ext_ [-n LEVELS] FILENAME
@@ -45,6 +46,7 @@ _ext_() {
 }
 
 _locateSourceFile_() {
+  # v1.0.0
   # locateSourceFile is fed a symlink and returns the originating file
   # usage: _locateSourceFile_ 'some/symlink'
 
@@ -73,6 +75,7 @@ _locateSourceFile_() {
 }
 
 _uniqueFileName_() {
+  # v1.0.0
   # _uniqueFileName_ takes an input of a file and returns a unique filename.
   # The use-case here is trying to write a file to a directory which may already
   # have a file with the same name. To ensure unique filenames, we append a digit
@@ -110,6 +113,7 @@ _uniqueFileName_() {
 }
 
 _readFile_() {
+  # v1.0.0
   # Function to reads a file and prints each line.
   # Usage: _readFile_ "some/filename"
   local result
@@ -122,6 +126,7 @@ _readFile_() {
 }
 
 _parseYAML_() {
+  # v1.0.0
   # Function to parse YAML files and add values to variables. Send it to a temp file and source it
   # https://gist.github.com/DinoChiesa/3e3c3866b51290f31243 which is derived from
   # https://gist.github.com/epiloque/8cf512c6d64641bde388
@@ -159,12 +164,14 @@ _parseYAML_() {
 }
 
 _json2yaml_() {
+  # v1.0.0
   # convert json files to yaml using python and PyYAML
   # usage: _json2yaml_ "dir/somefile.json"
   python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < "$1"
 }
 
 _yaml2json_() {
+  # v1.0.0
   # convert yaml files to json using python and PyYAML
   # usage: _yaml2json_ "dir/somefile.yaml"
   python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "$1"
