@@ -49,8 +49,7 @@ dotfiles
 * Edit `config-install.yaml` to reflect your preferred packages
 * Review the files in `config/` to configure your own aliases, preferences, etc.
 
-#### Private Files
-
+### Private Files
 Sometimes there are files which contain private information. These might be API keys, local directory structures, or anything else you want to keep hidden. I keep these in a separate private repository which has a folder structure very similar to this one. 
 
 install.sh has a variable for the location of a private install script.  If that script is found, it will be invoked.
@@ -71,5 +70,5 @@ This gist creates a script `~/bootstrap.sh` in your home directory which complet
 
 See. Easy. Now you're ready to run `~/dotfiles/install.sh` and get your new computer working.
 
-### A Note on Code Reuse
+## A Note on Code Reuse
 Many of the scripts, configuration files, and other information herein were created by me over many years without ever having the intention to make them public. As a novice programmer, I have Googled, GitHubbed, and StackExchanged a path to solve my own scripting needs.  Quite often I would lift a function whole-cloth from a GitHub repo and not keep track of it's original location.  I have done my best within these files to recreate my footsteps and give credit to the original creators of the code when possible.  Unfortunately, I fear that I missed as many as I found.  My goal of making this repository public is not to take credit for the wonderful code written by others. If you recognize or wrote something here that I didn't credit, please let me know.
