@@ -1,5 +1,5 @@
 # About
-This repository contains everything needed to bootstrap and configure new Mac computer. Included here are:
+This repository contains everything needed to bootstrap and configure new Mac computer. It is opinionated and based on my own work flows.  It is highly recommended that you fork this and customize it for your own purposes. Included here are:
 
 * dotfiles
 * ~/bin/ scripts
@@ -7,7 +7,7 @@ This repository contains everything needed to bootstrap and configure new Mac co
 * Scripting templates and utilities
 * `install.sh`, a script to put everything where it needs to go
 
-**Disclaimer:**  *I am not a professional programmer and I bear no responsibility whatsoever if any of these scripts wipes your computer, destroys your data, crashes your car, or otherwise causes mayhem and destruction.  USE AT YOUR OWN RISK.*
+**Disclaimer:**  *I am not a professional or trained programmer and I bear no responsibility whatsoever if any of these scripts wipes your computer, destroys your data, burns your toast, crashes your car, or otherwise causes mayhem and destruction.  USE AT YOUR OWN RISK.*
 
 ## install.sh
 This script runs through a series of tasks to configure a new computer. There are three distinct areas of `install.sh` which are executed in order.  These are:
@@ -50,12 +50,13 @@ dotfiles
 * Review the files in `config/` to configure your own aliases, preferences, etc.
 
 ### Private Files
-Sometimes there are files which contain private information. These might be API keys, local directory structures, or anything else you want to keep hidden. I keep these in a separate private repository which has a folder structure very similar to this one. 
+Sometimes there are files which contain private information. These might be API keys, local directory structures, or anything else you want to keep hidden. I keep these in a separate private repository which has a folder structure very similar to this one. To configure your own private files edit the following files to reflect your setup
 
-install.sh has a variable for the location of a private install script.  If that script is found, it will be invoked.
+* `install.sh` has a variable for the location of a private install script.  If that script is found, it will be invoked.
+* Edit `config/shell/bash_profile` to add the location of your private plugins
 
 ## Cloning this repo to a new computer
-The first step needed to use these dotfiles is to clone this repo into the $HOME directory.  To make this easy, I created [a gist](https://gist.github.com/natelandau/b6ec165862277f3a7a4beff76da53a9c) which can easily be run with the following command:
+The first step needed to use these dotfiles is to clone this repo into the $HOME directory.  To make this easy, I [created a gist](https://gist.github.com/natelandau/b3e1dfba7491137f0a0f5e25721fffc2) which can easily be run with the following command:
 
 ```
 curl -SL https://gist.githubusercontent.com/natelandau/b3e1dfba7491137f0a0f5e25721fffc2/raw/d98763695a0ddef1de9db2383f43149005423f20/bootstrapNewMac | bash
