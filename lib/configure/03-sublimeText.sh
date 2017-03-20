@@ -7,10 +7,10 @@ _configureSublimeText3_() {
     warning "We don't have Sublime Text.app. Install it and try again."
   else
     if [ ! -e "/usr/local/bin/subl" ]; then
-      execute "ln -s /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl /usr/local/bin/subl" "Symlink subl to /user/local/bin/subl"
+      _execute_ "ln -s /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl /usr/local/bin/subl" "Symlink subl to /user/local/bin/subl"
     else
       notice "Symlink already exists. Nothing done."
     fi
   fi
 }
-_executeFunction_ "_configureSublimeText3_" "Configure SublimeText3"
+_configureSublimeText3_

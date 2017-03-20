@@ -15,7 +15,7 @@ export PATH="/usr/local/bin:$PATH:$HOME/bin"
 # Locations containing files *.bash to be sourced to your environment
 bashFileLocations=(
   ${HOME}/dotfiles/config/bash
-  ${HOME}/dotfiles/private/config/bash
+  ${HOME}/dotfiles-private/config/bash
   )
 
 for bashFileLocation in "${bashFileLocations[@]}"; do

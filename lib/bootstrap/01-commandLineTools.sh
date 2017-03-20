@@ -51,7 +51,7 @@ fi
 #   # Find the last listed update in the Software Update feed with "Command Line Tools" in the name
 #   cmd_line_tools=$(softwareupdate -l | awk '/\*\ Command Line Tools/ { $1=$1;print }' | tail -1 | sed 's/^[[ \t]]*//;s/[[ \t]]*$//;s/*//' | cut -c 2-)
 
-#   execute "softwareupdate -i ${cmd_line_tools} -v"
+#   _execute_ "softwareupdate -i ${cmd_line_tools} -v"
 
 #   # Remove the temp file
 #   if [ -f "${cmdLineToolsTmp}" ]; then

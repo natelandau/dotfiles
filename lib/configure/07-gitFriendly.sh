@@ -4,7 +4,7 @@ if ! command -v pull &> /dev/null; then
 
     # github.com/jamiew/git-friendly
     # the `push` command which copies the github compare URL to my clipboard is heaven
-    execute "bash < <( curl https://raw.github.com/jamiew/git-friendly/master/install.sh)"
+    _execute_ "bash < <( curl https://raw.github.com/jamiew/git-friendly/master/install.sh)"
   }
-  _executeFunction_ "_installGitFriendly_" "Install Git Friendly"
+  _installGitFriendly_
 fi

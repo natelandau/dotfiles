@@ -5,13 +5,13 @@ RUBYVERSION="2.1.2" # Version of Ruby to install via RVM
 
 # Check for RVM
 if ! command -v rvm &> /dev/null; then
-  if seek_confirmation "Couldn't find RVM. Install it?"; then
-    execute "curl -L https://get.rvm.io | bash -s stable --ruby"
-    execute "source ${HOME}/.rvm/scripts/rvm"
-    execute "source ${HOME}/.bash_profile"
+  if _seekConfirmation_ "Couldn't find RVM. Install it?"; then
+    _execute_ "curl -L https://get.rvm.io | bash -s stable --ruby"
+    _execute_ "source ${HOME}/.rvm/scripts/rvm"
+    _execute_ "source ${HOME}/.bash_profile"
     #rvm get stable --autolibs=enable
-    execute "rvm install ${RUBYVERSION}"
-    execute "rvm use ${RUBYVERSION} --default"
+    _execute_ "rvm install ${RUBYVERSION}"
+    _execute_ "rvm use ${RUBYVERSION} --default"
   fi
 fi
 

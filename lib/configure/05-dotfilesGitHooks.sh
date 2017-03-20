@@ -22,12 +22,12 @@ _installGitHooks_() {
     hook="$(basename ${hook})"
 
     sourceFile="${hooksLocation}/${hook}"
-    destFile="${baseDir}/.git/hooks/${hook%.sh}"
+    destFile="${GITROOT}/.git/hooks/${hook%.sh}"
 
     if [ -e "$destFile" ]; then
-      execute "rm $destFile"
+      _execute_ "rm $destFile"
     fi
-    execute "ln -fs $sourceFile $destFile" "symlink $sourceFile → $destFile"
+    _execute_ "ln -fs \"$sourceFile\" \"$destFile\"" "symlink $sourceFile → $destFile"
 
   done
 
@@ -37,4 +37,4 @@ _installGitHooks_() {
   unset hooksLocation
   unset GITROOT
 }
-_executeFunction_ "_installGitHooks_" "Install Git Hooks"
+_installGitHooks_

@@ -13,7 +13,7 @@ if ! command -v brew &> /dev/null; then
   fi
 
   # Install Homebrew
-  execute "ruby -e $(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" "Install Homebrew"
+  _execute_ "ruby -e $(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" "Install Homebrew"
 else
   success "Homebrew installed"
 fi

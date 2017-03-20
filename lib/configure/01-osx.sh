@@ -5,20 +5,20 @@ _configureOSX_() {
   sudo -v
 
   # Set Computer Name
-  if seek_confirmation "Would you like to set your computer name (as done via System Preferences >> Sharing)?"; then
+  if _seekConfirmation_ "Would you like to set your computer name (as done via System Preferences >> Sharing)?"; then
     input "What would you like the name to be? "
     read -r COMPUTER_NAME
-    execute "sudo scutil --set ComputerName $COMPUTER_NAME"
-    execute "sudo scutil --set HostName $COMPUTER_NAME"
-    execute "sudo scutil --set LocalHostName $COMPUTER_NAME"
-    execute "sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string $COMPUTER_NAME"
+    _execute_ "sudo scutil --set ComputerName $COMPUTER_NAME"
+    _execute_ "sudo scutil --set HostName $COMPUTER_NAME"
+    _execute_ "sudo scutil --set LocalHostName $COMPUTER_NAME"
+    _execute_ "sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string $COMPUTER_NAME"
   fi
 
   # General UI Tweaks
   # ---------------------------
-  execute "sudo nvram SystemAudioVolume=' '" "Disable Sound Effects on Boot"
+  _execute_ "sudo nvram SystemAudioVolume=' '" "Disable Sound Effects on Boot"
 
-  execute "defaults write NSGlobalDomain NSWindowResizeTime .001" "Get snappier save sheets"
+  _execute_ "defaults write NSGlobalDomain NSWindowResizeTime .001" "Get snappier save sheets"
 
   ### THIS ISN'T WORKING ###
   # success "Hide the Time Machine, Volume, User, and Bluetooth icons"
@@ -36,56 +36,56 @@ _configureOSX_() {
   #     "/System/Library/CoreServices/Menu Extras/Battery.menu" \
   #     "/System/Library/CoreServices/Menu Extras/Clock.menu"
 
-  execute "defaults write NSGlobalDomain AppleHighlightColor -string '0.984300 0.929400 0.450900'" "Set highlight color to yellow"
+  _execute_ "defaults write NSGlobalDomain AppleHighlightColor -string '0.984300 0.929400 0.450900'" "Set highlight color to yellow"
 
-  execute "defaults write NSGlobalDomain NSTableViewDefaultSizeMode -int 1" "Set sidebar icon size to small"
+  _execute_ "defaults write NSGlobalDomain NSTableViewDefaultSizeMode -int 1" "Set sidebar icon size to small"
   # Possible values for int: 1=small, 2=medium
 
-  execute "defaults write NSGlobalDomain AppleShowScrollBars -string 'Always'" "Always show scrollbars"
+  _execute_ "defaults write NSGlobalDomain AppleShowScrollBars -string 'Always'" "Always show scrollbars"
   # Possible values: `WhenScrolling`, `Automatic` and `Always`
 
-  #execute "defaults write com.apple.universalaccess reduceTransparency -bool true" "Disable transparency in the menu bar and elsewhere"
+  #_execute_ "defaults write com.apple.universalaccess reduceTransparency -bool true" "Disable transparency in the menu bar and elsewhere"
 
-  execute "defaults write NSGlobalDomain NSAutomaticWindowAnimationsEnabled -bool false" "Disable opening and closing window animations"
+  _execute_ "defaults write NSGlobalDomain NSAutomaticWindowAnimationsEnabled -bool false" "Disable opening and closing window animations"
 
-  execute "defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true" "Expand save panel by default"
-  execute "defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true" "Expand save panel by default"
+  _execute_ "defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true" "Expand save panel by default"
+  _execute_ "defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode2 -bool true" "Expand save panel by default"
 
-  execute "defaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true" "Expand print panel by default"
-  execute "defaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true" "Expand print panel by default"
+  _execute_ "defaults write NSGlobalDomain PMPrintingExpandedStateForPrint -bool true" "Expand print panel by default"
+  _execute_ "defaults write NSGlobalDomain PMPrintingExpandedStateForPrint2 -bool true" "Expand print panel by default"
 
-  execute "defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false" "Save to disk (not to iCloud) by default"
+  _execute_ "defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false" "Save to disk (not to iCloud) by default"
 
-  execute "defaults write com.apple.print.PrintingPrefs 'Quit When Finished' -bool true" "Automatically quit printer app once the print jobs complete"
+  _execute_ "defaults write com.apple.print.PrintingPrefs 'Quit When Finished' -bool true" "Automatically quit printer app once the print jobs complete"
 
-  execute "defaults write com.apple.LaunchServices LSQuarantine -bool false" "Disable the 'Are you sure you want to open this application?' dialog"
+  _execute_ "defaults write com.apple.LaunchServices LSQuarantine -bool false" "Disable the 'Are you sure you want to open this application?' dialog"
 
   # Try e.g. `cd /tmp; unidecode "\x{0000}" > cc.txt; open -e cc.txt`
-  execute "defaults write NSGlobalDomain NSTextShowsControlCharacters -bool true" "General:Display ASCII control characters using caret notation in standard text views"
+  _execute_ "defaults write NSGlobalDomain NSTextShowsControlCharacters -bool true" "General:Display ASCII control characters using caret notation in standard text views"
 
-  execute "defaults write NSGlobalDomain NSDisableAutomaticTermination -bool true" "Disable automatic termination of inactive apps"
+  _execute_ "defaults write NSGlobalDomain NSDisableAutomaticTermination -bool true" "Disable automatic termination of inactive apps"
 
-  execute "defaults write com.apple.systempreferences NSQuitAlwaysKeepsWindows -bool false" "Disable Resume system-wide"
+  _execute_ "defaults write com.apple.systempreferences NSQuitAlwaysKeepsWindows -bool false" "Disable Resume system-wide"
 
-  execute "defaults write com.apple.helpviewer DevMode -bool true"
+  _execute_ "defaults write com.apple.helpviewer DevMode -bool true"
 
-  execute "sudo defaults write /Library/Preferences/com.apple.loginwindow AdminHostInfo HostName" "Reveal info when clicking the clock in the login window"
+  _execute_ "sudo defaults write /Library/Preferences/com.apple.loginwindow AdminHostInfo HostName" "Reveal info when clicking the clock in the login window"
 
-  #execute "systemsetup -setrestartfreeze on" "Restart automatically if the computer freezes"
+  #_execute_ "systemsetup -setrestartfreeze on" "Restart automatically if the computer freezes"
 
-  #execute "systemsetup -setcomputersleep Off > /dev/null" "Never go into computer sleep mode"
+  #_execute_ "systemsetup -setcomputersleep Off > /dev/null" "Never go into computer sleep mode"
 
-  execute "defaults write com.apple.SoftwareUpdate ScheduleFrequency -int 1" "Check for software updates daily, not just once per week"
+  _execute_ "defaults write com.apple.SoftwareUpdate ScheduleFrequency -int 1" "Check for software updates daily, not just once per week"
 
-  #execute "launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist 2> /dev/null" "Disable Notification Center and remove the menu bar icon"
+  #_execute_ "launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist 2> /dev/null" "Disable Notification Center and remove the menu bar icon"
 
-  execute "defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false" "Disable smart quotes as they are annoying when typing code"
+  _execute_ "defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false" "Disable smart quotes as they are annoying when typing code"
 
-  execute "defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false" "Disable smart dashes as they are annoying when typing code"
+  _execute_ "defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false" "Disable smart dashes as they are annoying when typing code"
 
-  execute "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user" "Removing duplicates in the 'Open With' menu"
+  _execute_ "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user" "Removing duplicates in the 'Open With' menu"
 
-  #execute "sudo pmset -a hibernatemode 0" "Disable hibernation? (speeds up entering sleep mode)"
+  #_execute_ "sudo pmset -a hibernatemode 0" "Disable hibernation? (speeds up entering sleep mode)"
 
 
   # Input Device Preferences
@@ -105,24 +105,24 @@ _configureOSX_() {
   # success "Disable “natural” (Lion-style) scrolling"
   # defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
 
-  execute "defaults write -g com.apple.trackpad.scaling 2" "Setting trackpad & mouse speed to a reasonable number"
-  execute "defaults write -g com.apple.mouse.scaling 2.5" "Setting trackpad & mouse speed to a reasonable number"
+  _execute_ "defaults write -g com.apple.trackpad.scaling 2" "Setting trackpad & mouse speed to a reasonable number"
+  _execute_ "defaults write -g com.apple.mouse.scaling 2.5" "Setting trackpad & mouse speed to a reasonable number"
 
-  execute "defaults write com.apple.BluetoothAudioAgent 'Apple Bitpool Min (editable)' -int 40" "Increase sound quality for Bluetooth headphones/headsets"
+  _execute_ "defaults write com.apple.BluetoothAudioAgent 'Apple Bitpool Min (editable)' -int 40" "Increase sound quality for Bluetooth headphones/headsets"
 
-  execute "defaults write NSGlobalDomain AppleKeyboardUIMode -int 3" "Enable full keyboard access for all controls"
+  _execute_ "defaults write NSGlobalDomain AppleKeyboardUIMode -int 3" "Enable full keyboard access for all controls"
 
-  execute "defaults write com.apple.universalaccess closeViewScrollWheelToggle -bool true" "Use scroll gesture with the Ctrl (^) modifier key to zoom"
-  execute "defaults write com.apple.universalaccess HIDScrollZoomModifierMask -int 262144" "Use scroll gesture with the Ctrl (^) modifier key to zoom"
-  execute "defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool true" "Follow the keyboard focus while zoomed in"
+  _execute_ "defaults write com.apple.universalaccess closeViewScrollWheelToggle -bool true" "Use scroll gesture with the Ctrl (^) modifier key to zoom"
+  _execute_ "defaults write com.apple.universalaccess HIDScrollZoomModifierMask -int 262144" "Use scroll gesture with the Ctrl (^) modifier key to zoom"
+  _execute_ "defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool true" "Follow the keyboard focus while zoomed in"
 
-  execute "defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false" "Disable press-and-hold for keys in favor of key repeat"
+  _execute_ "defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false" "Disable press-and-hold for keys in favor of key repeat"
 
-  execute "defaults write NSGlobalDomain KeyRepeat -int 0.5" "Set a blazingly fast keyboard repeat rate"
+  _execute_ "defaults write NSGlobalDomain KeyRepeat -int 0.5" "Set a blazingly fast keyboard repeat rate"
 
-  execute "defaults write com.apple.BezelServices kDim -bool true" "Automatically illuminate built-in MacBook keyboard in low light"
+  _execute_ "defaults write com.apple.BezelServices kDim -bool true" "Automatically illuminate built-in MacBook keyboard in low light"
 
-  execute "defaults write com.apple.BezelServices kDimTime -int 300" "Turn off keyboard illumination when computer is not used for 5 minutes"
+  _execute_ "defaults write com.apple.BezelServices kDimTime -int 300" "Turn off keyboard illumination when computer is not used for 5 minutes"
 
   success "Set language and text formats"
   # Note: if you’re in the US, replace `EUR` with `USD`, `Centimeters` with
@@ -146,19 +146,19 @@ _configureOSX_() {
   # Screen Preferences
   # ---------------------------
 
-  execute "defaults write com.apple.screensaver askForPassword -int 1" "Require password immediately after sleep or screen saver begins"
-  execute "defaults write com.apple.screensaver askForPasswordDelay -int 0" "Require password immediately after sleep or screen saver begins"
+  _execute_ "defaults write com.apple.screensaver askForPassword -int 1" "Require password immediately after sleep or screen saver begins"
+  _execute_ "defaults write com.apple.screensaver askForPasswordDelay -int 0" "Require password immediately after sleep or screen saver begins"
 
-  execute "defaults write com.apple.screencapture location -string ${HOME}/Desktop" "Save screenshots to the desktop"
+  _execute_ "defaults write com.apple.screencapture location -string ${HOME}/Desktop" "Save screenshots to the desktop"
 
-  execute "defaults write com.apple.screencapture type -string 'png'" "Save screenshots in PNG format"
+  _execute_ "defaults write com.apple.screencapture type -string 'png'" "Save screenshots in PNG format"
   # other options: BMP, GIF, JPG, PDF, TIFF, PNG
 
-  #execute "defaults write com.apple.screencapture disable-shadow -bool true" "Disable shadow in screenshots"
+  #_execute_ "defaults write com.apple.screencapture disable-shadow -bool true" "Disable shadow in screenshots"
 
-  execute "defaults write NSGlobalDomain AppleFontSmoothing -int 2" "Enable subpixel font rendering on non-Apple LCDs"
+  _execute_ "defaults write NSGlobalDomain AppleFontSmoothing -int 2" "Enable subpixel font rendering on non-Apple LCDs"
 
-  execute "sudo defaults write /Library/Preferences/com.apple.windowserver DisplayResolutionEnabled -bool true" "Enabling HiDPI display modes (requires restart)"
+  _execute_ "sudo defaults write /Library/Preferences/com.apple.windowserver DisplayResolutionEnabled -bool true" "Enabling HiDPI display modes (requires restart)"
 
   # Screen Preferences
   # ---------------------------
@@ -535,4 +535,4 @@ _configureOSX_() {
   success "Disabled continuous spell checking in Messages.app"
   defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "continuousSpellCheckingEnabled" -bool false
 }
-_executeFunction_ "_configureOSX_" "Configure Mac OS Preferences"
+_configureOSX_

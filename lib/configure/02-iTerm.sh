@@ -14,12 +14,12 @@ _configureITerm2_() {
     if [ -d "${iTermConfig}" ]; then
 
       # 1. Copy fonts
-      fontLocation="$HOME/Library/Fonts"
-      for font in $iTermConfig/fonts/**/*.otf; do
+      fontLocation="${HOME}/Library/Fonts"
+      for font in ${iTermConfig}/fonts/**/*.otf; do
         baseFontName=$(basename "$font")
         destFile="${fontLocation}/${baseFontName}"
         if [ ! -e "$destFile" ]; then
-          execute "cp '${font}' '$destFile'"
+          _execute_ "cp \"${font}\" \"$destFile\""
         fi
       done
 
@@ -28,25 +28,25 @@ _configureITerm2_() {
       destFile="$HOME/Library/Preferences/com.googlecode.iterm2.plist"
 
       if [ ! -e "$destFile" ]; then
-        execute "cp $sourceFile $destFile" "cp $sourceFile → $destFile"
+        _execute_ "cp \"${sourceFile}\" \"${destFile}\"" "cp $sourceFile → $destFile"
       elif [ -h "$destFile" ]; then
-        originalFile=$(locateSourceFile "$destFile")
+        originalFile=$(_locateSourceFile_ "$destFile")
         _backupOriginalFile_ "$originalFile"
         if ! $dryrun; then rm -rf "$destFile"; fi
-        execute "cp $sourceFile $destFile" "cp $sourceFile → $destFile"
+        _execute_ "cp \"$sourceFile\" \"$destFile\"" "cp $sourceFile → $destFile"
       elif [ -e "$destFile" ]; then
         _backupOriginalFile_ "$destFile"
         if ! $dryrun; then rm -rf "$destFile"; fi
-        execute "cp $sourceFile $destFile" "cp $sourceFile → $destFile"
+        _execute_ "cp \"$sourceFile\" \"$destFile\"" "cp $sourceFile → $destFile"
       else
         warning "Error linking: $sourceFile → $destFile"
       fi
 
       #3 Install preferred colorscheme
-      execute "open ${baseDir}/config/iTerm/themes/dotfiles.itermcolors" "Installing preferred color scheme"
+      _execute_ "open ${baseDir}/config/iTerm/themes/dotfiles.itermcolors" "Installing preferred color scheme"
     else
       warning "Couldn't find iTerm configuration files"
     fi
   fi
 }
-_executeFunction_ "_configureITerm2_" "Configure iTerm2"
+_configureITerm2_
