@@ -1,6 +1,3 @@
-[submodule "private"]
-	path = private
-	url = git@github.com:natelandau/dotfiles-private.git
 [submodule "test/helpers/bats-support"]
 	path = test/helpers/bats-support
 	url = https://github.com/ztombol/bats-support
