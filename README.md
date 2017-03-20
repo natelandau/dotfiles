@@ -29,7 +29,8 @@ dotfiles
 ├── lib/
 │   ├── bootstrap/
 │   └── configure/
-└── scripting/
+├── scripting/
+└── test/
 ```
 
 * **bin** - Symlinked to `~/bin` and is added to your `$PATH`.
@@ -41,6 +42,7 @@ dotfiles
 * lib/**configure** - Scripts here are exectuted by `install.sh` after packages have been installed
 * **config-install.yaml** - This YAML file contains the list of symlinks to be created, as well as the packages to be installed.
 * **scripting** - This directory contains bash scripting utilities and templates which I re-use often.
+* **test** - Unit tests written using [BATS](https://github.com/sstephenson/bats)
 
 **IMPORTANT:** Unless you want to use my defaults, make sure you do the following:
 
@@ -49,15 +51,9 @@ dotfiles
 
 #### Private Files
 
-Sometimes there are files which contain private information. These might be API keys, local directory structures, or anything else you want to keep hidden.
+Sometimes there are files which contain private information. These might be API keys, local directory structures, or anything else you want to keep hidden. I keep these in a separate private repository which has a folder structure very similar to this one. 
 
-Private files are held in a separate folder named `private`. This repository is added as a git-submodule and files within it are symlinked to `$HOME` or sourced to the Bash terminal.  
-
-Since you're not me, you should **fork this repository and replace the `private` directory with a git submodule of your own.**  
-
-Within the private directory you can write your own install script to configure and install your own files.  This script should be named: `privateInstall.sh`
-
-If `private/privateInstall.sh` exists, `install.sh` will invoke it.
+install.sh has a variable for the location of a private install script.  If that script is found, it will be invoked.
 
 ## Cloning this repo to a new computer
 The first step needed to use these dotfiles is to clone this repo into the $HOME directory.  To make this easy, I created [a gist](https://gist.github.com/natelandau/b6ec165862277f3a7a4beff76da53a9c) which can easily be run with the following command:
