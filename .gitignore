@@ -8,11 +8,3 @@ dotfiles_backup/
 slap.log
 
 # Don't Commit Symlinks
-bin/convertMedia
-bin/convertMedia2
-bin/myJekyll
-bin/podcastPublish
-bin/purgeSABnzbdHistory.sh
-bin/slackPost
-bin/iTunesSync.sh
-bin/mineSync.sh
