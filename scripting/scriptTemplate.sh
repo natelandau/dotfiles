@@ -22,6 +22,44 @@ _safeExit_() {
   exit ${1:-0}
 }
 
+_seekConfirmation_() {
+  # v1.0.0
+  input "$@"
+  if "${force}"; then
+    verbose "Forcing confirmation with '--force' flag set"
+    return 0
+  else
+    while true; do
+      read -r -p " (y/n) " yn
+      case $yn in
+        [Yy]* ) return 0;;
+        [Nn]* ) return 1;;
+        * ) input "Please answer yes or no.";;
+      esac
+    done
+  fi
+}
+
+_execute_() {
+  # v1.0.0
+  if ${dryrun}; then
+    dryrun "${2:-$1}"
+  else
+    #set +e # don't exit script if execute fails
+    if $verbose; then
+      eval "$1"
+    else
+      eval "$1" &> /dev/null
+    fi
+    if [ $? -eq 0 ]; then
+      success "${2:-$1}"
+    else
+      warning "${2:-$1}"
+    fi
+    # set -e
+  fi
+}
+
 # Set Base Variables
 # ----------------------
 scriptName=$(basename "$0")
@@ -46,6 +84,7 @@ tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
 logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
 
 _alert_() {
+  # v1.0.0
   if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
   if [ "${1}" = "warning" ]; then local color="${red}"; fi
   if [ "${1}" = "success" ]; then local color="${green}"; fi
@@ -168,54 +207,6 @@ done
 
 # Store the remaining part as arguments.
 args+=("$@")
-
-
-_seekConfirmation_() {
-  # Seeks a Yes or No answer to a question.  Usage:
-  #   if _seekConfirmation_ "Answer this question"; then
-  #     something
-  #   fi
-  input "$@"
-  if "${force}"; then
-    verbose "Forcing confirmation with '--force' flag set"
-    return 0
-  else
-    while true; do
-      read -r -p " (y/n) " yn
-      case $yn in
-        [Yy]* ) return 0;;
-        [Nn]* ) return 1;;
-        * ) input "Please answer yes or no.";;
-      esac
-    done
-  fi
-}
-
-_execute_() {
-  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
-  #           and have control over the display of the results.  In "dryrun" mode these
-  #           commands are not executed at all. In Verbose mode, the commands are executed
-  #           with results printed to stderr and stdin
-  #
-  # usage:
-  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
-  if ${dryrun}; then
-    dryrun "${2:-$1}"
-  else
-    if $verbose; then
-      eval "$1"
-    else
-      eval "$1" &> /dev/null
-    fi
-    if [ $? -eq 0 ]; then
-      success "${2:-$1}"
-      return 0
-    else
-      warning "${2:-$1}"
-      return 1
-    fi
-  fi
-}
 
 # Trap bad exits with your cleanup function
 trap _trapCleanup_ EXIT INT TERM
