@@ -16,11 +16,14 @@ gac () { git add -A "$1";git commit -m "$2" ; }
 alias gp='git push'
 alias gpush='git push'
 alias gu='git pull'
-alias gsubs='git submodule update --recursive --remote'
 gpull() { git pull; git submodule foreach git pull origin master; }
 alias gfu="git fetch origin"      # Get updates from Origin
 alias gcl='git clone --recursive' # Clone with all submodules
 gcheckout() { git checkout "${@:-master}"; } # Checkout master by default
+
+# Submodules
+alias gsubs='git submodule update --recursive --remote'
+alias ginitsubs='git submodule update --init --recursive'
 
 # Status, Logs, and information
 alias gs="git --no-pager status -s --untracked-files=all" # Git Status
@@ -38,8 +41,14 @@ alias gpop='git stash pop'    # bring back your changes, but it removes them fro
 alias greset="git fetch --all;git reset --hard origin/master"
 
 # Cleaning up messes
-
 alias undopush="git push -f origin HEAD^:master" # Undo a `git push`
+
+# Gists
+
+# gist-paste filename.ext -- create private Gist from the clipboard contents
+alias gist-paste="gist --private --copy --paste --filename"
+# gist-file filename.ext -- create private Gist from a file
+alias gist-file="gist --private --copy"
 
 applyGitIgnore() {
   # Applies changes to the git .ignorefile after the files
@@ -120,13 +129,6 @@ gitRollback() {
     echo "you're currently not in a git repository"
   fi
 }
-
-# Gists
-
-# gist-paste filename.ext -- create private Gist from the clipboard contents
-alias gist-paste="gist --private --copy --paste --filename"
-# gist-file filename.ext -- create private Gist from a file
-alias gist-file="gist --private --copy"
 
 # Github integration
 github() {
