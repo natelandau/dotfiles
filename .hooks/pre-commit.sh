@@ -87,6 +87,8 @@ fi
 
 # Run BATS where appropriate
 _BATS_() {
+  local filename
+
   # Run BATS on bin/*
   for file in $(git diff --cached --name-only | grep -E 'bin/'); do
     filename="$(basename $file)"
@@ -97,6 +99,11 @@ _BATS_() {
   # Run BATS on script functions
   if git diff --cached --name-only | grep -E 'scripting/functions/.*\.bash$' &>/dev/null; then
     [ -f "${GITROOT}/test/scriptFunctions.bats" ] && _execute_ "${GITROOT}/test/scriptFunctions.bats"
+  fi
+
+  # test install script
+  if git diff --cached --name-only | grep -E 'install.sh' &>/dev/null; then
+    [ -f "${GITROOT}/test/install.bats" ] && _execute_ "${GITROOT}/test/install.bats -t"
   fi
 }
 _BATS_

@@ -258,20 +258,19 @@ _safeExit_() {
 
 _seekConfirmation_() {
   # v1.0.0
+
+  ( $unitTest ) && return 1
+  ( $force ) && return 0
+
   input "$@"
-  if "${force}"; then
-    verbose "Forcing confirmation with '--force' flag set"
-    return 0
-  else
-    while true; do
-      read -r -p " (y/n) " yn
-      case $yn in
-        [Yy]* ) return 0;;
-        [Nn]* ) return 1;;
-        * ) input "Please answer yes or no.";;
-      esac
-    done
-  fi
+  while true; do
+    read -r -p " (y/n) " yn
+    case $yn in
+      [Yy]* ) return 0;;
+      [Nn]* ) return 1;;
+      * ) input "Please answer yes or no.";;
+    esac
+  done
 }
 
 _execute_() {
@@ -491,7 +490,7 @@ scriptName=$(basename "$0")
 # Set Flags
 quiet=false;              printLog=false;             verbose=false;
 force=false;              strict=false;               dryrun=false;
-debug=false;              args=();
+debug=false;              unitTest=false;             args=();
 
 # Set Colors
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
@@ -552,8 +551,7 @@ _usage_() {
 This is a script template.  Edit this description to print help to users.
 
  ${bold}Options:${reset}
-  -u, --username    Username for script
-  -p, --password    User password
+
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
   -l, --log         Print log to file
@@ -611,12 +609,14 @@ unset options
 while [[ $1 = -?* ]]; do
   case $1 in
     -n|--dryrun) dryrun=true ;;
-    -h|--help) usage >&2; safeExit ;;
+    -h|--help) _usage_ >&2; _safeExit_ ;;
     -v|--verbose) verbose=true ;;
     -l|--log) printLog=true ;;
     -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
+    -u|--unit)  unitTest=true ;;
+    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     --force) force=true ;;
     --endopts) shift; break ;;
     *) die "invalid option: '$1'." ;;
