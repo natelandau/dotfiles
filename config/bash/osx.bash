@@ -2,6 +2,7 @@
 if [[ "$OSTYPE" == "darwin"* ]]; then
 
   ## ALIASES ##
+  alias top='top -R -F -s 10 -o rsize'
   alias chrome='open -a Google\ Chrome'         # chrome:   Open item in Google Chrome browser
   alias f='open -a Finder ./'                   # f:        Opens current directory in MacOS Finder
   alias cpwd='pwd|tr -d "\n"|pbcopy'            # cpwd:     Copy the current path to mac clipboard

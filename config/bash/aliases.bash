@@ -19,7 +19,6 @@ alias kill='kill -9'                  # kill:     Preferred 'kill' implementatio
 alias ax='chmod a+x'                  # ax:     Make a file executable
 alias less='less -RXcqeN'             # Preferred 'less' implementation
 alias more='less'                     # more: use 'less' instead of 'more'
-alias top='top -R -F -s 10 -o rsize'
 alias path='echo -e ${PATH//:/\\n}'
 
 
