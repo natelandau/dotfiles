@@ -150,7 +150,7 @@ _mainScript_() {
     _execute_ "brew cleanup"
     _execute_ "brew doctor"
   }
-  _installHomebrewPackages_
+  if [[ "$OSTYPE" == "darwin"* ]]; then _installHomebrewPackages_ ; fi
 
   _installNodePackages_() {
     local package
@@ -192,7 +192,7 @@ _mainScript_() {
     # Reset verbose settings
     verbose=$saveVerbose
   }
-  _installNodePackages_
+  if [[ "$OSTYPE" == "darwin"* ]]; then _installNodePackages_ ; fi
 
   _installRubyPackages_() {
 
@@ -217,7 +217,7 @@ _mainScript_() {
 
     done
   }
-  _installRubyPackages_
+  if [[ "$OSTYPE" == "darwin"* ]]; then _installRubyPackages_ ; fi
 
   _runConfigureScripts_() {
     local script
