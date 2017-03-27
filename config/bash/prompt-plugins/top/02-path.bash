@@ -21,7 +21,7 @@ segmentPath() {
 
   # Get Path
   local path_value;   local i
-  local wdir="$(PWD)"
+  local wdir="$PWD"
   wdir="${wdir/$HOME/\~}"
 
   if [[ "${#wdir}" -gt "$settings_path_max_length" ]]; then
