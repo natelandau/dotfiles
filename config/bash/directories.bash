@@ -1,7 +1,7 @@
 # Two different sets of LS aliases because Gnu LS and macOS LS use different
 # flags for colors
 
-if [[ $(which ls) =~ gnubin ]]; then
+if [[ $(which ls) =~ gnubin || "$OSTYPE" =~ linux ]]; then
   alias ls="ls --color=auto"
   alias ll='ls -FlAhp --color=auto'     # Preferred 'ls' implementation
 else
