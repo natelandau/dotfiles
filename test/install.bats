@@ -54,6 +54,20 @@ teardown() {
   assert_line --index 0 "$base [OPTION]... [FILE]..."
 }
 
+@test "Quiet mode (-q)" {
+  run $s -nq --unit
+
+  assert_success
+  refute_output --regexp '[a-zA-Z0-9\[\]]'
+}
+
+@test "Quiet mode (--quiet)" {
+  run $s -nu --quiet
+
+  assert_success
+  refute_output --regexp '[a-zA-Z0-9\[\]]'
+}
+
 @test "usage (-h)" {
   run $s -h
 

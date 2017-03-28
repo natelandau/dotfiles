@@ -559,6 +559,7 @@ This is a script template.  Edit this description to print help to users.
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
   -h, --help        Display this help and exit
+  -u, --unit        Replies \"no\" to all requests to allow test scripts to finish
       --version     Output version information and exit
       --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
