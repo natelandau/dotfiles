@@ -166,31 +166,31 @@ _mainScript_() {
   }
 
   _trashAFile_() {
+    local baseFile
+
     # Iterate over all files passed by user
     for userFile in "${args[@]}"; do
       if [ ! -e "${userFile}" ]; then
         die "${userFile}: No such file or directory"
       fi
-      # determine if we'll tell Finder to trash the file via AppleScript (very easy, plus free undo
-      # support, but Finder must be running for the user and is DOES NOT work from within `screen`)
-    if _have_scriptable_finder_; then
+
       # determine whether we have an absolute path name to the file or not
-      if [ "${userFile:0:1}" = "/" ]; then
-        local file="${userFile}"
-      else
-        # expand relative to absolute path
-        verbose "Determining absolute path for '${userFile}'... "
-        file="$(_realpath_ "${userFile}")"
-        if [ $? -ne 0 ]; then
-          warning "Could not determine absolute path for '${userFile}'!"
-        fi
+      [[ ! "${userFile:0:1}" = "/" ]] && userFile="$(_realpath_ "${userFile}")"
+      baseFile="$(basename "${userFile}")"
+
+      # Use system's 'rm' when specified
+      if ${systemRM}; then
+        _execute_ "rm -rf \"${userFile}\"" "'${baseFile}' deleted"
+        continue
       fi
-      verbose "Telling Finder to trash '${userFile}'..."
 
-      _execute_ "/usr/bin/osascript -e 'tell application \"Finder\" to delete POSIX file \"$file\"' &>/dev/null" "'${userFile}' moved to trash"
-
+    # determine if we'll tell Finder to trash the file via AppleScript (very easy, plus free undo
+    # support, but Finder must be running for the user and is DOES NOT work from within `screen`)
+    if _have_scriptable_finder_; then
+      verbose "Telling Finder to trash '${baseFile}'..."
+      _execute_ "/usr/bin/osascript -e 'tell application \"Finder\" to delete POSIX file \"${userFile}\"' &>/dev/null" "'${baseFile}' moved to trash"
     else
-      verbose "Telling system to trash '${file}'..."
+      verbose "Telling system to trash '${baseFile}'..."
       local trash="/Users/${user}/.Trash/"
       # create the trash folder if necessary
       if [ ! -d "${trash}" ]; then
@@ -198,7 +198,7 @@ _mainScript_() {
       fi
       local newBase="$(basename "${userFile}")"
       local new="$(_uniqueFileName_ "${trash}${newBase}")"
-      _execute_ "mv \"${userFile}\" \"${new}\"" "'${userFile}' moved to trash"
+      _execute_ "mv \"${userFile}\" \"${new}\"" "'${baseFile}' moved to trash"
     fi
     done
   }
@@ -229,6 +229,7 @@ strict=false;     dryrun=false;
 debug=false;      args=();
 
 list=false;       emptyTrash=false;    bypassFinder="false"
+systemRM=false
 
 # Set Colors
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
@@ -294,8 +295,8 @@ _usage_() {
  ${bold}Options:${reset}
   -l , --list         List trash contents
   -e, --empty         Empty trash contents
-  -n, --dryrun        Non-destructive run. Will report on changes that would have
-                      been made.
+  -n, --dryrun        Non-destructive run.
+  -s, --system        Forces native Unix 'rm' command
   --bypassFinder      Bypasses AppleScript. Runs pure unix commands.
   --log               Print log to file
   -q, --quiet         Quiet (no output)
@@ -353,6 +354,8 @@ while [[ $1 = -?* ]]; do
     -h|--help) _usage_ >&2; _safeExit_ ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     --bypassFinder) bypassFinder=true ;;
+    -s|--system) systemRM=true ;;
+
 
     -l|--list) list=true ;;
     -e|--empty) emptyTrash=true ;;

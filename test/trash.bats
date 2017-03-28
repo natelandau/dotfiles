@@ -108,6 +108,15 @@ teardown() {
   assert_output --partial "[success] '${file}' moved to trash"
 }
 
+@test "Use system's 'rm'" {
+  file="1trash.bats.${RANDOM}.txt"
+  touch "${file}"
+  run $trash -s "$file"
+
+  assert_success
+  assert_output --partial "[success] '${file}' deleted"
+}
+
 @test "Dryrun (-n)" {
   file="1trash.bats.${RANDOM}.txt"
   touch "${file}"
@@ -154,7 +163,7 @@ teardown() {
   run $trash -v --dryrun "$file"
 
   assert_success
-  assert_output --regexp "\[  debug\] Determining absolute path for '${file}'..."
+  assert_output --regexp "\[  debug\] Telling Finder to trash '${file}'..."
   assert_file_exist "${file}"
 }
 
@@ -164,7 +173,7 @@ teardown() {
   run $trash --verbose --dryrun "$file"
 
   assert_success
-  assert_output --regexp "\[  debug\] Determining absolute path for '${file}'..."
+  assert_output --regexp "\[  debug\] Telling Finder to trash '${file}'..."
   assert_file_exist "${file}"
 }
 
@@ -185,7 +194,7 @@ teardown() {
   run $trash "${dir}/${file}"
 
   assert_success
-  assert_output --partial "[success] '${dir}/${file}' moved to trash"
+  assert_output --partial "[success] '${file}' moved to trash"
 }
 
 @test "List trash contents (-l)" {
