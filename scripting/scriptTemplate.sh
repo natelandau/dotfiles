@@ -5,6 +5,7 @@ version="1.0.0"
 _mainScript_() {
 
   echo -n
+  echo "$somevar"
 
 }  # end _mainScript_
 
@@ -217,6 +218,9 @@ IFS=$' \n\t'
 # Exit on error. Append '||true' when you run the script if you expect an error.
 # if using the 'execute' function this must be disabled for warnings to be shown if tasks fail
 #set -o errexit
+
+# Force pipelines to fail on the first non-zero status code.
+set -o pipefail
 
 # Run in debug mode, if set
 if ${debug}; then set -x ; fi
