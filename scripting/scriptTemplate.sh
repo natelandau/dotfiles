@@ -68,7 +68,7 @@ scriptName=$(basename "$0")
 # Set Flags
 quiet=false;              printLog=false;             verbose=false;
 force=false;              strict=false;               dryrun=false;
-debug=false;              args=();
+debug=false;              sourceOnly=false;           args=();
 
 # Set Colors
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
@@ -189,7 +189,6 @@ unset options
 while [[ $1 = -?* ]]; do
   case $1 in
     -h|--help) _usage_ >&2; _safeExit_ ;;
-    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     -u|--username) shift; username=${1} ;;
     -p|--password) shift; echo "Enter Pass: "; stty -echo; read -r PASS; stty echo;
       echo ;;
@@ -199,6 +198,8 @@ while [[ $1 = -?* ]]; do
     -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
+    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
+    --source-only) sourceOnly=true;;
     --force) force=true ;;
     --endopts) shift; break ;;
     *) die "invalid option: '$1'." ;;
@@ -231,8 +232,8 @@ if ${strict}; then set -o nounset ; fi
 # Exit the script if a command fails
 #set -e
 
-# Run your script
-_mainScript_
+# Run your script unless in 'source-only' mode
+if ! ${sourceOnly}; then _mainScript_; fi
 
 # Exit cleanly
-_safeExit_
+if ! ${sourceOnly}; then _safeExit_; fi
