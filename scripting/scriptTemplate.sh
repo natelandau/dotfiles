@@ -5,7 +5,6 @@ version="1.0.0"
 _mainScript_() {
 
   echo -n
-  echo "$somevar"
 
 }  # end _mainScript_
 
@@ -21,44 +20,6 @@ _safeExit_() {
   [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
   trap - INT TERM EXIT
   exit ${1:-0}
-}
-
-_seekConfirmation_() {
-  # v1.0.0
-  input "$@"
-  if "${force}"; then
-    verbose "Forcing confirmation with '--force' flag set"
-    return 0
-  else
-    while true; do
-      read -r -p " (y/n) " yn
-      case $yn in
-        [Yy]* ) return 0;;
-        [Nn]* ) return 1;;
-        * ) input "Please answer yes or no.";;
-      esac
-    done
-  fi
-}
-
-_execute_() {
-  # v1.0.0
-  if ${dryrun}; then
-    dryrun "${2:-$1}"
-  else
-    #set +e # don't exit script if execute fails
-    if $verbose; then
-      eval "$1"
-    else
-      eval "$1" &> /dev/null
-    fi
-    if [ $? -eq 0 ]; then
-      success "${2:-$1}"
-    else
-      warning "${2:-$1}"
-    fi
-    # set -e
-  fi
 }
 
 # Set Base Variables
@@ -140,6 +101,7 @@ This is a script template.  Edit this description to print help to users.
   -d, --debug       Runs script in BASH debug mode (set -x)
   -h, --help        Display this help and exit
       --version     Output version information and exit
+      --source-only Bypasses main script functionality to allow unit tests of functions
       --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
 }
