@@ -44,6 +44,18 @@ teardown() {
   temp_del "${testdir}"
 }
 
+@test "_realpath_: true" {
+  touch testfile.txt
+  run _realpath_ "testfile.txt"
+  assert_success
+  assert_output --regexp "^/private/var/folders/.*/testfile.txt$"
+}
+
+@test "_realpath_: fail" {
+  run _realpath_ "testfile.txt"
+  assert_failure
+}
+
 @test "_findBaseDir_" {
   run _findBaseDir_
   assert_output "${HOME}/dotfiles/scripting/functions"
