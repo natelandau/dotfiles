@@ -16,70 +16,6 @@ _mainScript_() {
   }
   _errorHandling_
 
-  realpath() {
-    # Convert a relative path to an absolute path.
-    #
-    # From http://github.com/morgant/realpath
-    #
-    # @param string the string to converted from a relative path to an absolute path
-    # @returns Outputs the absolute path to STDOUT, returns 0 if successful or 1 if
-    # an error (esp. path not found).
-    local successPath=true
-    local path="$1"
-
-    # make sure the string isn't empty as that implies something in further logic
-    if [ -z "${path}" ]; then
-      successPath=false
-    else
-      # start with the file name (sans the trailing slash)
-      path="${path%/}"
-
-      # if we stripped off the trailing slash and were left with nothing, that means we're in the root directory
-      if [ -z "${path}" ]; then
-        path="/"
-      fi
-
-      # get the basename of the file (ignoring '.' & '..', because they're really part of the path)
-      local file_basename="${path##*/}"
-      if [[ ( "$file_basename" = "." ) || ( "$file_basename" = ".." ) ]]; then
-        file_basename=""
-      fi
-
-      # extracts the directory component of the full path, if it's empty then assume '.' (the current working directory)
-      local directory="${path%$file_basename}"
-      if [ -z "$directory" ]; then
-        directory='.'
-      fi
-
-      # attempt to change to the directory
-      if ! cd "${directory}" &>/dev/null ; then
-        successPath=false
-      fi
-
-      if ${successPath}; then
-        # does the Filename exist?
-        if [[ ( -n "${userFile_basename}" ) && ( ! -e "${userFile_basename}" ) ]]; then
-          successPath=false
-        fi
-
-        # get the absolute path of the current directory & change back to previous directory
-        local abs_path="$(pwd -P)"
-        cd "-" &>/dev/null
-
-        # Append base Filename to absolute path
-        if [ "${abs_path}" = "/" ]; then
-          abs_path="${abs_path}${userFile_basename}"
-        else
-          abs_path="${abs_path}/${userFile_basename}"
-        fi
-
-        # output the absolute path
-        echo "${abs_path}"
-      fi
-    fi
-    ${successPath}
-  }
-
   _isGoodFile_() {
 
     #Bypass file check when testing input
@@ -108,25 +44,6 @@ _mainScript_() {
       die "'.${userFile##*.}' is not a supported extension"
     fi
     return 0
-  }
-
-  _parseFilename_() {
-    # Here we parse the user's file into it's directory, basename, and extension.
-
-    # Grab the directory
-    filePath="$(realpath "${userFile}")" #&& verbose "\t filePath: $filePath"
-    # use the basename of the userFile going forward since the path is now in $filePath
-    userFile=$(basename "${userFile}")
-
-    # Grab the Filename without the extension
-    baseFilename="${userFile%.*}" #&& verbose "\t baseFilename: $baseFilename"
-
-    # Grab the extension
-    extension="${userFile##*.}" #&& verbose "\t extension: $extension"
-
-    # Keep track of the original file for future comparison
-    originalFile="${baseFilename}.${extension}"
-    originalFileWithPath="${filePath}${userFile}"
   }
 
   _clean_() {
@@ -204,7 +121,7 @@ _mainScript_() {
           verbose "\t match: MMDDYY"
           dateCommand="sed -E 's/([0-9]{2})([0-9]{2})([0-9]{2})/\1-\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
         fi
-        _parseFilename_ "$regex" "$dateCommand"
+        _changeFilename_ "$regex" "$dateCommand"
         return
       fi
 
@@ -338,7 +255,7 @@ _mainScript_() {
     fi
 
     if [ ! -e "${newFilename}" ]; then
-      _execute_ "mv \"${originalFileWithPath}\" \"${filePath}${newFilename}\"" "${userFile} --> ${newFilename}"
+      _execute_ "mv \"${originalFileWithPath}\" \"${filePath}/${newFilename}\"" "${userFile} --> ${newFilename}"
     else
       local i=2
       newFilename="${baseFilename} ${i}.${extension}"
@@ -346,7 +263,7 @@ _mainScript_() {
         ((i=i+1))
         newFilename="${baseFilename} ${i}.${extension}"
       done
-      _execute_ "mv \"${originalFileWithPath}\" \"${filePath}${newFilename}\"" "${userFile} --> ${newFilename}"
+      _execute_ "mv \"${originalFileWithPath}\" \"${filePath}/${newFilename}\"" "${userFile} --> ${newFilename}"
     fi
   }
 
@@ -355,7 +272,7 @@ _mainScript_() {
     verbose "file: ${bold}${userFile}${reset}"
 
     if _isGoodFile_; then
-      _parseFilename_
+      _parseFilename_ "$userFile"
       baseFilename="$(_clean_ "$baseFilename")" # Clean the filename
       _findDate_
       _rebuildFileName_
@@ -377,17 +294,126 @@ _safeExit_() {
   exit ${1:-0}
 }
 
+_execute_() {
+  # v1.0.0
+  if ${dryrun}; then
+    dryrun "${2:-$1}"
+  else
+    #set +e # don't exit script if execute fails
+    if $verbose; then
+      eval "$1"
+    else
+      eval "$1" &> /dev/null
+    fi
+    if [ $? -eq 0 ]; then
+      success "${2:-$1}"
+    else
+      warning "${2:-$1}"
+    fi
+    # set -e
+  fi
+}
+
+_realpath_() {
+  # v1.0.0
+  # Convert a relative path to an absolute path.
+  #
+  # From http://github.com/morgant/realpath
+  #
+  # @param string the string to converted from a relative path to an absolute path
+  # @returns Outputs the absolute path to STDOUT, returns 0 if successful or 1 if
+  # an error (esp. path not found).
+  local success=true
+  local path="$1"
+
+  # make sure the string isn't empty as that implies something in further logic
+  if [ -z "$path" ]; then
+    success=false
+  else
+    # start with the file name (sans the trailing slash)
+    path="${path%/}"
+
+    # if we stripped off the trailing slash and were left with nothing, that means we're in the root directory
+    if [ -z "$path" ]; then
+      path="/"
+    fi
+
+    # get the basename of the file (ignoring '.' & '..', because they're really part of the path)
+    local file_basename="${path##*/}"
+    if [[ ( "$file_basename" = "." ) || ( "$file_basename" = ".." ) ]]; then
+      file_basename=""
+    fi
+
+    # extracts the directory component of the full path, if it's empty then assume '.' (the current working directory)
+    local directory="${path%$file_basename}"
+    if [ -z "$directory" ]; then
+      directory='.'
+    fi
+
+    # attempt to change to the directory
+    if ! cd "$directory" &>/dev/null ; then
+      success=false
+    fi
+
+    if $success; then
+      # does the filename exist?
+      if [[ ( -n "$file_basename" ) && ( ! -e "$file_basename" ) ]]; then
+        success=false
+      fi
+
+      # get the absolute path of the current directory & change back to previous directory
+      local abs_path
+      abs_path="$(pwd -P)"
+      cd "-" &>/dev/null || return
+
+      # Append base filename to absolute path
+      if [ "${abs_path}" = "/" ]; then
+        abs_path="${abs_path}${file_basename}"
+      else
+        abs_path="${abs_path}/${file_basename}"
+      fi
+
+      # output the absolute path
+      echo "$abs_path"
+    fi
+  fi
+
+  $success
+}
+
+_parseFilename_() {
+  # Here we parse the user's file into it's directory, basename, and extension.
+  local fileToParse="${1:?No file provided to _parseFilename_}"
+
+  # Grab the directory
+  if ! ${testOutput}; then originalFileWithPath="$(_realpath_ "${fileToParse}")"; fi
+  verbose "originalFileWithPath: $originalFileWithPath"
+  filePath=$(dirname "$originalFileWithPath") && verbose "filePath: $filePath"
+
+  # use the basename of the userFile going forward since the path is now in $filePath
+  userFile=$(basename "${fileToParse}") && verbose "userfile: $userFile"
+
+  # Grab the Filename without the extension
+  baseFilename="${userFile%.*}" && verbose "baseFilename: $baseFilename"
+
+  # Grab the extension
+  extension="${userFile##*.}"
+
+  # Keep track of the original file for future comparison
+  originalFile="${baseFilename}.${extension}"
+}
+
 # Set Base Variables
 # ----------------------
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false;      printLog=false;       verbose=false;
-force=false;      strict=false;         dryrun=false;
-debug=false;      args=();
+quiet=false;        printLog=false;             verbose=false;
+force=false;        strict=false;               dryrun=false;
+debug=false;        sourceOnly=false;           args=();
 
-cleanOnly=false;  nonInteractive=false; lowerCase=false;
-ignoreFile=false; removeDates=false;    testOutput=false;
+cleanOnly=false;    nonInteractive=false;       lowerCase=false;
+ignoreFile=false;   removeDates=false;          testOutput=false;
 
 # Set Colors
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
@@ -398,6 +424,7 @@ blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
 logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
 
 _alert_() {
+  # v1.0.0
   if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
   if [ "${1}" = "warning" ]; then local color="${red}"; fi
   if [ "${1}" = "success" ]; then local color="${green}"; fi
@@ -487,6 +514,7 @@ _usage_() {
     -v, --verbose     Output more information.
     -d, --debug       Runs script in BASH debug mode (set -x)
     -h, --help        Display this help and exit
+        --source-only Bypasses main script functionality to allow unit tests of functions
         --version     Output version information and exit
 
    ${bold}Examples:${reset}
@@ -556,6 +584,7 @@ while [[ $1 = -?* ]]; do
     -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
+    --source-only) sourceOnly=true;;
     --endopts) shift; break ;;
     *) die "invalid option: '$1'." ;;
   esac
@@ -564,32 +593,6 @@ done
 
 # Store the remaining part as arguments.
 args+=("$@")
-
-_execute_() {
-  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
-  #           and have control over the display of the results.  In "dryrun" mode these
-  #           commands are not executed at all. In Verbose mode, the commands are executed
-  #           with results printed to stderr and stdin
-  #
-  # usage:
-  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
-  if ${dryrun}; then
-    dryrun "${2:-$1}"
-  else
-    set +e # don't exit script if execute fails
-    if $verbose; then
-      eval "$1"
-    else
-      eval "$1" &> /dev/null
-    fi
-    if [ $? -eq 0 ]; then
-      success "${2:-$1}"
-    else
-      warning "${2:-$1}"
-    fi
-    set -e
-  fi
-}
 
 # Trap bad exits with your cleanup function
 trap _trapCleanup_ EXIT INT TERM
@@ -610,8 +613,8 @@ if ${strict}; then set -o nounset ; fi
 # Exit the script if a command fails
 set -e
 
-# Run your script
-_mainScript_
+# Run your script unless in source only mode
+if ! ${sourceOnly}; then _mainScript_ ; fi
 
 # Exit cleanly
-_safeExit_
+if ! ${sourceOnly}; then _safeExit_ ; fi
