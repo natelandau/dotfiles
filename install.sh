@@ -259,7 +259,6 @@ _safeExit_() {
 _seekConfirmation_() {
   # v1.0.0
 
-  ( $unitTest ) && return 1
   ( $force ) && return 0
 
   input "$@"
@@ -355,8 +354,8 @@ _locateSourceFile_() {
   # Compute the canonicalized name by finding the physical path
   # for the directory we're in and appending the target file.
   PHYS_DIR=$(pwd -P)
-  RESULT="$PHYS_DIR/$TARGET_FILE"
-  echo "$RESULT"
+  RESULT="${PHYS_DIR}/${TARGET_FILE}"
+  echo "${RESULT}"
 }
 
 _createSymlinks_() {
@@ -485,12 +484,12 @@ _trim_() {
 
 # Set Base Variables
 # ----------------------
-scriptName=$(basename "$0")
+readonly scriptName=$(basename "$0")
 
 # Set Flags
 quiet=false;              printLog=false;             verbose=false;
 force=false;              strict=false;               dryrun=false;
-debug=false;              unitTest=false;             args=();
+debug=false;              sourceOnly=false;             args=();
 
 # Set Colors
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
@@ -548,7 +547,13 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This is a script template.  Edit this description to print help to users.
+This script runs a series of installation scripts to configure a new computer.
+It relies on a YAML config file 'install-config.yaml'. This YAML file will contain
+  - symlinks
+  - homebrew packages
+  - homebrew casks
+  - ruby gems
+  - node packages
 
  ${bold}Options:${reset}
 
@@ -559,8 +564,7 @@ This is a script template.  Edit this description to print help to users.
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
   -h, --help        Display this help and exit
-  -u, --unit        Replies \"no\" to all requests to allow test scripts to finish
-      --version     Output version information and exit
+      --source-only Bypasses main script functionality to allow unit tests of functions      --version     Output version information and exit
       --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
 }
@@ -616,7 +620,7 @@ while [[ $1 = -?* ]]; do
     -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
-    -u|--unit)  unitTest=true ;;
+    --source-only) sourceOnly=true ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     --force) force=true ;;
     --endopts) shift; break ;;
@@ -647,8 +651,8 @@ if ${strict}; then set -o nounset ; fi
 # Exit the script if a command fails
 # set -e
 
-# Run your script
-_mainScript_
+# Run your script unless in source only mode
+if ! ${sourceOnly}; then _mainScript_ ; fi
 
 # Exit cleanly
-_safeExit_
+if ! ${sourceOnly}; then _safeExit_ ; fi
