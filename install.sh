@@ -100,9 +100,6 @@ _mainScript_() {
     # Make sure we’re using the latest Homebrew
     _execute_ "brew update"
 
-    # Reset verbose settings
-    verbose=$saveVerbose
-
     # Upgrade any already-installed formulae
     _execute_ "caffeinate -ism brew upgrade" "Upgrade existing formulae"
 
@@ -148,7 +145,10 @@ _mainScript_() {
 
     # cleanup after ourselves
     _execute_ "brew cleanup"
-    _execute_ "brew doctor"
+    #_execute_ "brew doctor"
+
+    # Reset verbose settings
+    verbose=$saveVerbose
   }
   if [[ "$OSTYPE" == "darwin"* ]]; then _installHomebrewPackages_ ; fi
 
