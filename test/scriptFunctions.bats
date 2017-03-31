@@ -315,7 +315,7 @@ teardown() {
   assert_output "test 2 2.txt"
 }
 
-@test "_uniqueFileName_: User specified seperator" {
+@test "_uniqueFileName_: User specified separator" {
   touch "test.txt"
 
   run _uniqueFileName_ "test.txt" "-"
