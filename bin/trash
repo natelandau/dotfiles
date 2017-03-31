@@ -27,72 +27,6 @@ _mainScript_() {
     fi
   }
 
-  _realpath_() {
-    # Convert a relative path to an absolute path.
-    #
-    # From http://github.com/morgant/realpath
-    #
-    # @param string the string to converted from a relative path to an absolute path
-    # @returns Outputs the absolute path to STDOUT, returns 0 if successful or 1 if
-    # an error (esp. path not found).
-    local successPath=true
-    local path="$1"
-
-    # make sure the string isn't empty as that implies something in further logic
-    if [ -z "$path" ]; then
-      successPath=false
-    else
-      # start with the file name (sans the trailing slash)
-      path="${path%/}"
-
-      # if we stripped off the trailing slash and were left with nothing, that means we're in the root directory
-      if [ -z "$path" ]; then
-        path="/"
-      fi
-
-      # get the basename of the file (ignoring '.' & '..', because they're really part of the path)
-      local file_basename="${path##*/}"
-      if [[ ( "$file_basename" = "." ) || ( "$file_basename" = ".." ) ]]; then
-        file_basename=""
-      fi
-
-      # extracts the directory component of the full path, if it's empty then assume '.' (the current working directory)
-      local directory="${path%$file_basename}"
-      if [ -z "$directory" ]; then
-        directory='.'
-      fi
-
-      # attempt to change to the directory
-      if ! cd "${directory}" &>/dev/null ; then
-        successPath=false
-      fi
-
-      if ${successPath}; then
-        # does the filename exist?
-        if [[ ( -n "${file_basename}" ) && ( ! -e "${file_basename}" ) ]]; then
-          successPath=false
-        fi
-
-        # get the absolute path of the current directory & change back to previous directory
-        local abs_path
-        abs_path="$(pwd -P)"
-        cd "-" &>/dev/null
-
-        # Append base filename to absolute path
-        if [ "${abs_path}" = "/" ]; then
-          abs_path="${abs_path}${file_basename}"
-        else
-          abs_path="${abs_path}/${file_basename}"
-        fi
-
-        # output the absolute path
-        echo "${abs_path}"
-      fi
-    fi
-
-    ${successPath}
-  }
-
   _listTrash_() {
     local num_volumes
     local total_blocks
@@ -219,13 +153,115 @@ _safeExit_() {
   exit ${1:-0}
 }
 
+_realpath_() {
+  # v1.0.0
+  local success=true
+  local path="$1"
+
+  # make sure the string isn't empty as that implies something in further logic
+  if [ -z "$path" ]; then
+    success=false
+  else
+    # start with the file name (sans the trailing slash)
+    path="${path%/}"
+
+    # if we stripped off the trailing slash and were left with nothing, that means we're in the root directory
+    if [ -z "$path" ]; then
+      path="/"
+    fi
+
+    # get the basename of the file (ignoring '.' & '..', because they're really part of the path)
+    local file_basename="${path##*/}"
+    if [[ ( "$file_basename" = "." ) || ( "$file_basename" = ".." ) ]]; then
+      file_basename=""
+    fi
+
+    # extracts the directory component of the full path, if it's empty then assume '.' (the current working directory)
+    local directory="${path%$file_basename}"
+    if [ -z "$directory" ]; then
+      directory='.'
+    fi
+
+    # attempt to change to the directory
+    if ! cd "$directory" &>/dev/null ; then
+      success=false
+    fi
+
+    if $success; then
+      # does the filename exist?
+      if [[ ( -n "$file_basename" ) && ( ! -e "$file_basename" ) ]]; then
+        success=false
+      fi
+
+      # get the absolute path of the current directory & change back to previous directory
+      local abs_path
+      abs_path="$(pwd -P)"
+      cd "-" &>/dev/null || return
+
+      # Append base filename to absolute path
+      if [ "${abs_path}" = "/" ]; then
+        abs_path="${abs_path}${file_basename}"
+      else
+        abs_path="${abs_path}/${file_basename}"
+      fi
+
+      # output the absolute path
+      echo "$abs_path"
+    fi
+  fi
+
+  $success
+}
+
+_execute_() {
+  # v1.0.0
+  if ${dryrun}; then
+    dryrun "${2:-$1}"
+  else
+    #set +e # don't exit script if execute fails
+    if $verbose; then
+      eval "$1"
+    else
+      eval "$1" &> /dev/null
+    fi
+    if [ $? -eq 0 ]; then
+      success "${2:-$1}"
+    else
+      warning "${2:-$1}"
+    fi
+    # set -e
+  fi
+}
+
+_uniqueFileName_() {
+  # v1.0.0
+
+  local n origFull origName origExt newfile spacer
+
+  origFull="${1:?Can not proceed without file _uniqueFileName_}"
+  spacer="${2:- }"
+  origName="${origFull%.*}"
+  origExt="${origFull##*.}"
+  newfile="${origName}.${origExt}"
+
+  if [ -e "${newfile}" ]; then
+    n=2
+    while [[ -e "${origName}${spacer}${n}.${origExt}" ]]; do
+      (( n++ ))
+    done
+    newfile="${origName}${spacer}${n}.${origExt}"
+  fi
+
+  echo "${newfile}"
+}
+
 # Set Base Variables
 # ----------------------
 scriptName=$(basename "$0")
 
 # Set Flags
 quiet=false;      printLog=false;       verbose=false;
-strict=false;     dryrun=false;
+strict=false;     dryrun=false;         sourceOnly=false;
 debug=false;      args=();
 
 list=false;       emptyTrash=false;    bypassFinder="false"
@@ -365,6 +401,7 @@ while [[ $1 = -?* ]]; do
     -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
+    --source-only) sourceOnly=true;;
     --endopts) shift; break ;;
     *) die "invalid option: '$1'." ;;
   esac
@@ -373,69 +410,6 @@ done
 
 # Store the remaining part as arguments.
 args+=("$@")
-
-_execute_() {
-  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
-  #           and have control over the display of the results.  In "dryrun" mode these
-  #           commands are not executed at all. In Verbose mode, the commands are executed
-  #           with results printed to stderr and stdin
-  #
-  # usage:
-  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
-  if ${dryrun}; then
-    dryrun "${2:-$1}"
-  else
-    if $verbose; then
-      eval "$1"
-    else
-      eval "$1" &> /dev/null
-    fi
-    if [ $? -eq 0 ]; then
-      success "${2:-$1}"
-      return 0
-    else
-      warning "${2:-$1}"
-      return 1
-    fi
-  fi
-}
-
-_uniqueFileName_() {
-  # _uniqueFileName_ takes an input of a file and returns a unique filename.
-  # The use-case here is trying to write a file to a directory which may already
-  # have a file with the same name. To ensure unique filenames, we append a digit
-  # to files when necessary
-  #
-  # Inputs:
-  #
-  #   $1  The name of the file (may include a directory)
-  #
-  #   $2  Option separation character. Defaults to a space
-  #
-  # Usage:
-  #
-  #   _uniqueFileName "/some/dir/file.txt" "-"
-  #
-  #   Would return "/some/dir/file-2.txt"
-
-  local n origFull origName origExt newfile spacer
-
-  origFull="$1"
-  spacer="${2:- }"
-  origName="${origFull%.*}"
-  origExt="${origFull##*.}"
-  newfile="${origName}.${origExt}"
-
-  if [ -e "${newfile}" ]; then
-    n=2
-    while [[ -e "${origName}${spacer}${n}.${origExt}" ]]; do
-      (( n++ ))
-    done
-    newfile="${origName}${spacer}${n}.${origExt}"
-  fi
-
-  echo "${newfile}"
-}
 
 # Trap bad exits with your cleanup function
 trap _trapCleanup_ EXIT INT TERM
@@ -455,8 +429,8 @@ if ${strict}; then set -o nounset ; fi
 # Exit the script if a command fails
 set -e
 
-# Run your script
-_mainScript_
+# Run your script unless in 'source-only' mode
+if ! ${sourceOnly}; then _mainScript_; fi
 
 # Exit cleanly
-_safeExit_
+if ! ${sourceOnly}; then _safeExit_; fi

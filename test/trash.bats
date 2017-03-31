@@ -17,15 +17,19 @@ _setPATH_() {
 _setPATH_
 
 if ! command -v trash &>/dev/null; then
-    printf "No executable 'trash' found.\n" >&2
-    printf "Can not run tests.\n" >&2
-    exit 1
+  printf "No executable 'trash' found.\n" >&2
+  printf "Can not run tests.\n" >&2
+  exit 1
 fi
 
-
-trash="$HOME/bin/trash"
+s="$HOME/bin/trash"
+base="$(basename $s)"
 user=$(whoami)
 trashFolder="/Users/${user}/.Trash"
+
+[ -f "$s" ] \
+  && { source "$s" --source-only ; trap - EXIT INT TERM ; } \
+  || { echo "Can not find script to test" >&2 ; exit 1 ; }
 
 setup() {
   testdir="$(temp_make)"
@@ -58,42 +62,42 @@ teardown() {
 }
 
 @test "Fail on unknown argument" {
-  run $trash -K
+  run $s -K
 
   assert_failure
   assert_output --partial "[  error] invalid option: '-K'. Exiting."
 }
 
 @test "Print version (--version)" {
-  run $trash --version
+  run $s --version
 
   assert_success
   assert_output --regexp "trash [v|V]?[0-9]+\.[0-9]+\.[0-9]+"
 }
 
 @test "Usage (no args)" {
-  run $trash
+  run $s
 
   assert_success
   assert_line --index 0 "trash [OPTION]... [FILE]..."
 }
 
 @test "usage (-h)" {
-  run $trash -h
+  run $s -h
 
   assert_success
   assert_line --index 0 "trash [OPTION]... [FILE]..."
 }
 
 @test "usage (--help)" {
-  run $trash --help
+  run $s --help
 
   assert_success
   assert_line --index 0 "trash [OPTION]... [FILE]..."
 }
 
 @test "Fail when can't find file" {
-  run $trash "some-file-that-doesn't-exist"
+  run $s "some-file-that-doesn't-exist"
 
   assert_failure
   assert_output --partial "[  error] some-file-that-doesn't-exist: No such file or directory Exiting"
@@ -102,7 +106,7 @@ teardown() {
 @test "Trashing a file" {
   file="1trash.bats.${RANDOM}.txt"
   touch "${file}"
-  run $trash "$file"
+  run $s "$file"
 
   assert_success
   assert_output --partial "[success] '${file}' moved to trash"
@@ -111,7 +115,7 @@ teardown() {
 @test "Use system's 'rm'" {
   file="1trash.bats.${RANDOM}.txt"
   touch "${file}"
-  run $trash -s "$file"
+  run $s -s "$file"
 
   assert_success
   assert_output --partial "[success] '${file}' deleted"
@@ -120,7 +124,7 @@ teardown() {
 @test "Dryrun (-n)" {
   file="1trash.bats.${RANDOM}.txt"
   touch "${file}"
-  run $trash -n "$file"
+  run $s -n "$file"
 
   assert_success
   assert_output --partial "[ dryrun] '${file}' moved to trash"
@@ -130,7 +134,7 @@ teardown() {
 @test "Dryrun (--dryrun)" {
   file="1trash.bats.${RANDOM}.txt"
   touch "${file}"
-  run $trash --dryrun "$file"
+  run $s --dryrun "$file"
 
   assert_success
   assert_output --partial "[ dryrun] '${file}' moved to trash"
@@ -140,7 +144,7 @@ teardown() {
 @test "Quiet mode (-q)" {
   file="1trash.bats.${RANDOM}.txt"
   touch "${file}"
-  run $trash -q --dryrun "$file"
+  run $s -q --dryrun "$file"
 
   assert_success
   refute_output --regexp '[a-zA-Z0-9\[\]]'
@@ -150,7 +154,7 @@ teardown() {
 @test "Quiet mode (--quiet)" {
   file="1trash.bats.${RANDOM}.txt"
   touch "${file}"
-  run $trash --quiet --dryrun "$file"
+  run $s --quiet --dryrun "$file"
 
   assert_success
   refute_output --regexp '[a-zA-Z0-9\[\]]'
@@ -160,7 +164,7 @@ teardown() {
 @test "Verbose mode (-v)" {
   file="1trash.bats.${RANDOM}.txt"
   touch "${file}"
-  run $trash -v --dryrun "$file"
+  run $s -v --dryrun "$file"
 
   assert_success
   assert_output --regexp "\[  debug\] Telling Finder to trash '${file}'..."
@@ -170,7 +174,7 @@ teardown() {
 @test "Verbose mode (--verbose)" {
   file="1trash.bats.${RANDOM}.txt"
   touch "${file}"
-  run $trash --verbose --dryrun "$file"
+  run $s --verbose --dryrun "$file"
 
   assert_success
   assert_output --regexp "\[  debug\] Telling Finder to trash '${file}'..."
@@ -180,7 +184,7 @@ teardown() {
 @test "Trashing a directory" {
   file="2trash.bats.${RANDOM}"
   mkdir "${file}/"
-  run $trash "$file"
+  run $s "$file"
 
   assert_success
   assert_output --partial "[success] '${file}' moved to trash"
@@ -191,7 +195,7 @@ teardown() {
   file="3.1trash.bats.${RANDOM}.txt"
   mkdir "${dir}"
   touch "${dir}/${file}"
-  run $trash "${dir}/${file}"
+  run $s "${dir}/${file}"
 
   assert_success
   assert_output --partial "[success] '${file}' moved to trash"
@@ -201,7 +205,7 @@ teardown() {
   file="4trash.bats.${RANDOM}.txt"
   touch "${file}"
   trash -q "${file}"
-  run $trash -l
+  run $s -l
 
   assert_success
   assert_line --index 0 --partial "[ notice] Listing items in Trash"
@@ -212,7 +216,7 @@ teardown() {
   file="5trash.bats.${RANDOM}.txt"
   touch "${file}"
   trash -q "${file}"
-  run $trash --list
+  run $s --list
 
   assert_success
   assert_line --index 0 --partial "[ notice] Listing items in Trash"
@@ -223,7 +227,7 @@ teardown() {
   file="6trash.bats.${RANDOM}.txt"
   touch "${file}"
   trash -q "${file}"
-  run $trash -e --dryrun
+  run $s -e --dryrun
 
   assert_success
   assert_output --regexp "\[ dryrun\] Trash emptied"
@@ -233,7 +237,7 @@ teardown() {
   file="6trash.bats.${RANDOM}.txt"
   touch "${file}"
   trash -q "${file}"
-  run $trash --empty --dryrun
+  run $s --empty --dryrun
 
   assert_success
   assert_output --regexp "\[ dryrun\] Trash emptied"
@@ -243,13 +247,66 @@ teardown() {
   file="6trash.bats.${RANDOM}.txt"
   touch "${file}"
   trash -q "${file}"
-  run $trash -e --dryrun --bypassFinder
+  run $s -e --dryrun --bypassFinder
 
   assert_success
   assert_output --regexp "\[ dryrun\] rm -rf \"/Users/[a-zA-Z0-9]+/\.Trash/${file}\""
 }
 
+@test "_uniqueFileName_: Count to 3" {
+  touch "test.txt"
+  touch "test 2.txt"
 
+  run _uniqueFileName_ "test.txt"
+  assert_output "test 3.txt"
+}
 
+@test "_uniqueFileName_: Don't confuse existing numbers" {
+  touch "test 2.txt"
 
+  run _uniqueFileName_ "test 2.txt"
+  assert_output "test 2 2.txt"
+}
 
+@test "_uniqueFileName_: User specified separator" {
+  touch "test.txt"
+
+  run _uniqueFileName_ "test.txt" "-"
+  assert_output "test-2.txt"
+}
+
+@test "_realpath_: true" {
+  touch testfile.txt
+  run _realpath_ "testfile.txt"
+  assert_success
+  assert_output --regexp "^/private/var/folders/.*/testfile.txt$"
+}
+
+@test "_realpath_: fail" {
+  run _realpath_ "testfile.txt"
+  assert_failure
+}
+
+@test "_execute_: Debug command" {
+  dryrun=true
+  run _execute_ "rm testfile.txt"
+  assert_success
+  assert_output --partial "[ dryrun] rm testfile.txt"
+  dryrun=false
+}
+
+@test "_execute_: Bad command" {
+  touch "testfile.txt"
+  run _execute_ "rm nonexistant.txt"
+  assert_success
+  assert_output --partial "[warning] rm nonexistant.txt"
+  assert_file_exist "testfile.txt"
+}
+
+@test "_execute_: Good command" {
+  touch "testfile.txt"
+  run _execute_ "rm testfile.txt"
+  assert_success
+  assert_output --partial "[success] rm testfile.txt"
+  assert_file_not_exist "testfile.txt"
+}
