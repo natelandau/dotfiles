@@ -153,6 +153,20 @@ teardown() {
   assert_file_not_exist "testfile.txt"
 }
 
+@test "_seekConfirmation_: yes" {
+  run _seekConfirmation_ 'test' <<<"y"
+
+  assert_success
+  assert_output --partial "[  input] test"
+}
+
+@test "_seekConfirmation_: no" {
+  run _seekConfirmation_ 'test' <<<"n"
+
+  assert_failure
+  assert_output --partial "[  input] test"
+}
+
 @test "_seekConfirmation_: Force" {
   force=true
 
@@ -164,13 +178,13 @@ teardown() {
 }
 
 @test "_seekConfirmation_: Quiet" {
-  quiet=true; force=true
+  quiet=true
+  run _seekConfirmation_ 'test' <<<"y"
 
-  run _seekConfirmation_ "test"
   assert_success
   refute_output --partial "test"
 
-  quiet=false;  force=false;
+  quiet=false
 }
 
 @test "_inArray_: success" {
@@ -305,21 +319,21 @@ teardown() {
   touch "test 2.txt"
 
   run _uniqueFileName_ "test.txt"
-  assert_output "test 3.txt"
+  assert_output --regexp ".*/test 3.txt$"
 }
 
 @test "_uniqueFileName_: Don't confuse existing numbers" {
   touch "test 2.txt"
 
   run _uniqueFileName_ "test 2.txt"
-  assert_output "test 2 2.txt"
+  assert_output --regexp ".*/test 2 2.txt$"
 }
 
 @test "_uniqueFileName_: User specified separator" {
   touch "test.txt"
 
   run _uniqueFileName_ "test.txt" "-"
-  assert_output "test-2.txt"
+  assert_output --regexp ".*/test-2.txt$"
 }
 
 @test "_readFile_: Reads files line by line" {

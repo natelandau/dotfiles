@@ -142,7 +142,7 @@ _locateSourceFile_() {
 }
 
 _uniqueFileName_() {
-  # v1.0.0
+  # v2.0.0
   # _uniqueFileName_ takes an input of a file and returns a unique filename.
   # The use-case here is trying to write a file to a directory which may already
   # have a file with the same name. To ensure unique filenames, we append a digit
@@ -160,20 +160,35 @@ _uniqueFileName_() {
   #
   #   Would return "/some/dir/file-2.txt"
 
-  local n origFull origName origExt newfile spacer
+  local fullfile="${1:?_uniqueFileName_ needs a file}"
+  local spacer="${2:- }"
+  local directory
+  local filename
 
-  origFull="$1"
-  spacer="${2:- }"
-  origName="${origFull%.*}"
-  origExt="${origFull##*.}"
-  newfile="${origName}.${origExt}"
+  # Find directories with _realpath_ if available
+  if [ -e "$fullfile" ]; then
+    if type -t _realpath_ | grep -E '^function$' &>/dev/null; then
+      fullfile="$(_realpath_ "$fullfile")"
+    fi
+  fi
+
+  directory="$(dirname "$fullfile")"
+  filename="$(basename "$fullfile")"
+
+  # Extract extensions only when they exist
+  if [[ "$filename" =~ \.[a-zA-Z]{2,3}$ ]]; then
+    local extension=".${filename##*.}"
+    local filename="${filename%.*}"
+  fi
+
+  local newfile="${directory}/${filename}${extension}"
 
   if [ -e "${newfile}" ]; then
-    n=2
-    while [[ -e "${origName}${spacer}${n}.${origExt}" ]]; do
+    local n=2
+    while [[ -e "${directory}/${filename}${spacer}${n}${extension}" ]]; do
       (( n++ ))
     done
-    newfile="${origName}${spacer}${n}.${origExt}"
+    newfile="${directory}/${filename}${spacer}${n}${extension}"
   fi
 
   echo "${newfile}"
