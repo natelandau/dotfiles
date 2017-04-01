@@ -46,6 +46,7 @@ homebrewPackages:
   - gifsicle            # GIF image/animation creator/editor
   - git
   - git-extras          # Small git utilities
+  - guetzli             # jpeg compression
   - hr                  # <hr />, for your terminal window
   - httpie              # User-friendly cURL replacement (command-line HTTP client)
   - id3tool
