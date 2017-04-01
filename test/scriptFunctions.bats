@@ -231,27 +231,27 @@ teardown() {
 }
 
 @test "_httpStatus_: -c" {
-  run _httpStatus_ www.google.com 100 -c
+  run _httpStatus_ https://natelandau.com/something/not/here/ 3 -c
   assert_success
-  assert_output "200"
+  assert_output "404"
 }
 
 @test "_httpStatus_: --code" {
-  run _httpStatus_ www.google.com 100 --code
+  run _httpStatus_ www.google.com 3 --code
   assert_success
   assert_output "200"
 }
 
 @test "_httpStatus_: -s" {
-  run _httpStatus_ www.google.com 100 -s
+  run _httpStatus_ www.google.com 3 -s
   assert_success
-  assert_output "200 Successful: OK within 100 seconds"
+  assert_output "200 Successful: OK within 3 seconds"
 }
 
 @test "_httpStatus_: --status" {
-  run _httpStatus_ www.google.com 100 -s
+  run _httpStatus_ www.google.com 3 -s
   assert_success
-  assert_output "200 Successful: OK within 100 seconds"
+  assert_output "200 Successful: OK within 3 seconds"
 }
 
 @test "_join_: Join array comma" {
@@ -341,6 +341,12 @@ teardown() {
 
   run _uniqueFileName_ "test.txt" "-"
   assert_output --regexp ".*/test-2.txt$"
+}
+
+@test "_countdown_" {
+  run _countdown_ 10 0 "something"
+  assert_line --index 0 --partial "[   info] something 10"
+  assert_line --index 9 --partial "[   info] something 1"
 }
 
 @test "_readFile_: Reads files line by line" {

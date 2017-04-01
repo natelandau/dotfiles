@@ -158,6 +158,29 @@ _pushover_() {
   "${PUSHOVERURL}" > /dev/null 2>&1
 }
 
+_countdown_() {
+  # v1.0.0
+  # Used to count down in increments of 1 from a specified number.
+  # Default is counting down from 10 in 1 second increments
+  # Usage:
+  #
+  #   _countdown_ "starting number" "sleep time (seconds)" "message "
+  #
+  # Example:
+  #   $ _countdown 10 1 "Waiting for cache to invalidate"
+
+  local n=${1:-10}
+  local stime=${2:-1}
+  local message="${3:-...}"
+  ((t=n+1))
+
+  for (( i=1; i<=n; i++ )); do
+    ((ii=t-i))
+    info "${message} ${ii}"
+    sleep $stime
+  done
+}
+
 _pauseScript_() {
   # A simple function used to pause a script at any point and
   # only continue on user input
@@ -170,6 +193,7 @@ _pauseScript_() {
 }
 
 _progressBar_() {
+  # v1.0.0
   # Prints a progress bar within a for/while loop.
   # To use this function you must pass the total number of
   # times the loop will run to the function.
@@ -185,26 +209,20 @@ _progressBar_() {
   #   done
   # -----------------------------------
 
-  # shellcheck disable=2154
-  if "${quiet}"; then return; fi # Do nothing in quiet mode
-  # shellcheck disable=2154
-  if "${verbose}"; then return; fi # Do nothing in verbose mode
-  if [ ! -t 1 ]; then return; fi # Do nothing if the output is not a terminal
+  ( $quiet ) && return
+  ( $verbose ) && return
+  [ ! -t 1 ] && return  # Do nothing if the output is not a terminal
 
   local width bar_char perc num bar progressBarLine barTitle n
 
-  n="$1" ; (( n = n - 1 )) ;
+  n="${1:?_progressBar_ needs input}" ; (( n = n - 1 )) ;
   barTitle="${2:-Running Process}"
   width=30
   bar_char="#"
 
   # Reset the count
-  if [ -z "${progressBarProgress}" ]; then
-    progressBarProgress=0
-  fi
-
-  # Hide the cursor
-  tput civis
+  [ -z "${progressBarProgress}" ] && progressBarProgress=0
+  tput civis   # Hide the cursor
   trap 'tput cnorm; exit 1' SIGINT
 
   if [ ! "${progressBarProgress}" -eq $n ]; then
@@ -216,7 +234,7 @@ _progressBar_() {
     # Create the progress bar string.
     bar=""
     if [ ${num} -gt 0 ]; then
-        bar=$(printf "%0.s${bar_char}" $(seq 1 ${num}))
+      bar=$(printf "%0.s${bar_char}" $(seq 1 ${num}))
     fi
     # Print the progress bar.
     progressBarLine=$(printf "%s [%-${width}s] (%d%%)" "  ${barTitle}" "${bar}" "${perc}")
@@ -224,7 +242,7 @@ _progressBar_() {
     progressBarProgress=$(( progressBarProgress + 1 ))
   else
     # Clear the progress bar when complete
-    #echo -ne "\033[0K\r"
+    # echo -ne "\033[0K\r"
     tput el   # Clear the line
 
     unset progressBarProgress
@@ -302,89 +320,80 @@ _httpStatus_() {
   #                   301 Redirection: Moved Permanently
   #
   #         Example: $ _httpStatus_ www.google.com 100 -c 200
+  local code
+  local status
 
-  local curlops
-  local arg4
-  local arg5
-  local arg6
-  local arg7
-  local flag
-  local timeout
-  local url
-
-  saveIFS=${IFS}
+  local saveIFS=${IFS}
   IFS=$' \n\t'
 
-  url=${1}
-  timeout=${2:-'3'}
+  local url=${1}
+  local timeout=${2:-'3'}
   #            ^in seconds
-  flag=${3:-'--status'}
+  local flag=${3:-'--status'}
   #    curl options, e.g. -L to follow redirects
-  arg4=${4:-''}
-  arg5=${5:-''}
-  arg6=${6:-''}
-  arg7=${7:-''}
-  curlops="${arg4} ${arg5} ${arg6} ${arg7}"
+  local arg4=${4:-''}
+  local arg5=${5:-''}
+  local arg6=${6:-''}
+  local arg7=${7:-''}
+  local curlops="${arg4} ${arg5} ${arg6} ${arg7}"
 
   #      __________ get the CODE which is numeric:
   code=$(echo "$(curl --write-out %{http_code} --silent --connect-timeout ${timeout} \
-                    --no-keepalive ${curlops} --output /dev/null  ${url})")
+                    --no-keepalive ${curlops} --output /dev/null ${url})")
 
   #      __________ get the STATUS (from code) which is human interpretable:
   case $code in
-       000) status="Not responding within ${timeout} seconds" ;;
-       100) status="Informational: Continue" ;;
-       101) status="Informational: Switching Protocols" ;;
-       200) status="Successful: OK within ${timeout} seconds" ;;
-       201) status="Successful: Created" ;;
-       202) status="Successful: Accepted" ;;
-       203) status="Successful: Non-Authoritative Information" ;;
-       204) status="Successful: No Content" ;;
-       205) status="Successful: Reset Content" ;;
-       206) status="Successful: Partial Content" ;;
-       300) status="Redirection: Multiple Choices" ;;
-       301) status="Redirection: Moved Permanently" ;;
-       302) status="Redirection: Found residing temporarily under different URI" ;;
-       303) status="Redirection: See Other" ;;
-       304) status="Redirection: Not Modified" ;;
-       305) status="Redirection: Use Proxy" ;;
-       306) status="Redirection: status not defined" ;;
-       307) status="Redirection: Temporary Redirect" ;;
-       400) status="Client Error: Bad Request" ;;
-       401) status="Client Error: Unauthorized" ;;
-       402) status="Client Error: Payment Required" ;;
-       403) status="Client Error: Forbidden" ;;
-       404) status="Client Error: Not Found" ;;
-       405) status="Client Error: Method Not Allowed" ;;
-       406) status="Client Error: Not Acceptable" ;;
-       407) status="Client Error: Proxy Authentication Required" ;;
-       408) status="Client Error: Request Timeout within ${timeout} seconds" ;;
-       409) status="Client Error: Conflict" ;;
-       410) status="Client Error: Gone" ;;
-       411) status="Client Error: Length Required" ;;
-       412) status="Client Error: Precondition Failed" ;;
-       413) status="Client Error: Request Entity Too Large" ;;
-       414) status="Client Error: Request-URI Too Long" ;;
-       415) status="Client Error: Unsupported Media Type" ;;
-       416) status="Client Error: Requested Range Not Satisfiable" ;;
-       417) status="Client Error: Expectation Failed" ;;
-       500) status="Server Error: Internal Server Error" ;;
-       501) status="Server Error: Not Implemented" ;;
-       502) status="Server Error: Bad Gateway" ;;
-       503) status="Server Error: Service Unavailable" ;;
-       504) status="Server Error: Gateway Timeout within ${timeout} seconds" ;;
-       505) status="Server Error: HTTP Version Not Supported" ;;
-       *)   echo " !!  httpstatus: status not defined." && _safeExit_ ;;
+    000) status="Not responding within ${timeout} seconds" ;;
+    100) status="Informational: Continue" ;;
+    101) status="Informational: Switching Protocols" ;;
+    200) status="Successful: OK within ${timeout} seconds" ;;
+    201) status="Successful: Created" ;;
+    202) status="Successful: Accepted" ;;
+    203) status="Successful: Non-Authoritative Information" ;;
+    204) status="Successful: No Content" ;;
+    205) status="Successful: Reset Content" ;;
+    206) status="Successful: Partial Content" ;;
+    300) status="Redirection: Multiple Choices" ;;
+    301) status="Redirection: Moved Permanently" ;;
+    302) status="Redirection: Found residing temporarily under different URI" ;;
+    303) status="Redirection: See Other" ;;
+    304) status="Redirection: Not Modified" ;;
+    305) status="Redirection: Use Proxy" ;;
+    306) status="Redirection: status not defined" ;;
+    307) status="Redirection: Temporary Redirect" ;;
+    400) status="Client Error: Bad Request" ;;
+    401) status="Client Error: Unauthorized" ;;
+    402) status="Client Error: Payment Required" ;;
+    403) status="Client Error: Forbidden" ;;
+    404) status="Client Error: Not Found" ;;
+    405) status="Client Error: Method Not Allowed" ;;
+    406) status="Client Error: Not Acceptable" ;;
+    407) status="Client Error: Proxy Authentication Required" ;;
+    408) status="Client Error: Request Timeout within ${timeout} seconds" ;;
+    409) status="Client Error: Conflict" ;;
+    410) status="Client Error: Gone" ;;
+    411) status="Client Error: Length Required" ;;
+    412) status="Client Error: Precondition Failed" ;;
+    413) status="Client Error: Request Entity Too Large" ;;
+    414) status="Client Error: Request-URI Too Long" ;;
+    415) status="Client Error: Unsupported Media Type" ;;
+    416) status="Client Error: Requested Range Not Satisfiable" ;;
+    417) status="Client Error: Expectation Failed" ;;
+    500) status="Server Error: Internal Server Error" ;;
+    501) status="Server Error: Not Implemented" ;;
+    502) status="Server Error: Bad Gateway" ;;
+    503) status="Server Error: Service Unavailable" ;;
+    504) status="Server Error: Gateway Timeout within ${timeout} seconds" ;;
+    505) status="Server Error: HTTP Version Not Supported" ;;
+    *)   die " !!  httpstatus: status not defined." ;;
   esac
 
-
-  # _______________ MAIN
   case ${flag} in
-       --status) echo "${code} ${status}" ;;
-       -s)       echo "${code} ${status}" ;;
-       --code)   echo "${code}"         ;;
-       -c)       echo "${code}"         ;;
-       *)        echo " !!  httpstatus: bad flag" && _safeExit_;;
+    --status) echo "${code} ${status}" ;;
+    -s)       echo "${code} ${status}" ;;
+    --code)   echo "${code}"         ;;
+    -c)       echo "${code}"         ;;
+    *)        echo " !!  httpstatus: bad flag" && _safeExit_;;
   esac
 
   IFS="${saveIFS}"
