@@ -137,11 +137,18 @@ teardown() {
   dryrun=false
 }
 
+@test "_execute_: No command" {
+  run _execute_
+
+  assert_failure
+  assert_output --regexp "_execute_ needs a command$"
+}
+
 @test "_execute_: Bad command" {
   touch "testfile.txt"
   run _execute_ "rm nonexistant.txt"
   assert_success
-  assert_output --partial "[warning] rm nonexistant.txt"
+  assert_output --partial "[  error] rm nonexistant.txt"
   assert_file_exist "testfile.txt"
 }
 

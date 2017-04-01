@@ -39,17 +39,17 @@ _alert_() {
   fi
 }
 
-function die ()       { local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
-function error ()     { local _message="${*}"; echo -e "$(_alert_ error)"; }
-function warning ()   { local _message="${*}"; echo -e "$(_alert_ warning)"; }
-function notice ()    { local _message="${*}"; echo -e "$(_alert_ notice)"; }
-function info ()      { local _message="${*}"; echo -e "$(_alert_ info)"; }
-function debug ()     { local _message="${*}"; echo -e "$(_alert_ debug)"; }
-function success ()   { local _message="${*}"; echo -e "$(_alert_ success)"; }
-function dryrun()     { local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
-function input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
-function header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
-function verbose()    { if ${verbose}; then debug "$@"; fi }
+die()        { local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
+error()      { local _message="${*}"; echo -e "$(_alert_ error)"; }
+warning()    { local _message="${*}"; echo -e "$(_alert_ warning)"; }
+notice()     { local _message="${*}"; echo -e "$(_alert_ notice)"; }
+info()       { local _message="${*}"; echo -e "$(_alert_ info)"; }
+debug()      { local _message="${*}"; echo -e "$(_alert_ debug)"; }
+success()    { local _message="${*}"; echo -e "$(_alert_ success)"; }
+dryrun()     { local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
+input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
+header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
+verbose()    { if ${verbose}; then debug "$@"; fi }
 
 _seekConfirmation_() {
   # v1.0.0
@@ -75,7 +75,7 @@ _seekConfirmation_() {
 }
 
 _execute_() {
-  # v1.0.0
+  # v1.0.1
   # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
   #           and have control over the display of the results.  In "dryrun" mode these
   #           commands are not executed at all. In Verbose mode, the commands are executed
@@ -83,21 +83,22 @@ _execute_() {
   #
   # usage:
   #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
+  local cmd="${1:?_execute_ needs a command}"
+  local message="${2:-$1}"
   if ${dryrun}; then
-    dryrun "${2:-$1}"
+    dryrun "${message}"
   else
-    #set +e # don't exit script if execute fails
     if $verbose; then
-      eval "$1"
+      eval "$cmd"
     else
-      eval "$1" &> /dev/null
+      eval "$cmd" &> /dev/null
     fi
     if [ $? -eq 0 ]; then
-      success "${2:-$1}"
+      success "${message}"
     else
-      warning "${2:-$1}"
+      error "${message}"
+      #die "${message}"
     fi
-    # set -e
   fi
 }
 
