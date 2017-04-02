@@ -103,11 +103,12 @@ _execute_() {
 }
 
 _setPATH_() {
+  #v1.0.0
   # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
-  PATHS=(/usr/local/bin $HOME/bin);
+  PATHS=(/usr/local/bin ${HOME}/bin);
   for newPath in "${PATHS[@]}"; do
     if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
-      PATH="$newPath:$PATH"
+      PATH="${newPath}:${PATH}"
    fi
  done
 }
@@ -124,10 +125,11 @@ _findBaseDir_() {
     SOURCE="$(readlink "$SOURCE")"
     [[ $SOURCE != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
   done
-  echo "$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  echo "$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
 }
 
 _pushover_() {
+  # v1.0.0
   # Sends notifications view Pushover
   # IMPORTANT: The API Keys must be filled in
   #
@@ -168,7 +170,7 @@ _countdown_() {
   #
   # Example:
   #   $ _countdown 10 1 "Waiting for cache to invalidate"
-
+  local i ii t
   local n=${1:-10}
   local stime=${2:-1}
   local message="${3:-...}"
@@ -182,12 +184,13 @@ _countdown_() {
 }
 
 _pauseScript_() {
+  # v1.0.0
   # A simple function used to pause a script at any point and
   # only continue on user input
   if _seekConfirmation_ "Ready to continue?"; then
     notice "Continuing..."
   else
-    warning "Exiting Script."
+    warning "Exiting Script"
     _safeExit_
   fi
 }
@@ -252,6 +255,7 @@ _progressBar_() {
 }
 
 _makeCSV_() {
+  # v1.0.0
   # Creates a new CSV file if one does not already exist.
   # Takes passed arguments and writes them as a header line to the CSV
   # Usage '_makeCSV_ column1 column2 column3'
@@ -276,6 +280,7 @@ _makeCSV_() {
 }
 
 _writeCSV_() {
+  # v1.0.0
   # Takes passed arguments and writes them as a comma separated line
   # Usage '_writeCSV_ column1 column2 column3'
 
@@ -326,9 +331,8 @@ _httpStatus_() {
   local saveIFS=${IFS}
   IFS=$' \n\t'
 
-  local url=${1}
-  local timeout=${2:-'3'}
-  #            ^in seconds
+  local url=${1:?_httpStatus_ needs an url}
+  local timeout=${2:-'3'} # in seconds
   local flag=${3:-'--status'}
   #    curl options, e.g. -L to follow redirects
   local arg4=${4:-''}

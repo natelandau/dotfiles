@@ -44,6 +44,24 @@ teardown() {
   temp_del "${testdir}"
 }
 
+@test "_progressBar_: verbose" {
+  verbose=true
+  run _progressBar_ 100
+
+  assert_success
+  assert_output ""
+  verbose=false
+}
+
+@test "_progressBar_: quiet" {
+  quiet=true
+  run _progressBar_ 100
+
+  assert_success
+  assert_output ""
+  quiet=false
+}
+
 @test "_realpath_: true" {
   touch testfile.txt
   run _realpath_ "testfile.txt"
@@ -111,10 +129,21 @@ teardown() {
   assert_output "Here's some.text%that&needs_to-be~encoded+a*few@more(characters)"
 }
 
-@test "_parseYAML_" {
+@test "_parseYAML_: success" {
   run _parseYAML_ "$YAML1"
   assert_success
   assert_output "$( cat "$YAML1parse")"
+}
+
+@test "_parseYAML_: empty file" {
+  touch empty.yaml
+  run _parseYAML_ "empty.yaml"
+  assert_failure
+}
+
+@test "_parseYAML_: no file" {
+  run _parseYAML_ "empty.yaml"
+  assert_failure
 }
 
 @test "_json2yaml_" {

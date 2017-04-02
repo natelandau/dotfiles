@@ -121,23 +121,22 @@ _locateSourceFile_() {
   local PHYS_DIR
   local RESULT
 
-  TARGET_FILE="$1"
+  TARGET_FILE="${1:?_locateSourceFile_ needs a file}"
 
-  cd "$(dirname $TARGET_FILE)" || die "Could not find TARGET FILE"
+  cd "$(dirname $TARGET_FILE)" || return 1
   TARGET_FILE="$(basename $TARGET_FILE)"
 
   # Iterate down a (possible) chain of symlinks
-  while [ -L "$TARGET_FILE" ]
-  do
+  while [ -L "$TARGET_FILE" ]; do
     TARGET_FILE=$(readlink "$TARGET_FILE")
-    cd "$(dirname $TARGET_FILE)" || die "Could not find TARGET FILE"
+    cd "$(dirname $TARGET_FILE)" || return 1
     TARGET_FILE="$(basename $TARGET_FILE)"
   done
 
   # Compute the canonicalized name by finding the physical path
   # for the directory we're in and appending the target file.
   PHYS_DIR=$(pwd -P)
-  RESULT="$PHYS_DIR/$TARGET_FILE"
+  RESULT="${PHYS_DIR}/${TARGET_FILE}"
   echo "$RESULT"
 }
 
@@ -208,7 +207,7 @@ _readFile_() {
 }
 
 _parseYAML_() {
-  # v1.0.0
+  # v1.1.0
   # Function to parse YAML files and add values to variables. Send it to a temp file and source it
   # https://gist.github.com/DinoChiesa/3e3c3866b51290f31243 which is derived from
   # https://gist.github.com/epiloque/8cf512c6d64641bde388
@@ -223,40 +222,44 @@ _parseYAML_() {
   # (which will reduce the risk of name-space collisions).
   #
   #     $ _parseYAML_ sample.yml "CONF_"
+  local yamlFile="${1:?_parseYAML_ needs a file}"
+  local prefix=$2
 
-    local prefix=$2
-    local s
-    local w
-    local fs
-    s='[[:space:]]*'
-    w='[a-zA-Z0-9_]*'
-    fs="$(echo @|tr @ '\034')"
-    sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$1" |
-    awk -F"$fs" '{
-      indent = length($1)/2;
-      if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
-      vname[indent] = $2;
-      for (i in vname) {if (i > indent) {delete vname[i]}}
-      if (length($3) > 0) {
-              vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-              printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
-      }
-    }' | sed 's/_=/+=/g' | sed 's/[[:space:]]*#.*"/"/g'
+  [ ! -f "$yamlFile" ] && return 1
+  [ ! -s "$yamlFile" ] && return 1
+
+  local s
+  local w
+  local fs
+  s='[[:space:]]*'
+  w='[a-zA-Z0-9_]*'
+  fs="$(echo @|tr @ '\034')"
+  sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
+      -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$yamlFile" |
+  awk -F"$fs" '{
+    indent = length($1)/2;
+    if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
+    vname[indent] = $2;
+    for (i in vname) {if (i > indent) {delete vname[i]}}
+    if (length($3) > 0) {
+            vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+            printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
+    }
+  }' | sed 's/_=/+=/g' | sed 's/[[:space:]]*#.*"/"/g'
 }
 
 _json2yaml_() {
   # v1.0.0
   # convert json files to yaml using python and PyYAML
   # usage: _json2yaml_ "dir/somefile.json"
-  python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < "$1"
+  python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < "${1:?_json2yaml_ needs a file}"
 }
 
 _yaml2json_() {
   # v1.0.0
   # convert yaml files to json using python and PyYAML
   # usage: _yaml2json_ "dir/somefile.yaml"
-  python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "$1"
+  python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "${1:?_yaml2json_ needs a file}"
 }
 
 _encryptFile_() {
@@ -270,18 +273,18 @@ _encryptFile_() {
   #
   # usage:  _encryptFile_ "somefile.txt" "encrypted_somefile.txt"
 
-  [ -z "$1" ] && die "_encodeFile_() needs an argument"
-  [ -f "${1}" ] || die "'${1}': Does not exist or is not a file"
-
   local fileToEncrypt encryptedFile defaultName
-  fileToEncrypt="$1"
-  defaultName="${1%.decrypt}"
+
+  fileToEncrypt="${1:?_encodeFile_ needs a file}"
+  defaultName="${fileToEncrypt%.decrypt}"
   encryptedFile="${2:-$defaultName.enc}"
 
+  [ ! -f "$fileToEncrypt" ] && return 1
+
   if [ -z $PASS ]; then
-    _execute_ "openssl enc -aes-256-cbc -salt -in ${fileToEncrypt} -out ${encryptedFile}" "Encrypt ${fileToEncrypt}"
+    _execute_ "openssl enc -aes-256-cbc -salt -in \"${fileToEncrypt}\" -out \"${encryptedFile}\"" "Encrypt ${fileToEncrypt}"
   else
-    _execute_ "openssl enc -aes-256-cbc -salt -in ${fileToEncrypt} -out ${encryptedFile} -k ${PASS}" "Encrypt ${fileToEncrypt}"
+    _execute_ "openssl enc -aes-256-cbc -salt -in \"${fileToEncrypt}\" -out \"${encryptedFile}\" -k \"${PASS}\"" "Encrypt ${fileToEncrypt}"
   fi
 }
 
@@ -296,17 +299,16 @@ _decryptFile_() {
   #
   # usage:  _decryptFile_ "somefile.txt.enc" "decrypted_somefile.txt"
 
-  [ -z "$1" ] && die "_decryptFile_() needs an argument"
-  [ -f "${1}" ] || die "'${1}': Does not exist or is not a file"
-
   local fileToDecrypt decryptedFile defaultName
-  fileToDecrypt="${1}"
-  defaultName="${1%.enc}"
+  fileToDecrypt="${1:?_decryptFile_ needs a file}"
+  defaultName="${fileToDecrypt%.enc}"
   decryptedFile="${2:-$defaultName.decrypt}"
 
+  [ ! -f "$fileToDecrypt" ] && return 1
+
   if [ -z $PASS ]; then
-    _execute_ "openssl enc -aes-256-cbc -d -in ${fileToDecrypt} -out ${decryptedFile}" "Decrypt ${fileToDecrypt}"
+    _execute_ "openssl enc -aes-256-cbc -d -in \"${fileToDecrypt}\" -out \"${decryptedFile}\"" "Decrypt ${fileToDecrypt}"
   else
-    _execute_ "openssl enc -aes-256-cbc -d -in ${fileToDecrypt} -out ${decryptedFile} -k ${PASS}" "Decrypt ${fileToDecrypt}"
+    _execute_ "openssl enc -aes-256-cbc -d -in \"${fileToDecrypt}\" -out \"${decryptedFile}\" -k \"${PASS}\"" "Decrypt ${fileToDecrypt}"
   fi
 }
