@@ -113,7 +113,7 @@ _realpath_() {
 }
 
 _locateSourceFile_() {
-  # v1.0.0
+  # v1.0.1
   # locateSourceFile is fed a symlink and returns the originating file
   # usage: _locateSourceFile_ 'some/symlink'
 
@@ -123,14 +123,14 @@ _locateSourceFile_() {
 
   TARGET_FILE="${1:?_locateSourceFile_ needs a file}"
 
-  cd "$(dirname $TARGET_FILE)" || return 1
-  TARGET_FILE="$(basename $TARGET_FILE)"
+  cd "$(dirname "$TARGET_FILE")" || return 1
+  TARGET_FILE="$(basename "$TARGET_FILE")"
 
   # Iterate down a (possible) chain of symlinks
   while [ -L "$TARGET_FILE" ]; do
     TARGET_FILE=$(readlink "$TARGET_FILE")
-    cd "$(dirname $TARGET_FILE)" || return 1
-    TARGET_FILE="$(basename $TARGET_FILE)"
+    cd "$(dirname "$TARGET_FILE")" || return 1
+    TARGET_FILE="$(basename "$TARGET_FILE")"
   done
 
   # Compute the canonicalized name by finding the physical path

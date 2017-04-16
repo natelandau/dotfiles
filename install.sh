@@ -333,29 +333,31 @@ _executeFunction_() {
 }
 
 _locateSourceFile_() {
-  # v1.0.0
+  # v1.0.1
+  # locateSourceFile is fed a symlink and returns the originating file
+  # usage: _locateSourceFile_ 'some/symlink'
+
   local TARGET_FILE
   local PHYS_DIR
   local RESULT
 
-  TARGET_FILE="$1"
+  TARGET_FILE="${1:?_locateSourceFile_ needs a file}"
 
-  cd "$(dirname $TARGET_FILE)" || die "Could not find TARGET FILE"
-  TARGET_FILE="$(basename $TARGET_FILE)"
+  cd "$(dirname "$TARGET_FILE")" || return 1
+  TARGET_FILE="$(basename "$TARGET_FILE")"
 
   # Iterate down a (possible) chain of symlinks
-  while [ -L "$TARGET_FILE" ]
-  do
+  while [ -L "$TARGET_FILE" ]; do
     TARGET_FILE=$(readlink "$TARGET_FILE")
-    cd "$(dirname $TARGET_FILE)" || die "Could not find TARGET FILE"
-    TARGET_FILE="$(basename $TARGET_FILE)"
+    cd "$(dirname "$TARGET_FILE")" || return 1
+    TARGET_FILE="$(basename "$TARGET_FILE")"
   done
 
   # Compute the canonicalized name by finding the physical path
   # for the directory we're in and appending the target file.
   PHYS_DIR=$(pwd -P)
   RESULT="${PHYS_DIR}/${TARGET_FILE}"
-  echo "${RESULT}"
+  echo "$RESULT"
 }
 
 _createSymlinks_() {
