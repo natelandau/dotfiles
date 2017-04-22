@@ -52,7 +52,7 @@ header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
 verbose()    { if ${verbose}; then debug "$@"; fi }
 
 _seekConfirmation_() {
-  # v1.0.0
+  # v1.0.1
   # Seeks a Yes or No answer to a question.  Usage:
   #   if _seekConfirmation_ "Answer this question"; then
   #     something
@@ -61,6 +61,7 @@ _seekConfirmation_() {
   input "$@"
   if "${force}"; then
     verbose "Forcing confirmation with '--force' flag set"
+    echo -e ""
     return 0
   else
     while true; do
