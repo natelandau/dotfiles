@@ -318,7 +318,7 @@ _backupOriginalFile_() {
   fi
 
   if [ -e "$1" ]; then
-    newFile="$(basename $1)"
+    newFile="$(basename "$1")"
     _execute_ "cp -R \"${1}\" \"${backupDir}/${newFile#.}\"" "Backing up: ${newFile}"
   fi
 }
