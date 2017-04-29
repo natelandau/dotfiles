@@ -32,7 +32,7 @@ alias pu="pushd"
 # Pop current location
 alias po="popd"
 
-function dirs-help() {
+function dirsHelp() {
   echo "Directory Navigation Alias Usage"
   echo
   echo "Use the power of directory stacking to move"
@@ -66,7 +66,7 @@ alias L='cat ~/.dirs'
 
 
 G () {
-  # goes to distination dir otherwise, stay in the dir
+  # goes to destination dir otherwise, stay in the dir
   # example '$ G ..'
   cd "${1:-$(pwd)}" ;
 }

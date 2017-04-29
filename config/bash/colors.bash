@@ -61,29 +61,52 @@ else
 fi
 
 if tput setaf 1 &> /dev/null; then
-tput sgr0
-if [[ $(tput colors) -ge 256 ]] 2>/dev/null; then
-  MAGENTA=$(tput setaf 9)
-  ORANGE=$(tput setaf 172)
-  GREEN=$(tput setaf 190)
-  PURPLE=$(tput setaf 141)
-  WHITE=$(tput setaf 15)
-  YELLOW=$(tput setaf 3)
-  BLUE=$(tput setaf 38)
-  RED=$(tput setaf 1)
-  BLACK=$(tput setaf 233)
-  GRAY=$(tput setaf 241)
-else
-  MAGENTA=$(tput setaf 5)
-  ORANGE=$(tput setaf 4)
-  GREEN=$(tput setaf 2)
-  PURPLE=$(tput setaf 1)
-  WHITE=$(tput setaf 7)
-  YELLOW=$(tput setaf 3)
-  BLUE=$(tput setaf 38)
-  RED=$(tput setaf 1)
-  BLACK=$(tput setaf 8)
-fi
+  tput sgr0
+  if [[ $(tput colors) -ge 256 ]] 2>/dev/null; then
+    MAGENTA=$(tput setaf 9)
+    ORANGE=$(tput setaf 172)
+    GREEN=$(tput setaf 190)
+    PURPLE=$(tput setaf 141)
+    WHITE=$(tput setaf 15)
+    YELLOW=$(tput setaf 3)
+    BLUE=$(tput setaf 38)
+    RED=$(tput setaf 1)
+    BLACK=$(tput setaf 233)
+    GRAY=$(tput setaf 241)
+    #Backgrounds
+    BACKORANGE=$(tput setab 172)
+    BACKMAGENTA=$(tput setab 9)
+    BACKORANGE=$(tput setab 172)
+    BACKGREEN=$(tput setab 190)
+    BACKPURPLE=$(tput setab 141)
+    BACKWHITE=$(tput setab 15)
+    BACKYELLOW=$(tput setab 3)
+    BACKBLUE=$(tput setab 38)
+    BACKRED=$(tput setab 1)
+    BACKGRAY=$(tput setab 241)
+
+    export BACKORANGE
+    export BACKMAGENTA
+    export BACKORANGE
+    export BACKGREEN
+    export BACKPURPLE
+    export BACKWHITE
+    export BACKYELLOW
+    export BACKBLUE
+    export BACKRED
+    export GRAY
+    export BACKGRAY
+  else
+    MAGENTA=$(tput setaf 5)
+    ORANGE=$(tput setaf 4)
+    GREEN=$(tput setaf 2)
+    PURPLE=$(tput setaf 1)
+    WHITE=$(tput setaf 7)
+    YELLOW=$(tput setaf 3)
+    BLUE=$(tput setaf 38)
+    RED=$(tput setaf 1)
+    BLACK=$(tput setaf 8)
+  fi
   BOLD=$(tput bold)
   RESET=$(tput sgr0)
   UNDERLINE=$(tput sgr 0 1)
@@ -102,19 +125,6 @@ else
   RESET="\033[m"
 fi
 
-
-#Backgrounds
-BACKORANGE=$(tput setab 172)
-BACKMAGENTA=$(tput setab 9)
-BACKORANGE=$(tput setab 172)
-BACKGREEN=$(tput setab 190)
-BACKPURPLE=$(tput setab 141)
-BACKWHITE=$(tput setab 15)
-BACKYELLOW=$(tput setab 3)
-BACKBLUE=$(tput setab 38)
-BACKRED=$(tput setab 1)
-BACKGRAY=$(tput setab 241)
-
 export MAGENTA
 export ORANGE
 export GREEN
@@ -127,14 +137,3 @@ export BLACK
 export UNDERLINE
 export BOLD
 export RESET
-export BACKORANGE
-export BACKMAGENTA
-export BACKORANGE
-export BACKGREEN
-export BACKPURPLE
-export BACKWHITE
-export BACKYELLOW
-export BACKBLUE
-export BACKRED
-export GRAY
-export BACKGRAY

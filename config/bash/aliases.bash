@@ -17,10 +17,13 @@ alias showOptions='shopt'             # Show_options: display bash options setti
 alias fix_stty='stty sane'            # fix_stty:   Restore terminal settings when screwed up
 alias kill='kill -9'                  # kill:     Preferred 'kill' implementation
 alias ax='chmod a+x'                  # ax:     Make a file executable
-alias less='less -RXcqeN'             # Preferred 'less' implementation
-alias more='less'                     # more: use 'less' instead of 'more'
 alias path='echo -e ${PATH//:/\\n}'
 
+#
+if command -v less &> /dev/null; then
+  alias less='less -RXcqeN'             # Preferred 'less' implementation
+  alias more='less'                     # more: use 'less' instead of 'more'
+fi
 
 # Custom commands
 mcd () { mkdir -p "$1" ; cd "$1" || exit; }
@@ -39,13 +42,16 @@ if command -v cleanFilenames &> /dev/null; then
   alias cf="cleanFilenames"
 fi
 
-if command -v trash &> /dev/null; then
-  alias rm='trash'
-  alias rmd='trash'
-else
-  alias rm='rm -i'
-  alias rmd='rm -rf'
+alias rm='rm -i'
+alias rmd='rm -rf'
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  if command -v trash &> /dev/null; then
+    alias rm='trash'
+    alias rmd='trash'
+  fi
 fi
+
 
 # Preferred implementation of shellcheck
 alias sc='shellcheck --exclude=1090,2005,2034,2086,1083,2119,2120,2059,2001,2002,2148'

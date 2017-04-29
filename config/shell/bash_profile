@@ -7,6 +7,9 @@ case $- in
 esac
 [ -z "$PS1" ] && return
 
+# set default umask
+umask 002
+
 # Build PATH and put /usr/local/bin before existing PATH
 export PATH="/usr/local/bin:$PATH:$HOME/bin"
 

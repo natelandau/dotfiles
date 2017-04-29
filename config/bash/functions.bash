@@ -7,16 +7,6 @@ su() {
     fi
 }
 
-browser() {
-  # Pipe html to a web browser
-  # example '$ echo "<h1>hi mom!</h1>" | browser'
-  # example '$ ron -5 man/rip.5.ron | browser'
-  local f
-  f="/tmp/browser.$RANDOM.html"
-  cat /dev/stdin > $f
-  open -a safari $f
-}
-
 escape() { echo "${@}" | sed 's/[]\.|$(){}?+*^]/\\&/g'; }
 
 # Text Transformations :
@@ -25,7 +15,7 @@ htmldecode() {
   # Decode HTML characters with sed
   # Usage: htmlDecode <string>
   local sedLocation
-  sedLocation="$HOME/dotfiles/config/sed/htmlDecode.sed"
+  sedLocation="${HOME}/dotfiles/config/sed/htmlDecode.sed"
   if [ -f "$sedLocation" ]; then
     echo "${1}" | sed -f "$sedLocation"
   else
@@ -38,7 +28,7 @@ htmlencode() {
   # Usage: htmlEncode <string>
 
   local sedLocation
-  sedLocation="$HOME/dotfiles/config/sed/htmlEncode.sed"
+  sedLocation="${HOME}/dotfiles/config/sed/htmlEncode.sed"
   if [ -f "$sedLocation" ]; then
     echo "${1}" | sed -f "$sedLocation"
   else

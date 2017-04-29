@@ -34,6 +34,16 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     done
   }
 
+  browser() {
+    # Pipe html to a web browser
+    # example '$ echo "<h1>hi mom!</h1>" | browser'
+    # example '$ ron -5 man/rip.5.ron | browser'
+    local f
+    f="/tmp/browser.$RANDOM.html"
+    cat /dev/stdin > $f
+    open -a safari $f
+  }
+
   lst() {
     # lst:  Search for files based on OSX native tags
     #       More info:  http://brettterpstra.com/2013/10/28/mavericks-tags-spotlight-and-terminal/

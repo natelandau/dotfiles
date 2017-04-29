@@ -77,6 +77,7 @@ _mainScript_() {
   _privateRepo_
 
   _installHomebrewPackages_() {
+
     local tap
     local package
     local cask
@@ -150,7 +151,7 @@ _mainScript_() {
     # Reset verbose settings
     verbose=$saveVerbose
   }
-  if [[ "$OSTYPE" == "darwin"* ]]; then _installHomebrewPackages_ ; fi
+  [[ "$OSTYPE" =~ darwin ]] && _installHomebrewPackages_
 
   _installNodePackages_() {
     local package
@@ -192,7 +193,7 @@ _mainScript_() {
     # Reset verbose settings
     verbose=$saveVerbose
   }
-  if [[ "$OSTYPE" == "darwin"* ]]; then _installNodePackages_ ; fi
+  [[ "$OSTYPE" =~ darwin ]] && _installNodePackages_
 
   _installRubyPackages_() {
 
@@ -217,7 +218,7 @@ _mainScript_() {
 
     done
   }
-  if [[ "$OSTYPE" == "darwin"* ]]; then _installRubyPackages_ ; fi
+  [[ "$OSTYPE" =~ darwin ]] && _installRubyPackages_
 
   _runConfigureScripts_() {
     local script
