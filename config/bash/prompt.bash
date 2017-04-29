@@ -53,8 +53,8 @@ if [[ "$OSTYPE" =~ linux ]]; then
 \[${BOLD}${MAGENTA}\]\u \[$WHITE\]at \[$ORANGE\]\h \
 \[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\
 \$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\
-\[$PURPLE\]\$(_promptGit_ \"$PRUPLE\")\[$WHITE\]\[$RESET\] \
-\n\[$WHITE\]| =>\[$RESET\] "
+\[$PURPLE\]\$(_promptGit_ \"$PRUPLE\")\[$WHITE\]\[$reset\] \
+\n\[$WHITE\]| =>\[$reset\] "
     export PS2="\[$WHITE\]→ $reset"
 
 else
