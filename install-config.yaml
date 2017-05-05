@@ -53,6 +53,7 @@ homebrewPackages:
   - imagemagick --with-webp
   - jpegoptim
   - jq                  # Lightweight and flexible command-line JSON processor
+  - kryptco/tap/kr      # SSH authentication on your phone
   - libksba
   - libtool
   - libyaml             # YAML Parser
