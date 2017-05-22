@@ -34,8 +34,3 @@ done
 # Always list directory contents upon 'cd'.
 # (Somehow this always failed when I put it in a sourced file)
 cd() { builtin cd "$@"; ll ; }
-
-# RVM complains if it's not here
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && export PATH="$HOME/.rvm/bin:$PATH" # Add RVM to PATH for scripting
-

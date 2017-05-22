@@ -7,6 +7,10 @@ fi
 # Make 'less' more with lesspipe
 [[ "$(command -v lesspipe.sh)" ]] && eval "$(lesspipe.sh)"
 
+# RVM complains if it's not here
+[[ -s "${HOME}/.rvm/scripts/rvm" ]] && source "${HOME}/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*
+[[ -s "${HOME}/.rvm/scripts/rvm" ]] && export PATH="${PATH}:${HOME}/.rvm/bin" # Add RVM to PATH for scripting
+
 # Path for Ruby (installed by Homebrew)
 #export PATH="$PATH:/usr/local/opt/ruby/bin"
 

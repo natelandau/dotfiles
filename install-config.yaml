@@ -13,6 +13,7 @@ symlinks:
   - ~/.profile:       config/shell/profile
   - ~/.slap:          config/shell/slap
   - ~/.sed:           config/shell/sed
+  - ~/.ruby-version:  config/shell/ruby-version
   - ~/bin/cleanFilenames:             bin/cleanFilenames
   - ~/bin/mailReIndex:                bin/mailReIndex
   - ~/bin/removeSymlink:              bin/removeSymlink
@@ -116,7 +117,6 @@ homebrewCasks:
   - sublime-text3
   - tower
   - vlc
-  # - vyprvpn
   # - webpquicklook
   - xld
 
