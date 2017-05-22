@@ -1,7 +1,7 @@
 if [[ "$OSTYPE" == "darwin"* ]]; then
   info "Checking for RVM (Ruby Version Manager)..."
 
-  RUBYVERSION="2.1.2" # Version of Ruby to install via RVM
+  RUBYVERSION="2.3.4 " # Version of Ruby to install via RVM
 
   # Check for RVM
   if ! command -v rvm &> /dev/null; then
