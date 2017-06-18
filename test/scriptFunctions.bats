@@ -350,6 +350,27 @@ teardown() {
   assert_output "$sourceDIR"
 }
 
+@test "_cleanFilename_: no rename file" {
+  touch "test.txt"
+
+  _cleanFilename_ "test.txt"
+  assert_file_exist "test.txt"
+}
+
+@test "_cleanFilename_: rename file" {
+  touch "test&.txt"
+
+  _cleanFilename_ "test&.txt"
+  assert_file_exist "test.txt"
+}
+
+@test "_cleanFilename_: rename file" {
+  touch "test&.txt"
+
+  _cleanFilename_ "test&.txt"
+  assert_file_exist "test.txt"
+}
+
 @test "_uniqueFileName_: Count to 3" {
   touch "test.txt"
   touch "test 2.txt"
