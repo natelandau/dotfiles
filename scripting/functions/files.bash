@@ -140,6 +140,40 @@ _locateSourceFile_() {
   echo "$RESULT"
 }
 
+_cleanFilename_() {
+  # v1.0.0
+  # _cleanFilename_ takes an input of a file and returns a replaces it with a version
+  # that is cleaned of certain characters.
+  #
+  # Update the cleanedFile variable after the pipe to customize for each script
+  #
+  # IMPORTANT: This will overwrite the original file and echo the new filename to the script
+
+  local final cleanedFile fileToClean extension baseFileName
+
+  fileToClean="$1"
+
+  [ ! -f "$fileToClean" ] && die "_cleanFileName_ ${fileToClean}: File doesn't exist"
+
+  extension="${fileToClean##*.}"
+  baseFileName=${fileToClean%.*}
+
+  cleanedFile=$(echo "${baseFileName}" | tr -dc '[:alnum:]-_ ' | sed 's/ /-/g')
+
+  final="${cleanedFile}.${extension}"
+
+  if ! ${dryrun}; then
+    if [[ "${fileToClean}" != "${final}" ]]; then
+      mv "${fileToClean}" "${final}" || die "_cleanFileName_: could not create new file"
+      echo "$final"
+    else
+      echo "${fileToClean}"
+    fi
+  else
+    echo "${fileToClean}"
+  fi
+}
+
 _uniqueFileName_() {
   # v2.0.0
   # _uniqueFileName_ takes an input of a file and returns a unique filename.
