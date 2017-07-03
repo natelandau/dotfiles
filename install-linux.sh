@@ -42,13 +42,15 @@ _mainScript_() {
   header "Now performing user actions"
 
   _generateKey_() {
-    notice "generating public ssh key...."
-    input "what is your email? [ENTER]: "
-    read -r EMAIL
+    if [ ! -f "${HOME}/.ssh/id_rsa.pub" ]; then
+      notice "generating public ssh key...."
+      input "what is your email? [ENTER]: "
+      read -r EMAIL
 
-    ssh-keygen -t rsa -b 4096 -C "$EMAIL"
+      ssh-keygen -t rsa -b 4096 -C "$EMAIL"
+    fi
   }
-  #_generateKey_
+  _generateKey_
 
  _doSymlinks_() {
 
