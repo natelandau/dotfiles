@@ -1,12 +1,15 @@
 # Two different sets of LS aliases because Gnu LS and macOS LS use different
 # flags for colors
 
-if [[ $(which ls) =~ gnubin || "$OSTYPE" =~ linux ]]; then
+if command -v exa &>/dev/null; then
   alias ls="ls --color=auto"
-  alias ll='ls -FlAhp --color=auto'     # Preferred 'ls' implementation
+  alias ll="exa -alh --git"
+elif [[ $(which ls) =~ gnubin || "$OSTYPE" =~ linux ]]; then
+  alias ls="ls --color=auto"
+  alias ll='ls -FlAhp --color=auto'
 else
   alias ls="ls -G"
-  alias ll='ls -FGlAhp'                 # Preferred 'ls' implementation
+  alias ll='ls -FGlAhp'
 fi
 
 # Show directory stack

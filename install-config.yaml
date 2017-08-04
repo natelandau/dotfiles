@@ -45,6 +45,7 @@ homebrewPackages:
   - bats                # Testing suite for shell scripts
   - colordiff
   - coreutils           # GNU File, Shell, and Text utilities
+  - exa
   - ffmpeg --with-fdk-aac --with-fontconfig --with-libass --with-libbluray --with-libbs2b --with-libcaca --with-libebur128 --with-libgsm --with-libmodplug --with-libsoxr --with-libssh --with-libvidstab --with-libvorbis --with-libvpx --with-openh264 --with-openjpeg --with-openssl --with-schroedinger --with-sdl2 --with-snappy --with-speex --with-tools --with-two-lame --with-wavpack --with-webp --with-x265 --with-xz
   - gifsicle            # GIF image/animation creator/editor
   - git
