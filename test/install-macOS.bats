@@ -5,7 +5,7 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-s="${HOME}/dotfiles/install.sh"
+s="${HOME}/dotfiles/bootstrap/install-macOS.sh"
 base="$(basename $s)"
 
 [ -f "$s" ] \
@@ -158,7 +158,7 @@ teardown() {
 @test "_findBaseDir_" {
   run _findBaseDir_
 
-  assert_output "${HOME}/dotfiles"
+  assert_output "${HOME}/dotfiles/bootstrap"
 }
 
 @test "Quiet mode" {
