@@ -42,15 +42,13 @@ _mainScript_() {
   header "Now performing user actions"
 
   _generateKey_() {
-    if [ ! -f "${HOME}/.ssh/id_rsa.pub" ]; then
-      notice "generating public ssh key...."
-      input "what is your email? [ENTER]: "
-      read -r EMAIL
+    notice "generating public ssh key...."
+    input "what is your email? [ENTER]: "
+    read -r EMAIL
 
-      ssh-keygen -t rsa -b 4096 -C "$EMAIL"
-    fi
+    ssh-keygen -t rsa -b 4096 -C "$EMAIL"
   }
-  _generateKey_
+  #_generateKey_
 
  _doSymlinks_() {
 
@@ -100,7 +98,6 @@ _mainScript_() {
   _installGitHooks_
 
   _execute_ "sudo bash < <( curl https://raw.github.com/jamiew/git-friendly/master/install.sh)"
-
 
 }  # end _mainScript_
 

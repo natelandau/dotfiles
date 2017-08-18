@@ -1,6 +1,6 @@
 symlinks:
   # format is - destination: source (source files are relative to 'install.sh')
-  - ~/.httpie:        config/shell/httpie
+  - ~/.httpie:          config/shell/httpie
   - ~/.bashrc:        config/shell/bashrc
   - ~/.bash_profile:  config/shell/bash_profile
   - ~/.curlrc:        config/shell/curlrc
@@ -54,10 +54,11 @@ homebrewPackages:
   - hr                  # <hr />, for your terminal window
   - httpie              # User-friendly cURL replacement (command-line HTTP client)
   - id3tool
-  - imagemagick --with-webp
+  # - imagemagick --with-webp
+  - imagemagick@6
   - jpegoptim
   - jq                  # Lightweight and flexible command-line JSON processor
-  - kryptco/tap/kr      # SSH authentication on your phone
+  # - kryptco/tap/kr      # SSH authentication on your phone
   - libksba
   - libtool
   - libyaml             # YAML Parser

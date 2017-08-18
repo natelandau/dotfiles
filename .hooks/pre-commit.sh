@@ -32,6 +32,8 @@ _execute_() {
 GITROOT=$(git rev-parse --show-toplevel 2> /dev/null)
 
 _ignoreSymlinks_() {
+  # Ensure that no symlinks have been added to the repository.
+
   local gitIgnore="$GITROOT/.gitignore"
   local havesymlink=false
 
@@ -85,26 +87,30 @@ if which shellcheck >/dev/null; then
   done
 fi
 
-# Run BATS where appropriate
+# Test bash scripts with BATS when they change
 _BATS_() {
   local filename
 
-  # Run BATS on bin/*
+  # Test files in bin/
   for file in $(git diff --cached --name-only | grep -E 'bin/'); do
     filename="$(basename $file)"
     filename="${filename%.*}"
     [ -f "${GITROOT}/test/${filename}.bats" ] && _execute_ "${GITROOT}/test/${filename}.bats -t"
   done
 
+  # Test files in bootstrap/
+  for file in $(git diff --cached --name-only | grep -E 'bootstrap/'); do
+    filename="$(basename $file)"
+    filename="${filename%.*}"
+    [ -f "${GITROOT}/test/${filename}.bats" ] && _execute_ "${GITROOT}/test/${filename}.bats -t"
+  done
+
+
   # Run BATS on script functions
   if git diff --cached --name-only | grep -E 'scripting/functions/.*\.bash$' &>/dev/null; then
     [ -f "${GITROOT}/test/scriptFunctions.bats" ] && _execute_ "${GITROOT}/test/scriptFunctions.bats"
   fi
 
-  # test install script
-  if git diff --cached --name-only | grep -E 'install.sh' &>/dev/null; then
-    [ -f "${GITROOT}/test/install.bats" ] && _execute_ "${GITROOT}/test/install.bats -t"
-  fi
 }
 _BATS_
 

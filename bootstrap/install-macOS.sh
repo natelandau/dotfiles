@@ -4,13 +4,15 @@ version="1.0.0"
 
 _mainScript_() {
 
+  [[ "$OSTYPE" != "darwin"* ]] && die "We are not on macOS"
+
   # Set Variables
   baseDir="$(_findBaseDir_)"
+  rootDIR="$(dirname "$baseDir")"
   utilsFile="${baseDir}/lib/utils.sh"
-  configFile="${baseDir}/install-config.yaml"
+  configFile="${baseDir}/config-macOS.yaml"
   privateInstallScript="${HOME}/dotfiles-private/privateInstall.sh"
-  bootstrapScripts="${baseDir}/lib/bootstrap"
-  configureScripts="${baseDir}/lib/configure"
+  pluginScripts="${baseDir}/lib/mac-plugins"
 
   scriptFlags=()
     ( $dryrun ) && scriptFlags+=(--dryrun)
@@ -33,31 +35,74 @@ _mainScript_() {
   }
   _sourceFiles_
 
-  _runBootstrapScripts_() {
-    local script
+  _commandLineTools_(){
+    info "Checking for Command Line Tools..."
 
-    notice "Confirming we have prerequisites..."
+    if ! xcode-select --print-path &> /dev/null; then
 
-    if [ ! -d "${bootstrapScripts}" ]; then die "${bootstrapScripts}: Can't find install scripts."; fi
+      # Prompt user to install the XCode Command Line Tools
+      xcode-select --install &> /dev/null
 
-    # Run the bootstrap scripts in numerical order
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    #Show detailed command information
-    saveVerbose=${verbose}
-    verbose=true
+      # Wait until the XCode Command Line Tools are installed
+      until xcode-select --print-path &> /dev/null; do
+        sleep 5
+      done
 
-    set +e # Don't quit install.sh when a sub-script fails
-    while read -r script; do
-      . "${script}"
-    done < <(find "${bootstrapScripts}" -name "[0-9]*.sh" -type f -maxdepth 1)
-    set -e
-    verbose=${saveVerbose}
+      success 'Install XCode Command Line Tools'
+
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      # Point the `xcode-select` developer directory to
+      # the appropriate directory from within `Xcode.app`
+      # https://github.com/alrra/dotfiles/issues/13
+
+      sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer
+      notice 'Making "xcode-select" developer directory point to Xcode'
+
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      # Prompt user to agree to the terms of the Xcode license
+      # https://github.com/alrra/dotfiles/issues/10
+
+      sudo xcodebuild -license
+      notice 'Agree with the XCode Command Line Tools licence'
+
+    else
+      success "Command Line Tools installed"
+    fi
+
+    # #######
+    # Alternative method. Depreciated but left here for posterity
+    # #######
+
+    # if [[ ! "$(type -P gcc)" || ! "$(type -P make)" ]]; then
+    #   local osx_vers=$(sw_vers -productVersion | awk -F "." '{print $2}')
+    #   local cmdLineToolsTmp="${tmpDir}/.com.apple.dt.CommandLineTools.installondemand.in-progress"
+
+    #   # Create the placeholder file which is checked by the software update tool
+    #   # before allowing the installation of the Xcode command line tools.
+    #   touch "${cmdLineToolsTmp}"
+
+    #   # Find the last listed update in the Software Update feed with "Command Line Tools" in the name
+    #   cmd_line_tools=$(softwareupdate -l | awk '/\*\ Command Line Tools/ { $1=$1;print }' | tail -1 | sed 's/^[[ \t]]*//;s/[[ \t]]*$//;s/*//' | cut -c 2-)
+
+    #   _execute_ "softwareupdate -i ${cmd_line_tools} -v"
+
+    #   # Remove the temp file
+    #   if [ -f "${cmdLineToolsTmp}" ]; then
+    #     rm ${v} "${cmdLineToolsTmp}"
+    #   fi
+    # fi
+
+    # success "Command Line Tools installed"
   }
-  _runBootstrapScripts_
+  _commandLineTools_
 
   _doSymlinks_() {
 
-    if ! _seekConfirmation_ "Create symlinks?"; then return; fi
+    if ! _seekConfirmation_ "Create symlinks to dotfiles?"; then return; fi
 
     [ ! -d "${HOME}/bin" ] && _execute_ "mkdir \"${HOME}/bin\""
 
@@ -68,15 +113,39 @@ _mainScript_() {
   _doSymlinks_
 
   _privateRepo_() {
-    [ ! -f "${privateInstallScript}" ] && { warning "Could not find private install script" ; return ; }
 
     if _seekConfirmation_ "Run Private install script"; then
+       [ ! -f "${privateInstallScript}" ] && { warning "Could not find private install script" ; return ; }
       "${privateInstallScript}" "${scriptFlags[*]}"
     fi
   }
   _privateRepo_
 
-  _installHomebrewPackages_() {
+  _homebrew_() {
+    info "Checking for Homebrew..."
+
+    if ! command -v brew &> /dev/null; then
+      notice "Installing Homebrew..."
+      #   Ensure that we can actually, like, compile anything.
+      if [[ ! $(command -v gcc) && "$OSTYPE" =~ ^darwin ]]; then
+        _commandLineTools_
+      fi
+      # Check for Git
+      if [ ! "$(command -v git)" ]; then
+        _commandLineTools_
+      fi
+      if [[ ! $(command -v gcc) && "$OSTYPE" =~ ^darwin ]]; then
+        _commandLineTools_
+      fi
+      # Check for Git
+      if [ ! "$(command -v git)" ]; then
+        _commandLineTools_
+      fi
+      # Install Homebrew
+      _execute_ "ruby -e $(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" "Install Homebrew"
+    else
+      success "Homebrew is installed"
+    fi
 
     local tap
     local package
@@ -151,9 +220,9 @@ _mainScript_() {
     # Reset verbose settings
     verbose=$saveVerbose
   }
-  [[ "$OSTYPE" =~ darwin ]] && _installHomebrewPackages_
+  _homebrew_
 
-  _installNodePackages_() {
+  _node_() {
     local package
     local npmPackages
     local modules
@@ -164,9 +233,13 @@ _mainScript_() {
 
     #confirm node is installed
     if test ! "$(which node)"; then
-      warning "Can not install npm packages without node"
-      info "Run 'brew install node'"
-      return
+      notice "Can not install npm packages without node. Installing now"
+      if command -v brew &> /dev/null; then
+        brew install node
+      else
+        warning "Can not install node. Please rerun script."
+        return
+      fi
     fi
 
     # Grab packages already installed
@@ -193,9 +266,25 @@ _mainScript_() {
     # Reset verbose settings
     verbose=$saveVerbose
   }
-  [[ "$OSTYPE" =~ darwin ]] && _installNodePackages_
+  _node_
 
-  _installRubyPackages_() {
+  _ruby_() {
+    local RUBYVERSION="2.3.4 " # Version of Ruby to install via RVM
+    info "Checking for RVM (Ruby Version Manager)..."
+
+    pushd ${HOME} &> /dev/null
+    # Check for RVM
+    if ! command -v rvm &> /dev/null; then
+      if _seekConfirmation_ "Couldn't find RVM. Install it?"; then
+        _execute_ "curl -L https://get.rvm.io | bash -s stable --ruby"
+        _execute_ "source ${HOME}/.rvm/scripts/rvm"
+        _execute_ "source ${HOME}/.bash_profile"
+        #rvm get stable --autolibs=enable
+        _execute_ "rvm install ${RUBYVERSION}"
+        _execute_ "rvm use ${RUBYVERSION} --default"
+      fi
+    fi
+    success "RVM and Ruby are installed"
 
     if ! _seekConfirmation_ "Install Ruby Packages?"; then return; fi
 
@@ -211,35 +300,38 @@ _mainScript_() {
       testInstalled=$(echo "$gem" | cut -d' ' -f1 | _trim_)
 
       if ! gem list $testInstalled -i >/dev/null; then
-        pushd ${HOME} > /dev/null; _execute_ "gem install ${gem}" "install ${gem}"; popd > /dev/null;
+        _execute_ "gem install ${gem}" "install ${gem}"p
       else
         info "${testInstalled} already installed"
       fi
-
     done
+
+    popd &> /dev/null
   }
-  [[ "$OSTYPE" =~ darwin ]] && _installRubyPackages_
+  _ruby_
 
-  _runConfigureScripts_() {
-    local script
+  _runPlugins_() {
+    local plugin
 
-    header "Running configure scripts"
+    header "Running plugin scripts"
 
-    if [ ! -d "$configureScripts" ]; then die "Can't find install scripts."; fi
+    if [ ! -d "$pluginScripts" ]; then die "Can't find plugins."; fi
 
     # Run the bootstrap scripts in numerical order
 
     set +e # Don't quit install.sh when a sub-script fails
-    for script in ${configureScripts}/[0-9]*.sh; do
-      if _seekConfirmation_ "Run ${script}?"; then
-        . "${script}"
+    for plugin in ${pluginScripts}/*.sh; do
+      pluginName="$(basename ${plugin})"
+      pluginName="$(echo $pluginName | sed -e 's/[0-9][0-9]-//g' | sed -e 's/-/ /g' | sed -e 's/\.sh//g')"
+      if _seekConfirmation_ "Run '${pluginName}' plugin?"; then
+        "${plugin}" "${scriptFlags[*]}" --verbose --rootDIR "$rootDIR"
       fi
     done
     set -e
   }
-  _runConfigureScripts_
+  _runPlugins_
 
-  success "${scriptName} has completed."
+
 
 }  # end _mainScript_
 
@@ -274,22 +366,23 @@ _seekConfirmation_() {
 }
 
 _execute_() {
-  # v1.0.0
+  # v1.0.1
+  local cmd="${1:?_execute_ needs a command}"
+  local message="${2:-$1}"
   if ${dryrun}; then
-    dryrun "${2:-$1}"
+    dryrun "${message}"
   else
-    #set +e # don't exit script if execute fails
     if $verbose; then
-      eval "$1"
+      eval "$cmd"
     else
-      eval "$1" &> /dev/null
+      eval "$cmd" &> /dev/null
     fi
     if [ $? -eq 0 ]; then
-      success "${2:-$1}"
+      success "${message}"
     else
-      warning "${2:-$1}"
+      error "${message}"
+      #die "${message}"
     fi
-    # set -e
   fi
 }
 
@@ -321,15 +414,6 @@ _backupOriginalFile_() {
   if [ -e "$1" ]; then
     newFile="$(basename "$1")"
     _execute_ "cp -R \"${1}\" \"${backupDir}/${newFile#.}\"" "Backing up: ${newFile}"
-  fi
-}
-
-_executeFunction_() {
-  local functionName="$1"
-  local functionDesc="${2:-next step?}"
-
-  if _seekConfirmation_ "${functionDesc}?"; then
-    "${functionName}"
   fi
 }
 
@@ -384,7 +468,7 @@ _createSymlinks_() {
     destFile="${destFile/\~/$HOME}"
 
     # Grab the absolute path for the source
-    sourceFile="${baseDir}/${sourceFile}"
+    sourceFile="${rootDIR}/${sourceFile}"
 
     # If we can't find a source file, skip it
     if ! test -e "${sourceFile}"; then
@@ -412,25 +496,25 @@ _createSymlinks_() {
 
 _parseYAML_() {
   # v1.0.0
-    local prefix=$2
-    local s
-    local w
-    local fs
-    s='[[:space:]]*'
-    w='[a-zA-Z0-9_]*'
-    fs="$(echo @|tr @ '\034')"
-    sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$1" |
-    awk -F"$fs" '{
-      indent = length($1)/2;
-      if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
-      vname[indent] = $2;
-      for (i in vname) {if (i > indent) {delete vname[i]}}
-      if (length($3) > 0) {
-              vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-              printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
-      }
-    }' | sed 's/_=/+=/g' | sed 's/[[:space:]]*#.*"/"/g'
+  local prefix=$2
+  local s
+  local w
+  local fs
+  s='[[:space:]]*'
+  w='[a-zA-Z0-9_]*'
+  fs="$(echo @|tr @ '\034')"
+  sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
+      -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$1" |
+  awk -F"$fs" '{
+    indent = length($1)/2;
+    if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
+    vname[indent] = $2;
+    for (i in vname) {if (i > indent) {delete vname[i]}}
+    if (length($3) > 0) {
+            vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+            printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
+    }
+  }' | sed 's/_=/+=/g' | sed 's/[[:space:]]*#.*"/"/g'
 }
 
 _readFile_() {
@@ -550,13 +634,16 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This script runs a series of installation scripts to configure a new computer.
-It relies on a YAML config file 'install-config.yaml'. This YAML file will contain
+This script runs a series of installation scripts to configure a new computer running  Mac OSX.
+It relies on a YAML config file 'config-macOS.yaml'. This YAML file will contain
+
   - symlinks
   - homebrew packages
   - homebrew casks
   - ruby gems
   - node packages
+
+This script also looks for plugin scripts in a user configurable directory for added customization.
 
  ${bold}Options:${reset}
 
@@ -567,7 +654,8 @@ It relies on a YAML config file 'install-config.yaml'. This YAML file will conta
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
   -h, --help        Display this help and exit
-      --source-only Bypasses main script functionality to allow unit tests of functions      --version     Output version information and exit
+      --source-only Bypasses main script functionality to allow unit tests of functions
+      --version     Output version information and exit
       --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
 }

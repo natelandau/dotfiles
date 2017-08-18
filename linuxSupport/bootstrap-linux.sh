@@ -1,250 +1,180 @@
-#! /bin/bash
-#
-# <UDF name="HOSTNAME" Label="Hostname of this Linode" />
-# <UDF name="USERNAME" Label="Main user name" />
-# <UDF name="PASSWORD" Label="Main user password" />
-# <UDF name="SSHKEY"  Label="Main user RSA SSH key" />
-# <UDF name="NODEVERSION" Label="Node.js version" default="8.1.3" />
-# <UDF name="RUBYVERSION" Label="Ruby version" default="2.3.4" />
-#
-# If not deploying to Linode, set these environment variables. All required:
-#   - HOSTNAME
-#   - USERNAME
-#   - PASSWORD
-#   - SSHKEY
-#   - NODEVERSION
-#   - RUBYVERSION
+#!/usr/bin/env bash
+
+version="1.0.0"
 
 _mainScript_() {
 
-  # Variables
-  #shellcheck disable=2153
-  HOMEDIR="/home/${USERNAME}"
-  IPADDRESS=$(/sbin/ifconfig eth0 | awk '/inet / { print $2 }' | sed 's/addr://')
+  [[ "$OSTYPE" != "linux-gnu" ]] && die "We are not on Linux"
 
-  # Update
-  apt-get update
-  apt-get upgrade -y
-  apt-get -y install git bzip2 unzip
+  # Get privs upfront
+  sudo -v
 
+  # Upgrade apt-get
 
-  _createGemrc_() {
-    cat > "${HOMEDIR}/.gemrc" << EOF
-verbose: true
-bulk_treshold: 1000
-install: --no-ri --no-rdoc --env-shebang
-benchmark: false
-backtrace: false
-update: --no-ri --no-rdoc --env-shebang
-update_sources: true
-EOF
-
-    chown $USERNAME:$USERNAME "${HOMEDIR}/.gemrc";
-  }
+  if [ -f /etc/apt/sources.list ]; then
+    notice "Upgrading apt-get....(May take a while)"
+    apt-get update
+    apt-get upgrade -y
+  else
+    die "Can not proceed without apt-get"
+  fi
 
   _setHostname_() {
-    header "Setting hostname..."
 
-    if [ -z "$HOSTNAME" ]; then
-      warning "Hostname undefined"
-      return 1;
-    fi
+    notice "Setting Hostname..."
+
+    local newHostname
+
+    ipAddress=$(/sbin/ifconfig eth0 | awk '/inet / { print $2 }' | sed 's/addr://')
+
+    input "What is your hostname? [ENTER]: "
+    read -r newHostname
+
+    [ ! -n "$newHostname" ] && die "Hostname undefined"
 
     if command -v hostnamectl &>/dev/null; then
-      hostnamectl set-hostname "$HOSTNAME"
+      _execute_ "hostnamectl set-hostname \"$newHostname\""
     else
-      echo "$HOSTNAME" > /etc/hostname
-      hostname -F /etc/hostname
+      _execute_ "echo \"$newHostname\" > /etc/hostname"
+      _execute_ "hostname -F /etc/hostname"
     fi
 
-    echo "$IPADDRESS" "$HOSTNAME" >> /etc/hosts
+    _execute_ "echo \"$ipAddress\" \"$newHostname\" >> /etc/hosts"
   }
   _setHostname_
 
   _setTime_() {
-    header "Setting time..."
+    notice "Setting Time..."
+
     if command -v timedatectl &> /dev/null; then
-      apt-get install -y ntp
-      timedatectl set-timezone "America/New_York"
-      timedatectl set-ntp true
+      _execute_ "apt-get install -y ntp"
+
+      _execute_ "timedatectl set-timezone \"America/New_York\""
+      _execute_ "timedatectl set-ntp true"
+    elif command -v dpkg-reconfigure; then
+      _execute_ "dpkg-reconfigure tzdata"
     else
-      warning "Set Time Failed"
-      return 1;
+      warning "set time failed"
     fi
   }
   _setTime_
 
+  _get_rdns_() {
+    # calls host on an IP address and returns its reverse dns
+
+    ipAddress=$(/sbin/ifconfig eth0 | awk '/inet / { print $2 }' | sed 's/addr://')
+
+    [ ! -e /usr/bin/host ] && apt-get -y install dnsutils > /dev/null
+
+    rdns=$(host $ipAddress | awk '/pointer/ {print $5}' | sed 's/\.$//')
+  }
+  #_get_rdns_
+
   _addUser_() {
-    header "Adding user..."
+    # Installs sudo if needed and creates a user in the sudo group.
+    notice "Creating a new user account..."
+    input "username? [ENTER]: "
+    read -r USERNAME
+    input "password? [ENTER]: "
+    read -r -s USERPASS
 
-    if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
-      warning "USERNAME or PASSWORD undefined"
-      return 1;
-    fi
+    apt-get -y install sudo > /dev/null
 
-    adduser "$USERNAME" --disabled-password --gecos ""
-    echo "$USERNAME:$PASSWORD" | chpasswd
-    usermod -aG sudo "$USERNAME"
+    _execute_ "adduser $USERNAME --disabled-password --gecos \"\""
+    _execute_ "echo \"$USERNAME:$USERPASS\" | chpasswd" "echo \"$USERNAME:******\" | chpasswd"
+    _execute_ "usermod -aG sudo $USERNAME"
   }
   _addUser_
 
   _addPublicKey_() {
-    header "Adding public key"
     # Adds the users public key to authorized_keys for the specified user. Make sure you wrap your input variables in double quotes, or the key may not load properly.
 
-    if [ -z "$SSHKEY" ]; then
-      warning "SSHKEY undefined"
-      return 1;
-    fi
+    if _seekConfirmation_ "Do you have a public key to add?"; then
+      if [ ! -n "$USERNAME" ]; then
+        warning "We must have a user"
+        return 1;
+      fi
 
-      mkdir -p "${HOMEDIR}/.ssh"
-      echo "$SSHKEY" >> "${HOMEDIR}/.ssh/authorized_keys"
-      chown -R $USERNAME:$USERNAME "${HOMEDIR}/.ssh"
+      input "paste your public key? [ENTER]: "
+      read -r USERPUBKEY
+
+      _execute_ "mkdir -p /home/$USERNAME/.ssh"
+      _execute_ "echo \"$USERPUBKEY\" >> /home/$USERNAME/.ssh/authorized_keys"
+      _execute_ "chown -R \"$USERNAME\":\"$USERNAME\" /home/$USERNAME/.ssh"
+    fi
   }
   _addPublicKey_
 
   _installPackages_ () {
-    header "Installing apt-get packages..."
-
+    notice "Installing apt-get packages...(may take some time)"
     packagesToInstall=(
+      autoconf
       autojump
+      automake
       bats
       colordiff
       coreutils
+      curl
       default-jre
+      git
       git-extras
       httpie
+      id3tool
       imagemagick
       jpegoptim
       jq
       less
       mosh
-      ngrok-server
-      ngrok-client
       optipng
       pngcrush
+      p7zip
       shellcheck
       source-highlight
       thefuck
       tree
       wget
+      libmagickcore-dev   # used to fix broken rmagick gem
+      libmagickwand-dev   # used to fix broken rmagick gem
       )
     for package in "${packagesToInstall[@]}"; do
-      _execute_ "apt-get install -y $package"
+      _execute_ "apt-get install -y \"$package\""
     done
   }
   _installPackages_
 
-  _installRuby_() {
-
-    header "Installing Ruby..."
-
-    # Install 2 packages used to fix broken rmagick gem
-    _execute_ "apt-get install -y libmagickcore-dev"
-    _execute_ "apt-get install -y libmagickwand-dev"
-
-    pushd "$HOMEDIR";
-    su $USERNAME -s /bin/bash -l -c "\curl -sSL https://get.rvm.io | bash -s stable"
-    export PATH="$PATH:${HOMEDIR}/.rvm/bin"
-    source "${HOMEDIR}/.rvm/scripts/rvm"
-    rvm install "${RUBYVERSION}";
-    rvm use ${RUBYVERSION} --default;
-    chown -R $USERNAME:$USERNAME .rvm;
-    _createGemrc_
-    su $USERNAME -s /bin/bash -l -c "gem install bundler ghi jekyll rake yaml-lint";
-    popd;
-  }
-  _installRuby_
-
-  _installNode_() {
-    apt-get install -y build-essential libssl-dev checkinstall
-
-    # nvm & node
-    pushd "$HOMEDIR";
-    git clone git://github.com/creationix/nvm.git "${HOMEDIR}/.nvm";
-    touch "${HOMEDIR}/.bash_profile"
-    echo ". ~/.nvm/nvm.sh" >> "${HOMEDIR}/.bash_profile"
-    echo "nvm use $NODEVERSION" >> "${HOMEDIR}/.bash_profile"
-    echo "Installed nvm"
-    . "${HOMEDIR}/.nvm/nvm.sh";
-    nvm install "$NODEVERSION";
-    nvm use "$NODEVERSION";
-    echo "Installed nodejs"
-    chown -R $USERNAME:$USERNAME "${HOMEDIR}/.nvm";
-    su $USERNAME -s /bin/bash -l -c "npm install -g lessmd";
-    popd;
-  }
-  _installNode_
-
-  _installDotfiles_() {
-    header "Installing dotfiles..."
-    pushd "$HOMEDIR";
-    git clone https://github.com/natelandau/dotfiles "${HOMEDIR}/dotfiles"
-    chown -R $USERNAME:$USERNAME "${HOMEDIR}/dotfiles"
-    popd;
-  }
-  _installDotfiles_
-
-
-  _installNGIX_() {
-    header "installing ngix"
-    _execute_ "sudo apt-get install nginx"
-
-    mkdir -p /var/www/dev/html
-    mkdir -p /var/www/stage/html
-    mkdir -p /var/www/prod/html
-    chown -R $USERNAME:$USERNAME /var/www/dev/html
-    chown -R $USERNAME:$USERNAME /var/www/stage/html
-    chown -R $USERNAME:$USERNAME /var/www/prod/html
-    chmod -R 755 /var/www
-
-    cp /etc/nginx/sites-available/default /etc/nginx/sites-available/dev
-
-  }
-
-  _ufwFirewall_() {
-    header "Installing firwall with UFW"
-    _execute_ "sudo apt-get install ufw"
-
-    ufw default deny
-    ufw allow 'Nginx Full'
-    ufw allow ssh
-    ufw allow mosh
-    ufw enable
-  }
-  _ufwFirewall_
-
-  _iptablesFirewall_() {
-    header "Creating firewall"
-
-    iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-    iptables -A INPUT -i lo -m comment --comment "Allow loopback connections" -j ACCEPT
-    iptables -A INPUT ! -i lo -s 127.0.0.0/8 -j REJECT
-    iptables -A INPUT -p icmp -m comment --comment "Allow Ping to work as expected" -j ACCEPT
-    iptables -A INPUT -p tcp -m multiport --destination-ports 22,25,53,80,443,465,5222,5269,5280,8080,8888,8999:9003 -j ACCEPT
-    iptables -A INPUT -p udp -m multiport --destination-ports 53,22,60000:61000 -j ACCEPT
-    iptables -P INPUT DROP
-    iptables -P FORWARD DROP
-  }
-  #_iptablesFirewall_
-
   _goodstuff_() {
     # Enables color root prompt and the "ll" list long alias
-    sed -i 's/^#PS1=/PS1=/' /root/.bashrc # enable the colorful root bash prompt
-    sed -i "s/^#alias ll='ls -l'/alias ll='ls -al'/" /root/.bashrc # enable ll list long alias <3
+
+    sed -i -e 's/^#PS1=/PS1=/' /root/.bashrc # enable the colorful root bash prompt
+    sed -i -e "s/^#alias ll='ls -l'/alias ll='ls -al'/" /root/.bashrc # enable ll list long alias <3
   }
   _goodstuff_
 
-  _lockThingsDown_() {
-    sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
-    #sed -i 's/\#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-    service ssh restart
+  _createFirewall_() {
+    notice "Setting firewall with iptables..."
+
+    _execute_ "iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT"
+    _execute_ "iptables -A INPUT -i lo -m comment --comment \"Allow loopback connections\" -j ACCEPT"
+    _execute_ "iptables -A INPUT ! -i lo -s 127.0.0.0/8 -j REJECT"
+    _execute_ "iptables -A INPUT -p icmp -m comment --comment \"Allow Ping to work as expected\" -j ACCEPT"
+    _execute_ "iptables -A INPUT -p tcp -m multiport --destination-ports 22,25,53,80,443,465,5222,5269,5280,8999:9003 -j ACCEPT"
+    _execute_ "iptables -A INPUT -p udp -m multiport --destination-ports 53,22,60000:61000 -j ACCEPT"
+    _execute_ "iptables -P INPUT DROP"
+    _execute_ "iptables -P FORWARD DROP"
   }
-  _lockThingsDown_
+  _createFirewall_
 
-  success "Yay! All done."
+ _disableRootSSH_() {
+    notice "Disabling root access..."
+    _execute_ "sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config"
+    _execute_ "touch /tmp/restart-ssh"
+    _execute_ "service ssh restart"
+  }
+  _disableRootSSH_
 
-}
+  success "Yay!  All done."
+
+}  # end _mainScript_
 
 _trapCleanup_() {
   echo ""
@@ -339,7 +269,6 @@ _seekConfirmation_() {
     done
   fi
 }
-
 _execute_() {
   # v1.0.1
   # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
@@ -362,8 +291,8 @@ _execute_() {
     if [ $? -eq 0 ]; then
       success "${message}"
     else
-      error "${message}"
-      #die "${message}"
+      #error "${message}"
+      die "${message}"
     fi
   fi
 }
