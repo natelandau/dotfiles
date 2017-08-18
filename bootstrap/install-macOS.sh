@@ -272,6 +272,7 @@ _mainScript_() {
     local RUBYVERSION="2.3.4 " # Version of Ruby to install via RVM
     info "Checking for RVM (Ruby Version Manager)..."
 
+    pushd ${HOME} &> /dev/null
     # Check for RVM
     if ! command -v rvm &> /dev/null; then
       if _seekConfirmation_ "Couldn't find RVM. Install it?"; then
@@ -299,12 +300,13 @@ _mainScript_() {
       testInstalled=$(echo "$gem" | cut -d' ' -f1 | _trim_)
 
       if ! gem list $testInstalled -i >/dev/null; then
-        pushd ${HOME} > /dev/null; _execute_ "gem install ${gem}" "install ${gem}"; popd > /dev/null;
+        _execute_ "gem install ${gem}" "install ${gem}"p
       else
         info "${testInstalled} already installed"
       fi
-
     done
+
+    popd &> /dev/null
   }
   _ruby_
 
@@ -415,15 +417,6 @@ _backupOriginalFile_() {
   fi
 }
 
-_executeFunction_() {
-  local functionName="$1"
-  local functionDesc="${2:-next step?}"
-
-  if _seekConfirmation_ "${functionDesc}?"; then
-    "${functionName}"
-  fi
-}
-
 _locateSourceFile_() {
   # v1.0.1
   # locateSourceFile is fed a symlink and returns the originating file
@@ -503,25 +496,25 @@ _createSymlinks_() {
 
 _parseYAML_() {
   # v1.0.0
-    local prefix=$2
-    local s
-    local w
-    local fs
-    s='[[:space:]]*'
-    w='[a-zA-Z0-9_]*'
-    fs="$(echo @|tr @ '\034')"
-    sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$1" |
-    awk -F"$fs" '{
-      indent = length($1)/2;
-      if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
-      vname[indent] = $2;
-      for (i in vname) {if (i > indent) {delete vname[i]}}
-      if (length($3) > 0) {
-              vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-              printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
-      }
-    }' | sed 's/_=/+=/g' | sed 's/[[:space:]]*#.*"/"/g'
+  local prefix=$2
+  local s
+  local w
+  local fs
+  s='[[:space:]]*'
+  w='[a-zA-Z0-9_]*'
+  fs="$(echo @|tr @ '\034')"
+  sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
+      -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$1" |
+  awk -F"$fs" '{
+    indent = length($1)/2;
+    if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
+    vname[indent] = $2;
+    for (i in vname) {if (i > indent) {delete vname[i]}}
+    if (length($3) > 0) {
+            vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+            printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
+    }
+  }' | sed 's/_=/+=/g' | sed 's/[[:space:]]*#.*"/"/g'
 }
 
 _readFile_() {
