@@ -24,6 +24,7 @@ symlinks:
   - ~/bin/convertVideo:               bin/convertVideo
   - ~/bin/git-undo:                   bin/git-undo
   - ~/bin/git-churn:                  bin/git-churn
+  - ~/bin/seconds:                    bin/seconds
 
 homebrewTaps:
   - argon/mas
