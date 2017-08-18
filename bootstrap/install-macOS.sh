@@ -634,13 +634,16 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This script runs a series of installation scripts to configure a new computer.
-It relies on a YAML config file 'install-config.yaml'. This YAML file will contain
+This script runs a series of installation scripts to configure a new computer running  Mac OSX.
+It relies on a YAML config file 'config-macOS.yaml'. This YAML file will contain
+
   - symlinks
   - homebrew packages
   - homebrew casks
   - ruby gems
   - node packages
+
+This script also looks for plugin scripts in a user configurable directory for added customization.
 
  ${bold}Options:${reset}
 
@@ -651,7 +654,8 @@ It relies on a YAML config file 'install-config.yaml'. This YAML file will conta
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
   -h, --help        Display this help and exit
-      --source-only Bypasses main script functionality to allow unit tests of functions      --version     Output version information and exit
+      --source-only Bypasses main script functionality to allow unit tests of functions
+      --version     Output version information and exit
       --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
 }
