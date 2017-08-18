@@ -1,0 +1,71 @@
+symlinks:
+  # format is - destination: source (source files are relative to 'install.sh')
+  - ~/.httpie:        config/shell/httpie
+  - ~/.bashrc:        config/shell/bashrc
+  - ~/.bash_profile:  config/shell/bash_profile
+  - ~/.curlrc:        config/shell/curlrc
+  - ~/.gitattributes: config/shell/gitattributes
+  - ~/.gitconfig:     config/shell/gitconfig
+  - ~/.gitignore:     config/shell/gitignore
+  - ~/.gemrc:         config/shell/gemrc
+  - ~/.hushlogin:     config/shell/hushlogin
+  - ~/.inputrc:       config/shell/inputrc
+  - ~/.profile:       config/shell/profile
+  - ~/.slap:          config/shell/slap
+  - ~/.sed:           config/shell/sed
+  - ~/.ruby-version:  config/shell/ruby-version
+  - ~/bin/cleanFilenames:             bin/cleanFilenames
+  - ~/bin/mailReIndex:                bin/mailReIndex
+  - ~/bin/removeSymlink:              bin/removeSymlink
+  - ~/bin/trash:                      bin/trash
+  - ~/bin/unlockFile:                 bin/unlockFile
+  - ~/bin/wolcmd:                     bin/wolcmd
+  - ~/bin/xld:                        bin/xld
+  - ~/bin/convertVideo:               bin/convertVideo
+  - ~/bin/git-undo:                   bin/git-undo
+  - ~/bin/git-churn:                  bin/git-churn
+
+aptGetPackages:
+  - autoconf
+  - autojump
+  - automake
+  - bats
+  - bzip2
+  - colordiff
+  - coreutils
+  - curl
+  - default-jre
+  - git
+  - git-extras
+  - httpie
+  - id3tool
+  - imagemagick
+  - jpegoptim
+  - jq
+  - less
+  - mosh
+  - optipng
+  - pngcrush
+  - p7zip
+  - shellcheck
+  - source-highlight
+  - thefuck
+  - tree
+  - unzip
+  - wget
+  - libmagickcore-dev   # used to fix broken rmagick gem
+  - libmagickwand-dev   # used to fix broken rmagick gem
+
+nodePackages:
+  - pageres-cli   # CLI for Web screenshots - https://github.com/sindresorhus/pageres-cli
+  - slap          # Sublime-like text editor for terminal
+  - lessmd        # Markdown reader for terminal
+
+rubyGems:
+  - bundler
+  - fileutils
+  - gemrat    # Save Time. Add the latest version of gems to your Gemfile from the command line
+  - ghi       # GitHub Issues on the command line.
+  - jekyll
+  - rake
+  - yaml-lint   # Check if your YAML files can be loaded.
