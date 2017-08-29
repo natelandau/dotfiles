@@ -12,7 +12,6 @@ _mainScript_() {
   # Set Variables
   baseDir="$(_findBaseDir_)"
   rootDIR="$(dirname "$baseDir")"
-  utilsFile="${baseDir}/lib/utils.sh"
   configFile="${baseDir}/config-linux-gnu.yaml"
   privateInstallScript="${HOME}/dotfiles-private/privateInstall.sh"
   pluginScripts="${baseDir}/lib/linux-plugins"

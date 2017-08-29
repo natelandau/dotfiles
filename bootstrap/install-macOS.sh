@@ -9,7 +9,6 @@ _mainScript_() {
   # Set Variables
   baseDir="$(_findBaseDir_)"
   rootDIR="$(dirname "$baseDir")"
-  utilsFile="${baseDir}/lib/utils.sh"
   configFile="${baseDir}/config-macOS.yaml"
   privateInstallScript="${HOME}/dotfiles-private/privateInstall.sh"
   pluginScripts="${baseDir}/lib/mac-plugins"
