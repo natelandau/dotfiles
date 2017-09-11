@@ -87,7 +87,7 @@ _mainScript_() {
         _execute_ "timedatectl set-timezone \"America/New_York\""
         _execute_ "timedatectl set-ntp true"
       elif command -v dpkg-reconfigure; then
-        _execute_ "dpkg-reconfigure tzdata"
+        dpkg-reconfigure tzdata
       else
         warning "set time failed"
       fi
@@ -172,7 +172,7 @@ _mainScript_() {
 
     _ufwFirewall_() {
       header "Installing firewall with UFW"
-      _execute_ "sudo apt-get install ufw"
+      apt-get install -y ufw
 
       _execute_ "ufw default deny"
       _execute_ "ufw allow 'Nginx Full'"
@@ -231,11 +231,9 @@ _mainScript_() {
       _execute_ "apt-get install -y \"${package}\""
     done
   }
-  _aptGetPackages_
+  if ! _seekConfirmation_ "Install packages with apt-get?"; then _aptGetPackages_; fi
 
   _doSymlinks_() {
-
-    if ! _seekConfirmation_ "Create symlinks?"; then return; fi
 
     [ ! -d "${HOME}/bin" ] && _execute_ "mkdir \"${HOME}/bin\""
 
@@ -243,7 +241,7 @@ _mainScript_() {
     _createSymlinks_ "Symlinks"
     unset filesToLink
   }
-  _doSymlinks_
+  if ! _seekConfirmation_ "Create symlinks?"; then _doSymlinks_; fi
 
   _installRuby_() {
     local RUBYVERSION
@@ -286,7 +284,7 @@ _mainScript_() {
 
     popd
   }
-  _installRuby_
+  if _seekConfirmation_ "Install Ruby?"; then _installRuby_; fi
 
   _installNode_() {
     local npmPackages
@@ -338,7 +336,7 @@ _mainScript_() {
     verbose=$saveVerbose
     popd
   }
-  _installNode_
+  if _seekConfirmation_ "Install Node?"; then _installNode_; fi
 
   _generateKey_() {
     if [ ! -f "${HOME}/.ssh/id_rsa.pub" ]; then
