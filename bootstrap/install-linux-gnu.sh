@@ -6,7 +6,7 @@ _mainScript_() {
 
   [[ "$OSTYPE" != "linux-gnu" ]] && die "We are not on Linux"
 
-  Get privs upfront
+  # Get privs upfront
   sudo -v
 
   # Set Variables
