@@ -231,7 +231,7 @@ _mainScript_() {
       _execute_ "apt-get install -y \"${package}\""
     done
   }
-  if ! _seekConfirmation_ "Install packages with apt-get?"; then _aptGetPackages_; fi
+  if _seekConfirmation_ "Install packages with apt-get?"; then _aptGetPackages_; fi
 
   _doSymlinks_() {
 
@@ -241,7 +241,7 @@ _mainScript_() {
     _createSymlinks_ "Symlinks"
     unset filesToLink
   }
-  if ! _seekConfirmation_ "Create symlinks?"; then _doSymlinks_; fi
+  if _seekConfirmation_ "Create symlinks?"; then _doSymlinks_; fi
 
   _installRuby_() {
     local RUBYVERSION
