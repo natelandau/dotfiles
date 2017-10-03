@@ -228,16 +228,18 @@ _uniqueFileName_() {
 }
 
 _readFile_() {
-  # v1.0.0
+  # v1.0.1
   # Function to reads a file and prints each line.
   # Usage: _readFile_ "some/filename"
   local result
+  local c=$1
 
-  while read -r result
-  do
+  [ ! -f "$c" ] \
+    &&  { error "'$c' not found"; return 1; }
+
+  while read -r result; do
     echo "${result}"
-  done < "${1:?Must specify a file for _readFile_}"
-  unset result
+  done < "${c}"
 }
 
 _parseYAML_() {
@@ -345,4 +347,16 @@ _decryptFile_() {
   else
     _execute_ "openssl enc -aes-256-cbc -d -in \"${fileToDecrypt}\" -out \"${decryptedFile}\" -k \"${PASS}\"" "Decrypt ${fileToDecrypt}"
   fi
+}
+
+_sourceFile_() {
+  # v1.0.0
+  # Takes a file as an argument $1 and sources it into the current script
+  # usage: _sourceFile_ "SomeFile.txt"
+  local c=$1
+
+  [ ! -f "$c" ] \
+    &&  { error "'$c' not found"; return 1; }
+
+  source "$c"
 }
