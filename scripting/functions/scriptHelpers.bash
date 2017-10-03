@@ -161,6 +161,20 @@ _pushover_() {
   "${PUSHOVERURL}" > /dev/null 2>&1
 }
 
+_haveFunction_ () {
+  # v1.0.0
+  # Tests if a function exists.  Returns 0 if yes, 1 if no
+  # usage: _haveFunction "_someFunction_"
+  local f
+  f="$1"
+
+  if declare -f "$f" &> /dev/null 2>&1; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 _countdown_() {
   # v1.0.0
   # Used to count down in increments of 1 from a specified number.
@@ -418,4 +432,99 @@ _guiInput_() {
 EOF
   )
   echo -n "${guiInput}"
+}
+
+_makeSymlink_() {
+  #v1.0.0
+  # Given two arguments $1 & $2, creates a symlink from $1 (source) to $2 (destination) and
+  # will create a backup of an original file before overwriting
+  #
+  # NOTE: This function makes use of the _execute_ function
+  #
+  # usage: _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink"
+
+  if type _execute_; then
+    die "execute"
+  else
+    die "no execute"
+  fi
+
+  local s="$1"
+  local d="$2"
+
+  [ ! -e "$s" ] \
+    &&  { error "'$s' not found"; return 1; }
+
+  # Fix files where $HOME is written as '~'
+    d="${d/\~/$HOME}"
+    s="${s/\~/$HOME}"
+
+
+
+  # Now we symlink the files OLD OLD OLD
+    if [ ! -e "${destFile}" ]; then
+      _execute_ "ln -fs \"${sourceFile}\" \"${destFile}\"" "symlink ${sourceFile} → ${destFile}"
+    elif [ -h "${destFile}" ]; then
+      originalFile="$(_locateSourceFile_ "$destFile")"
+      _backupOriginalFile_ "${originalFile}"
+      if ! ${dryrun}; then rm -rf "$destFile"; fi
+      _execute_ "ln -fs \"${sourceFile}\" \"${destFile}\"" "symlink ${sourceFile} → ${destFile}"
+    elif [ -e "${destFile}" ]; then
+      _backupOriginalFile_ "${destFile}"
+      if ! ${dryrun}; then rm -rf "$destFile"; fi
+      _execute_ "ln -fs \"${sourceFile}\" \"${destFile}\"" "symlink ${sourceFile} → ${destFile}"
+    else
+      warning "Error linking: ${sourceFile} → ${destFile}"
+    fi
+
+
+}
+
+_createSymlinks_() {
+  # This function takes an input of the YAML variable containing the symlinks to be linked
+  # and then creates the appropriate symlinks in the home directory. it will also backup existing files if there.
+
+  local link=""
+  local destFile=""
+  local sourceFile=""
+  local originalFile=""
+
+  header "Creating ${1:-symlinks}"
+
+  # For each link do the following
+  for link in "${filesToLink[@]}"; do
+    verbose "Working on: $link"
+    # Parse destination and source
+    destFile=$(echo "$link" | cut -d':' -f1 | _trim_)
+    sourceFile=$(echo "$link" | cut -d':' -f2 | _trim_)
+    sourceFile=$(echo "$sourceFile" | cut -d'#' -f1 | _trim_) # remove comments if exist
+
+    # Fix files where $HOME is written as '~'
+    destFile="${destFile/\~/$HOME}"
+
+    # Grab the absolute path for the source
+    sourceFile="${rootDIR}/${sourceFile}"
+
+    # If we can't find a source file, skip it
+    if ! test -e "${sourceFile}"; then
+      warning "Can't find '${sourceFile}'"
+      continue
+    fi
+
+    # Now we symlink the files
+    if [ ! -e "${destFile}" ]; then
+      _execute_ "ln -fs \"${sourceFile}\" \"${destFile}\"" "symlink ${sourceFile} → ${destFile}"
+    elif [ -h "${destFile}" ]; then
+      originalFile="$(_locateSourceFile_ "$destFile")"
+      _backupOriginalFile_ "${originalFile}"
+      if ! ${dryrun}; then rm -rf "$destFile"; fi
+      _execute_ "ln -fs \"${sourceFile}\" \"${destFile}\"" "symlink ${sourceFile} → ${destFile}"
+    elif [ -e "${destFile}" ]; then
+      _backupOriginalFile_ "${destFile}"
+      if ! ${dryrun}; then rm -rf "$destFile"; fi
+      _execute_ "ln -fs \"${sourceFile}\" \"${destFile}\"" "symlink ${sourceFile} → ${destFile}"
+    else
+      warning "Error linking: ${sourceFile} → ${destFile}"
+    fi
+  done
 }
