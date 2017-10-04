@@ -44,6 +44,7 @@ teardown() {
   temp_del "${testdir}"
 }
 
+############## Begin Tests ###############
 @test "_haveFunction_: Success" {
   run _haveFunction_ "_haveFunction_"
 
@@ -54,6 +55,70 @@ teardown() {
   run _haveFunction_ "_someUndefinedFunction_"
 
   assert_failure
+}
+
+@test "_backupFile_: no source" {
+  run _backupFile_ "testfile"
+
+  assert_failure
+}
+
+@test "_backupFile_: backup file" {
+  touch "testfile"
+  run _backupFile_ "testfile" "backup-files"
+
+  assert_success
+  assert [ -f "backup-files/testfile" ]
+}
+
+@test "_backupFile_: default destination & rename" {
+  mkdir backup
+  touch "testfile" "backup/testfile"
+  run _backupFile_ "testfile"
+
+  assert_success
+  assert [ -f "backup/testfile 2" ]
+}
+
+@test "_makeSymlink_: No source" {
+  run _makeSymlink_ "sourceFile" "destFile"
+
+  assert_failure
+}
+
+@test "_makeSymlink_: empty destination" {
+  touch "test.txt"
+  run _makeSymlink_ "test.txt"
+
+  assert_failure
+}
+
+@test "_makeSymlink_: create symlink" {
+  touch "test.txt"
+  run _makeSymlink_ "test.txt" "test2.txt"
+
+  assert_success
+  assert [ -h "test2.txt" ]
+}
+
+@test "_makeSymlink_: backup original file" {
+  touch "test.txt"
+  touch "test2.txt"
+  run _makeSymlink_ "test.txt" "test2.txt"
+
+  assert_success
+  assert [ -h "test2.txt" ]
+  assert [ -f "backup/test2.txt" ]
+}
+
+@test "_makeSymlink_: backup original symlink" {
+  touch "test.txt"
+  _makeSymlink_ "test.txt" "test2.txt"
+  run _makeSymlink_ "test.txt" "test2.txt" "backup2"
+
+  assert_success
+  assert [ -h "test2.txt" ]
+  assert [ -L "backup2/test2.txt" ]
 }
 
 @test "_progressBar_: verbose" {

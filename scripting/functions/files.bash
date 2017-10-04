@@ -360,3 +360,39 @@ _sourceFile_() {
 
   source "$c"
 }
+
+_backupFile_() {
+  # v1.0.0
+  # Creates a copy of a specified file taking two inputs:
+  #   $1 - File to be backed up
+  #   $2 - Destination
+  #
+  # NOTE: dotfiles have their leading '.' removed in their backup
+  #
+  # Usage:  _backupFile_ "sourcefile.txt" "some/backup/dir"
+
+  local s="$1"
+  local d="${2:-backup}"
+  local n
+
+  [ ! -e "$s" ] \
+    &&  { error "Source '$s' not found"; return 1; }
+  #[ ! -d "$d" ] \
+  #  &&  { error "Destination '$d' not found"; return 1; }
+
+  if ! _haveFunction_ "_execute_"; then
+    error "need function _execute_"; return 1;
+  fi
+  if ! _haveFunction_ "_uniqueFileName_"; then
+    error "need function _uniqueFileName_"; return 1;
+  fi
+
+  [ ! -d "$d" ] \
+    && _execute_ "mkdir \"$d\"" "Creating backup directory"
+
+  if [ -e "$s" ]; then
+    n="$(basename "$s")"
+    n="$(_uniqueFileName_ "${d}/${s#.}")"
+    _execute_ "cp -R \"${s}\" \"${d}/${n##*/}\"" "Backing up: '${s}' to '${d}/${n##*/}'"
+  fi
+}
