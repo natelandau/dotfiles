@@ -51,128 +51,20 @@ input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
 header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
 verbose()    { if ${verbose}; then debug "$@"; fi }
 
-_seekConfirmation_() {
-  # v1.0.1
-  # Seeks a Yes or No answer to a question.  Usage:
-  #   if _seekConfirmation_ "Answer this question"; then
-  #     something
-  #   fi
-
-  input "$@"
-  if "${force}"; then
-    verbose "Forcing confirmation with '--force' flag set"
-    echo -e ""
-    return 0
-  else
-    while true; do
-      read -r -p " (y/n) " yn
-      case $yn in
-        [Yy]* ) return 0;;
-        [Nn]* ) return 1;;
-        * ) input "Please answer yes or no.";;
-      esac
-    done
-  fi
-}
-
-_execute_() {
-  # v1.0.1
-  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
-  #           and have control over the display of the results.  In "dryrun" mode these
-  #           commands are not executed at all. In Verbose mode, the commands are executed
-  #           with results printed to stderr and stdin
-  #
-  # usage:
-  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
-  local cmd="${1:?_execute_ needs a command}"
-  local message="${2:-$1}"
-  if ${dryrun}; then
-    dryrun "${message}"
-  else
-    if $verbose; then
-      eval "$cmd"
-    else
-      eval "$cmd" &> /dev/null
-    fi
-    if [ $? -eq 0 ]; then
-      success "${message}"
-    else
-      error "${message}"
-      #die "${message}"
-    fi
-  fi
-}
-
-_setPATH_() {
-  #v1.0.0
-  # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
-  PATHS=(/usr/local/bin ${HOME}/bin);
-  for newPath in "${PATHS[@]}"; do
-    if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
-      PATH="${newPath}:${PATH}"
-   fi
- done
-}
-
-_findBaseDir_() {
-  #v1.0.0
-  # fincBaseDir locates the real directory of the script being run. similar to GNU readlink -n
-  # usage :  baseDir="$(_findBaseDir_)"
-  local SOURCE
-  local DIR
-  SOURCE="${BASH_SOURCE[0]}"
-  while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-    SOURCE="$(readlink "$SOURCE")"
-    [[ $SOURCE != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
-  done
-  echo "$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
-}
-
-_pushover_() {
+_convertSecs_() {
   # v1.0.0
-  # Sends notifications view Pushover
-  # IMPORTANT: The API Keys must be filled in
+  # Pass a number (seconds) into the function as this:
+  # _convertSecs_ $TOTALTIME
   #
-  # Usage: _pushover_ "Title Goes Here" "Message Goes Here"
-  #
-  # Credit: http://ryonsherman.blogspot.com/2012/10/shell-script-to-send-pushover.html
-  # ------------------------------------------------------
+  # To compute the time it takes a script to run:
+  #   STARTTIME=$(date +"%s")
+  #   ENDTIME=$(date +"%s")
+  #   TOTALTIME=$(($ENDTIME-$STARTTIME)) # human readable time
 
-  local PUSHOVERURL
-  local API_KEY
-  local USER_KEY
-  local DEVICE
-  local TITLE
-  local MESSAGE
-
-  PUSHOVERURL="https://api.pushover.net/1/messages.json"
-  API_KEY="${PUSHOVER_API_KEY}"
-  USER_KEY="${PUSHOVER_USER_KEY}"
-  DEVICE=""
-  TITLE="${1}"
-  MESSAGE="${2}"
-  curl \
-  -F "token=${API_KEY}" \
-  -F "user=${USER_KEY}" \
-  -F "device=${DEVICE}" \
-  -F "title=${TITLE}" \
-  -F "message=${MESSAGE}" \
-  "${PUSHOVERURL}" > /dev/null 2>&1
-}
-
-_haveFunction_() {
-  # v1.0.0
-  # Tests if a function exists.  Returns 0 if yes, 1 if no
-  # usage: _haveFunction "_someFunction_"
-  local f
-  f="$1"
-
-  if declare -f "$f" &> /dev/null 2>&1; then
-    return 0
-  else
-    return 1
-  fi
+  ((h=${1}/3600))
+  ((m=(${1}%3600)/60))
+  ((s=${1}%60))
+  printf "%02d:%02d:%02d\n" $h $m $s
 }
 
 _countdown_() {
@@ -196,6 +88,89 @@ _countdown_() {
     info "${message} ${ii}"
     sleep $stime
   done
+}
+
+_execute_() {
+  # v1.0.1
+  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
+  #           and have control over the display of the results.  In "dryrun" mode these
+  #           commands are not executed at all. In Verbose mode, the commands are executed
+  #           with results printed to stderr and stdin
+  #
+  # usage:
+  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
+  local cmd="${1:?_execute_ needs a command}"
+  local message="${2:-$1}"
+
+  if ${dryrun}; then
+    dryrun "${message}"
+  else
+    if $verbose; then
+      eval "$cmd"
+    else
+      eval "$cmd" &> /dev/null
+    fi
+    if [ $? -eq 0 ]; then
+      success "${message}"
+    else
+      error "${message}"
+      #die "${message}"
+    fi
+  fi
+}
+
+_findBaseDir_() {
+  #v1.0.0
+  # fincBaseDir locates the real directory of the script being run. similar to GNU readlink -n
+  # usage :  baseDir="$(_findBaseDir_)"
+  local SOURCE
+  local DIR
+  SOURCE="${BASH_SOURCE[0]}"
+  while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+  done
+  echo "$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
+}
+
+_haveFunction_() {
+  # v1.0.0
+  # Tests if a function exists.  Returns 0 if yes, 1 if no
+  # usage: _haveFunction "_someFunction_"
+  local f
+  f="$1"
+
+  if declare -f "$f" &> /dev/null 2>&1; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+_makeCSV_() {
+  # v1.0.0
+  # Creates a new CSV file if one does not already exist.
+  # Takes passed arguments and writes them as a header line to the CSV
+  # Usage '_makeCSV_ column1 column2 column3'
+
+  # Set the location and name of the CSV File
+  if [ -z "${csvLocation}" ]; then
+    csvLocation="${HOME}/Desktop"
+  fi
+  if [ -z "${csvName}" ]; then
+    csvName="$(LC_ALL=C date +%Y-%m-%d)-${FUNCNAME[1]}.csv"
+  fi
+  csvFile="${csvLocation}/${csvName}"
+
+  # Overwrite existing file? If not overwritten, new content is added
+  # to the bottom of the existing file
+  if [ -f "${csvFile}" ]; then
+    if _seekConfirmation_ "${csvFile} already exists. Overwrite?"; then
+      rm "${csvFile}"
+    fi
+  fi
+  _writeCSV_ "$@"
 }
 
 _pauseScript_() {
@@ -269,30 +244,81 @@ _progressBar_() {
   tput cnorm
 }
 
-_makeCSV_() {
+_pushover_() {
   # v1.0.0
-  # Creates a new CSV file if one does not already exist.
-  # Takes passed arguments and writes them as a header line to the CSV
-  # Usage '_makeCSV_ column1 column2 column3'
+  # Sends notifications view Pushover
+  # IMPORTANT: The API Keys must be filled in
+  #
+  # Usage: _pushover_ "Title Goes Here" "Message Goes Here"
+  #
+  # Credit: http://ryonsherman.blogspot.com/2012/10/shell-script-to-send-pushover.html
+  # ------------------------------------------------------
 
-  # Set the location and name of the CSV File
-  if [ -z "${csvLocation}" ]; then
-    csvLocation="${HOME}/Desktop"
-  fi
-  if [ -z "${csvName}" ]; then
-    csvName="$(LC_ALL=C date +%Y-%m-%d)-${FUNCNAME[1]}.csv"
-  fi
-  csvFile="${csvLocation}/${csvName}"
+  local PUSHOVERURL
+  local API_KEY
+  local USER_KEY
+  local DEVICE
+  local TITLE
+  local MESSAGE
 
-  # Overwrite existing file? If not overwritten, new content is added
-  # to the bottom of the existing file
-  if [ -f "${csvFile}" ]; then
-    if _seekConfirmation_ "${csvFile} already exists. Overwrite?"; then
-      rm "${csvFile}"
-    fi
-  fi
-  _writeCSV_ "$@"
+  PUSHOVERURL="https://api.pushover.net/1/messages.json"
+  API_KEY="${PUSHOVER_API_KEY}"
+  USER_KEY="${PUSHOVER_USER_KEY}"
+  DEVICE=""
+  TITLE="${1}"
+  MESSAGE="${2}"
+  curl \
+  -F "token=${API_KEY}" \
+  -F "user=${USER_KEY}" \
+  -F "device=${DEVICE}" \
+  -F "title=${TITLE}" \
+  -F "message=${MESSAGE}" \
+  "${PUSHOVERURL}" > /dev/null 2>&1
 }
+
+_seekConfirmation_() {
+  # v1.0.1
+  # Seeks a Yes or No answer to a question.  Usage:
+  #   if _seekConfirmation_ "Answer this question"; then
+  #     something
+  #   fi
+
+  input "$@"
+  if "${force}"; then
+    verbose "Forcing confirmation with '--force' flag set"
+    echo -e ""
+    return 0
+  else
+    while true; do
+      read -r -p " (y/n) " yn
+      case $yn in
+        [Yy]* ) return 0;;
+        [Nn]* ) return 1;;
+        * ) input "Please answer yes or no.";;
+      esac
+    done
+  fi
+}
+
+_setPATH_() {
+  #v1.0.0
+  # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
+  PATHS=(/usr/local/bin ${HOME}/bin);
+  for newPath in "${PATHS[@]}"; do
+    if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
+      PATH="${newPath}:${PATH}"
+   fi
+ done
+}
+
+
+
+
+
+
+
+
+
 
 _writeCSV_() {
   # v1.0.0
@@ -306,21 +332,7 @@ _writeCSV_() {
   IFS=$saveIFS
 }
 
-_convertSecs_() {
-  # v1.0.0
-  # Pass a number (seconds) into the function as this:
-  # _convertSecs_ $TOTALTIME
-  #
-  # To compute the time it takes a script to run:
-  #   STARTTIME=$(date +"%s")
-  #   ENDTIME=$(date +"%s")
-  #   TOTALTIME=$(($ENDTIME-$STARTTIME)) # human readable time
 
-  ((h=${1}/3600))
-  ((m=(${1}%3600)/60))
-  ((s=${1}%60))
-  printf "%02d:%02d:%02d\n" $h $m $s
-}
 
 _httpStatus_() {
   # v1.0.0
@@ -447,10 +459,11 @@ _makeSymlink_() {
   #
   # NOTE: This function makes use of the _execute_ function
   #
-  # usage: _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink"
-  local s="$1"
-  local d="$2"
-  local b="$3"
+  # usage: _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
+  local s="$1"    # Source file
+  local d="$2"    # Destination file
+  local b="$3"    # Backup directory for originals (optional)
+  local o         # Original file
 
   [ ! -e "$s" ] \
     &&  { error "'$s' not found"; return 1; }
@@ -469,8 +482,8 @@ _makeSymlink_() {
   if [ ! -e "${d}" ]; then
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -h "${d}" ]; then
-    originalFile="$(_locateSourceFile_ "$d")"
-    _backupFile_ "${d}" ${b:-backup}
+    o="$(_locateSourceFile_ "$d")"
+    _backupFile_ "${o}" ${b:-backup}
     if ! ${dryrun}; then rm -rf "$d"; fi
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -e "${d}" ]; then
