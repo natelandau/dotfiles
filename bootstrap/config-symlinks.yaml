@@ -1,0 +1,27 @@
+symlinks:
+  # format is - destination: source (source files are relative to 'install.sh')
+  - ~/.httpie:        config/shell/httpie
+  - ~/.bashrc:        config/shell/bashrc
+  - ~/.bash_profile:  config/shell/bash_profile
+  - ~/.curlrc:        config/shell/curlrc
+  - ~/.gitattributes: config/shell/gitattributes
+  - ~/.gitconfig:     config/shell/gitconfig
+  - ~/.gitignore:     config/shell/gitignore
+  - ~/.gemrc:         config/shell/gemrc
+  - ~/.hushlogin:     config/shell/hushlogin
+  - ~/.inputrc:       config/shell/inputrc
+  - ~/.profile:       config/shell/profile
+  - ~/.slap:          config/shell/slap
+  - ~/.sed:           config/shell/sed
+  - ~/.ruby-version:  config/shell/ruby-version
+  - ~/bin/cleanFilenames:             bin/cleanFilenames
+  - ~/bin/mailReIndex:                bin/mailReIndex
+  - ~/bin/removeSymlink:              bin/removeSymlink
+  - ~/bin/trash:                      bin/trash
+  - ~/bin/unlockFile:                 bin/unlockFile
+  - ~/bin/wolcmd:                     bin/wolcmd
+  - ~/bin/xld:                        bin/xld
+  - ~/bin/convertVideo:               bin/convertVideo
+  - ~/bin/git-undo:                   bin/git-undo
+  - ~/bin/git-churn:                  bin/git-churn
+  - ~/bin/seconds:                    bin/seconds

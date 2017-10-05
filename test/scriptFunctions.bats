@@ -306,6 +306,13 @@ teardown() {
   assert_output "$sourceDIR"
 }
 
+@test "_ltrim_" {
+  local text=$(_ltrim_ <<<"    some text")
+
+  run echo "$text"
+  assert_output "some text"
+}
+
 @test "_makeSymlink_: No source" {
   run _makeSymlink_ "sourceFile" "destFile"
 
@@ -395,6 +402,13 @@ teardown() {
 @test "_realpath_: fail" {
   run _realpath_ "testfile.txt"
   assert_failure
+}
+
+@test "_rtrim_" {
+  local text=$(_rtrim_ <<<"some text    ")
+
+  run echo "$text"
+  assert_output "some text"
 }
 
 @test "_seekConfirmation_: yes" {

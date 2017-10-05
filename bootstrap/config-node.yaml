@@ -1,0 +1,4 @@
+nodePackages:
+  - pageres-cli   # CLI for Web screenshots - https://github.com/sindresorhus/pageres-cli
+  - slap          # Sublime-like text editor for terminal
+  - lessmd        # Markdown reader for terminal
