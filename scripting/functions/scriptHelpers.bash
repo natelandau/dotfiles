@@ -134,6 +134,22 @@ _findBaseDir_() {
   echo "$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
 }
 
+_guiInput_() {
+  # Ask for user input using a Mac dialog box.
+  # Defaults to use the prompt: "Password". Pass an option to change that text.
+  #
+  # Credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md
+  guiPrompt="${1:-Password:}"
+  guiInput=$(osascript &> /dev/null <<EOF
+    tell application "System Events"
+        activate
+        text returned of (display dialog "${guiPrompt}" default answer "" with hidden answer)
+    end tell
+EOF
+  )
+  echo -n "${guiInput}"
+}
+
 _haveFunction_() {
   # v1.0.0
   # Tests if a function exists.  Returns 0 if yes, 1 if no
@@ -146,6 +162,102 @@ _haveFunction_() {
   else
     return 1
   fi
+}
+
+_httpStatus_() {
+  # v1.0.0
+  # Shamelessly taken from: https://gist.github.com/rsvp/1171304
+  #
+  # Usage:  _httpStatus_ URL [timeout] [--code or --status] [see 4.]
+  #                                             ^message with code (default)
+  #                                     ^code (numeric only)
+  #                           ^in secs (default: 3)
+  #                   ^URL without "http://" prefix works fine.
+  #
+  #  4. curl options: e.g. use -L to follow redirects.
+  #
+  #  Dependencies: curl
+  #
+  #         Example:  $ _httpStatus_ bit.ly
+  #                   301 Redirection: Moved Permanently
+  #
+  #         Example: $ _httpStatus_ www.google.com 100 -c 200
+  local code
+  local status
+
+  local saveIFS=${IFS}
+  IFS=$' \n\t'
+
+  local url=${1:?_httpStatus_ needs an url}
+  local timeout=${2:-'3'} # in seconds
+  local flag=${3:-'--status'}
+  #    curl options, e.g. -L to follow redirects
+  local arg4=${4:-''}
+  local arg5=${5:-''}
+  local arg6=${6:-''}
+  local arg7=${7:-''}
+  local curlops="${arg4} ${arg5} ${arg6} ${arg7}"
+
+  #      __________ get the CODE which is numeric:
+  code=$(echo "$(curl --write-out %{http_code} --silent --connect-timeout ${timeout} \
+                    --no-keepalive ${curlops} --output /dev/null ${url})")
+
+  #      __________ get the STATUS (from code) which is human interpretable:
+  case $code in
+    000) status="Not responding within ${timeout} seconds" ;;
+    100) status="Informational: Continue" ;;
+    101) status="Informational: Switching Protocols" ;;
+    200) status="Successful: OK within ${timeout} seconds" ;;
+    201) status="Successful: Created" ;;
+    202) status="Successful: Accepted" ;;
+    203) status="Successful: Non-Authoritative Information" ;;
+    204) status="Successful: No Content" ;;
+    205) status="Successful: Reset Content" ;;
+    206) status="Successful: Partial Content" ;;
+    300) status="Redirection: Multiple Choices" ;;
+    301) status="Redirection: Moved Permanently" ;;
+    302) status="Redirection: Found residing temporarily under different URI" ;;
+    303) status="Redirection: See Other" ;;
+    304) status="Redirection: Not Modified" ;;
+    305) status="Redirection: Use Proxy" ;;
+    306) status="Redirection: status not defined" ;;
+    307) status="Redirection: Temporary Redirect" ;;
+    400) status="Client Error: Bad Request" ;;
+    401) status="Client Error: Unauthorized" ;;
+    402) status="Client Error: Payment Required" ;;
+    403) status="Client Error: Forbidden" ;;
+    404) status="Client Error: Not Found" ;;
+    405) status="Client Error: Method Not Allowed" ;;
+    406) status="Client Error: Not Acceptable" ;;
+    407) status="Client Error: Proxy Authentication Required" ;;
+    408) status="Client Error: Request Timeout within ${timeout} seconds" ;;
+    409) status="Client Error: Conflict" ;;
+    410) status="Client Error: Gone" ;;
+    411) status="Client Error: Length Required" ;;
+    412) status="Client Error: Precondition Failed" ;;
+    413) status="Client Error: Request Entity Too Large" ;;
+    414) status="Client Error: Request-URI Too Long" ;;
+    415) status="Client Error: Unsupported Media Type" ;;
+    416) status="Client Error: Requested Range Not Satisfiable" ;;
+    417) status="Client Error: Expectation Failed" ;;
+    500) status="Server Error: Internal Server Error" ;;
+    501) status="Server Error: Not Implemented" ;;
+    502) status="Server Error: Bad Gateway" ;;
+    503) status="Server Error: Service Unavailable" ;;
+    504) status="Server Error: Gateway Timeout within ${timeout} seconds" ;;
+    505) status="Server Error: HTTP Version Not Supported" ;;
+    *)   die " !!  httpstatus: status not defined." ;;
+  esac
+
+  case ${flag} in
+    --status) echo "${code} ${status}" ;;
+    -s)       echo "${code} ${status}" ;;
+    --code)   echo "${code}"         ;;
+    -c)       echo "${code}"         ;;
+    *)        echo " !!  httpstatus: bad flag" && _safeExit_;;
+  esac
+
+  IFS="${saveIFS}"
 }
 
 _makeCSV_() {
@@ -171,6 +283,57 @@ _makeCSV_() {
     fi
   fi
   _writeCSV_ "$@"
+}
+
+_makeSymlink_() {
+  #v1.0.0
+  # Given two arguments $1 & $2, creates a symlink from $1 (source) to $2 (destination) and
+  # will create a backup of an original file before overwriting
+  #
+  # Script arguments:
+  #
+  #   $1 - Source file
+  #   $2 - Destination for symlink
+  #   $3 - backup directory for files to be overwritten (defaults to 'backup')
+  #
+  # NOTE: This function makes use of the _execute_ function
+  #
+  # usage: _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
+  local s="$1"    # Source file
+  local d="$2"    # Destination file
+  local b="$3"    # Backup directory for originals (optional)
+  local o         # Original file
+
+  [ ! -e "$s" ] \
+    &&  { error "'$s' not found"; return 1; }
+  [ -z "$d" ] \
+    && { error "'$d' not specified"; return 1; }
+
+  # Fix files where $HOME is written as '~'
+    d="${d/\~/$HOME}"
+    s="${s/\~/$HOME}"
+    b="${b/\~/$HOME}"
+
+    if ! _haveFunction_ "_execute_"; then error "need function _execute_"; return 1; fi
+    if ! _haveFunction_ "_backupFile_"; then error "need function _backupFile_"; return 1; fi
+    if ! _haveFunction_ "_locateSourceFile_"; then error "need function _locateSourceFile_"; return 1; fi
+
+  if [ ! -e "${d}" ]; then
+    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
+  elif [ -h "${d}" ]; then
+    o="$(_locateSourceFile_ "$d")"
+    _backupFile_ "${o}" ${b:-backup}
+    if ! ${dryrun}; then rm -rf "$d"; fi
+    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
+  elif [ -e "${d}" ]; then
+    _backupFile_ "${d}" "${b:-backup}"
+    if ! ${dryrun}; then rm -rf "$d"; fi
+    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
+  else
+    warning "Error linking: ${s} → ${d}"
+    return 1
+  fi
+  return 0
 }
 
 _pauseScript_() {
@@ -311,15 +474,6 @@ _setPATH_() {
  done
 }
 
-
-
-
-
-
-
-
-
-
 _writeCSV_() {
   # v1.0.0
   # Takes passed arguments and writes them as a comma separated line
@@ -330,169 +484,4 @@ _writeCSV_() {
   IFS=','
   echo "${csvInput[*]}" >> "${csvFile}"
   IFS=$saveIFS
-}
-
-
-
-_httpStatus_() {
-  # v1.0.0
-  # Shamelessly taken from: https://gist.github.com/rsvp/1171304
-  #
-  # Usage:  _httpStatus_ URL [timeout] [--code or --status] [see 4.]
-  #                                             ^message with code (default)
-  #                                     ^code (numeric only)
-  #                           ^in secs (default: 3)
-  #                   ^URL without "http://" prefix works fine.
-  #
-  #  4. curl options: e.g. use -L to follow redirects.
-  #
-  #  Dependencies: curl
-  #
-  #         Example:  $ _httpStatus_ bit.ly
-  #                   301 Redirection: Moved Permanently
-  #
-  #         Example: $ _httpStatus_ www.google.com 100 -c 200
-  local code
-  local status
-
-  local saveIFS=${IFS}
-  IFS=$' \n\t'
-
-  local url=${1:?_httpStatus_ needs an url}
-  local timeout=${2:-'3'} # in seconds
-  local flag=${3:-'--status'}
-  #    curl options, e.g. -L to follow redirects
-  local arg4=${4:-''}
-  local arg5=${5:-''}
-  local arg6=${6:-''}
-  local arg7=${7:-''}
-  local curlops="${arg4} ${arg5} ${arg6} ${arg7}"
-
-  #      __________ get the CODE which is numeric:
-  code=$(echo "$(curl --write-out %{http_code} --silent --connect-timeout ${timeout} \
-                    --no-keepalive ${curlops} --output /dev/null ${url})")
-
-  #      __________ get the STATUS (from code) which is human interpretable:
-  case $code in
-    000) status="Not responding within ${timeout} seconds" ;;
-    100) status="Informational: Continue" ;;
-    101) status="Informational: Switching Protocols" ;;
-    200) status="Successful: OK within ${timeout} seconds" ;;
-    201) status="Successful: Created" ;;
-    202) status="Successful: Accepted" ;;
-    203) status="Successful: Non-Authoritative Information" ;;
-    204) status="Successful: No Content" ;;
-    205) status="Successful: Reset Content" ;;
-    206) status="Successful: Partial Content" ;;
-    300) status="Redirection: Multiple Choices" ;;
-    301) status="Redirection: Moved Permanently" ;;
-    302) status="Redirection: Found residing temporarily under different URI" ;;
-    303) status="Redirection: See Other" ;;
-    304) status="Redirection: Not Modified" ;;
-    305) status="Redirection: Use Proxy" ;;
-    306) status="Redirection: status not defined" ;;
-    307) status="Redirection: Temporary Redirect" ;;
-    400) status="Client Error: Bad Request" ;;
-    401) status="Client Error: Unauthorized" ;;
-    402) status="Client Error: Payment Required" ;;
-    403) status="Client Error: Forbidden" ;;
-    404) status="Client Error: Not Found" ;;
-    405) status="Client Error: Method Not Allowed" ;;
-    406) status="Client Error: Not Acceptable" ;;
-    407) status="Client Error: Proxy Authentication Required" ;;
-    408) status="Client Error: Request Timeout within ${timeout} seconds" ;;
-    409) status="Client Error: Conflict" ;;
-    410) status="Client Error: Gone" ;;
-    411) status="Client Error: Length Required" ;;
-    412) status="Client Error: Precondition Failed" ;;
-    413) status="Client Error: Request Entity Too Large" ;;
-    414) status="Client Error: Request-URI Too Long" ;;
-    415) status="Client Error: Unsupported Media Type" ;;
-    416) status="Client Error: Requested Range Not Satisfiable" ;;
-    417) status="Client Error: Expectation Failed" ;;
-    500) status="Server Error: Internal Server Error" ;;
-    501) status="Server Error: Not Implemented" ;;
-    502) status="Server Error: Bad Gateway" ;;
-    503) status="Server Error: Service Unavailable" ;;
-    504) status="Server Error: Gateway Timeout within ${timeout} seconds" ;;
-    505) status="Server Error: HTTP Version Not Supported" ;;
-    *)   die " !!  httpstatus: status not defined." ;;
-  esac
-
-  case ${flag} in
-    --status) echo "${code} ${status}" ;;
-    -s)       echo "${code} ${status}" ;;
-    --code)   echo "${code}"         ;;
-    -c)       echo "${code}"         ;;
-    *)        echo " !!  httpstatus: bad flag" && _safeExit_;;
-  esac
-
-  IFS="${saveIFS}"
-}
-
-_guiInput_() {
-  # Ask for user input using a Mac dialog box.
-  # Defaults to use the prompt: "Password". Pass an option to change that text.
-  #
-  # Credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md
-  guiPrompt="${1:-Password:}"
-  guiInput=$(osascript &> /dev/null <<EOF
-    tell application "System Events"
-        activate
-        text returned of (display dialog "${guiPrompt}" default answer "" with hidden answer)
-    end tell
-EOF
-  )
-  echo -n "${guiInput}"
-}
-
-_makeSymlink_() {
-  #v1.0.0
-  # Given two arguments $1 & $2, creates a symlink from $1 (source) to $2 (destination) and
-  # will create a backup of an original file before overwriting
-  #
-  # Script arguments:
-  #
-  #   $1 - Source file
-  #   $2 - Destination for symlink
-  #   $3 - backup directory for files to be overwritten (defaults to 'backup')
-  #
-  # NOTE: This function makes use of the _execute_ function
-  #
-  # usage: _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
-  local s="$1"    # Source file
-  local d="$2"    # Destination file
-  local b="$3"    # Backup directory for originals (optional)
-  local o         # Original file
-
-  [ ! -e "$s" ] \
-    &&  { error "'$s' not found"; return 1; }
-  [ -z "$d" ] \
-    && { error "'$d' not specified"; return 1; }
-
-  # Fix files where $HOME is written as '~'
-    d="${d/\~/$HOME}"
-    s="${s/\~/$HOME}"
-    b="${b/\~/$HOME}"
-
-    if ! _haveFunction_ "_execute_"; then error "need function _execute_"; return 1; fi
-    if ! _haveFunction_ "_backupFile_"; then error "need function _backupFile_"; return 1; fi
-    if ! _haveFunction_ "_locateSourceFile_"; then error "need function _locateSourceFile_"; return 1; fi
-
-  if [ ! -e "${d}" ]; then
-    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
-  elif [ -h "${d}" ]; then
-    o="$(_locateSourceFile_ "$d")"
-    _backupFile_ "${o}" ${b:-backup}
-    if ! ${dryrun}; then rm -rf "$d"; fi
-    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
-  elif [ -e "${d}" ]; then
-    _backupFile_ "${d}" "${b:-backup}"
-    if ! ${dryrun}; then rm -rf "$d"; fi
-    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
-  else
-    warning "Error linking: ${s} → ${d}"
-    return 1
-  fi
-  return 0
 }

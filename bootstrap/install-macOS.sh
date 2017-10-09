@@ -8,10 +8,10 @@ _mainScript_() {
     && die "We are not on macOS"
 
   # Set Variables
-  baseDir="$(_findBaseDir_)"
-  rootDIR="$(dirname "$baseDir")"
-  privateInstallScript="${HOME}/dotfiles-private/privateInstall.sh"
-  pluginScripts="${baseDir}/lib/mac-plugins"
+    baseDir="$(_findBaseDir_)"
+    rootDIR="$(dirname "$baseDir")"
+    privateInstallScript="${HOME}/dotfiles-private/privateInstall.sh"
+    pluginScripts="${baseDir}/lib/mac-plugins"
 
   # Config files
     configSymlinks="${baseDir}/config-symlinks.yaml"
