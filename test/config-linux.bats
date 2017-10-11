@@ -5,7 +5,7 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-s="${HOME}/dotfiles/bootstrap/install-macOS.sh"
+s="${HOME}/dotfiles/bootstrap/config-linux.sh"
 base="$(basename $s)"
 
 [ -f "$s" ] \
