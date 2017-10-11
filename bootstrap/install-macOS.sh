@@ -346,6 +346,9 @@ _doSymlinks_() {
   [ "${#symlinks[@]}" -eq 0 ] \
     && { warning "No symlinks found in '$c'"; return 1; }
 
+  [ ! -d "${HOME}/bin" ] \
+    && execute "mkdir \"${HOME}/bin\""
+
   # For each link do the following
   for l in "${symlinks[@]}"; do
     verbose "Working on: $l"

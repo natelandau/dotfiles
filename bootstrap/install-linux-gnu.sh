@@ -4,17 +4,23 @@ version="1.0.0"
 
 _mainScript_() {
 
-  [[ "$OSTYPE" != "linux-gnu" ]] && die "We are not on Linux"
+  [[ "$OSTYPE" != "linux-gnu" ]] \
+    && die "We are not on Linux"
 
   # Get privs upfront
   sudo -v
 
   # Set Variables
-  baseDir="$(_findBaseDir_)"
-  rootDIR="$(dirname "$baseDir")"
-  configFile="${baseDir}/config-linux-gnu.yaml"
-  privateInstallScript="${HOME}/dotfiles-private/privateInstall.sh"
-  pluginScripts="${baseDir}/lib/linux-plugins"
+    baseDir="$(_findBaseDir_)"
+    rootDIR="$(dirname "$baseDir")"
+    privateInstallScript="${HOME}/dotfiles-private/privateInstall.sh"
+    pluginScripts="${baseDir}/lib/linux-plugins"
+
+  # Config files
+    configSymlinks="${baseDir}/config/symlinks.yaml"
+    configAptGet="${baseDir}/config/aptGet.yaml"
+    configNode="${baseDir}/config/node.yaml"
+    configRuby="${baseDir}/config/ruby.yaml"
 
   scriptFlags=()
     ( $dryrun ) && scriptFlags+=(--dryrun)
@@ -24,286 +30,116 @@ _mainScript_() {
     ( $debug ) && scriptFlags+=(--debug)
     ( $strict ) && scriptFlags+=(--strict)
 
-  _sourceFiles_() {
-    if [ -f "$configFile" ]; then
-      yamlConfigVariables="${tmpDir}/yamlConfigVariables.txt"
-      _parseYAML_ "$configFile" > "$yamlConfigVariables"
-      source "$yamlConfigVariables"
-      # In verbose mode, echo the variables for debugging purposes
-      if $verbose; then verbose "-- Config Variables --"; _readFile_ "$yamlConfigVariables"; fi
-    else
-      die "Can't find $configFile"
+  # Create symlinks
+  if _seekConfirmation_ "Create symlinks to configuration files?"; then
+    header "Creating Symlinks"
+    [ ! -d "${HOME}/bin" ] \
+      && _execute_ "mkdir \"${HOME}/bin\""
+
+    _doSymlinks_ "${configSymlinks}"
+  fi
+
+  _privateRepo_() {
+    if _seekConfirmation_ "Run Private install script"; then
+      [ ! -f "${privateInstallScript}" ] \
+        && { warning "Could not find private install script" ; return 1; }
+      "${privateInstallScript}" "${scriptFlags[*]}"
     fi
   }
-  _sourceFiles_
+  _privateRepo_
 
-  _apgradeAptGet_() {
-    # Upgrade apt-get
+  _generateKey_() {
+    if [ ! -f "${HOME}/.ssh/id_rsa.pub" ]; then
+      header "Generating public ssh key...."
+      input "what is your email? [ENTER]: "
+      read -r EMAIL
+
+      ssh-keygen -t rsa -b 4096 -C "$EMAIL"
+    else
+      success "Existing public key found..."
+    fi
+  }
+  _generateKey_
+
+  _upgradeAptGet_() {
+    local v=$verbose; verbose=true;
+
     if [ -f "/etc/apt/sources.list" ]; then
       notice "Upgrading apt-get....(May take a while)"
-      apt-get update
-      apt-get upgrade -y
+      _execute_ "apt-get update"
+      _execute_ "apt-get upgrade -y"
     else
       die "Can not proceed without apt-get"
     fi
+
+    verbose=$v
   }
-  #_apgradeAptGet_
+  _upgradeAptGet_
 
-  _bootstrapNewComputer_() {
+  _aptGet_ () {
+    local t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
+    local c="$1"  # Config YAML file
 
-    if ! _seekConfirmation_ "Are you bootstrapping a new computer?"; then return; fi
+    if ! _seekConfirmation_ "Install Apt Get Packages?"; then return; fi
+    header "Installing apt-get packages"
 
-    header "Boostrapping new computer...."
+    [ ! -f "$c" ] \
+      && { error "Can not find config file '$c'"; return 1; }
 
-    _setHostname_() {
+    # Parse & source Config File
+    # shellcheck disable=2015
+    ( _parseYAML_ "${c}" > "${t}" ) \
+      && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
+      || die "Could not parse YAML config file"
 
-      notice "Setting Hostname..."
+    _sourceFile_ "$t"
 
-      local newHostname
-
-      ipAddress=$(/sbin/ifconfig eth0 | awk '/inet / { print $2 }' | sed 's/addr://')
-
-      input "What is your hostname? [ENTER]: "
-      read -r newHostname
-
-      [ ! -n "$newHostname" ] && die "Hostname undefined"
-
-      if command -v hostnamectl &>/dev/null; then
-        _execute_ "hostnamectl set-hostname \"$newHostname\""
-      else
-        _execute_ "echo \"$newHostname\" > /etc/hostname"
-        _execute_ "hostname -F /etc/hostname"
-      fi
-
-      _execute_ "echo \"$ipAddress\" \"$newHostname\" >> /etc/hosts"
-    }
-    _setHostname_
-
-    _setTime_() {
-      notice "Setting Time..."
-
-      if command -v timedatectl &> /dev/null; then
-        _execute_ "apt-get install -y ntp"
-        _execute_ "timedatectl set-timezone \"America/New_York\""
-        _execute_ "timedatectl set-ntp true"
-      elif command -v dpkg-reconfigure; then
-        dpkg-reconfigure tzdata
-      else
-        warning "set time failed"
-      fi
-    }
-    _setTime_
-
-    _get_rdns_() {
-      # calls host on an IP address and returns its reverse dns
-
-      ipAddress=$(/sbin/ifconfig eth0 | awk '/inet / { print $2 }' | sed 's/addr://')
-
-      [ ! -e /usr/bin/host ] && apt-get -y install dnsutils > /dev/null
-
-      rdns=$(host $ipAddress | awk '/pointer/ {print $5}' | sed 's/\.$//')
-    }
-    #_get_rdns_
-
-    _addUser_() {
-      # Installs sudo if needed and creates a user in the sudo group.
-      notice "Creating a new user account..."
-      input "username? [ENTER]: "
-      read -r USERNAME
-      input "password? [ENTER]: "
-      read -r -s USERPASS
-
-      apt-get -y install sudo > /dev/null
-
-      _execute_ "adduser ${USERNAME} --disabled-password --gecos \"\""
-      _execute_ "echo \"${USERNAME}:${USERPASS}\" | chpasswd" "echo \"${USERNAME}:******\" | chpasswd"
-      _execute_ "usermod -aG sudo ${USERNAME}"
-
-      HOMEDIR="/home/${USERNAME}"
-    }
-    _addUser_
-
-    _addPublicKey_() {
-      # Adds the users public key to authorized_keys for the specified user. Make sure you wrap your input variables in double quotes, or the key may not load properly.
-
-      if _seekConfirmation_ "Do you have a public key from another computer to add?"; then
-        if [ ! -n "$USERNAME" ]; then
-          warning "We must have a user account configured..."
-          return 1;
-        fi
-
-        input "paste your public key? [ENTER]: "
-        read -r USERPUBKEY
-
-        _execute_ "mkdir -p /home/${USERNAME}/.ssh"
-        _execute_ "echo \"$USERPUBKEY\" >> /home/${USERNAME}/.ssh/authorized_keys"
-        _execute_ "chown -R \"${USERNAME}\":\"${USERNAME}\" /home/${USERNAME}/.ssh"
-      fi
-    }
-    _addPublicKey_
-
-    _aptGetPackages_() {
-      local package
-
-      # shellcheck disable=2154
-      for package in "${aptGetPackages[@]}"; do
-        package=$(echo "${package}" | cut -d'#' -f1 | _trim_) # remove comments if exist
-        _execute_ "apt-get install -y \"${package}\""
-      done
-    }
-    _aptGetPackages_
-
-    _goodstuff_() {
-      # Enables color root prompt and the "ll" list long alias
-
-      sed -i -e 's/^#PS1=/PS1=/' /root/.bashrc # enable the colorful root bash prompt
-      sed -i -e "s/^#alias ll='ls -l'/alias ll='ls -al'/" /root/.bashrc # enable ll list long alias <3
-    }
-    _goodstuff_
-
-    _installDotfiles_() {
-      header "Installing dotfiles..."
-      pushd "$HOMEDIR";
-      git clone https://github.com/natelandau/dotfiles "${HOMEDIR}/dotfiles"
-      chown -R $USERNAME:$USERNAME "${HOMEDIR}/dotfiles"
-      popd;
-    }
-    _installDotfiles_
-
-    _ufwFirewall_() {
-      header "Installing firewall with UFW"
-      apt-get install -y ufw
-
-      _execute_ "ufw default deny"
-      _execute_ "ufw allow 'Nginx Full'"
-      _execute_ "ufw allow ssh"
-      _execute_ "ufw allow mosh"
-      _execute_ "ufw enable"
-    }
-    _ufwFirewall_
-
-    _createFirewall_() {
-      notice "Setting firewall with iptables..."
-
-      _execute_ "iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT"
-      _execute_ "iptables -A INPUT -i lo -m comment --comment \"Allow loopback connections\" -j ACCEPT"
-      _execute_ "iptables -A INPUT ! -i lo -s 127.0.0.0/8 -j REJECT"
-      _execute_ "iptables -A INPUT -p icmp -m comment --comment \"Allow Ping to work as expected\" -j ACCEPT"
-      _execute_ "iptables -A INPUT -p tcp -m multiport --destination-ports 22,25,53,80,443,465,5222,5269,5280,8080,8888,8999:9003 -j ACCEPT"
-      _execute_ "iptables -A INPUT -p udp -m multiport --destination-ports 53,22,60000:61000 -j ACCEPT"
-      _execute_ "iptables -P INPUT DROP"
-      _execute_ "iptables -P FORWARD DROP"
-    }
-    #_createFirewall_
-
-   _disableRootSSH_() {
-      notice "Disabling root access..."
-      _execute_ "sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config"
-      _execute_ "touch /tmp/restart-ssh"
-      _execute_ "service ssh restart"
-    }
-    _disableRootSSH_
-
-    success "New computer bootstrapped."
-    info "To continue you must log out as root and back in as the user you just"
-    info "created. Once logged in, clone this repository to the user's account"
-    info "and run this script again."
-
-    _lockThingsDown_() {
-      notice "Disabling root access..."
-      _execute_ "sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config"
-      #sed -i 's/\#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-      _execute_ "service ssh restart"
-    }
-    _lockThingsDown_
-
-    notice "Exiting"
-    _safeExit_
-  }
-  _bootstrapNewComputer_
-
-  _aptGetPackages_() {
-    local package
+    # apt-get updates can take forever. Show the output.
+    local v=$verbose; verbose=true;
 
     # shellcheck disable=2154
     for package in "${aptGetPackages[@]}"; do
       package=$(echo "${package}" | cut -d'#' -f1 | _trim_) # remove comments if exist
       _execute_ "apt-get install -y \"${package}\""
     done
+
+    verbose=$v
   }
-  if _seekConfirmation_ "Install packages with apt-get?"; then _aptGetPackages_; fi
+  _aptGet_ "$configAptGet"
 
-  _doSymlinks_() {
-
-    [ ! -d "${HOME}/bin" ] && _execute_ "mkdir \"${HOME}/bin\""
-
-    filesToLink=("${symlinks[@]}") # array is populated from YAML
-    _createSymlinks_ "Symlinks"
-    unset filesToLink
-  }
-  if _seekConfirmation_ "Create symlinks?"; then _doSymlinks_; fi
-
-  _installRuby_() {
-    local RUBYVERSION
-    local gem
-    local testInstalled
-
-    notice "Installing Ruby..."
-
-    local RUBYVERSION="2.3.4 " # Version of Ruby to install via RVM
-
-    # Install 2 packages used to fix broken rmagick gem
-    _execute_ "apt-get install -y libmagickcore-dev"
-    _execute_ "apt-get install -y libmagickwand-dev"
-
-    pushd "${HOME}"
-    _execute_ "curl -sSL https://get.rvm.io | bash -s stable"
-    export PATH="${PATH}:${HOME}/.rvm/bin"
-    _execute_ "source ${HOME}/.rvm/scripts/rvm"
-    _execute_ "source ${HOME}/.bash_profile"
-    _execute_ "rvm install ${RUBYVERSION}"
-    _execute_ "rvm use ${RUBYVERSION} --default"
-    _createGemrc_
-
-    info "Installing global ruby gems"
-
-    # shellcheck disable=2154
-    for gem in "${rubyGems[@]}"; do
-      # Strip comments
-      gem=$(echo "$gem" | cut -d'#' -f1 | _trim_)
-
-      # strip flags from package names
-      testInstalled=$(echo "$gem" | cut -d' ' -f1 | _trim_)
-
-      if ! gem list $testInstalled -i >/dev/null; then
-        _execute_ "gem install ${gem}" "install ${gem}"p
-      else
-        info "${testInstalled} already installed"
-      fi
-    done
-
-    popd
-  }
-  if _seekConfirmation_ "Install Ruby?"; then _installRuby_; fi
-
-  _installNode_() {
+  _node_() {
+    local package
     local npmPackages
     local modules
-    local NODEVERSION
+    local t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
+    local c="$1"  # Config YAML file
 
-    notice "Installing nvm, node, and packages
-    "
-    apt-get install -y build-essential libssl-dev checkinstall
+    if ! _seekConfirmation_ "Install Node Packages?"; then return; fi
 
-    NODEVERSION="8.1.3"
+    [ ! -f "$c" ] \
+      && { error "Can not find config file '$c'"; return 1; }
+
+    # Parse & source Config File
+    # shellcheck disable=2015
+    ( _parseYAML_ "${c}" > "${t}" ) \
+      && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
+      || die "Could not parse YAML config file"
+
+    _sourceFile_ "$t"
+
+    header "Installing node"
+    local v=$verbose; verbose=true;
+
+    notice "Installing nvm, node, and packages"
+    _execute_ "apt-get install -y build-essential libssl-dev checkinstall"
+
+    NODEVERSION="8.6.0"
 
     if test ! "$(which node)"; then
       pushd "${HOME}"
       _execute_ "git clone git://github.com/creationix/nvm.git \"${HOME}/.nvm\""
-      _execute_ "touch \"${HOME}/.bash_profile\""
-      _execute_ "echo \". ~/.nvm/nvm.sh\" >> \"${HOME}/.bash_profile\""
-      _execute_ "echo \"nvm use ${NODEVERSION}\" >> \"${HOME}/.bash_profile\""
-      . "${HOME}/.nvm/nvm.sh"
+      source "${HOME}/.bash_profile"
+      source "${HOME}/.nvm/nvm.sh"
       _execute_ "nvm install \"${NODEVERSION}\""
       _execute_ "nvm use \"${NODEVERSION}\""
       success "Installed nvm and nodejs"
@@ -311,12 +147,10 @@ _mainScript_() {
     fi
 
     # Grab packages already installed
-    { pushd "$(npm config get prefix)/lib/node_modules"; installed=(*); popd; } >/dev/null
+    { pushd "$(npm config get prefix)/lib/node_modules"; installed=(*); popd; } &> /dev/null
 
     #Show nodes's detailed install information
-    saveVerbose=$verbose
-    verbose=true
-    pushd "${HOME}"
+    saveVerbose=$verbose; verbose=true;
 
     # If comments exist in the list of npm packaged to be installed remove them
     # shellcheck disable=2154
@@ -327,40 +161,86 @@ _mainScript_() {
     # Install packages that do not already exist
     modules=($(_setdiff_ "${npmPackages[*]}" "${installed[*]}"))
     if (( ${#modules[@]} > 0 )); then
-      _execute_ "npm install -g ${modules[*]}"
+      pushd ${HOME} > /dev/null; _execute_ "npm install -g ${modules[*]}"; popd > /dev/null;
     else
       info "All node packages already installed"
     fi
 
     # Reset verbose settings
     verbose=$saveVerbose
-    popd
   }
-  if _seekConfirmation_ "Install Node?"; then _installNode_; fi
+  _node_ "$configNode"
 
-  _generateKey_() {
-    if [ ! -f "${HOME}/.ssh/id_rsa.pub" ]; then
-      notice "generating public ssh key...."
-      input "what is your email? [ENTER]: "
-      read -r EMAIL
+  _ruby_() {
+    local RUBYVERSION
+    local gem
+    local testInstalled
+    local t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
+    local c="$1"  # Config YAML file
 
-      ssh-keygen -t rsa -b 4096 -C "$EMAIL"
-    else
-      success "Public key found..."
+    if ! _seekConfirmation_ "Install Ruby, RVM, and Gems?"; then return; fi
+    header "Installing ruby"
+
+    [ ! -f "$c" ] \
+      && { error "Can not find config file '$c'"; return 1; }
+
+    # Parse & source Config File
+    # shellcheck disable=2015
+    ( _parseYAML_ "${c}" > "${t}" ) \
+      && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
+      || die "Could not parse YAML config file"
+
+    _sourceFile_ "$t"
+
+    RUBYVERSION="2.3.4" # Version of Ruby to install via RVM
+
+    # Install 2 packages used to fix broken rmagick gem
+    _execute_ "apt-get install -y libmagickcore-dev"
+    _execute_ "apt-get install -y libmagickwand-dev"
+
+    if ! command -v rvm &> /dev/null; then
+      pushd "${HOME}"
+      _execute_ "curl -sSL https://get.rvm.io | bash -s stable"
+      export PATH="${PATH}:${HOME}/.rvm/bin"
+      _execute_ "source ${HOME}/.rvm/scripts/rvm"
+      _execute_ "source ${HOME}/.bash_profile"
+      _execute_ "rvm install ${RUBYVERSION}"
+      _execute_ "rvm use ${RUBYVERSION} --default"
     fi
+
+    header "Installing global ruby gems..."
+    local v=$verbose; verbose=true;
+
+    # shellcheck disable=2154
+    for gem in "${rubyGems[@]}"; do
+      # Strip comments
+      gem=$(echo "$gem" | cut -d'#' -f1 | _trim_)
+
+      # strip flags from package names
+      testInstalled=$(echo "$gem" | cut -d' ' -f1 | _trim_)
+
+      if ! gem list "$testInstalled" -i >/dev/null; then
+        _execute_ "gem install ${gem}"
+      else
+        info "${testInstalled} already installed"
+      fi
+    done
+
+    popd
+
+    verbose=$v
   }
-  _generateKey_
+  _ruby_ "$configRuby"
 
   _runPlugins_() {
     local plugin
 
-    header "Running plugin scripts"
+    header "Running plug-in scripts"
 
     if [ ! -d "$pluginScripts" ]; then die "Can't find plugins."; fi
 
     # Run the bootstrap scripts in numerical order
-
-    set +e # Don't quit install.sh when a sub-script fails
+    set +e
     for plugin in ${pluginScripts}/*.sh; do
       [[ "$plugin" == "${pluginScripts}/*.sh" ]] && { info "no plugins found"; return; }
 
@@ -376,48 +256,155 @@ _mainScript_() {
 
 }  # end _mainScript_
 
-_trapCleanup_() {
-  echo ""
-  # Delete temp files, if any
-  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
-  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
+# ### CUSTOM FUNCTIONS ###########################
+
+_doSymlinks_() {
+  # Takes an input of a configuration YAML file and creates symlinks from it.
+  # Note that the YAML file must group symlinks in a section named 'symlinks'
+  local l                                     # link
+  local d                                     # destination
+  local s                                     # source
+  local c="${1:?Must have a config file}"     # config file
+  local line
+  local t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
+
+  [ ! -f "$c" ] \
+    && { error "Can not find config file '$c'"; return 1; }
+
+  # Parse & source Config File
+  # shellcheck disable=2015
+  ( _parseYAML_ "${c}" > "${t}" ) \
+    && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
+    || die "Could not parse YAML config file"
+
+  _sourceFile_ "$t"
+
+  [ "${#symlinks[@]}" -eq 0 ] \
+    && { warning "No symlinks found in '$c'"; return 1; }
+
+  # For each link do the following
+  for l in "${symlinks[@]}"; do
+    verbose "Working on: $l"
+
+    # Parse destination and source
+    d=$(echo "$l" | cut -d':' -f1 | _trim_)
+    s=$(echo "$l" | cut -d':' -f2 | _trim_)
+    s=$(echo "$s" | cut -d'#' -f1 | _trim_) # remove comments if exist
+
+    # Add the rootDIR to source if it exists
+    [ -n "$rootDIR" ] \
+      && s="${rootDIR}/${s}"
+
+    # Grab the absolute path for the source
+    s="$(_realpath_ "${s}")"
+
+    # Skip macOS specific files
+    [[ "$s" =~ xld|Library|mailReIndex ]] \
+      && continue
+
+    # If we can't find a source file, skip it
+    [ ! -e "${s}" ] \
+      && { warning "Can't find source '${s}'"; continue; }
+
+    ( _makeSymlink_ "${s}" "${d}" ) \
+      || { warning "_makeSymlink_ failed for source: '$s'"; return 1; }
+
+  done
 }
 
-_safeExit_() {
-  # Delete temp files, if any
-  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
-  trap - INT TERM EXIT
-  exit ${1:-0}
+# ### SHARED FUNCTIONS ###########################
+
+_backupFile_() {
+  # v1.0.0
+  # Creates a copy of a specified file taking two inputs:
+  #   $1 - File to be backed up
+  #   $2 - Destination
+  #
+  # NOTE: dotfiles have their leading '.' removed in their backup
+  #
+  # Usage:  _backupFile_ "sourcefile.txt" "some/backup/dir"
+
+  local s="$1"
+  local d="${2:-backup}"
+  local n
+
+  [ ! -e "$s" ] \
+    &&  { error "Source '$s' not found"; return 1; }
+  #[ ! -d "$d" ] \
+  #  &&  { error "Destination '$d' not found"; return 1; }
+
+  if ! _haveFunction_ "_execute_"; then
+    error "need function _execute_"; return 1;
+  fi
+  if ! _haveFunction_ "_uniqueFileName_"; then
+    error "need function _uniqueFileName_"; return 1;
+  fi
+
+  [ ! -d "$d" ] \
+    && _execute_ "mkdir \"$d\"" "Creating backup directory"
+
+  if [ -e "$s" ]; then
+    n="$(basename "$s")"
+    n="$(_uniqueFileName_ "${d}/${s#.}")"
+    _execute_ "cp -R \"${s}\" \"${d}/${n##*/}\"" "Backing up: '${s}' to '${d}/${n##*/}'"
+  fi
+}
+
+_execute_() {
+  # v1.0.2
+  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
+  #           and have control over the display of the results.  In "dryrun" mode these
+  #           commands are not executed at all. In Verbose mode, the commands are executed
+  #           with results printed to stderr and stdin
+  #
+  # usage:
+  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
+  local cmd="${1:?_execute_ needs a command}"
+  local message="${2:-$1}"
+  if ${dryrun}; then
+    dryrun "${message}"
+  else
+    if $verbose; then
+      eval "$cmd"
+    else
+      eval "$cmd" &> /dev/null
+    fi
+    if [ $? -eq 0 ]; then
+      success "${message}"
+    else
+      error "${message}"
+      return 1
+      #die "${message}"
+    fi
+  fi
 }
 
 _findBaseDir_() {
   #v1.0.0
   # fincBaseDir locates the real directory of the script being run. similar to GNU readlink -n
+  # usage :  baseDir="$(_findBaseDir_)"
   local SOURCE
   local DIR
   SOURCE="${BASH_SOURCE[0]}"
   while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
     DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
     SOURCE="$(readlink "$SOURCE")"
-    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    [[ $SOURCE != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
   done
-  echo "$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  echo "$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
 }
 
-_backupOriginalFile_() {
-  local newFile
-  local backupDir
+_haveFunction_ () {
+  # v1.0.0
+  # Tests if a function exists.  Returns 0 if yes, 1 if no
+  # usage: _haveFunction "_someFunction_"
+  local f
+  f="$1"
 
-  # Set backup directory location
-  backupDir="${baseDir}/dotfiles_backup"
-
-  if [[ ! -d "$backupDir" && "$dryrun" == false ]]; then
-    _execute_ "mkdir \"$backupDir\"" "Creating backup directory"
-  fi
-
-  if [ -e "$1" ]; then
-    newFile="$(basename "$1")"
-    _execute_ "cp -R \"${1}\" \"${backupDir}/${newFile#.}\"" "Backing up: ${newFile}"
+  if declare -f "$f" &> /dev/null 2>&1; then
+    return 0
+  else
+    return 1
   fi
 }
 
@@ -449,58 +436,65 @@ _locateSourceFile_() {
   echo "$RESULT"
 }
 
-_createSymlinks_() {
-  # This function takes an input of the YAML variable containing the symlinks to be linked
-  # and then creates the appropriate symlinks in the home directory. it will also backup existing files if there.
+_makeSymlink_() {
+  #v1.0.0
+  # Given two arguments $1 & $2, creates a symlink from $1 (source) to $2 (destination) and
+  # will create a backup of an original file before overwriting
+  #
+  # Script arguments:
+  #
+  #   $1 - Source file
+  #   $2 - Destination for symlink
+  #   $3 - backup directory for files to be overwritten (defaults to 'backup')
+  #
+  # NOTE: This function makes use of the _execute_ function
+  #
+  # usage: _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
+  local s="$1"    # Source file
+  local d="$2"    # Destination file
+  local b="$3"    # Backup directory for originals (optional)
+  local o         # Original file
 
-  local link=""
-  local destFile=""
-  local sourceFile=""
-  local originalFile=""
+  [ ! -e "$s" ] \
+    &&  { error "'$s' not found"; return 1; }
+  [ -z "$d" ] \
+    && { error "'$d' not specified"; return 1; }
 
-  header "Creating ${1:-symlinks}"
+  # Fix files where $HOME is written as '~'
+    d="${d/\~/$HOME}"
+    s="${s/\~/$HOME}"
+    b="${b/\~/$HOME}"
 
-  # For each link do the following
-  for link in "${filesToLink[@]}"; do
-    verbose "Working on: $link"
-    # Parse destination and source
-    destFile=$(echo "$link" | cut -d':' -f1 | _trim_)
-    sourceFile=$(echo "$link" | cut -d':' -f2 | _trim_)
-    sourceFile=$(echo "$sourceFile" | cut -d'#' -f1 | _trim_) # remove comments if exist
+    if ! _haveFunction_ "_execute_"; then error "need function _execute_"; return 1; fi
+    if ! _haveFunction_ "_backupFile_"; then error "need function _backupFile_"; return 1; fi
+    if ! _haveFunction_ "_locateSourceFile_"; then error "need function _locateSourceFile_"; return 1; fi
 
-    # Fix files where $HOME is written as '~'
-    destFile="${destFile/\~/$HOME}"
-
-    # Grab the absolute path for the source
-    sourceFile="${rootDIR}/${sourceFile}"
-
-    # If we can't find a source file, skip it
-    if ! test -e "${sourceFile}"; then
-      warning "Can't find '${sourceFile}'"
-      continue
-    fi
-
-    # Now we symlink the files
-    if [ ! -e "${destFile}" ]; then
-      _execute_ "ln -fs \"${sourceFile}\" \"${destFile}\"" "symlink ${sourceFile} → ${destFile}"
-    elif [ -h "${destFile}" ]; then
-      originalFile="$(_locateSourceFile_ "$destFile")"
-      _backupOriginalFile_ "${originalFile}"
-      if ! ${dryrun}; then rm -rf "$destFile"; fi
-      _execute_ "ln -fs \"${sourceFile}\" \"${destFile}\"" "symlink ${sourceFile} → ${destFile}"
-    elif [ -e "${destFile}" ]; then
-      _backupOriginalFile_ "${destFile}"
-      if ! ${dryrun}; then rm -rf "$destFile"; fi
-      _execute_ "ln -fs \"${sourceFile}\" \"${destFile}\"" "symlink ${sourceFile} → ${destFile}"
-    else
-      warning "Error linking: ${sourceFile} → ${destFile}"
-    fi
-  done
+  if [ ! -e "${d}" ]; then
+    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
+  elif [ -h "${d}" ]; then
+    o="$(_locateSourceFile_ "$d")"
+    _backupFile_ "${o}" ${b:-backup}
+    if ! ${dryrun}; then rm -rf "$d"; fi
+    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
+  elif [ -e "${d}" ]; then
+    _backupFile_ "${d}" "${b:-backup}"
+    if ! ${dryrun}; then rm -rf "$d"; fi
+    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
+  else
+    warning "Error linking: ${s} → ${d}"
+    return 1
+  fi
+  return 0
 }
 
 _parseYAML_() {
-  # v1.0.0
+  # v1.1.0
+  local yamlFile="${1:?_parseYAML_ needs a file}"
   local prefix=$2
+
+  [ ! -f "$yamlFile" ] && return 1
+  [ ! -s "$yamlFile" ] && return 1
+
   local s
   local w
   local fs
@@ -508,7 +502,7 @@ _parseYAML_() {
   w='[a-zA-Z0-9_]*'
   fs="$(echo @|tr @ '\034')"
   sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-      -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$1" |
+      -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$yamlFile" |
   awk -F"$fs" '{
     indent = length($1)/2;
     if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
@@ -521,19 +515,133 @@ _parseYAML_() {
   }' | sed 's/_=/+=/g' | sed 's/[[:space:]]*#.*"/"/g'
 }
 
-_readFile_() {
+_sourceFile_() {
   # v1.0.0
-  local result
+  # Takes a file as an argument $1 and sources it into the current script
+  # usage: _sourceFile_ "SomeFile.txt"
+  local c=$1
 
-  while read -r result
-  do
+  [ ! -f "$c" ] \
+    &&  { error "'$c' not found"; return 1; }
+
+  source "$c"
+}
+
+_readFile_() {
+  # v1.0.1
+  # Function to reads a file and prints each line.
+  # Usage: _readFile_ "some/filename"
+  local result
+  local c=$1
+
+  [ ! -f "$c" ] \
+    &&  { error "'$c' not found"; return 1; }
+
+  while read -r result; do
     echo "${result}"
-  done < "${1:?Must specify a file for _readFile_}"
-  unset result
+  done < "${c}"
+}
+
+_realpath_() {
+  # v1.0.0
+  # Convert a relative path to an absolute path.
+  #
+  # From http://github.com/morgant/realpath
+  #
+  # @param string the string to converted from a relative path to an absolute path
+  # @returns Outputs the absolute path to STDOUT, returns 0 if successful or 1 if
+  # an error (esp. path not found).
+  local success=true
+  local path="$1"
+
+  # make sure the string isn't empty as that implies something in further logic
+  if [ -z "$path" ]; then
+    success=false
+  else
+    # start with the file name (sans the trailing slash)
+    path="${path%/}"
+
+    # if we stripped off the trailing slash and were left with nothing, that means we're in the root directory
+    if [ -z "$path" ]; then
+      path="/"
+    fi
+
+    # get the basename of the file (ignoring '.' & '..', because they're really part of the path)
+    local file_basename="${path##*/}"
+    if [[ ( "$file_basename" = "." ) || ( "$file_basename" = ".." ) ]]; then
+      file_basename=""
+    fi
+
+    # extracts the directory component of the full path, if it's empty then assume '.' (the current working directory)
+    local directory="${path%$file_basename}"
+    if [ -z "$directory" ]; then
+      directory='.'
+    fi
+
+    # attempt to change to the directory
+    if ! cd "$directory" &>/dev/null ; then
+      success=false
+    fi
+
+    if $success; then
+      # does the filename exist?
+      if [[ ( -n "$file_basename" ) && ( ! -e "$file_basename" ) ]]; then
+        success=false
+      fi
+
+      # get the absolute path of the current directory & change back to previous directory
+      local abs_path
+      abs_path="$(pwd -P)"
+      cd "-" &>/dev/null || return
+
+      # Append base filename to absolute path
+      if [ "${abs_path}" = "/" ]; then
+        abs_path="${abs_path}${file_basename}"
+      else
+        abs_path="${abs_path}/${file_basename}"
+      fi
+
+      # output the absolute path
+      echo "$abs_path"
+    fi
+  fi
+
+  $success
+}
+
+_seekConfirmation_() {
+  # v1.0.1
+  # Seeks a Yes or No answer to a question.  Usage:
+  #   if _seekConfirmation_ "Answer this question"; then
+  #     something
+  #   fi
+
+  input "$@"
+  if "${force}"; then
+    verbose "Forcing confirmation with '--force' flag set"
+    echo -e ""
+    return 0
+  else
+    while true; do
+      read -r -p " (y/n) " yn
+      case $yn in
+        [Yy]* ) return 0;;
+        [Nn]* ) return 1;;
+        * ) input "Please answer yes or no.";;
+      esac
+    done
+  fi
 }
 
 _setdiff_() {
   # v1.0.0
+  # Given strings containing space-delimited words A and B, "setdiff A B" will
+  # return all words in A that do not exist in B. Arrays in bash are insane
+  # (and not in a good way).
+  #
+  #   Usage: _setdiff_ "${array1[*]}" "${array2[*]}"
+  #
+  # From http://stackoverflow.com/a/1617303/142339
   local debug skip a b
   if [[ "$1" == 1 ]]; then debug=1; shift; fi
   if [[ "$1" ]]; then
@@ -552,6 +660,59 @@ _setdiff_() {
     echo "$a ($(eval echo "\${#$a[*]}")) $(eval echo "\${$a[*]}")" 1>&2
   done
   [[ "$1" ]] && echo "${setdiffC[@]}"
+}
+
+_uniqueFileName_() {
+  # v2.0.0
+  # _uniqueFileName_ takes an input of a file and returns a unique filename.
+  # The use-case here is trying to write a file to a directory which may already
+  # have a file with the same name. To ensure unique filenames, we append a digit
+  # to files when necessary
+  #
+  # Inputs:
+  #
+  #   $1  The name of the file (may include a directory)
+  #
+  #   $2  Option separation character. Defaults to a space
+  #
+  # Usage:
+  #
+  #   _uniqueFileName_ "/some/dir/file.txt" "-"
+  #
+  #   Would return "/some/dir/file-2.txt"
+
+  local fullfile="${1:?_uniqueFileName_ needs a file}"
+  local spacer="${2:--}"
+  local directory
+  local filename
+
+  # Find directories with _realpath_ if available
+  if [ -e "$fullfile" ]; then
+    if type -t _realpath_ | grep -E '^function$' &>/dev/null; then
+      fullfile="$(_realpath_ "$fullfile")"
+    fi
+  fi
+
+  directory="$(dirname "$fullfile")"
+  filename="$(basename "$fullfile")"
+
+  # Extract extensions only when they exist
+  if [[ "$filename" =~ \.[a-zA-Z]{2,3}$ ]]; then
+    local extension=".${filename##*.}"
+    local filename="${filename%.*}"
+  fi
+
+  local newfile="${directory}/${filename}${extension}"
+
+  if [ -e "${newfile}" ]; then
+    local n=2
+    while [[ -e "${directory}/${filename}${spacer}${n}${extension}" ]]; do
+      (( n++ ))
+    done
+    newfile="${directory}/${filename}${spacer}${n}${extension}"
+  fi
+
+  echo "${newfile}"
 }
 
 _ltrim_() {
@@ -573,18 +734,19 @@ _trim_() {
   _ltrim_ "$1" | _rtrim_ "$1"
 }
 
-_createGemrc_() {
-    cat > "${HOME}/.gemrc" << EOF
-verbose: true
-bulk_treshold: 1000
-install: --no-ri --no-rdoc --env-shebang
-benchmark: false
-backtrace: false
-update: --no-ri --no-rdoc --env-shebang
-update_sources: true
-EOF
-  success ".gemrc created"
-  }
+_trapCleanup_() {
+  echo ""
+  # Delete temp files, if any
+  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
+  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
+}
+
+_safeExit_() {
+  # Delete temp files, if any
+  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
+  trap - INT TERM EXIT
+  exit ${1:-0}
+}
 
 # Set Base Variables
 # ----------------------
@@ -646,64 +808,17 @@ function input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
 function header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
 function verbose()    { if ${verbose}; then debug "$@"; fi }
 
-_seekConfirmation_() {
-  # v1.0.1
 
-  input "$@"
-  if "${force}"; then
-    verbose "Forcing confirmation with '--force' flag set"
-    echo -e ""
-    return 0
-  else
-    while true; do
-      read -r -p " (y/n) " yn
-      case $yn in
-        [Yy]* ) return 0;;
-        [Nn]* ) return 1;;
-        * ) input "Please answer yes or no.";;
-      esac
-    done
-  fi
-}
-
-_execute_() {
-  # v1.0.1
-  local cmd="${1:?_execute_ needs a command}"
-  local message="${2:-$1}"
-  if ${dryrun}; then
-    dryrun "${message}"
-  else
-    if $verbose; then
-      eval "$cmd"
-    else
-      eval "$cmd" &> /dev/null
-    fi
-    if [ $? -eq 0 ]; then
-      success "${message}"
-    else
-      #error "${message}"
-      die "${message}"
-    fi
-  fi
-}
 # Options and Usage
 # -----------------------------------
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This script runs a series of installation scripts to configure a new computer running GNU Linux.
-It relies on a YAML config file 'config-linux-gnu.yaml'. This YAML file will contain
-
-  - symlinks
-  - homebrew packages
-  - homebrew casks
-  - ruby gems
-  - node packages
-
-This script also looks for plugin scripts in a user configurable directory for added customization.
+This is a script template.  Edit this description to print help to users.
 
  ${bold}Options:${reset}
-
+  -u, --username    Username for script
+  -p, --password    User password
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
   -l, --log         Print log to file
@@ -711,8 +826,8 @@ This script also looks for plugin scripts in a user configurable directory for a
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
   -h, --help        Display this help and exit
-      --source-only Bypasses main script functionality to allow unit tests of functions
       --version     Output version information and exit
+      --source-only Bypasses main script functionality to allow unit tests of functions
       --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
 }
@@ -762,6 +877,9 @@ unset options
 while [[ $1 = -?* ]]; do
   case $1 in
     -h|--help) _usage_ >&2; _safeExit_ ;;
+    -u|--username) shift; username=${1} ;;
+    -p|--password) shift; echo "Enter Pass: "; stty -echo; read -r PASS; stty echo;
+      echo ;;
     -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;
     -l|--log) printLog=true ;;

@@ -5,7 +5,7 @@ This repository contains everything needed to bootstrap and configure new Mac co
 * ~/bin/ scripts
 * Configuration files
 * Scripting templates and utilities
-* `install.sh`, a script to put everything where it needs to go
+* Bootstrap scripts to automate the process of provisioning a new computer or VM.
 
 **Disclaimer:**  *I am not a professional or trained programmer and I bear no responsibility whatsoever if any of these scripts wipes your computer, destroys your data, burns your toast, crashes your car, or otherwise causes mayhem and destruction.  USE AT YOUR OWN RISK.*
 
@@ -17,6 +17,7 @@ dotfiles/
   ├── bootstrap/
   │   ├── config-macOS.yaml
   │   ├── install-macOS.sh
+  │   └── config/
   │   └── lib/
   │      ├── mac-plugins/
   │      └── linux-plugins/
@@ -29,7 +30,7 @@ dotfiles/
 
 * **bin/** - Symlinked to `~/bin` and is added to your `$PATH` allowing scripts to be executable by your user.
 * **bootstrap/** - Scripts and utilities to bootstrap a new computer
-* bootstrap/**config-XXXX.yaml** - These config YAML files contain the list of packages to be installed or symlinks to be created.  **Edit these to your liking.**
+* bootstrap/**config/** - Contains YAML files which are the manifest for the list of packages to be installed or symlinks to be created.
 * bootstrap/lib/**mac-plugins** - Plugins that are run by `install-macOS.sh`
 * bootstrap/lib/**linux-plugins** - Plugins that are run by `install-linux.sh`
 * **config/** - Contains the elements needed to configure your environment and specific apps.
@@ -40,7 +41,7 @@ dotfiles/
 
 **IMPORTANT:** Unless you want to use my defaults, make sure you do the following:
 
-* Edit all the config YAML files in `bootstrap/` to reflect your preferences
+* Edit all the config YAML files in `bootstrap/config/` to reflect your preferences
 * Review the files in `config/` to configure your own aliases, preferences, etc.
 
 ### Private Files
