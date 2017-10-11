@@ -91,7 +91,7 @@ _countdown_() {
 }
 
 _execute_() {
-  # v1.0.1
+  # v1.0.2
   # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
   #           and have control over the display of the results.  In "dryrun" mode these
   #           commands are not executed at all. In Verbose mode, the commands are executed
@@ -112,8 +112,10 @@ _execute_() {
     fi
     if [ $? -eq 0 ]; then
       success "${message}"
+      return 0
     else
       error "${message}"
+      return 1
       #die "${message}"
     fi
   fi

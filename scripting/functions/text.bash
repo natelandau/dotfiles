@@ -18,7 +18,9 @@ _htmlDecode_() {
   local sedFile
   sedFile="${HOME}/.sed/htmlDecode.sed"
 
-  [ -f "${sedFile}" ] && { echo "${1}" | sed -f "${sedFile}" ; } || return 1
+  [ -f "${sedFile}" ] \
+    && { echo "${1}" | sed -f "${sedFile}" ; } \
+    || return 1
 }
 
 _htmlEncode_() {
@@ -29,7 +31,9 @@ _htmlEncode_() {
   local sedFile
   sedFile="${HOME}/.sed/htmlEncode.sed"
 
-  [ -f "${sedFile}" ] && { echo "${1}" | sed -f "${sedFile}" ; } || return 1
+  [ -f "${sedFile}" ] \
+    && { echo "${1}" | sed -f "${sedFile}" ; } \
+    || return 1
 }
 
 _lower_() {
@@ -82,6 +86,8 @@ _urlEncode_() {
   # Usage: _urlEncode_ <string>
 
   local LANG=C
+  local i
+
   for ((i=0;i<${#1};i++)); do
     if [[ ${1:$i:1} =~ ^[a-zA-Z0-9\.\~_-]$ ]]; then
       printf "${1:$i:1}"

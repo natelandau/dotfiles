@@ -132,6 +132,12 @@ _ext_() {
   #   _ext_ -n1 foo.tar.gz  #==> .gz
 
   local levels
+  local option
+  local filename
+  local exts
+  local ext
+  local fn
+  local i
 
   unset OPTIND
   while getopts ":n:" option; do
@@ -140,12 +146,11 @@ _ext_() {
     esac
   done && shift $((OPTIND - 1))
 
-  local filename=${1##*/}
+  filename=${1##*/}
 
   [[ $filename == *.* ]] || return
 
-  local fn=$filename
-  local exts ext
+  fn=$filename
 
   # Detect some common multi-extensions
   if [[ ! $levels ]]; then
@@ -361,10 +366,13 @@ _uniqueFileName_() {
   local spacer="${2:--}"
   local directory
   local filename
+  local extension
+  local newfile
+  local n
 
   # Find directories with _realpath_ if available
   if [ -e "$fullfile" ]; then
-    if type -t _realpath_ | grep -E '^function$' &>/dev/null; then
+    if type -t _realpath_ | grep -E '^function$' &> /dev/null; then
       fullfile="$(_realpath_ "$fullfile")"
     fi
   fi
@@ -374,14 +382,14 @@ _uniqueFileName_() {
 
   # Extract extensions only when they exist
   if [[ "$filename" =~ \.[a-zA-Z]{2,3}$ ]]; then
-    local extension=".${filename##*.}"
-    local filename="${filename%.*}"
+    extension=".${filename##*.}"
+    filename="${filename%.*}"
   fi
 
-  local newfile="${directory}/${filename}${extension}"
+  newfile="${directory}/${filename}${extension}"
 
   if [ -e "${newfile}" ]; then
-    local n=2
+    n=2
     while [[ -e "${directory}/${filename}${spacer}${n}${extension}" ]]; do
       (( n++ ))
     done
