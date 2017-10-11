@@ -14,11 +14,11 @@ _mainScript_() {
     pluginScripts="${baseDir}/lib/mac-plugins"
 
   # Config files
-    configSymlinks="${baseDir}/config-symlinks.yaml"
-    configHomebrew="${baseDir}/config-homebrew.yaml"
-    configCasks="${baseDir}/config-homebrewCasks.yaml"
-    configNode="${baseDir}/config-node.yaml"
-    configRuby="${baseDir}/config-ruby.yaml"
+    configSymlinks="${baseDir}/config/symlinks.yaml"
+    configHomebrew="${baseDir}/config/homebrew.yaml"
+    configCasks="${baseDir}/config/homebrewCasks.yaml"
+    configNode="${baseDir}/config/node.yaml"
+    configRuby="${baseDir}/config/ruby.yaml"
 
   scriptFlags=()
     ( $dryrun ) && scriptFlags+=(--dryrun)
@@ -85,7 +85,7 @@ _mainScript_() {
     _sourceFile_ "$t"
 
     # Brew updates can take forever if we're not bootstrapping. Show the output
-    saveVerbose=$verbose; verbose=true;
+    local v=$verbose; verbose=true;
 
     header "Updating Homebrew"
     _execute_ "caffeinate -ism brew update"
@@ -114,7 +114,7 @@ _mainScript_() {
     done
 
     _execute_ "brew cleanup"  # cleanup after ourselves
-    verbose=$saveVerbose      # Reset verbose settings
+    verbose=$v                # Reset verbose settings
   }
   _homebrew_ "$configHomebrew"
 
@@ -251,19 +251,18 @@ _mainScript_() {
     pushd ${HOME} &> /dev/null
     # Check for RVM
     if ! command -v rvm &> /dev/null; then
-      if _seekConfirmation_ "Couldn't find RVM. Install it?"; then
-        _execute_ "curl -L https://get.rvm.io | bash -s stable --ruby"
-        _execute_ "source ${HOME}/.rvm/scripts/rvm"
-        _execute_ "source ${HOME}/.bash_profile"
-        #rvm get stable --autolibs=enable
-        _execute_ "rvm install ${RUBYVERSION}"
-        _execute_ "rvm use ${RUBYVERSION} --default"
-      fi
+      _execute_ "curl -L https://get.rvm.io | bash -s stable --ruby"
+      _execute_ "source ${HOME}/.rvm/scripts/rvm"
+      _execute_ "source ${HOME}/.bash_profile"
+      #rvm get stable --autolibs=enable
+      _execute_ "rvm install ${RUBYVERSION}"
+      _execute_ "rvm use ${RUBYVERSION} --default"
     fi
     success "RVM and Ruby are installed"
 
 
     header "Installing global ruby gems"
+    local v=$verbose; verbose=true;
 
     # shellcheck disable=2154
     for gem in "${rubyGems[@]}"; do
@@ -274,14 +273,16 @@ _mainScript_() {
       # strip flags from package names
       testInstalled=$(echo "$gem" | cut -d' ' -f1 | _trim_)
 
-      if ! gem list $testInstalled -i >/dev/null; then
-        _execute_ "gem install ${gem}" "install ${gem}"
+      if ! gem list "$testInstalled" -i >/dev/null; then
+        _execute_ "gem install ${gem}"
       else
         info "${testInstalled} already installed"
       fi
     done
 
     popd &> /dev/null
+
+    verbose=$v
   }
   _ruby_ "$configRuby"
 
@@ -302,7 +303,6 @@ _mainScript_() {
         "${plugin}" "${scriptFlags[*]}" --verbose --rootDIR "$rootDIR"
       fi
     done
-    set -e
   }
   _runPlugins_
 
@@ -429,7 +429,7 @@ _backupFile_() {
 }
 
 _execute_() {
-  # v1.0.1
+  # v1.0.2
   # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
   #           and have control over the display of the results.  In "dryrun" mode these
   #           commands are not executed at all. In Verbose mode, the commands are executed
@@ -451,6 +451,7 @@ _execute_() {
       success "${message}"
     else
       error "${message}"
+      return 1
       #die "${message}"
     fi
   fi
