@@ -136,7 +136,7 @@ symlinkYAML="${BATS_TEST_DIRNAME}/fixtures/symlinks.yaml"
 @test "_execute_: Bad command" {
   touch "testfile.txt"
   run _execute_ "rm nonexistant.txt"
-  assert_success
+  assert_failure
   assert_output --partial "[  error] rm nonexistant.txt"
   assert_file_exist "testfile.txt"
 }
