@@ -26,128 +26,129 @@ _mainScript_() {
     apt-get install -y git
     apt-get install -y mosh
     apt-get install -y sudo
+    apt-get install -y ncurses
 
   }
   _apgradeAptGet_
 
-    _setHostname_() {
-      notice "Setting Hostname..."
+  _setHostname_() {
+    notice "Setting Hostname..."
 
-      ipAddress=$(/sbin/ifconfig eth0 | awk '/inet / { print $2 }' | sed 's/addr://')
+    ipAddress=$(/sbin/ifconfig eth0 | awk '/inet / { print $2 }' | sed 's/addr://')
 
-      input "What is your hostname? [ENTER]: "
-      read -r newHostname
+    input "What is your hostname? [ENTER]: "
+    read -r newHostname
 
-      [ ! -n "$newHostname" ] && die "Hostname undefined"
+    [ ! -n "$newHostname" ] && die "Hostname undefined"
 
-      if command -v hostnamectl &>/dev/null; then
-        _execute_ "hostnamectl set-hostname \"$newHostname\""
-      else
-        _execute_ "echo \"$newHostname\" > /etc/hostname"
-        _execute_ "hostname -F /etc/hostname"
+    if command -v hostnamectl &>/dev/null; then
+      _execute_ "hostnamectl set-hostname \"$newHostname\""
+    else
+      _execute_ "echo \"$newHostname\" > /etc/hostname"
+      _execute_ "hostname -F /etc/hostname"
+    fi
+
+    _execute_ "echo \"$ipAddress\" \"$newHostname\" >> /etc/hosts"
+  }
+  _setHostname_
+
+  _setTime_() {
+    notice "Setting Time..."
+
+    if command -v timedatectl &> /dev/null; then
+      _execute_ "apt-get install -y ntp"
+      _execute_ "timedatectl set-timezone \"America/New_York\""
+      _execute_ "timedatectl set-ntp true"
+    elif command -v dpkg-reconfigure; then
+      dpkg-reconfigure tzdata
+    else
+      die "set time failed"
+    fi
+  }
+  _setTime_
+
+  _addUser_() {
+
+    # Installs sudo if needed and creates a user in the sudo group.
+    notice "Creating a new user account..."
+    input "username? [ENTER]: "
+    read -r USERNAME
+    input "password? [ENTER]: "
+    read -r -s USERPASS
+
+    _execute_ "adduser ${USERNAME} --disabled-password --gecos \"\""
+    _execute_ "echo \"${USERNAME}:${USERPASS}\" | chpasswd" "echo \"${USERNAME}:******\" | chpasswd"
+    _execute_ "usermod -aG sudo ${USERNAME}"
+
+    HOMEDIR="/home/${USERNAME}"
+  }
+  _addUser_
+
+  _addPublicKey_() {
+    # Adds the users public key to authorized_keys for the specified user. Make sure you wrap your input variables in double quotes, or the key may not load properly.
+
+    if _seekConfirmation_ "Do you have a public key from another computer to add?"; then
+      if [ ! -n "$USERNAME" ]; then
+        die "We must have a user account configured..."
       fi
 
-      _execute_ "echo \"$ipAddress\" \"$newHostname\" >> /etc/hosts"
-    }
-    _setHostname_
+      input "paste your public key? [ENTER]: "
+      read -r USERPUBKEY
 
-    _setTime_() {
-      notice "Setting Time..."
+      _execute_ "mkdir -p /home/${USERNAME}/.ssh"
+      _execute_ "echo \"$USERPUBKEY\" >> /home/${USERNAME}/.ssh/authorized_keys"
+      _execute_ "chown -R \"${USERNAME}\":\"${USERNAME}\" /home/${USERNAME}/.ssh"
+    fi
+  }
+ _addPublicKey_
 
-      if command -v timedatectl &> /dev/null; then
-        _execute_ "apt-get install -y ntp"
-        _execute_ "timedatectl set-timezone \"America/New_York\""
-        _execute_ "timedatectl set-ntp true"
-      elif command -v dpkg-reconfigure; then
-        dpkg-reconfigure tzdata
-      else
-        die "set time failed"
-      fi
-    }
-    _setTime_
+  _goodstuff_() {
+    # Customize root terminal experience
 
-    _addUser_() {
+    sed -i -e 's/^#PS1=/PS1=/' /root/.bashrc # enable the colorful root bash prompt
+    sed -i -e "s/^#alias ll='ls -l'/alias ll='ls -al'/" /root/.bashrc # enable ll list long alias <3
+    echo "alias ..='cd ..'" >> /root/.bashrc
+  }
+  _goodstuff_
 
-      # Installs sudo if needed and creates a user in the sudo group.
-      notice "Creating a new user account..."
-      input "username? [ENTER]: "
-      read -r USERNAME
-      input "password? [ENTER]: "
-      read -r -s USERPASS
+  _installDotfiles_() {
 
-      _execute_ "adduser ${USERNAME} --disabled-password --gecos \"\""
-      _execute_ "echo \"${USERNAME}:${USERPASS}\" | chpasswd" "echo \"${USERNAME}:******\" | chpasswd"
-      _execute_ "usermod -aG sudo ${USERNAME}"
+    if command -v git &> /dev/null; then
+      header "Installing dotfiles..."
+      pushd "$HOMEDIR";
+      git clone https://github.com/natelandau/dotfiles "${HOMEDIR}/dotfiles"
+      chown -R $USERNAME:$USERNAME "${HOMEDIR}/dotfiles"
+      popd;
+    else
+      warning "Could not install dotfiles repo without git installed"
+    fi
+  }
+  _installDotfiles_
 
-      HOMEDIR="/home/${USERNAME}"
-    }
-    _addUser_
+  _ufwFirewall_() {
+    header "Installing firewall with UFW"
+    apt-get install -y ufw
 
-    _addPublicKey_() {
-      # Adds the users public key to authorized_keys for the specified user. Make sure you wrap your input variables in double quotes, or the key may not load properly.
+    _execute_ "ufw default deny"
+    _execute_ "ufw allow 'Nginx Full'"
+    _execute_ "ufw allow ssh"
+    _execute_ "ufw allow mosh"
+    _execute_ "ufw enable"
+  }
+  _ufwFirewall_
 
-      if _seekConfirmation_ "Do you have a public key from another computer to add?"; then
-        if [ ! -n "$USERNAME" ]; then
-          die "We must have a user account configured..."
-        fi
+  success "New computer bootstrapped."
+  info "To continue you must log out as root and back in as the user you just"
+  info "created. Once logged in you should see a 'dotfiles' folder in your user's home directory."
+  info "Run the '~/dotfiles/bootstrap/install-linux-gnu.sh' script to continue"
 
-        input "paste your public key? [ENTER]: "
-        read -r USERPUBKEY
-
-        _execute_ "mkdir -p /home/${USERNAME}/.ssh"
-        _execute_ "echo \"$USERPUBKEY\" >> /home/${USERNAME}/.ssh/authorized_keys"
-        _execute_ "chown -R \"${USERNAME}\":\"${USERNAME}\" /home/${USERNAME}/.ssh"
-      fi
-    }
-   _addPublicKey_
-
-    _goodstuff_() {
-      # Customize root terminal experience
-
-      sed -i -e 's/^#PS1=/PS1=/' /root/.bashrc # enable the colorful root bash prompt
-      sed -i -e "s/^#alias ll='ls -l'/alias ll='ls -al'/" /root/.bashrc # enable ll list long alias <3
-      echo "alias ..='cd ..'" >> /root/.bashrc
-    }
-    _goodstuff_
-
-    _installDotfiles_() {
-
-      if command -v git &> /dev/null; then
-        header "Installing dotfiles..."
-        pushd "$HOMEDIR";
-        git clone https://github.com/natelandau/dotfiles "${HOMEDIR}/dotfiles"
-        chown -R $USERNAME:$USERNAME "${HOMEDIR}/dotfiles"
-        popd;
-      else
-        warning "Could not install dotfiles repo without git installed"
-      fi
-    }
-    _installDotfiles_
-
-    _ufwFirewall_() {
-      header "Installing firewall with UFW"
-      apt-get install -y ufw
-
-      _execute_ "ufw default deny"
-      _execute_ "ufw allow 'Nginx Full'"
-      _execute_ "ufw allow ssh"
-      _execute_ "ufw allow mosh"
-      _execute_ "ufw enable"
-    }
-    _ufwFirewall_
-
-    success "New computer bootstrapped."
-    info "To continue you must log out as root and back in as the user you just"
-    info "created. Once logged in you should see a 'dotfiles' folder in your user's home directory."
-    info "Run the '~/dotfiles/bootstrap/install-linux-gnu.sh' script to continue"
-
-    _disableRootSSH_() {
-      notice "Disabling root access..."
-      _execute_ "sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config"
-      _execute_ "touch /tmp/restart-ssh"
-      _execute_ "service ssh restart"
-    }
-    _disableRootSSH_
+  _disableRootSSH_() {
+    notice "Disabling root access..."
+    _execute_ "sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config"
+    _execute_ "touch /tmp/restart-ssh"
+    _execute_ "service ssh restart"
+  }
+  _disableRootSSH_
 
 } # end _mainScript_
 
@@ -217,12 +218,6 @@ bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
 red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
 blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
 
-# Set Temp Directory
-tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
-(umask 077 && mkdir "${tmpDir}") || {
-  die "Could not create temporary directory! Exiting."
-}
-
 # Logging & Feedback
 logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
 
@@ -268,7 +263,7 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This script runs a series of installation scripts to bootstrap a new computer or VM running GNU linux
+This script runs a series of installation scripts to bootstrap a new computer or VM running Debian GNU linux
 
  ${bold}Options:${reset}
 
