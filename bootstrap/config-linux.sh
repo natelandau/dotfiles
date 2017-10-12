@@ -67,8 +67,8 @@ _mainScript_() {
 
     if [ -f "/etc/apt/sources.list" ]; then
       notice "Upgrading apt-get....(May take a while)"
-      _execute_ "apt-get update"
-      _execute_ "apt-get upgrade -y"
+      _execute_ "sudo apt-get update"
+      _execute_ "sudo apt-get upgrade -y"
     else
       die "Can not proceed without apt-get"
     fi
@@ -101,7 +101,7 @@ _mainScript_() {
     # shellcheck disable=2154
     for package in "${aptGetPackages[@]}"; do
       package=$(echo "${package}" | cut -d'#' -f1 | _trim_) # remove comments if exist
-      _execute_ "apt-get install -y \"${package}\""
+      _execute_ "sudo apt-get install -y \"${package}\""
     done
 
     verbose=$v
@@ -132,7 +132,7 @@ _mainScript_() {
     local v=$verbose; verbose=true;
 
     notice "Installing nvm, node, and packages"
-    _execute_ "apt-get install -y build-essential libssl-dev checkinstall"
+    _execute_ "sudo apt-get install -y build-essential libssl-dev checkinstall"
 
     NODEVERSION="8.6.0"
 
@@ -196,8 +196,8 @@ _mainScript_() {
     RUBYVERSION="2.3.4" # Version of Ruby to install via RVM
 
     # Install 2 packages used to fix broken rmagick gem
-    _execute_ "apt-get install -y libmagickcore-dev"
-    _execute_ "apt-get install -y libmagickwand-dev"
+    _execute_ "sudo apt-get install -y libmagickcore-dev"
+    _execute_ "sudo apt-get install -y libmagickwand-dev"
 
     if ! command -v rvm &> /dev/null; then
       pushd "${HOME}"
