@@ -1,25 +1,17 @@
-aptGetPackages:
+GeneralPackages:
   - autoconf
   - autojump
   - automake
-  - bats
   - bzip2
   - colordiff
   - coreutils
   - curl
-  - default-jre
   - git
   - git-extras
   - httpie
-  - id3tool
-  - imagemagick
-  - jpegoptim
   - jq
   - less
   - mosh
-  - optipng
-  - pngcrush
-  - python3-pip
   - p7zip
   - shellcheck
   - source-highlight
@@ -27,5 +19,12 @@ aptGetPackages:
   - tree
   - unzip
   - wget
-  - libmagickcore-dev   # used to fix broken rmagick gem
-  - libmagickwand-dev   # used to fix broken rmagick gem
+
+WebDevelopmentPackages:
+  - default-jre
+  - id3tool
+  - imagemagick
+  - jpegoptim
+  - optipng
+  - pngcrush
+  - python3-pip

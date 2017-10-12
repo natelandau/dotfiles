@@ -99,10 +99,18 @@ _mainScript_() {
     local v=$verbose; verbose=true;
 
     # shellcheck disable=2154
-    for package in "${aptGetPackages[@]}"; do
+    for package in "${GeneralPackages[@]}"; do
       package=$(echo "${package}" | cut -d'#' -f1 | _trim_) # remove comments if exist
       _execute_ "sudo apt-get install -y \"${package}\""
     done
+
+    # shellcheck disable=2154
+    if _seekConfirmation_ "Install packages for web development?"; then
+      for package in "${WebDevelopmentPackages[@]}"; do
+        package=$(echo "${package}" | cut -d'#' -f1 | _trim_) # remove comments if exist
+        _execute_ "sudo apt-get install -y \"${package}\""
+      done
+    fi
 
     verbose=$v
   }
