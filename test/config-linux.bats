@@ -1,31 +1,21 @@
 #!/usr/bin/env bats
 #shellcheck disable
-
+#
 load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
+s="${HOME}/dotfiles/bootstrap/config-linux.sh"
+base="$(basename $s)"
+
+[ -f "$s" ] \
+  && { source "$s" --source-only ; trap - EXIT INT TERM ; } \
+  || { echo "Can not find script to test" ; exit 1 ; }
+
 sourceDIR="${HOME}/dotfiles/scripting/functions"
 
-[ -d "$sourceDIR" ] || exit 1
-
-while read -r sourcefile; do
-  [ -f "$sourcefile" ] && source "$sourcefile"
-done < <(find "$sourceDIR" -name "*.bash" -type f -maxdepth 1)
-
-# Fixtures
-YAML1="${BATS_TEST_DIRNAME}/fixtures/yaml1.yaml"
-YAML1parse="${BATS_TEST_DIRNAME}/fixtures/yaml1.yaml.txt"
-YAML2="${BATS_TEST_DIRNAME}/fixtures/yaml2.yaml"
-JSON="${BATS_TEST_DIRNAME}/fixtures/json.json"
-unencrypted="${BATS_TEST_DIRNAME}/fixtures/test.md"
-encrypted="${BATS_TEST_DIRNAME}/fixtures/test.md.enc"
-
-# Set Defaults
-force=false;    dryrun=false;    verbose=false;    quiet=false;
-printLog=false; debug=false;
-
 setup() {
+
   # Set arrays
   A=(one two three 1 2 3)
   B=(1 2 3 4 5 6)
@@ -44,7 +34,66 @@ teardown() {
   temp_del "${testdir}"
 }
 
-############## Begin Tests ###############
+### Fixtures
+YAML1="${BATS_TEST_DIRNAME}/fixtures/yaml1.yaml"
+YAML1parse="${BATS_TEST_DIRNAME}/fixtures/yaml1.yaml.txt"
+YAML2="${BATS_TEST_DIRNAME}/fixtures/yaml2.yaml"
+symlinkYAML="${BATS_TEST_DIRNAME}/fixtures/symlinks.yaml"
+
+@test "Sanity..." {
+  run true
+
+  assert_success
+  assert_output ""
+}
+
+########### UNIQUE FUNCTION TESTS ##########
+
+@test "_doSymlinks_" {
+  mkdir "links"
+  touch "testfile.txt" ".dotfile" "links/dotfile-link"
+
+  local p="$(_realpath_ "testfile.txt")"
+  local p="${p%/*}"
+
+  _doSymlinks_ "$symlinkYAML"
+
+  assert_success
+  assert [ -L "${p}/links/testfile-link.txt" ]
+  assert [ -L "${p}/links/dotfile-link" ]
+  assert [ -f "backup/dotfile-link" ]
+}
+
+########### TAKING ARGUMENTS ###############
+@test "Fail on unknown argument" {
+  run $s -K
+
+  assert_failure
+  assert_output --partial "[  error] invalid option: '-K'. Exiting."
+}
+
+@test "Print version (--version)" {
+  run $s --version
+
+  assert_success
+  assert_output --regexp "$base [v|V]?[0-9]+\.[0-9]+\.[0-9]+"
+}
+
+@test "usage (-h)" {
+  run $s -h
+
+  assert_success
+  assert_line --index 0 "$base [OPTION]... [FILE]..."
+}
+
+@test "usage (--help)" {
+  run $s --help
+
+  assert_success
+  assert_line --index 0 "$base [OPTION]... [FILE]..."
+}
+
+########### SHARED FUNCTION TESTS ##########
 
 @test "_backupFile_: no source" {
   run _backupFile_ "testfile"
@@ -69,98 +118,6 @@ teardown() {
   assert [ -f "backup/testfile-2" ]
 }
 
-@test "_cleanFilename_: no rename file" {
-  touch "test.txt"
-
-  _cleanFilename_ "test.txt"
-  assert_file_exist "test.txt"
-}
-
-@test "_cleanFilename_: rename file" {
-  touch "test&.txt"
-
-  _cleanFilename_ "test&.txt"
-  assert_file_exist "test.txt"
-}
-
-@test "_cleanFilename_: rename file" {
-  touch "test&.txt"
-
-  _cleanFilename_ "test&.txt"
-  assert_file_exist "test.txt"
-}
-
-@test "_convertSecs_: Seconds to human readable" {
-
-  run _convertSecs_ "9255"
-  assert_success
-  assert_output "02:34:15"
-}
-
-@test "_countdown_" {
-  run _countdown_ 10 0 "something"
-  assert_line --index 0 --partial "[   info] something 10"
-  assert_line --index 9 --partial "[   info] something 1"
-}
-
-@test "_decryptFile_" {
-  PASS=123
-  run _decryptFile_ "${encrypted}" "test-decrypted.md"
-  assert_success
-  assert_file_exist "test-decrypted.md"
-  run cat "test-decrypted.md"
-  assert_success
-  assert_output "$( cat "$unencrypted")"
-}
-
-@test "_encryptFile_" {
-  PASS=123
-  run _encryptFile_ "${unencrypted}" "test-encrypted.md.enc"
-  assert_success
-  assert_file_exist "test-encrypted.md.enc"
-  run cat "test-encrypted.md.enc"
-  assert_line --index 0 --partial "Salted__"
-  unset PASS
-}
-
-@test "_escape_" {
-  run _escape_ "Here is some / text to & be - escape'd"
-  assert_success
-  assert_output "Here\ is\ some\ /\ text\ to\ &\ be\ -\ escape'd"
-}
-
-@test "_ext_: .txt" {
-  touch "foo.txt"
-
-  run _ext_ foo.txt
-  assert_success
-  assert_output ".txt"
-}
-
-@test "_ext_: tar.gz" {
-  touch "foo.tar.gz"
-
-  run _ext_ foo.tar.gz
-  assert_success
-  assert_output ".tar.gz"
-}
-
-@test "_ext_: -n1" {
-  touch "foo.tar.gz"
-
-  run _ext_ -n1 foo.tar.gz
-  assert_success
-  assert_output ".gz"
-}
-
-@test "_ext_: -n2" {
-  touch "foo.txt.gz"
-
-  run _ext_ -n2 foo.txt.gz
-  assert_success
-  assert_output ".txt.gz"
-}
-
 @test "_execute_: Debug command" {
   dryrun=true
   run _execute_ "rm testfile.txt"
@@ -179,7 +136,6 @@ teardown() {
 @test "_execute_: Bad command" {
   touch "testfile.txt"
   run _execute_ "rm nonexistant.txt"
-
   assert_failure
   assert_output --partial "[  error] rm nonexistant.txt"
   assert_file_exist "testfile.txt"
@@ -195,7 +151,7 @@ teardown() {
 
 @test "_findBaseDir_" {
   run _findBaseDir_
-  assert_output "${HOME}/dotfiles/scripting/functions"
+  assert_output "${HOME}/dotfiles/bootstrap"
 }
 
 @test "_haveFunction_: Success" {
@@ -208,96 +164,6 @@ teardown() {
   run _haveFunction_ "_someUndefinedFunction_"
 
   assert_failure
-}
-
-@test "_httpStatus_: Bad URL" {
-  run _httpStatus_ http://thereisabadurlishere.com 1
-  assert_success
-  assert_line --index 1 "000 Not responding within 1 seconds"
-}
-
-@test "_httpStatus_: redirect" {skip "not working yet...."
-  run _httpStatus_ https://jigsaw.w3.org/HTTP/300/301.html 3 --status -L
-  assert_success
-  assert_output --partial "000 Not responding within 3 seconds"
-}
-
-@test "_httpStatus_: google.com" {skip
-  run _httpStatus_ google.com
-  assert_success
-  assert_output --partial "200 Successful:"
-}
-
-@test "_httpStatus_: -c" {skip
-  run _httpStatus_ https://natelandau.com/something/not/here/ 3 -c
-  assert_success
-  assert_output "404"
-}
-
-@test "_httpStatus_: --code" {skip
-  run _httpStatus_ www.google.com 3 --code
-  assert_success
-  assert_output "200"
-}
-
-@test "_httpStatus_: -s" {skip
-  run _httpStatus_ www.google.com 3 -s
-  assert_success
-  assert_output "200 Successful: OK within 3 seconds"
-}
-
-@test "_httpStatus_: --status" {skip
-  run _httpStatus_ www.google.com 3 -s
-  assert_success
-  assert_output "200 Successful: OK within 3 seconds"
-}
-
-@test "_htmlEncode_" {
-  run _htmlEncode_ "Here's some text& to > be h?t/M(l• en™codeç£§¶d"
-  assert_success
-  assert_output "Here's some text&amp; to &gt; be h?t/M(l&bull; en&trade;code&ccedil;&pound;&sect;&para;d"
-}
-
-@test "_htmlDecode_" {
-  run _htmlDecode_ "&clubs;Here's some text &amp; to &gt; be h?t/M(l&bull; en&trade;code&ccedil;&pound;&sect;&para;d"
-  assert_success
-  assert_output "♣Here's some text & to > be h?t/M(l• en™codeç£§¶d"
-}
-
-@test "_inArray_: success" {
-  run _inArray_ one "${A[@]}"
-  assert_success
-}
-
-@test "_inArray_: failure" {
-  run _inArray_ ten "${A[@]}"
-  assert_failure
-}
-
-@test "_join_: Join array comma" {
-  run _join_ , "${B[@]}"
-  assert_output "1,2,3,4,5,6"
-}
-
-@test "_join_: Join array space" {
-  run _join_ " " "${B[@]}"
-  assert_output "1 2 3 4 5 6"
-}
-
-@test "_join_: Join string complex" {
-  run _join_ , a "b c" d
-  assert_output "a,b c,d"
-}
-
-@test "_join_: join string simple" {
-  run _join_ / var usr tmp
-  assert_output "var/usr/tmp"
-}
-
-@test "_json2yaml_" { skip "seems to be a problem with pyyaml"
-  run _json2yaml_ "$JSON"
-  assert_success
-  assert_output "$( cat "$YAML2")"
 }
 
 @test "_locateSourceFile_: Resolve symlinks" {
@@ -360,24 +226,6 @@ teardown() {
 @test "_parseYAML_: no file" {
   run _parseYAML_ "empty.yaml"
   assert_failure
-}
-
-@test "_progressBar_: verbose" {
-  verbose=true
-  run _progressBar_ 100
-
-  assert_success
-  assert_output ""
-  verbose=false
-}
-
-@test "_progressBar_: quiet" {
-  quiet=true
-  run _progressBar_ 100
-
-  assert_success
-  assert_output ""
-  quiet=false
 }
 
 @test "_readFile_: Reads files line by line" {
@@ -498,24 +346,6 @@ teardown() {
   assert_failure
 }
 
-@test "_urlEncode_" {
-  run _urlEncode_ "Here's some.text%that&needs_to-be~encoded+a*few@more(characters)"
-  assert_success
-  assert_output "Here%27s%20some.text%25that%26needs_to-be~encoded%2Ba%2Afew%40more%28characters%29"
-}
-
-@test "_urlDecode_" {
-  run _urlDecode_ "Here%27s%20some.text%25that%26needs_to-be~encoded%2Ba%2Afew%40more%28characters%29"
-  assert_success
-  assert_output "Here's some.text%that&needs_to-be~encoded+a*few@more(characters)"
-}
-
-@test "_yaml2json_" {skip "seems to be a problem with pyyaml"
-  run _yaml2json_ "$YAML2"
-  assert_success
-  assert_output "$( cat "$JSON")"
-}
-
 ### Logging ####
 
 @test "info" {
@@ -560,8 +390,9 @@ teardown() {
 
 @test "die" {
   run die "testing"
+
+  assert_failure
   assert_line --index 0 --partial "[  error] testing Exiting."
-  assert_line --index 1 --partial "_safeExit_: command not found"
 }
 
 @test "quiet" {

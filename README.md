@@ -5,16 +5,9 @@ This repository contains everything needed to bootstrap and configure new Mac co
 * ~/bin/ scripts
 * Configuration files
 * Scripting templates and utilities
-* `install.sh`, a script to put everything where it needs to go
+* Bootstrap scripts to automate the process of provisioning a new computer or VM.
 
 **Disclaimer:**  *I am not a professional or trained programmer and I bear no responsibility whatsoever if any of these scripts wipes your computer, destroys your data, burns your toast, crashes your car, or otherwise causes mayhem and destruction.  USE AT YOUR OWN RISK.*
-
-## install.sh
-This script runs through a series of tasks to configure a new computer. There are three distinct areas of `install.sh` which are executed in order.  These are:
-
-1. **Bootstrapping** - Installing base components such as Command Line Tools, Homebrew, Node, RVM, etc.
-2. **Installation** - Symlinking dotfiles and installing executables such as NPM Packages, Homebrew Casks, etc.
-3. **Configuration** - Configures installed packages and apps.
 
 The files are organized into three subdirectories.
 
@@ -24,6 +17,7 @@ dotfiles/
   ├── bootstrap/
   │   ├── config-macOS.yaml
   │   ├── install-macOS.sh
+  │   └── config/
   │   └── lib/
   │      ├── mac-plugins/
   │      └── linux-plugins/
@@ -36,11 +30,9 @@ dotfiles/
 
 * **bin/** - Symlinked to `~/bin` and is added to your `$PATH` allowing scripts to be executable by your user.
 * **bootstrap/** - Scripts and utilities to bootstrap a new computer
-* bootstrap/**lib/** - Contains the scripts and configuration for `install.sh`
+* bootstrap/**config/** - Contains YAML files which are the manifest for the list of packages to be installed or symlinks to be created.
 * bootstrap/lib/**mac-plugins** - Plugins that are run by `install-macOS.sh`
 * bootstrap/lib/**linux-plugins** - Plugins that are run by `install-linux.sh`
-* bootstrap/lib/**configure** - Scripts here are exectuted by `install.sh` after packages have been installed
-* bootstrap/**config-macOS.yaml** - This YAML configuration file contains the list of symlinks to be created and packages to be installed by `install-macOS.sh`.
 * **config/** - Contains the elements needed to configure your environment and specific apps.
 * config/**bash/** - Files in this directory are *sourced* by `.bash_profile`.
 * config/**shell/** - Files here are symlinked to your local environment. Ahem, dotfiles.
@@ -49,14 +41,13 @@ dotfiles/
 
 **IMPORTANT:** Unless you want to use my defaults, make sure you do the following:
 
-* Edit `config-macOS.yaml` to reflect your preferences
- Edit `config-linux.yaml` to reflect your preferences
+* Edit all the config YAML files in `bootstrap/config/` to reflect your preferences
 * Review the files in `config/` to configure your own aliases, preferences, etc.
 
 ### Private Files
 Sometimes there are files which contain private information. These might be API keys, local directory structures, or anything else you want to keep hidden. I keep these in a separate private repository which has a folder structure very similar to this one. To configure your own private files edit the following files to reflect your setup
 
-* `install-macOS.sh` has a variable for the location of a private install script.  If that script is found, it will be invoked.
+* Both bootstrap install scripts have a variable for the location of a private install script.  If that script is found, it will be run.
 * Edit `config/shell/bash_profile` to add the location of your private plugins
 
 ## Cloning this repo to a new computer

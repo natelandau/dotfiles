@@ -2,18 +2,35 @@
 version="1.0.0"
 
 _mainScript_() {
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    _configureChrome_() {
-      info "Configuring Google-Chrome..."
 
-      _execute_ "defaults write com.google.Chrome DisablePrintPreview -bool true" "Use the system-native print preview dialog"
-      _execute_ "defaults write com.google.Chrome.canary DisablePrintPreview -bool true"
-    }
-    _configureChrome_
+  if ! [[ "$OSTYPE" =~ "darwin"* ]]; then
+    notice "Can only run on macOS.  Exiting."
+    _safeExit_
   fi
+
+
+  # This is where brew stores its binary symlinks
+  binroot="$(brew --config | awk '/HOMEBREW_PREFIX/ {print $2}')"/bin
+
+  if command -v ${binroot}/bash >/dev/null; then
+    if [[ $SHELL != ${binroot}/bash ]]; then
+      info "Configuring Homebrew's Bash..."
+        if ! grep -q "${binroot}/bash" < /etc/shells; then
+          info "Making ${binroot}/bash your default shell"
+          _execute_ "echo \"$binroot/bash\" | sudo tee -a /etc/shells >/dev/null"
+          _execute_ "sudo chsh -s \"${binroot}/bash\" ${USER} >/dev/null 2>&1"
+          notice "Restart your shells to use Homebrew's bash"
+        else
+          _execute_ "sudo chsh -s \"${binroot}/bash\" ${USER} >/dev/null 2>&1"
+          notice "Restart your shells to use Homebrew's bash"
+        fi
+    fi
+  fi
+
 }
 
 _trapCleanup_() {
+  echo ""
   die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
@@ -56,7 +73,6 @@ debug=false;              sourceOnly=false;           args=();
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
 red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
 blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
-
 
 # Logging & Feedback
 logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
@@ -104,10 +120,10 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This is a script template.  Edit this description to print help to users.
+  This script will set the default shell on MacOS to a version of Bash that
+  was installed by Homebrew.
 
- ${bold}Options:${reset}
-  --rootDIR         The location of the 'dotfiles' directory
+  ${bold}Options:${reset}
 
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
@@ -166,7 +182,6 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    --rootDIR) shift; baseDir="$1" ;;
     -h|--help) _usage_ >&2; _safeExit_ ;;
     -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;

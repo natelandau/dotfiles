@@ -1,42 +1,30 @@
+
 #!/usr/bin/env bash
-# shellcheck disable=2154
 version="1.0.0"
 
 _mainScript_() {
-  _installGitHooks_() {
-    info "Installing git hooks for this repository..."
 
-    local GITROOT
-    local hook
-    GITROOT=$(git rev-parse --show-toplevel 2> /dev/null)
+  if ! [[ "$OSTYPE" =~ "darwin"* ]]; then
+    notice "Can only run on macOS.  Exiting."
+    _safeExit_
+  fi
 
-    if [ "${GITROOT}" == "" ]; then
-      warning "This does not appear to be a git repo."
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # This script symlinks the 'subl' CLI tool to /usr/local/bin
+
+    header "symlink 'subl' to /usr/local/bin ..."
+
+    if [ ! -e "/Applications/Sublime Text.app" ]; then
+      warning "We don't have Sublime Text.app. Install it and try again."
       _safeExit_
-    fi
-
-    # Location of hooks
-    local hooksLocation="${GITROOT}/.hooks"
-
-    if ! [ -d "$hooksLocation" ]; then
-      warning "Can't find hooks. Exiting."
-      return
-    fi
-
-    for hook in ${hooksLocation}/*.sh; do
-      hook="$(basename ${hook})"
-
-      local sourceFile="${hooksLocation}/${hook}"
-      local destFile="${GITROOT}/.git/hooks/${hook%.sh}"
-
-      if [ -e "$destFile" ]; then
-        _execute_ "rm $destFile"
+    else
+      if [ ! -e "/usr/local/bin/subl" ]; then
+        _execute_ "ln -s /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl /usr/local/bin/subl" "Symlink subl to /user/local/bin/subl" "SublimeText CLI enabled."
+      else
+        notice "SublimeText CLI already installed"
       fi
-      _execute_ "ln -fs \"$sourceFile\" \"$destFile\"" "symlink $sourceFile → $destFile"
-
-    done
-  }
-  _installGitHooks_
+    fi
+  fi
 }
 
 _trapCleanup_() {
@@ -130,7 +118,7 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This is a script template.  Edit this description to print help to users.
+Configure the macOS application Sublime Text 3 by enabling the CLI command 'subl'
 
  ${bold}Options:${reset}
   --rootDIR         The location of the 'dotfiles' directory
@@ -192,7 +180,6 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    --rootDIR) shift; baseDir="$1" ;;
     -h|--help) _usage_ >&2; _safeExit_ ;;
     -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;

@@ -51,114 +51,20 @@ input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
 header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
 verbose()    { if ${verbose}; then debug "$@"; fi }
 
-_seekConfirmation_() {
-  # v1.0.1
-  # Seeks a Yes or No answer to a question.  Usage:
-  #   if _seekConfirmation_ "Answer this question"; then
-  #     something
-  #   fi
-
-  input "$@"
-  if "${force}"; then
-    verbose "Forcing confirmation with '--force' flag set"
-    echo -e ""
-    return 0
-  else
-    while true; do
-      read -r -p " (y/n) " yn
-      case $yn in
-        [Yy]* ) return 0;;
-        [Nn]* ) return 1;;
-        * ) input "Please answer yes or no.";;
-      esac
-    done
-  fi
-}
-
-_execute_() {
-  # v1.0.1
-  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
-  #           and have control over the display of the results.  In "dryrun" mode these
-  #           commands are not executed at all. In Verbose mode, the commands are executed
-  #           with results printed to stderr and stdin
-  #
-  # usage:
-  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
-  local cmd="${1:?_execute_ needs a command}"
-  local message="${2:-$1}"
-  if ${dryrun}; then
-    dryrun "${message}"
-  else
-    if $verbose; then
-      eval "$cmd"
-    else
-      eval "$cmd" &> /dev/null
-    fi
-    if [ $? -eq 0 ]; then
-      success "${message}"
-    else
-      error "${message}"
-      #die "${message}"
-    fi
-  fi
-}
-
-_setPATH_() {
-  #v1.0.0
-  # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
-  PATHS=(/usr/local/bin ${HOME}/bin);
-  for newPath in "${PATHS[@]}"; do
-    if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
-      PATH="${newPath}:${PATH}"
-   fi
- done
-}
-
-_findBaseDir_() {
-  #v1.0.0
-  # fincBaseDir locates the real directory of the script being run. similar to GNU readlink -n
-  # usage :  baseDir="$(_findBaseDir_)"
-  local SOURCE
-  local DIR
-  SOURCE="${BASH_SOURCE[0]}"
-  while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-    SOURCE="$(readlink "$SOURCE")"
-    [[ $SOURCE != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
-  done
-  echo "$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
-}
-
-_pushover_() {
+_convertSecs_() {
   # v1.0.0
-  # Sends notifications view Pushover
-  # IMPORTANT: The API Keys must be filled in
+  # Pass a number (seconds) into the function as this:
+  # _convertSecs_ $TOTALTIME
   #
-  # Usage: _pushover_ "Title Goes Here" "Message Goes Here"
-  #
-  # Credit: http://ryonsherman.blogspot.com/2012/10/shell-script-to-send-pushover.html
-  # ------------------------------------------------------
+  # To compute the time it takes a script to run:
+  #   STARTTIME=$(date +"%s")
+  #   ENDTIME=$(date +"%s")
+  #   TOTALTIME=$(($ENDTIME-$STARTTIME)) # human readable time
 
-  local PUSHOVERURL
-  local API_KEY
-  local USER_KEY
-  local DEVICE
-  local TITLE
-  local MESSAGE
-
-  PUSHOVERURL="https://api.pushover.net/1/messages.json"
-  API_KEY="${PUSHOVER_API_KEY}"
-  USER_KEY="${PUSHOVER_USER_KEY}"
-  DEVICE=""
-  TITLE="${1}"
-  MESSAGE="${2}"
-  curl \
-  -F "token=${API_KEY}" \
-  -F "user=${USER_KEY}" \
-  -F "device=${DEVICE}" \
-  -F "title=${TITLE}" \
-  -F "message=${MESSAGE}" \
-  "${PUSHOVERURL}" > /dev/null 2>&1
+  ((h=${1}/3600))
+  ((m=(${1}%3600)/60))
+  ((s=${1}%60))
+  printf "%02d:%02d:%02d\n" $h $m $s
 }
 
 _countdown_() {
@@ -184,128 +90,80 @@ _countdown_() {
   done
 }
 
-_pauseScript_() {
-  # v1.0.0
-  # A simple function used to pause a script at any point and
-  # only continue on user input
-  if _seekConfirmation_ "Ready to continue?"; then
-    notice "Continuing..."
-  else
-    warning "Exiting Script"
-    _safeExit_
-  fi
-}
-
-_progressBar_() {
-  # v1.0.0
-  # Prints a progress bar within a for/while loop.
-  # To use this function you must pass the total number of
-  # times the loop will run to the function.
-  #
-  # Takes two inputs:
-  #   $1 - The total number of items counted
-  #   $2 - The optional title of the progress bar
+_execute_() {
+  # v1.0.2
+  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
+  #           and have control over the display of the results.  In "dryrun" mode these
+  #           commands are not executed at all. In Verbose mode, the commands are executed
+  #           with results printed to stderr and stdin
   #
   # usage:
-  #   for number in $(seq 0 100); do
-  #     sleep 1
-  #     _progressBar_ "100" "Counting numbers"
-  #   done
-  # -----------------------------------
+  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
+  local cmd="${1:?_execute_ needs a command}"
+  local message="${2:-$1}"
 
-  ( $quiet ) && return
-  ( $verbose ) && return
-  [ ! -t 1 ] && return  # Do nothing if the output is not a terminal
-
-  local width bar_char perc num bar progressBarLine barTitle n
-
-  n="${1:?_progressBar_ needs input}" ; (( n = n - 1 )) ;
-  barTitle="${2:-Running Process}"
-  width=30
-  bar_char="#"
-
-  # Reset the count
-  [ -z "${progressBarProgress}" ] && progressBarProgress=0
-  tput civis   # Hide the cursor
-  trap 'tput cnorm; exit 1' SIGINT
-
-  if [ ! "${progressBarProgress}" -eq $n ]; then
-    #echo "progressBarProgress: $progressBarProgress"
-    # Compute the percentage.
-    perc=$(( progressBarProgress * 100 / $1 ))
-    # Compute the number of blocks to represent the percentage.
-    num=$(( progressBarProgress * width / $1 ))
-    # Create the progress bar string.
-    bar=""
-    if [ ${num} -gt 0 ]; then
-      bar=$(printf "%0.s${bar_char}" $(seq 1 ${num}))
-    fi
-    # Print the progress bar.
-    progressBarLine=$(printf "%s [%-${width}s] (%d%%)" "  ${barTitle}" "${bar}" "${perc}")
-    echo -ne "${progressBarLine}\r"
-    progressBarProgress=$(( progressBarProgress + 1 ))
+  if ${dryrun}; then
+    dryrun "${message}"
   else
-    # Clear the progress bar when complete
-    # echo -ne "\033[0K\r"
-    tput el   # Clear the line
-
-    unset progressBarProgress
-  fi
-
-  tput cnorm
-}
-
-_makeCSV_() {
-  # v1.0.0
-  # Creates a new CSV file if one does not already exist.
-  # Takes passed arguments and writes them as a header line to the CSV
-  # Usage '_makeCSV_ column1 column2 column3'
-
-  # Set the location and name of the CSV File
-  if [ -z "${csvLocation}" ]; then
-    csvLocation="${HOME}/Desktop"
-  fi
-  if [ -z "${csvName}" ]; then
-    csvName="$(LC_ALL=C date +%Y-%m-%d)-${FUNCNAME[1]}.csv"
-  fi
-  csvFile="${csvLocation}/${csvName}"
-
-  # Overwrite existing file? If not overwritten, new content is added
-  # to the bottom of the existing file
-  if [ -f "${csvFile}" ]; then
-    if _seekConfirmation_ "${csvFile} already exists. Overwrite?"; then
-      rm "${csvFile}"
+    if $verbose; then
+      eval "$cmd"
+    else
+      eval "$cmd" &> /dev/null
+    fi
+    if [ $? -eq 0 ]; then
+      success "${message}"
+      return 0
+    else
+      error "${message}"
+      return 1
+      #die "${message}"
     fi
   fi
-  _writeCSV_ "$@"
 }
 
-_writeCSV_() {
-  # v1.0.0
-  # Takes passed arguments and writes them as a comma separated line
-  # Usage '_writeCSV_ column1 column2 column3'
-
-  csvInput=($@)
-  saveIFS=$IFS
-  IFS=','
-  echo "${csvInput[*]}" >> "${csvFile}"
-  IFS=$saveIFS
+_findBaseDir_() {
+  #v1.0.0
+  # fincBaseDir locates the real directory of the script being run. similar to GNU readlink -n
+  # usage :  baseDir="$(_findBaseDir_)"
+  local SOURCE
+  local DIR
+  SOURCE="${BASH_SOURCE[0]}"
+  while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+  done
+  echo "$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
 }
 
-_convertSecs_() {
-  # v1.0.0
-  # Pass a number (seconds) into the function as this:
-  # _convertSecs_ $TOTALTIME
+_guiInput_() {
+  # Ask for user input using a Mac dialog box.
+  # Defaults to use the prompt: "Password". Pass an option to change that text.
   #
-  # To compute the time it takes a script to run:
-  #   STARTTIME=$(date +"%s")
-  #   ENDTIME=$(date +"%s")
-  #   TOTALTIME=$(($ENDTIME-$STARTTIME)) # human readable time
+  # Credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md
+  guiPrompt="${1:-Password:}"
+  guiInput=$(osascript &> /dev/null <<EOF
+    tell application "System Events"
+        activate
+        text returned of (display dialog "${guiPrompt}" default answer "" with hidden answer)
+    end tell
+EOF
+  )
+  echo -n "${guiInput}"
+}
 
-  ((h=${1}/3600))
-  ((m=(${1}%3600)/60))
-  ((s=${1}%60))
-  printf "%02d:%02d:%02d\n" $h $m $s
+_haveFunction_() {
+  # v1.0.0
+  # Tests if a function exists.  Returns 0 if yes, 1 if no
+  # usage: _haveFunction "_someFunction_"
+  local f
+  f="$1"
+
+  if declare -f "$f" &> /dev/null 2>&1; then
+    return 0
+  else
+    return 1
+  fi
 }
 
 _httpStatus_() {
@@ -404,18 +262,228 @@ _httpStatus_() {
   IFS="${saveIFS}"
 }
 
-_guiInput_() {
-  # Ask for user input using a Mac dialog box.
-  # Defaults to use the prompt: "Password". Pass an option to change that text.
+_makeCSV_() {
+  # v1.0.0
+  # Creates a new CSV file if one does not already exist.
+  # Takes passed arguments and writes them as a header line to the CSV
+  # Usage '_makeCSV_ column1 column2 column3'
+
+  # Set the location and name of the CSV File
+  if [ -z "${csvLocation}" ]; then
+    csvLocation="${HOME}/Desktop"
+  fi
+  if [ -z "${csvName}" ]; then
+    csvName="$(LC_ALL=C date +%Y-%m-%d)-${FUNCNAME[1]}.csv"
+  fi
+  csvFile="${csvLocation}/${csvName}"
+
+  # Overwrite existing file? If not overwritten, new content is added
+  # to the bottom of the existing file
+  if [ -f "${csvFile}" ]; then
+    if _seekConfirmation_ "${csvFile} already exists. Overwrite?"; then
+      rm "${csvFile}"
+    fi
+  fi
+  _writeCSV_ "$@"
+}
+
+_makeSymlink_() {
+  #v1.0.0
+  # Given two arguments $1 & $2, creates a symlink from $1 (source) to $2 (destination) and
+  # will create a backup of an original file before overwriting
   #
-  # Credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md
-  guiPrompt="${1:-Password:}"
-  guiInput=$(osascript &> /dev/null <<EOF
-    tell application "System Events"
-        activate
-        text returned of (display dialog "${guiPrompt}" default answer "" with hidden answer)
-    end tell
-EOF
-  )
-  echo -n "${guiInput}"
+  # Script arguments:
+  #
+  #   $1 - Source file
+  #   $2 - Destination for symlink
+  #   $3 - backup directory for files to be overwritten (defaults to 'backup')
+  #
+  # NOTE: This function makes use of the _execute_ function
+  #
+  # usage: _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
+  local s="$1"    # Source file
+  local d="$2"    # Destination file
+  local b="$3"    # Backup directory for originals (optional)
+  local o         # Original file
+
+  [ ! -e "$s" ] \
+    &&  { error "'$s' not found"; return 1; }
+  [ -z "$d" ] \
+    && { error "'$d' not specified"; return 1; }
+
+  # Fix files where $HOME is written as '~'
+    d="${d/\~/$HOME}"
+    s="${s/\~/$HOME}"
+    b="${b/\~/$HOME}"
+
+    if ! _haveFunction_ "_execute_"; then error "need function _execute_"; return 1; fi
+    if ! _haveFunction_ "_backupFile_"; then error "need function _backupFile_"; return 1; fi
+    if ! _haveFunction_ "_locateSourceFile_"; then error "need function _locateSourceFile_"; return 1; fi
+
+  if [ ! -e "${d}" ]; then
+    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
+  elif [ -h "${d}" ]; then
+    o="$(_locateSourceFile_ "$d")"
+    _backupFile_ "${o}" ${b:-backup}
+    if ! ${dryrun}; then rm -rf "$d"; fi
+    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
+  elif [ -e "${d}" ]; then
+    _backupFile_ "${d}" "${b:-backup}"
+    if ! ${dryrun}; then rm -rf "$d"; fi
+    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
+  else
+    warning "Error linking: ${s} → ${d}"
+    return 1
+  fi
+  return 0
+}
+
+_pauseScript_() {
+  # v1.0.0
+  # A simple function used to pause a script at any point and
+  # only continue on user input
+  if _seekConfirmation_ "Ready to continue?"; then
+    notice "Continuing..."
+  else
+    warning "Exiting Script"
+    _safeExit_
+  fi
+}
+
+_progressBar_() {
+  # v1.0.0
+  # Prints a progress bar within a for/while loop.
+  # To use this function you must pass the total number of
+  # times the loop will run to the function.
+  #
+  # Takes two inputs:
+  #   $1 - The total number of items counted
+  #   $2 - The optional title of the progress bar
+  #
+  # usage:
+  #   for number in $(seq 0 100); do
+  #     sleep 1
+  #     _progressBar_ "100" "Counting numbers"
+  #   done
+  # -----------------------------------
+
+  ( $quiet ) && return
+  ( $verbose ) && return
+  [ ! -t 1 ] && return  # Do nothing if the output is not a terminal
+
+  local width bar_char perc num bar progressBarLine barTitle n
+
+  n="${1:?_progressBar_ needs input}" ; (( n = n - 1 )) ;
+  barTitle="${2:-Running Process}"
+  width=30
+  bar_char="#"
+
+  # Reset the count
+  [ -z "${progressBarProgress}" ] && progressBarProgress=0
+  tput civis   # Hide the cursor
+  trap 'tput cnorm; exit 1' SIGINT
+
+  if [ ! "${progressBarProgress}" -eq $n ]; then
+    #echo "progressBarProgress: $progressBarProgress"
+    # Compute the percentage.
+    perc=$(( progressBarProgress * 100 / $1 ))
+    # Compute the number of blocks to represent the percentage.
+    num=$(( progressBarProgress * width / $1 ))
+    # Create the progress bar string.
+    bar=""
+    if [ ${num} -gt 0 ]; then
+      bar=$(printf "%0.s${bar_char}" $(seq 1 ${num}))
+    fi
+    # Print the progress bar.
+    progressBarLine=$(printf "%s [%-${width}s] (%d%%)" "  ${barTitle}" "${bar}" "${perc}")
+    echo -ne "${progressBarLine}\r"
+    progressBarProgress=$(( progressBarProgress + 1 ))
+  else
+    # Clear the progress bar when complete
+    # echo -ne "\033[0K\r"
+    tput el   # Clear the line
+
+    unset progressBarProgress
+  fi
+
+  tput cnorm
+}
+
+_pushover_() {
+  # v1.0.0
+  # Sends notifications view Pushover
+  # IMPORTANT: The API Keys must be filled in
+  #
+  # Usage: _pushover_ "Title Goes Here" "Message Goes Here"
+  #
+  # Credit: http://ryonsherman.blogspot.com/2012/10/shell-script-to-send-pushover.html
+  # ------------------------------------------------------
+
+  local PUSHOVERURL
+  local API_KEY
+  local USER_KEY
+  local DEVICE
+  local TITLE
+  local MESSAGE
+
+  PUSHOVERURL="https://api.pushover.net/1/messages.json"
+  API_KEY="${PUSHOVER_API_KEY}"
+  USER_KEY="${PUSHOVER_USER_KEY}"
+  DEVICE=""
+  TITLE="${1}"
+  MESSAGE="${2}"
+  curl \
+  -F "token=${API_KEY}" \
+  -F "user=${USER_KEY}" \
+  -F "device=${DEVICE}" \
+  -F "title=${TITLE}" \
+  -F "message=${MESSAGE}" \
+  "${PUSHOVERURL}" > /dev/null 2>&1
+}
+
+_seekConfirmation_() {
+  # v1.0.1
+  # Seeks a Yes or No answer to a question.  Usage:
+  #   if _seekConfirmation_ "Answer this question"; then
+  #     something
+  #   fi
+
+  input "$@"
+  if "${force}"; then
+    verbose "Forcing confirmation with '--force' flag set"
+    echo -e ""
+    return 0
+  else
+    while true; do
+      read -r -p " (y/n) " yn
+      case $yn in
+        [Yy]* ) return 0;;
+        [Nn]* ) return 1;;
+        * ) input "Please answer yes or no.";;
+      esac
+    done
+  fi
+}
+
+_setPATH_() {
+  #v1.0.0
+  # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
+  PATHS=(/usr/local/bin ${HOME}/bin);
+  for newPath in "${PATHS[@]}"; do
+    if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
+      PATH="${newPath}:${PATH}"
+   fi
+ done
+}
+
+_writeCSV_() {
+  # v1.0.0
+  # Takes passed arguments and writes them as a comma separated line
+  # Usage '_writeCSV_ column1 column2 column3'
+
+  csvInput=($@)
+  saveIFS=$IFS
+  IFS=','
+  echo "${csvInput[*]}" >> "${csvFile}"
+  IFS=$saveIFS
 }

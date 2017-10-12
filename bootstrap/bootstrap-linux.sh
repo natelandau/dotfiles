@@ -1,34 +1,168 @@
 #!/usr/bin/env bash
+
 version="1.0.0"
 
 _mainScript_() {
 
-  if ! command -v pull &> /dev/null; then
-    _installGitFriendly_() {
-      info "Installing git-friendly...."
-
-      # github.com/jamiew/git-friendly
-      # the `push` command which copies the github compare URL to my clipboard is heaven
-      _execute_ "bash < <( curl https://raw.github.com/jamiew/git-friendly/master/install.sh)"
-    }
-    _installGitFriendly_
-  else
-    success "git-friendly already installed"
+  if ! [[ "$OSTYPE" =~ linux-gnu* ]]; then
+    die "We are not on Linux"
   fi
-}
 
-_trapCleanup_() {
-  echo ""
-  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
-}
+  # Get privs upfront
+  sudo -v
 
-_safeExit_() {
-  trap - INT TERM EXIT
-  exit ${1:-0}
-}
+  # Set Variables
+  baseDir="$(_findBaseDir_)"
+  rootDIR="$(dirname "$baseDir")"
+
+  _apgradeAptGet_() {
+    # Upgrade apt-get
+    if [ -f "/etc/apt/sources.list" ]; then
+      notice "Upgrading apt-get....(May take a while)"
+      apt-get update
+      apt-get upgrade -y
+    else
+      die "Can not proceed without apt-get"
+    fi
+
+    apt-get install -y git
+    apt-get install -y mosh
+    apt-get install -y sudo
+    apt-get install -y ncurses
+
+  }
+  _apgradeAptGet_
+
+  _setHostname_() {
+    notice "Setting Hostname..."
+
+    ipAddress=$(/sbin/ifconfig eth0 | awk '/inet / { print $2 }' | sed 's/addr://')
+
+    input "What is your hostname? [ENTER]: "
+    read -r newHostname
+
+    [ ! -n "$newHostname" ] && die "Hostname undefined"
+
+    if command -v hostnamectl &>/dev/null; then
+      _execute_ "hostnamectl set-hostname \"$newHostname\""
+    else
+      _execute_ "echo \"$newHostname\" > /etc/hostname"
+      _execute_ "hostname -F /etc/hostname"
+    fi
+
+    _execute_ "echo \"$ipAddress\" \"$newHostname\" >> /etc/hosts"
+  }
+  _setHostname_
+
+  _setTime_() {
+    notice "Setting Time..."
+
+    if command -v timedatectl &> /dev/null; then
+      _execute_ "apt-get install -y ntp"
+      _execute_ "timedatectl set-timezone \"America/New_York\""
+      _execute_ "timedatectl set-ntp true"
+    elif command -v dpkg-reconfigure; then
+      dpkg-reconfigure tzdata
+    else
+      die "set time failed"
+    fi
+  }
+  _setTime_
+
+  _addUser_() {
+
+    # Installs sudo if needed and creates a user in the sudo group.
+    notice "Creating a new user account..."
+    input "username? [ENTER]: "
+    read -r USERNAME
+    input "password? [ENTER]: "
+    read -r -s USERPASS
+
+    _execute_ "adduser ${USERNAME} --disabled-password --gecos \"\""
+    _execute_ "echo \"${USERNAME}:${USERPASS}\" | chpasswd" "echo \"${USERNAME}:******\" | chpasswd"
+    _execute_ "usermod -aG sudo ${USERNAME}"
+
+    HOMEDIR="/home/${USERNAME}"
+  }
+  _addUser_
+
+  _addPublicKey_() {
+    # Adds the users public key to authorized_keys for the specified user. Make sure you wrap your input variables in double quotes, or the key may not load properly.
+
+    if _seekConfirmation_ "Do you have a public key from another computer to add?"; then
+      if [ ! -n "$USERNAME" ]; then
+        die "We must have a user account configured..."
+      fi
+
+      input "paste your public key? [ENTER]: "
+      read -r USERPUBKEY
+
+      _execute_ "mkdir -p /home/${USERNAME}/.ssh"
+      _execute_ "echo \"$USERPUBKEY\" >> /home/${USERNAME}/.ssh/authorized_keys"
+      _execute_ "chown -R \"${USERNAME}\":\"${USERNAME}\" /home/${USERNAME}/.ssh"
+    fi
+  }
+ _addPublicKey_
+
+  _goodstuff_() {
+    # Customize root terminal experience
+
+    sed -i -e 's/^#PS1=/PS1=/' /root/.bashrc # enable the colorful root bash prompt
+    sed -i -e "s/^#alias ll='ls -l'/alias ll='ls -al'/" /root/.bashrc # enable ll list long alias <3
+    echo "alias ..='cd ..'" >> /root/.bashrc
+  }
+  _goodstuff_
+
+  _installDotfiles_() {
+
+    if command -v git &> /dev/null; then
+      header "Installing dotfiles..."
+      pushd "$HOMEDIR";
+      git clone https://github.com/natelandau/dotfiles "${HOMEDIR}/dotfiles"
+      chown -R $USERNAME:$USERNAME "${HOMEDIR}/dotfiles"
+      popd;
+    else
+      warning "Could not install dotfiles repo without git installed"
+    fi
+  }
+  _installDotfiles_
+
+  _ufwFirewall_() {
+    header "Installing firewall with UFW"
+    apt-get install -y ufw
+
+    _execute_ "ufw default deny"
+    _execute_ "ufw allow 'Nginx Full'"
+    _execute_ "ufw allow ssh"
+    _execute_ "ufw allow mosh"
+    _execute_ "ufw enable"
+  }
+  _ufwFirewall_
+
+  success "New computer bootstrapped."
+  info "To continue you must log out as root and back in as the user you just"
+  info "created. Once logged in you should see a 'dotfiles' folder in your user's home directory."
+  info "Run the '~/dotfiles/bootstrap/install-linux-gnu.sh' script to continue"
+
+  _disableRootSSH_() {
+    notice "Disabling root access..."
+    _execute_ "sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config"
+    _execute_ "touch /tmp/restart-ssh"
+    _execute_ "service ssh restart"
+  }
+  _disableRootSSH_
+
+} # end _mainScript_
 
 _execute_() {
   # v1.0.1
+  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
+  #           and have control over the display of the results.  In "dryrun" mode these
+  #           commands are not executed at all. In Verbose mode, the commands are executed
+  #           with results printed to stderr and stdin
+  #
+  # usage:
+  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
   local cmd="${1:?_execute_ needs a command}"
   local message="${2:-$1}"
   if ${dryrun}; then
@@ -42,9 +176,33 @@ _execute_() {
     if [ $? -eq 0 ]; then
       success "${message}"
     else
-      error "${message}"
-      #die "${message}"
+      #error "${message}"
+      die "${message}"
     fi
+  fi
+}
+
+_seekConfirmation_() {
+  # v1.0.1
+  # Seeks a Yes or No answer to a question.  Usage:
+  #   if _seekConfirmation_ "Answer this question"; then
+  #     something
+  #   fi
+
+  input "$@"
+  if "${force}"; then
+    verbose "Forcing confirmation with '--force' flag set"
+    echo -e ""
+    return 0
+  else
+    while true; do
+      read -r -p " (y/n) " yn
+      case $yn in
+        [Yy]* ) return 0;;
+        [Nn]* ) return 1;;
+        * ) input "Please answer yes or no.";;
+      esac
+    done
   fi
 }
 
@@ -102,16 +260,14 @@ function input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
 function header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
 function verbose()    { if ${verbose}; then debug "$@"; fi }
 
-
 # Options and Usage
 # -----------------------------------
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This is a script template.  Edit this description to print help to users.
+This script runs a series of installation scripts to bootstrap a new computer or VM running Debian GNU linux
 
  ${bold}Options:${reset}
-  --rootDIR         The location of the 'dotfiles' directory
 
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
@@ -120,8 +276,8 @@ This is a script template.  Edit this description to print help to users.
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
   -h, --help        Display this help and exit
-      --version     Output version information and exit
       --source-only Bypasses main script functionality to allow unit tests of functions
+      --version     Output version information and exit
       --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
 }
@@ -170,7 +326,6 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    --rootDIR) shift; baseDir="$1" ;;
     -h|--help) _usage_ >&2; _safeExit_ ;;
     -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;

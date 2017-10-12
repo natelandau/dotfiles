@@ -1,50 +1,6 @@
 # Transform text using these functions.
 # Some were adapted from https://github.com/jmcantrell/bashful
 
-_lower_() {
-  # Convert stdin to lowercase.
-  # usage:  text=$(lower <<<"$1")
-  #         echo "MAKETHISLOWERCASE" | _lower_
-  tr '[:upper:]' '[:lower:]'
-}
-
-_upper_() {
-  # Convert stdin to uppercase.
-  # usage:  text=$(upper <<<"$1")
-  #         echo "MAKETHISUPPERCASE" | _upper_
-  tr '[:lower:]' '[:upper:]'
-}
-
-_ltrim_() {
-  # Removes all leading whitespace (from the left).
-  local char=${1:-[:space:]}
-    sed "s%^[${char//%/\\%}]*%%"
-}
-
-_rtrim_() {
-  # Removes all trailing whitespace (from the right).
-  local char=${1:-[:space:]}
-  sed "s%[${char//%/\\%}]*$%%"
-}
-
-_trim_() {
-  # Removes all leading/trailing whitespace
-  # Usage examples:
-  #     echo "  foo  bar baz " | _trim_  #==> "foo  bar baz"
-  _ltrim_ "$1" | _rtrim_ "$1"
-}
-
-_squeeze_() {
-  # Removes leading/trailing whitespace and condenses all other consecutive
-  # whitespace into a single space.
-  #
-  # Usage examples:
-  #     echo "  foo  bar   baz  " | _squeeze_  #==> "foo bar baz"
-
-  local char=${1:-[[:space:]]}
-  sed "s%\(${char//%/\\%}\)\+%\1%g" | _trim_ "$char"
-}
-
 _escape_() {
   # v1.0.0
   # Escapes a string by adding \ before special chars
@@ -62,7 +18,9 @@ _htmlDecode_() {
   local sedFile
   sedFile="${HOME}/.sed/htmlDecode.sed"
 
-  [ -f "${sedFile}" ] && { echo "${1}" | sed -f "${sedFile}" ; } || return 1
+  [ -f "${sedFile}" ] \
+    && { echo "${1}" | sed -f "${sedFile}" ; } \
+    || return 1
 }
 
 _htmlEncode_() {
@@ -73,7 +31,53 @@ _htmlEncode_() {
   local sedFile
   sedFile="${HOME}/.sed/htmlEncode.sed"
 
-  [ -f "${sedFile}" ] && { echo "${1}" | sed -f "${sedFile}" ; } || return 1
+  [ -f "${sedFile}" ] \
+    && { echo "${1}" | sed -f "${sedFile}" ; } \
+    || return 1
+}
+
+_lower_() {
+  # Convert stdin to lowercase.
+  # usage:  text=$(lower <<<"$1")
+  #         echo "MAKETHISLOWERCASE" | _lower_
+  tr '[:upper:]' '[:lower:]'
+}
+
+_ltrim_() {
+  # Removes all leading whitespace (from the left).
+  local char=${1:-[:space:]}
+    sed "s%^[${char//%/\\%}]*%%"
+}
+
+_rtrim_() {
+  # Removes all trailing whitespace (from the right).
+  local char=${1:-[:space:]}
+  sed "s%[${char//%/\\%}]*$%%"
+}
+
+_squeeze_() {
+  # Removes leading/trailing whitespace and condenses all other consecutive
+  # whitespace into a single space.
+  #
+  # Usage examples:
+  #     echo "  foo  bar   baz  " | _squeeze_  #==> "foo bar baz"
+
+  local char=${1:-[[:space:]]}
+  sed "s%\(${char//%/\\%}\)\+%\1%g" | _trim_ "$char"
+}
+
+_trim_() {
+  # Removes all leading/trailing whitespace
+  # Usage examples:
+  #     echo "  foo  bar baz " | _trim_  #==> "foo  bar baz"
+  _ltrim_ "$1" | _rtrim_ "$1"
+}
+
+_upper_() {
+  # Convert stdin to uppercase.
+  # usage:  text=$(upper <<<"$1")
+  #         echo "MAKETHISUPPERCASE" | _upper_
+  tr '[:lower:]' '[:upper:]'
 }
 
 _urlEncode_() {
@@ -82,6 +86,8 @@ _urlEncode_() {
   # Usage: _urlEncode_ <string>
 
   local LANG=C
+  local i
+
   for ((i=0;i<${#1};i++)); do
     if [[ ${1:$i:1} =~ ^[a-zA-Z0-9\.\~_-]$ ]]; then
       printf "${1:$i:1}"

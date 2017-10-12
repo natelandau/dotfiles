@@ -1,0 +1,8 @@
+rubyGems:
+  - bundler
+  - fileutils
+  - gemrat    # Save Time. Add the latest version of gems to your Gemfile from the command line
+  - ghi       # GitHub Issues on the command line
+  - jekyll
+  - rake
+  - yaml-lint   # Check if your YAML files can be loaded

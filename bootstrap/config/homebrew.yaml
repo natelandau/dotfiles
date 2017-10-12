@@ -1,0 +1,58 @@
+homebrewTaps:
+  - argon/mas
+  - caskroom/cask
+  - caskroom/fonts
+  - caskroom/versions
+  - homebrew/core
+  - homebrew/dupes
+  - homebrew/versions
+  - tldr-pages/tldr
+
+homebrewPackages:
+  # List of homebrew packages to install.
+  - autoconf
+  - autojump
+  - automake
+  - bash
+  - bash-completion2
+  - bats                # Testing suite for shell scripts
+  - colordiff
+  - coreutils           # GNU File, Shell, and Text utilities
+  - exa
+  - ffmpeg --with-fdk-aac --with-fontconfig --with-libass --with-libbluray --with-libbs2b --with-libcaca --with-libebur128 --with-libgsm --with-libmodplug --with-libsoxr --with-libssh --with-libvidstab --with-libvorbis --with-libvpx --with-openh264 --with-openjpeg --with-openssl --with-schroedinger --with-sdl2 --with-snappy --with-speex --with-tools --with-two-lame --with-wavpack --with-webp --with-x265 --with-xz
+  - gifsicle            # GIF image/animation creator/editor
+  - git
+  - git-extras          # Small git utilities
+  - guetzli             # jpeg compression
+  - hr                  # <hr />, for your terminal window
+  - httpie              # User-friendly cURL replacement (command-line HTTP client)
+  - id3tool
+  # - imagemagick --with-webp
+  - imagemagick@6
+  - jpegoptim
+  - jq                  # Lightweight and flexible command-line JSON processor
+  # - kryptco/tap/kr      # SSH authentication on your phone
+  - libksba
+  - libtool
+  - libyaml             # YAML Parser
+  - mackup
+  - micro               # Preferred CLI text editor
+  - multimarkdown       # Turn marked-up plain text into well-formatted documents
+  - node
+  - openssl
+  - optipng
+  - pngcrush
+  - p7zip
+  - readline            # Library for command-line editing
+  - rename              # File rename script with many helpful built-ins
+  - shellcheck          # Bash linter
+  - source-highlight    # Source-code syntax highlighter
+  - speedtest_cli
+  - ssh-copy-id         # Add a public key to a remote machine's authorized_keys file
+  - sqlite
+  - terminal-notifier
+  - thefuck             # Programmatically correct mistyped console commands
+  - tldr                # Better man pages
+  - tree                # Display directories as trees (optional color/HTML output)
+  - unison              # Rsync like tool
+  - wifi-password       # Show the current WiFi network password

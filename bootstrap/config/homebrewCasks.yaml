@@ -1,0 +1,40 @@
+homebrewCasks:
+  - 1password
+  - alfred
+  # - arq
+  # - bartender
+  # - betterzipql
+  # - carbon-copy-cloner
+  - cloak
+  - codekit
+  # - controlplane
+  - fantastical
+  - flux
+  - google-chrome
+  - hazel
+  - imagealpha
+  - imageoptim
+  - iterm2
+  - istat-menus
+  - java
+  - kaleidoscope
+  - mailplane
+  - mamp
+  - marked
+  - moom
+  - ngrok
+  - nvalt
+  - omnifocus
+  - omnifocus-clip-o-tron
+  - plex-home-theater
+  # - qlcolorcode
+  # - qlmarkdown
+  # - qlprettypatch
+  # - qlstephen
+  # - quicklook-csv
+  # - quicklook-json
+  - sublime-text3
+  - tower
+  - vlc
+  # - webpquicklook
+  - xld

@@ -47,6 +47,7 @@ aptGetPackages:
   - mosh
   - optipng
   - pngcrush
+  - python3-pip
   - p7zip
   - shellcheck
   - source-highlight
@@ -56,17 +57,3 @@ aptGetPackages:
   - wget
   - libmagickcore-dev   # used to fix broken rmagick gem
   - libmagickwand-dev   # used to fix broken rmagick gem
-
-nodePackages:
-  - pageres-cli   # CLI for Web screenshots - https://github.com/sindresorhus/pageres-cli
-  - slap          # Sublime-like text editor for terminal
-  - lessmd        # Markdown reader for terminal
-
-rubyGems:
-  - bundler
-  - fileutils
-  - gemrat    # Save Time. Add the latest version of gems to your Gemfile from the command line
-  - ghi       # GitHub Issues on the command line.
-  - jekyll
-  - rake
-  - yaml-lint   # Check if your YAML files can be loaded.
