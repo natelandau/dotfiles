@@ -2,8 +2,12 @@
 version="1.0.0"
 
 _mainScript_() {
-  [[ ! "$OSTYPE" == "darwin"* ]] \
-    && { notice "Can only run on macOS.  Exiting."; _safeExit_; }
+
+  if ! [[ "$OSTYPE" =~ "darwin"* ]]; then
+    notice "Can only run on macOS.  Exiting."
+    _safeExit_
+  fi
+
 
   # This is where brew stores its binary symlinks
   binroot="$(brew --config | awk '/HOMEBREW_PREFIX/ {print $2}')"/bin

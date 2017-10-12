@@ -4,8 +4,10 @@ version="1.0.0"
 
 _mainScript_() {
 
-  [[ ! "$OSTYPE" == "darwin"* ]] \
-    && { notice "Can only run on macOS.  Exiting."; _safeExit_; }
+  if ! [[ "$OSTYPE" =~ "darwin"* ]]; then
+    notice "Can only run on macOS.  Exiting."
+    _safeExit_
+  fi
 
   if [[ "$OSTYPE" == "darwin"* ]]; then
     _configureITerm2_() {

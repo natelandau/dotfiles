@@ -4,7 +4,9 @@ version="1.0.0"
 
 _mainScript_() {
 
-  [[ "$OSTYPE" != "linux-gnu" ]] && die "We are not on Linux"
+  if ! [[ "$OSTYPE" =~ linux-gnu* ]]; then
+    die "We are not on Linux"
+  fi
 
   # Get privs upfront
   sudo -v
