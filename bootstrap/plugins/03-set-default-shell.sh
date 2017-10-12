@@ -1,42 +1,28 @@
 #!/usr/bin/env bash
-# shellcheck disable=2154
 version="1.0.0"
 
 _mainScript_() {
-  _installGitHooks_() {
-    info "Installing git hooks for this repository..."
+  [[ ! "$OSTYPE" == "darwin"* ]] \
+    && { notice "Can only run on macOS.  Exiting."; _safeExit_; }
 
-    local GITROOT
-    local hook
-    GITROOT=$(git rev-parse --show-toplevel 2> /dev/null)
+  # This is where brew stores its binary symlinks
+  binroot="$(brew --config | awk '/HOMEBREW_PREFIX/ {print $2}')"/bin
 
-    if [ "${GITROOT}" == "" ]; then
-      warning "This does not appear to be a git repo."
-      _safeExit_
+  if command -v ${binroot}/bash >/dev/null; then
+    if [[ $SHELL != ${binroot}/bash ]]; then
+      info "Configuring Homebrew's Bash..."
+        if ! grep -q "${binroot}/bash" < /etc/shells; then
+          info "Making ${binroot}/bash your default shell"
+          _execute_ "echo \"$binroot/bash\" | sudo tee -a /etc/shells >/dev/null"
+          _execute_ "sudo chsh -s \"${binroot}/bash\" ${USER} >/dev/null 2>&1"
+          notice "Restart your shells to use Homebrew's bash"
+        else
+          _execute_ "sudo chsh -s \"${binroot}/bash\" ${USER} >/dev/null 2>&1"
+          notice "Restart your shells to use Homebrew's bash"
+        fi
     fi
+  fi
 
-    # Location of hooks
-    local hooksLocation="${GITROOT}/.hooks"
-
-    if ! [ -d "$hooksLocation" ]; then
-      warning "Can't find hooks. Exiting."
-      return
-    fi
-
-    for hook in ${hooksLocation}/*.sh; do
-      hook="$(basename ${hook})"
-
-      local sourceFile="${hooksLocation}/${hook}"
-      local destFile="${GITROOT}/.git/hooks/${hook%.sh}"
-
-      if [ -e "$destFile" ]; then
-        _execute_ "rm $destFile"
-      fi
-      _execute_ "ln -fs \"$sourceFile\" \"$destFile\"" "symlink $sourceFile → $destFile"
-
-    done
-  }
-  _installGitHooks_
 }
 
 _trapCleanup_() {
@@ -130,10 +116,10 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This is a script template.  Edit this description to print help to users.
+  This script will set the default shell on MacOS to a version of Bash that
+  was installed by Homebrew.
 
- ${bold}Options:${reset}
-  --rootDIR         The location of the 'dotfiles' directory
+  ${bold}Options:${reset}
 
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
@@ -192,7 +178,6 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    --rootDIR) shift; baseDir="$1" ;;
     -h|--help) _usage_ >&2; _safeExit_ ;;
     -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;

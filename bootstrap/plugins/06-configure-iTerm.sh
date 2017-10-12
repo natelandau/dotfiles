@@ -1,19 +1,63 @@
 #!/usr/bin/env bash
+# shellcheck disable=2154
 version="1.0.0"
 
 _mainScript_() {
 
-  if ! command -v pull &> /dev/null; then
-    _installGitFriendly_() {
-      info "Installing git-friendly...."
+  [[ ! "$OSTYPE" == "darwin"* ]] \
+    && { notice "Can only run on macOS.  Exiting."; _safeExit_; }
 
-      # github.com/jamiew/git-friendly
-      # the `push` command which copies the github compare URL to my clipboard is heaven
-      _execute_ "bash < <( curl https://raw.github.com/jamiew/git-friendly/master/install.sh)"
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    _configureITerm2_() {
+      info "Configuring iTerm..."
+
+      if ! [ -e /Applications/iTerm.app ]; then
+        warning "Could not find iTerm.app. Please install iTerm and run this again."
+        return
+      else
+
+        # iTerm config files location
+        iTermConfig="${baseDir}/config/iTerm"
+
+        if [ -d "${iTermConfig}" ]; then
+
+          # 1. Copy fonts
+          fontLocation="${HOME}/Library/Fonts"
+          for font in ${iTermConfig}/fonts/**/*.otf; do
+            baseFontName=$(basename "$font")
+            destFile="${fontLocation}/${baseFontName}"
+            if [ ! -e "$destFile" ]; then
+              _execute_ "cp \"${font}\" \"$destFile\""
+            fi
+          done
+
+          # 2. symlink preferences
+          sourceFile="${iTermConfig}/com.googlecode.iterm2.plist"
+          destFile="${HOME}/Library/Preferences/com.googlecode.iterm2.plist"
+
+          if [ ! -e "$destFile" ]; then
+            _execute_ "cp \"${sourceFile}\" \"${destFile}\"" "cp $sourceFile → $destFile"
+          elif [ -h "$destFile" ]; then
+            originalFile=$(_locateSourceFile_ "$destFile")
+            _backupOriginalFile_ "$originalFile"
+            if ! $dryrun; then rm -rf "$destFile"; fi
+            _execute_ "cp \"$sourceFile\" \"$destFile\"" "cp $sourceFile → $destFile"
+          elif [ -e "$destFile" ]; then
+            _backupOriginalFile_ "$destFile"
+            if ! $dryrun; then rm -rf "$destFile"; fi
+            _execute_ "cp \"$sourceFile\" \"$destFile\"" "cp $sourceFile → $destFile"
+          else
+            warning "Error linking: $sourceFile → $destFile"
+          fi
+
+          #3 Install preferred colorscheme
+          _execute_ "open ${baseDir}/config/iTerm/themes/dotfiles.itermcolors" "Installing preferred color scheme"
+        else
+          warning "Couldn't find iTerm configuration files"
+        fi
+      fi
     }
-    _installGitFriendly_
-  else
-    success "git-friendly already installed"
+    _configureITerm2_
   fi
 }
 
@@ -25,6 +69,42 @@ _trapCleanup_() {
 _safeExit_() {
   trap - INT TERM EXIT
   exit ${1:-0}
+}
+
+_backupOriginalFile_() {
+  local newFile
+  local backupDir
+
+  # Set backup directory location
+  backupDir="${baseDir}/dotfiles_backup"
+
+  if [[ ! -d "$backupDir" && "$dryrun" == false ]]; then
+    _execute_ "mkdir \"$backupDir\"" "Creating backup dir: $backupDir"
+  fi
+
+  if [ -e "$1" ]; then
+    newFile="$(basename "$1")"
+    _execute_ "cp -R \"${1}\" \"${backupDir}/${newFile#.}\"" "Backing up: ${newFile}"
+  fi
+}
+
+_seekConfirmation_() {
+  # v1.0.1
+  input "$@"
+  if "${force}"; then
+    verbose "Forcing confirmation with '--force' flag set"
+    echo -e ""
+    return 0
+  else
+    while true; do
+      read -r -p " (y/n) " yn
+      case $yn in
+        [Yy]* ) return 0;;
+        [Nn]* ) return 1;;
+        * ) input "Please answer yes or no.";;
+      esac
+    done
+  fi
 }
 
 _execute_() {
@@ -108,11 +188,9 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This is a script template.  Edit this description to print help to users.
+This script configures iTerm on Mac OS
 
  ${bold}Options:${reset}
-  --rootDIR         The location of the 'dotfiles' directory
-
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
   -l, --log         Print log to file
@@ -170,7 +248,6 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    --rootDIR) shift; baseDir="$1" ;;
     -h|--help) _usage_ >&2; _safeExit_ ;;
     -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;

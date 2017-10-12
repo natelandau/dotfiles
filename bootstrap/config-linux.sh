@@ -14,7 +14,7 @@ _mainScript_() {
     baseDir="$(_findBaseDir_)"
     rootDIR="$(dirname "$baseDir")"
     privateInstallScript="${HOME}/dotfiles-private/privateInstall.sh"
-    pluginScripts="${baseDir}/lib/linux-plugins"
+    pluginScripts="${baseDir}/plugins"
 
   # Config files
     configSymlinks="${baseDir}/config/symlinks.yaml"

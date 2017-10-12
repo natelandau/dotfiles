@@ -1,19 +1,32 @@
+
 #!/usr/bin/env bash
 version="1.0.0"
 
 _mainScript_() {
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    _configureChrome_() {
-      info "Configuring Google-Chrome..."
 
-      _execute_ "defaults write com.google.Chrome DisablePrintPreview -bool true" "Use the system-native print preview dialog"
-      _execute_ "defaults write com.google.Chrome.canary DisablePrintPreview -bool true"
-    }
-    _configureChrome_
+  [[ ! "$OSTYPE" == "darwin"* ]] \
+    && { notice "Can only run on macOS.  Exiting."; _safeExit_; }
+
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # This script symlinks the 'subl' CLI tool to /usr/local/bin
+
+    header "symlink 'subl' to /usr/local/bin ..."
+
+    if [ ! -e "/Applications/Sublime Text.app" ]; then
+      warning "We don't have Sublime Text.app. Install it and try again."
+      _safeExit_
+    else
+      if [ ! -e "/usr/local/bin/subl" ]; then
+        _execute_ "ln -s /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl /usr/local/bin/subl" "Symlink subl to /user/local/bin/subl" "SublimeText CLI enabled."
+      else
+        notice "SublimeText CLI already installed"
+      fi
+    fi
   fi
 }
 
 _trapCleanup_() {
+  echo ""
   die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
 }
 
@@ -56,7 +69,6 @@ debug=false;              sourceOnly=false;           args=();
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
 red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
 blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
-
 
 # Logging & Feedback
 logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
@@ -104,7 +116,7 @@ function verbose()    { if ${verbose}; then debug "$@"; fi }
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This is a script template.  Edit this description to print help to users.
+Configure the macOS application Sublime Text 3 by enabling the CLI command 'subl'
 
  ${bold}Options:${reset}
   --rootDIR         The location of the 'dotfiles' directory
@@ -166,7 +178,6 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    --rootDIR) shift; baseDir="$1" ;;
     -h|--help) _usage_ >&2; _safeExit_ ;;
     -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;
