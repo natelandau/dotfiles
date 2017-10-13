@@ -5,6 +5,12 @@ _raspberryPi_ () {
 
   if [[ "$me" == "pi" ]]; then
 
+    # Aliases
+    shutdown='sudo shutdown -h now'
+    temp='vcgencmd measure_temp'
+    aup () { sudo apt-get update; sudo apt-get upgrade; }
+
+
     # Fix raspberry pie locale issues
     export LC_ALL=C
 
@@ -25,5 +31,7 @@ _raspberryPi_ () {
         . /etc/bash_completion
       fi
     fi
+
+
   fi
 }
