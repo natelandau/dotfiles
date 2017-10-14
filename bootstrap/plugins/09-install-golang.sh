@@ -1,37 +1,52 @@
 #!/usr/bin/env bash
+
 version="1.0.0"
 
 _mainScript_() {
 
-  header "Installing git-friendly...."
-
-  if ! command -v pull &> /dev/null; then
-    _installGitFriendly_() {
-
-      # github.com/jamiew/git-friendly
-      # the `push` command which copies the github compare URL to my clipboard is heaven
-      bash < <( curl https://raw.github.com/jamiew/git-friendly/master/install.sh)
-    }
-    _installGitFriendly_
-  else
-    success "'git-friendly' installed"
+  if command -v go &> /dev/null; then
+    success "'go' installed"
+    _safeExit_
   fi
-}
 
-_trapCleanup_() {
-  echo ""
-  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
-}
+  verbose=true
+  header "Installing 'golang'"
+  if [[ "$OSTYPE" =~ "linux-gnu"* ]]; then
 
-_safeExit_() {
-  trap - INT TERM EXIT
-  exit ${1:-0}
-}
+    git clone https://github.com/udhos/update-golang
+    pushd update-golang &> /dev/null;
+    sudo ./update-golang.sh
+    if [ ! -e "/usr/bin/go" ] && [ -e "/usr/local/go/bin/go" ]; then
+      sudo ln -s /usr/local/go/bin/go /usr/bin/go
+    fi
+    popd &> /dev/null;
+
+    GOPATH="${HOME}/go"; export GOPATH;
+    GOBIN=${GOPATH}/bin; export GOBIN;
+
+  elif [[ "$OSTYPE" == "darwin"* ]]; then
+
+    _execute_ "brew install go"
+
+  else
+    error "Could not install 'golang'"
+    _safeExit_
+  fi
+
+}  # end _mainScript_
 
 _execute_() {
-  # v1.0.1
+  # v1.0.2
+  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
+  #           and have control over the display of the results.  In "dryrun" mode these
+  #           commands are not executed at all. In Verbose mode, the commands are executed
+  #           with results printed to stderr and stdin
+  #
+  # usage:
+  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
   local cmd="${1:?_execute_ needs a command}"
   local message="${2:-$1}"
+
   if ${dryrun}; then
     dryrun "${message}"
   else
@@ -42,11 +57,27 @@ _execute_() {
     fi
     if [ $? -eq 0 ]; then
       success "${message}"
+      return 0
     else
       error "${message}"
+      return 1
       #die "${message}"
     fi
   fi
+}
+
+_trapCleanup_() {
+  echo ""
+  # Delete temp files, if any
+  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
+  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
+}
+
+_safeExit_() {
+  # Delete temp files, if any
+  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
+  trap - INT TERM EXIT
+  exit ${1:-0}
 }
 
 # Set Base Variables
@@ -62,6 +93,12 @@ debug=false;              sourceOnly=false;           args=();
 bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
 red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
 blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
+
+# Set Temp Directory
+tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
+(umask 077 && mkdir "${tmpDir}") || {
+  die "Could not create temporary directory! Exiting."
+}
 
 # Logging & Feedback
 logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
@@ -112,8 +149,8 @@ _usage_() {
 This is a script template.  Edit this description to print help to users.
 
  ${bold}Options:${reset}
-  --rootDIR         The location of the 'dotfiles' directory
-
+  -u, --username    Username for script
+  -p, --password    User password
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
   -l, --log         Print log to file
@@ -171,8 +208,10 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    --rootDIR) shift; baseDir="$1" ;;
     -h|--help) _usage_ >&2; _safeExit_ ;;
+    -u|--username) shift; username=${1} ;;
+    -p|--password) shift; echo "Enter Pass: "; stty -echo; read -r PASS; stty echo;
+      echo ;;
     -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;
     -l|--log) printLog=true ;;

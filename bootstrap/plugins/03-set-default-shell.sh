@@ -8,7 +8,7 @@ _mainScript_() {
     _safeExit_
   fi
 
-
+  header "Setting default shell"
   # This is where brew stores its binary symlinks
   binroot="$(brew --config | awk '/HOMEBREW_PREFIX/ {print $2}')"/bin
 

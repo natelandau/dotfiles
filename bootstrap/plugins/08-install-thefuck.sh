@@ -10,6 +10,7 @@ _mainScript_() {
   fi
 
   verbose=true
+  header "Installing 'thefuck'"
   if [[ "$OSTYPE" =~ "linux-gnu"* ]]; then
     _execute_ "sudo apt update"
     _execute_ "sudo apt install -y python3-dev python3-pip"

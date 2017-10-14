@@ -10,10 +10,14 @@ _mainScript_() {
   fi
 
   verbose=true
+  header "Installing 'bats'"
   if [[ "$OSTYPE" =~ linux-gnu* ]]; then
-    _execute_ "sudo add-apt-repository ppa:duggan/bats"
-    _execute_ "sudo apt-get update"
-    _execute_ "sudo apt-get install bats"
+    if _execute_ "sudo add-apt-repository ppa:duggan/bats"; then
+      _execute_ "sudo apt-get update"
+      _execute_ "sudo apt-get install bats"
+    else
+      die "Could not install bats. Check here: https://github.com/sstephenson/bats"
+    fi
   elif [[ "$OSTYPE" == "darwin"* ]]; then
     _execute_ "brew install bats"
   else

@@ -3,8 +3,9 @@
 version="1.0.0"
 
 _mainScript_() {
+
   _installGitHooks_() {
-    info "Installing git hooks for this repository..."
+    header "Installing git hooks"
 
     local GITROOT
     local hook

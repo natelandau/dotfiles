@@ -11,7 +11,7 @@ _mainScript_() {
 
   if [[ "$OSTYPE" == "darwin"* ]]; then
     _configureITerm2_() {
-      info "Configuring iTerm..."
+      header "Configuring iTerm..."
 
       if ! [ -e /Applications/iTerm.app ]; then
         warning "Could not find iTerm.app. Please install iTerm and run this again."
