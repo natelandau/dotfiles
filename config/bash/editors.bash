@@ -1,6 +1,7 @@
-if [[ ! "$SSH_TTY" && $(command -v subl &> /dev/null) ]]; then
-  export EDITOR='subl'
-  export LESSEDIT='subl %f'
+if [ ! "$SSH_TTY" ] && command -v subl &> /dev/null; then
+  EDITOR='subl'; export EDITOR;
+  LESSEDIT='subl %f'; export LESSEDIT;
+  VISUAL="$EDITOR"; export VISUAL;
 
   q () {
     # easy access to SublimeText
@@ -10,9 +11,11 @@ if [[ ! "$SSH_TTY" && $(command -v subl &> /dev/null) ]]; then
       subl "$@";
     fi;
   }
-
 else
-  export EDITOR=$(type slap nano pico 2>/dev/null | sed 's/ .*$//;q')
+  EDITOR=$(type micro nano pico 2>/dev/null | sed 's/ .*$//;q')
+  export EDITOR;
+  VISUAL="$EDITOR"; export VISUAL;
 fi
-export VISUAL="$EDITOR"
+
+
 

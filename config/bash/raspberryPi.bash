@@ -7,7 +7,6 @@ _raspberryPi_ () {
     # Aliases
     alias shutdown='sudo shutdown -h now'
     alias temp='vcgencmd measure_temp'
-    aup () { sudo apt-get update; sudo apt-get upgrade; }
 
     # Fix raspberry pie locale issues
     export LC_ALL=C

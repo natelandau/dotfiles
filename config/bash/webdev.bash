@@ -14,9 +14,6 @@ if command -v ghi &> /dev/null; then
   alias task='ghi'
 fi
 
-# Edit /etc/hosts file
-alias editHosts='sudo edit /etc/hosts'
-
 # Grabs headers from web page
 httpHeaders () { http -h "$@" ; }
 

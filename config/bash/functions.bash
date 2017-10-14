@@ -223,20 +223,3 @@ explain () {
     curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$*"
   fi
 }
-
-execute() {
-  # execute - wrap an external command in 'execute' to push native output to /dev/null
-  #           and have control over the display of the results.  In "dryrun" mode these
-  #           commands are not executed at all. In Verbose mode, the commands are executed
-  #           with results printed to stderr and stdin
-  #
-  # usage:
-  #   execute "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
-
-  $1
-  if [ $? -eq 0 ]; then
-    success "${2:-$1}"
-  else
-    warning "${2:-$1}"
-  fi
-}
