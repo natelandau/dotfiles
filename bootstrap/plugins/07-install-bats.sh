@@ -4,14 +4,18 @@ version="1.0.0"
 
 _mainScript_() {
 
-  echo -n
+  if command -v bats &> /dev/null; then
+    success "'bats' installed"
+    _safeExit_
+  fi
 
+  verbose=true
   if [[ "$OSTYPE" =~ linux-gnu* ]]; then
     _execute_ "sudo add-apt-repository ppa:duggan/bats"
     _execute_ "sudo apt-get update"
     _execute_ "sudo apt-get install bats"
   elif [[ "$OSTYPE" == "darwin"* ]]; then
-    brew install bats
+    _execute_ "brew install bats"
   else
     notice "To install bats, see the documentation here:"
     notice "https://github.com/sstephenson/bats"
