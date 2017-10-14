@@ -29,6 +29,9 @@ _mainScript_() {
     apt-get install -y mosh
     apt-get install -y sudo
     apt-get install -y ncurses
+    apt-get install -y software-properties-common
+    apt-get install -y python3-software-properties
+    apt-get install -y python-software-properties
 
   }
   _apgradeAptGet_
