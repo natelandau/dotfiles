@@ -1,22 +1,20 @@
 _raspberryPi_ () {
   local me
-
   me=$(whoami)
 
   if [[ "$me" == "pi" ]]; then
 
     # Aliases
-    shutdown='sudo shutdown -h now'
-    temp='vcgencmd measure_temp'
+    alias shutdown='sudo shutdown -h now'
+    alias temp='vcgencmd measure_temp'
     aup () { sudo apt-get update; sudo apt-get upgrade; }
-
 
     # Fix raspberry pie locale issues
     export LC_ALL=C
 
     # set variable identifying the chroot you work in (used in the prompt below)
     if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-        debian_chroot=$(cat /etc/debian_chroot)
+      debian_chroot=$(cat /etc/debian_chroot)
     fi
 
     # enable programmable completion features (you don't need to enable
@@ -31,7 +29,7 @@ _raspberryPi_ () {
         . /etc/bash_completion
       fi
     fi
-
-
   fi
+
 }
+_raspberryPi_
