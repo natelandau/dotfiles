@@ -1,7 +1,9 @@
 
 # Enable GO
 if command -v go &>/dev/null ; then
-  export GOPATH=${HOME}/go
+  GOPATH=${HOME}/go; export GOPATH;
+  GOBIN=${GOPATH}/bin; export GOBIN;
+  export PATH="$PATH:${GOBIN}"
 fi
 
 # Make 'less' more with lesspipe
