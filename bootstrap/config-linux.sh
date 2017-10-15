@@ -34,9 +34,6 @@ _mainScript_() {
   # Create symlinks
   if _seekConfirmation_ "Create symlinks to configuration files?"; then
     header "Creating Symlinks"
-    [ ! -d "${HOME}/bin" ] \
-      && _execute_ "mkdir \"${HOME}/bin\""
-
     _doSymlinks_ "${configSymlinks}"
   fi
 
@@ -446,7 +443,7 @@ _locateSourceFile_() {
 }
 
 _makeSymlink_() {
-  #v1.0.0
+  #v1.1.0
   # Given two arguments $1 & $2, creates a symlink from $1 (source) to $2 (destination) and
   # will create a backup of an original file before overwriting
   #
@@ -478,16 +475,22 @@ _makeSymlink_() {
     if ! _haveFunction_ "_backupFile_"; then error "need function _backupFile_"; return 1; fi
     if ! _haveFunction_ "_locateSourceFile_"; then error "need function _locateSourceFile_"; return 1; fi
 
+  # Create destination directory if needed
+  [ ! -d "${d%/*}" ] \
+    && _execute_ "mkdir -p \"${d%/*}\""
+
   if [ ! -e "${d}" ]; then
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -h "${d}" ]; then
     o="$(_locateSourceFile_ "$d")"
     _backupFile_ "${o}" ${b:-backup}
-    if ! ${dryrun}; then rm -rf "$d"; fi
+    ( $dryrun ) \
+      || rm -rf "$d"
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -e "${d}" ]; then
     _backupFile_ "${d}" "${b:-backup}"
-    if ! ${dryrun}; then rm -rf "$d"; fi
+    ( $dryrun ) \
+      || rm -rf "$d"
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   else
     warning "Error linking: ${s} → ${d}"
