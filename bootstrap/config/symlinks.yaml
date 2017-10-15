@@ -14,6 +14,8 @@ symlinks:
   - ~/.slap:          config/shell/slap
   - ~/.sed:           config/shell/sed
   - ~/.ruby-version:  config/shell/ruby-version
+  - ~/.config/micro/bindings.json:    config/shell/micro/bindings.json
+  - ~/.config/micro/settings.json:    config/shell/micro/settings.json
   - ~/bin/cleanFilenames:             bin/cleanFilenames
   - ~/bin/mailReIndex:                bin/mailReIndex
   - ~/bin/removeSymlink:              bin/removeSymlink
