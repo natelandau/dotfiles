@@ -63,7 +63,7 @@ _mainScript_() {
     local v=$verbose; verbose=true;
 
     if [ -f "/etc/apt/sources.list" ]; then
-      notice "Upgrading apt-get....(May take a while)"
+      header "Upgrading apt-get....(May take a while)"
       _execute_ "sudo apt-get update"
       _execute_ "sudo apt-get upgrade -y"
     else

@@ -8,7 +8,6 @@ GeneralPackages:
   - curl
   - git
   - git-extras
-  - golang
   - httpie
   - jq
   - less
