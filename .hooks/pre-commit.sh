@@ -89,29 +89,36 @@ fi
 
 # Test bash scripts with BATS when they change
 _BATS_() {
-  local filename
+  local filename file
 
   # Test files in bin/
   for file in $(git diff --cached --name-only | grep -E 'bin/'); do
     filename="$(basename $file)"
     filename="${filename%.*}"
-    [ -f "${GITROOT}/test/${filename}.bats" ] && _execute_ "${GITROOT}/test/${filename}.bats -t"
+    [ -f "${GITROOT}/test/${filename}.bats" ] \
+      && _execute_ "${GITROOT}/test/${filename}.bats -t"
+    unset filename
   done
 
   # Test files in bootstrap/
-  for file in $(git diff --cached --name-only | grep -E 'bootstrap/'); do
+  for file in $(git diff --cached --name-only | grep -E 'bootstrap/.*\.sh$'); do
     filename="$(basename $file)"
     filename="${filename%.*}"
-    [ -f "${GITROOT}/test/${filename}.bats" ] && _execute_ "${GITROOT}/test/${filename}.bats -t"
+    [ -f "${GITROOT}/test/${filename}.bats" ] \
+      && _execute_ "${GITROOT}/test/${filename}.bats -t"
+    unset filename
   done
 
-
-  # Run BATS on script functions
-  if git diff --cached --name-only | grep -E 'scripting/functions/.*\.bash$' &>/dev/null; then
-    [ -f "${GITROOT}/test/scriptFunctions.bats" ] && _execute_ "${GITROOT}/test/scriptFunctions.bats"
-  fi
+  # Test files scripting functions
+  for file in $(git diff --cached --name-only | grep -E 'scripting/helpers/.*\.bash$'); do
+    filename="$(basename $file)"
+    filename="${filename%.*}"
+    [ -f "${GITROOT}/test/${filename}.bats" ] \
+      && _execute_ "${GITROOT}/test/${filename}.bats -t"
+    unset filename
+  done
 
 }
-_BATS_
+if command -v bats &> /dev/null; then _BATS_; fi
 
 _safeExit_

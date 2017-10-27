@@ -55,17 +55,6 @@ _rtrim_() {
   sed "s%[${char//%/\\%}]*$%%"
 }
 
-_squeeze_() {
-  # Removes leading/trailing whitespace and condenses all other consecutive
-  # whitespace into a single space.
-  #
-  # Usage examples:
-  #     echo "  foo  bar   baz  " | _squeeze_  #==> "foo bar baz"
-
-  local char=${1:-[[:space:]]}
-  sed "s%\(${char//%/\\%}\)\+%\1%g" | _trim_ "$char"
-}
-
 _trim_() {
   # Removes all leading/trailing whitespace
   # Usage examples:
@@ -76,7 +65,7 @@ _trim_() {
 _upper_() {
   # Convert stdin to uppercase.
   # usage:  text=$(upper <<<"$1")
-  #         echo "MAKETHISUPPERCASE" | _upper_
+  #         echo "make this" | _upper_
   tr '[:lower:]' '[:upper:]'
 }
 

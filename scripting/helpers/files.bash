@@ -12,17 +12,12 @@ _backupFile_() {
   local d="${2:-backup}"      # Destination directory (optional, defaults to 'backup')
   local n                     # New filename (created by _uniquefilename_)
 
+  [ ! "$(declare -f "_execute_")" ] \
+    && { echo "need function _execute_"; return 1; }
+  [ ! "$(declare -f "_uniqueFileName_")" ] \
+    && { echo "need function _uniqueFileName_"; return 1; }
   [ ! -e "$s" ] \
     &&  { error "Source '$s' not found"; return 1; }
-  #[ ! -d "$d" ] \
-  #  &&  { error "Destination '$d' not found"; return 1; }
-
-  if ! _haveFunction_ "_execute_"; then
-    error "need function _execute_"; return 1;
-  fi
-  if ! _haveFunction_ "_uniqueFileName_"; then
-    error "need function _uniqueFileName_"; return 1;
-  fi
 
   [ ! -d "$d" ] \
     && _execute_ "mkdir \"$d\"" "Creating backup directory"
@@ -84,6 +79,9 @@ _decryptFile_() {
   defaultName="${fileToDecrypt%.enc}"
   decryptedFile="${2:-$defaultName.decrypt}"
 
+  [ ! "$(declare -f "_execute_")" ] \
+    && { echo "need function _execute_"; return 1; }
+
   [ ! -f "$fileToDecrypt" ] && return 1
 
   if [ -z $PASS ]; then
@@ -111,6 +109,9 @@ _encryptFile_() {
   encryptedFile="${2:-$defaultName.enc}"
 
   [ ! -f "$fileToEncrypt" ] && return 1
+
+  [ ! "$(declare -f "_execute_")" ] \
+    && { echo "need function _execute_"; return 1; }
 
   if [ -z $PASS ]; then
     _execute_ "openssl enc -aes-256-cbc -salt -in \"${fileToEncrypt}\" -out \"${encryptedFile}\"" "Encrypt ${fileToEncrypt}"
@@ -206,6 +207,65 @@ _locateSourceFile_() {
   echo "$RESULT"
 }
 
+_makeSymlink_() {
+  #v1.1.0
+  # Given two arguments $1 & $2, creates a symlink from $1 (source) to $2 (destination) and
+  # create a backup of an original file before overwriting
+  #
+  # Script arguments:
+  #
+  #   $1 - Source file
+  #   $2 - Destination for symlink
+  #   $3 - backup directory for files to be overwritten (defaults to 'backup')
+  #
+  # NOTE: This function makes use of the _execute_ function
+  #
+  # usage: _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
+  local s="$1"    # Source file
+  local d="$2"    # Destination file
+  local b="$3"    # Backup directory for originals (optional)
+  local o         # Original file
+
+  [ ! -e "$s" ] \
+    &&  { error "'$s' not found"; return 1; }
+  [ -z "$d" ] \
+    && { error "'$d' not specified"; return 1; }
+  [ ! "$(declare -f "_execute_")" ] \
+    && { echo "need function _execute_"; return 1; }
+  [ ! "$(declare -f "_backupFile_")" ] \
+    && { echo "need function _backupFile_"; return 1; }
+  [ ! "$(declare -f "_locateSourceFile_")" ] \
+      && { echo "need function _locateSourceFile_"; return 1; }
+
+  # Fix files where $HOME is written as '~'
+    d="${d/\~/$HOME}"
+    s="${s/\~/$HOME}"
+    b="${b/\~/$HOME}"
+
+  # Create destination directory if needed
+  [ ! -d "${d%/*}" ] \
+    && _execute_ "mkdir -p \"${d%/*}\""
+
+  if [ ! -e "${d}" ]; then
+    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
+  elif [ -h "${d}" ]; then
+    o="$(_locateSourceFile_ "$d")"
+    _backupFile_ "${o}" ${b:-backup}
+    ( $dryrun ) \
+      || rm -rf "$d"
+    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
+  elif [ -e "${d}" ]; then
+    _backupFile_ "${d}" "${b:-backup}"
+    ( $dryrun ) \
+      || rm -rf "$d"
+    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
+  else
+    warning "Error linking: ${s} → ${d}"
+    return 1
+  fi
+  return 0
+}
+
 _parseYAML_() {
   # v1.1.0
   # Function to parse YAML files and add values to variables. Send it to a temp file and source it
@@ -257,7 +317,7 @@ _readFile_() {
   local c="$1"
 
   [ ! -f "$c" ] \
-    &&  { error "'$c' not found"; return 1; }
+    &&  { echo "'$c' not found"; return 1; }
 
   while read -r result; do
     echo "${result}"
@@ -338,7 +398,7 @@ _sourceFile_() {
   local c="$1"
 
   [ ! -f "$c" ] \
-    &&  { error "'$c' not found"; return 1; }
+    &&  { echo "error: '$c' not found"; return 1; }
 
   source "$c"
 }
