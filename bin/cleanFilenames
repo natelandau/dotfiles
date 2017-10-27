@@ -19,11 +19,11 @@ _mainScript_() {
   _isGoodFile_() {
 
     #Bypass file check when testing input
-    if $testOutput; then return 0; fi
+    ( $testOutput ) && return 0
 
     # Ensure file exists
     if [ ! -e "${userFile}" ]; then
-      die "${userFile}: No such file or directory."
+      die "No such file or directory: '${userFile}'"
     fi
     # Ignore directories
     if [ -d "${userFile}" ]; then
@@ -281,105 +281,7 @@ _mainScript_() {
     fi
   done
 
-
 } # end _mainScript_
-
-_trapCleanup_() {
-  echo ""
-  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
-}
-
-_safeExit_() {
-  trap - INT TERM EXIT
-  exit ${1:-0}
-}
-
-_execute_() {
-  # v1.0.0
-  if ${dryrun}; then
-    dryrun "${2:-$1}"
-  else
-    #set +e # don't exit script if execute fails
-    if $verbose; then
-      eval "$1"
-    else
-      eval "$1" &> /dev/null
-    fi
-    if [ $? -eq 0 ]; then
-      success "${2:-$1}"
-    else
-      warning "${2:-$1}"
-    fi
-    # set -e
-  fi
-}
-
-_realpath_() {
-  # v1.0.0
-  # Convert a relative path to an absolute path.
-  #
-  # From http://github.com/morgant/realpath
-  #
-  # @param string the string to converted from a relative path to an absolute path
-  # @returns Outputs the absolute path to STDOUT, returns 0 if successful or 1 if
-  # an error (esp. path not found).
-  local success=true
-  local path="$1"
-
-  # make sure the string isn't empty as that implies something in further logic
-  if [ -z "$path" ]; then
-    success=false
-  else
-    # start with the file name (sans the trailing slash)
-    path="${path%/}"
-
-    # if we stripped off the trailing slash and were left with nothing, that means we're in the root directory
-    if [ -z "$path" ]; then
-      path="/"
-    fi
-
-    # get the basename of the file (ignoring '.' & '..', because they're really part of the path)
-    local file_basename="${path##*/}"
-    if [[ ( "$file_basename" = "." ) || ( "$file_basename" = ".." ) ]]; then
-      file_basename=""
-    fi
-
-    # extracts the directory component of the full path, if it's empty then assume '.' (the current working directory)
-    local directory="${path%$file_basename}"
-    if [ -z "$directory" ]; then
-      directory='.'
-    fi
-
-    # attempt to change to the directory
-    if ! cd "$directory" &>/dev/null ; then
-      success=false
-    fi
-
-    if $success; then
-      # does the filename exist?
-      if [[ ( -n "$file_basename" ) && ( ! -e "$file_basename" ) ]]; then
-        success=false
-      fi
-
-      # get the absolute path of the current directory & change back to previous directory
-      local abs_path
-      abs_path="$(pwd -P)"
-      cd "-" &>/dev/null || return
-
-      # Append base filename to absolute path
-      if [ "${abs_path}" = "/" ]; then
-        abs_path="${abs_path}${file_basename}"
-      else
-        abs_path="${abs_path}/${file_basename}"
-      fi
-
-      # output the absolute path
-      echo "$abs_path"
-    fi
-  fi
-
-  $success
-}
 
 _parseFilename_() {
   # Here we parse the user's file into it's directory, basename, and extension.
@@ -403,63 +305,29 @@ _parseFilename_() {
   originalFile="${baseFilename}.${extension}"
 }
 
+filesToSource=(
+  ${HOME}/dotfiles/scripting/helpers/baseHelpers.bash
+  ${HOME}/dotfiles/scripting/helpers/files.bash
+)
+
+for sourceFile in "${filesToSource[@]}"; do
+  [ ! -f "$sourceFile" ] \
+    &&  { echo "error: Can not find sourcefile '$sourceFile'. Exiting."; return 1; }
+
+  source "$sourceFile"
+done
+
 # Set Base Variables
 # ----------------------
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false;        printLog=false;             verbose=false;
+quiet=false;        printLog=true;             verbose=false;
 force=false;        strict=false;               dryrun=false;
 debug=false;        sourceOnly=false;           args=();
 
 cleanOnly=false;    nonInteractive=false;       lowerCase=false;
 ignoreFile=false;   removeDates=false;          testOutput=false;
-
-# Set Colors
-bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
-red=$(tput setaf 1);      green=$(tput setaf 76);      tan=$(tput setaf 3);
-blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
-
-# Logging & Feedback
-logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
-
-_alert_() {
-  # v1.0.0
-  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
-  if [ "${1}" = "warning" ]; then local color="${red}"; fi
-  if [ "${1}" = "success" ]; then local color="${green}"; fi
-  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
-  if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
-  if [ "${1}" = "input" ]; then local color="${bold}"; fi
-  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
-  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
-  # Don't use colors on pipes or non-recognized terminals
-  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
-
-  # Print to console when script is not 'quiet'
-  if ${quiet}; then tput cuu1 ; return; else # tput cuu1 moves cursor up one line
-   echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
-  fi
-
-  # Print to Logfile
-  if ${printLog} && [ "${1}" != "input" ]; then
-    color=""; reset="" # Don't use colors in logs
-    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
-  fi
-}
-
-function die ()       { if ${nonInteractive}; then _safeExit_ "1"; fi; local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
-function error ()     { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ error)"; }
-function warning ()   { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ warning)"; }
-function notice ()    { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ notice)"; }
-function info ()      { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ info)"; }
-function debug ()     { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ debug)"; }
-function success ()   { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ success)"; }
-function dryrun()     { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
-function input()      { if ${nonInteractive}; then return; fi; local _message="${*}"; echo -n "$(_alert_ input)"; }
-function header()     { if ${nonInteractive}; then return; fi; local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
-function verbose()    { if ${verbose}; then debug "$@"; fi }
-
 
 # Options and Usage
 # -----------------------------------
@@ -575,7 +443,7 @@ while [[ $1 = -?* ]]; do
     -R| --removeDate) removeDates=true ;;
     -L| --lower) lowerCase=true ;;
     -n|--dryrun) dryrun=true ;;
-    --nonInteractive) nonInteractive=true ;;
+    --nonInteractive) nonInteractive=true; quiet=true; ;;
     -h|--help) _usage_ >&2 ; _safeExit_ ;;
     -T|--test) testOutput=true; dryrun=true ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
@@ -595,7 +463,7 @@ done
 args+=("$@")
 
 # Trap bad exits with your cleanup function
-trap _trapCleanup_ EXIT INT TERM
+trap '_trapCleanup_ $LINENO' EXIT INT TERM
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'

@@ -23,10 +23,10 @@ _alert_() {
   logLocation="${HOME}/logs"
   logName="${scriptName%.sh}.log"
   logFile="${logLocation}/${logName}"
-  function_name=$(IFS="\\"; echo "${FUNCNAME[*]:2}")
+  function_name=$(IFS="\\"; echo "${FUNCNAME[*]:3}")
 
   if [[ "$1" =~ ^(fatal|error|warning|debug) ]]; then
-    _message="$_message($function_name)"
+    _message="$_message ($function_name)"
   fi
 
   if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
@@ -43,9 +43,13 @@ _alert_() {
   if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
 
   # Print to console when script is not 'quiet'
-  if ${quiet}; then tput cuu1 ; return; else # tput cuu1 moves cursor up one line
-   echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
-  fi
+  _writeToScreen_() {
+    ( "$quiet" ) \
+      && { tput cuu1; return; }  # tput cuu1 moves cursor up one line
+
+     echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
+  }
+  _writeToScreen_ "$1"
 
   # Print to Logfile
   if ${printLog}; then
@@ -57,8 +61,8 @@ _alert_() {
   fi
 }
 
-die ()       { local _message="${*} "; echo -e "$(_alert_ fatal)"; _safeExit_ "1";}
-fatal ()     { local _message="${*} "; echo -e "$(_alert_ fatal)"; _safeExit_ "1";}
+die ()       { local _message="${*}"; echo -e "$(_alert_ fatal)"; _safeExit_ "1";}
+fatal ()     { local _message="${*}"; echo -e "$(_alert_ fatal)"; _safeExit_ "1";}
 error ()     { local _message="${*}"; echo -e "$(_alert_ error)"; }
 warning ()   { local _message="${*}"; echo -e "$(_alert_ warning)"; }
 notice ()    { local _message="${*}"; echo -e "$(_alert_ notice)"; }
@@ -68,7 +72,7 @@ success ()   { local _message="${*}"; echo -e "$(_alert_ success)"; }
 dryrun()     { local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
 input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
 header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
-verbose()    { ( ${verbose} ) && debug "$@"; }
+verbose()    { if ${verbose}; then debug "$@"; fi }
 
 ### FUNCTIONS ###
 
@@ -254,5 +258,5 @@ _trapCleanup_() {
   echo ""
   # Delete temp files, if any
   [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
-  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
+  fatal "Exit trapped. Function: '${FUNCNAME[*]:1}'"
 }
