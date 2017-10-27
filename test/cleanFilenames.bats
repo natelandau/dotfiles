@@ -22,7 +22,6 @@ if ! command -v $HOME/bin/cleanFilenames &>/dev/null; then
     exit 1
 fi
 
-
 s="$HOME/bin/cleanFilenames"
 base="$(basename $s)"
 
@@ -52,13 +51,12 @@ helper() {
   run "$s" --nonInteractive "${file}"
 
   assert_success
-  assert_output "${newfile}"
+  #assert_output "${newfile}"
+  assert_line "${newfile}"
   assert_file_exist "${newfile}"
 }
 
-######## run TESTS ##########
-
-
+######## RUN TESTS ##########
 
 @test "sanity" {
   run true
@@ -71,7 +69,7 @@ helper() {
   run "$s" -K
 
   assert_failure
-  assert_output --partial "[  error] invalid option: '-K'. Exiting."
+  assert_output --partial "[  fatal] invalid option: '-K'"
 }
 
 @test "Fail when can't find file" {
@@ -111,30 +109,6 @@ helper() {
 
   assert_failure
   assert_output --partial 'is not a supported extension'
-}
-
-@test "_execute_: Debug command" {
-  dryrun=true
-  run _execute_ "rm testfile.txt"
-  assert_success
-  assert_output --partial "[ dryrun] rm testfile.txt"
-  dryrun=false
-}
-
-@test "_execute_: Bad command" {
-  touch "testfile.txt"
-  run _execute_ "rm nonexistant.txt"
-  assert_success
-  assert_output --partial "[warning] rm nonexistant.txt"
-  assert_file_exist "testfile.txt"
-}
-
-@test "_execute_: Good command" {
-  touch "testfile.txt"
-  run _execute_ "rm testfile.txt"
-  assert_success
-  assert_output --partial "[success] rm testfile.txt"
-  assert_file_not_exist "testfile.txt"
 }
 
 @test "Already datestamped" {
@@ -218,7 +192,7 @@ helper() {
   run $s -LC --nonInteractive "NAME TO LOWERCASE.txt"
 
   assert_success
-  assert_output "name to lowercase 2.txt"
+  assert_line "name to lowercase 2.txt"
   assert_file_exist 'name to lowercase 2.txt'
 }
 
@@ -249,7 +223,7 @@ helper() {
   run $s -L --nonInteractive "NAME TO LOWERCASE.txt"
 
   assert_success
-  assert_output --regexp '^[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2} name to lowercase.txt$'
+  assert_line --regexp '^[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2} name to lowercase.txt$'
 }
 
 @test "Lowercase Names (--lower)" {
@@ -372,36 +346,8 @@ helper() {
   run $s -qv "M D YY 2 5 16.txt"
 
   assert_success
-  refute_output --regexp '\[  debug\]|\[ dryrun\]|\[success\]|\[  error\]'
+  refute_output --regexp '\[  debug\]|\[ dryrun\]|\[success\]|\[  fatal\]'
   assert_file_exist '2016-02-05 M D YY.txt'
-}
-
-@test "Quiet mode (--quiet)" {
-  touch "M D YY 2 5 16.txt"
-  run $s -v --quiet "M D YY 2 5 16.txt"
-
-  assert_success
-  refute_output --regexp '\[  debug\]|\[ dryrun\]|\[success\]|\[  error\]'
-  assert_file_exist '2016-02-05 M D YY.txt'
-}
-
-@test "Print version (--version)" {
-  run $s --version
-
-  assert_success
-  assert_output --regexp "cleanFilenames [v|V]?[0-9]+\.[0-9]+\.[0-9]+"
-}
-
-@test "_realpath_: true" {
-  touch testfile.txt
-  run _realpath_ "testfile.txt"
-  assert_success
-  assert_output --regexp "^/private/var/folders/.*/testfile.txt$"
-}
-
-@test "_realpath_: fail" {
-  run _realpath_ "testfile.txt"
-  assert_failure
 }
 
 @test "_parseFilename_" {
