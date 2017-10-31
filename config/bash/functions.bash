@@ -223,3 +223,50 @@ explain () {
     curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$*"
   fi
 }
+
+hex2rgb() {
+  # Convert hex string to rgb
+  # @param 1 (String) 3 or 6 character hex string
+  #   Case insensitive, leading # optional (01a, fff1b1, #ABB)
+  # @param 2 (Float) optional float from 0 to 1
+  #   If provided, outputs an rgba() string
+  #
+  # $ hex2rgb FA0133
+  # rgb(250,1,51)
+  # $ hex2rgb FA0133 .5
+  # rgba(250,1,51,.5)
+  local css=true
+  local printstring
+  local hex="$(tr '[:lower:]' '[:upper:]' <<< ${1#\#})"
+  # Convert ABC to AABBCC
+  if [[ $hex =~ ^[A-F0-9]{3}$ ]]; then
+      hex=$(sed -e 's/\(.\)/\1\1/g' <<< $hex)
+  fi
+
+  # If the first param is a valid hex string, convert to rgb
+  if [[ $hex =~ ^[A-F0-9]{6}$ ]]; then
+      # If second param exists and is a float between 0 and 1, output rgba
+      if [[ -n $2 && $2 =~ ^(0?\.[0-9]+|1(\.0)?)$ ]]; then
+          [[ $css ]] && printstring="rgba(%d,%d,%d,%s)" || printstring="%d,%d,%d,%s"
+          printf $printstring  0x${hex:0:2} 0x${hex:2:2} 0x${hex:4:2} $2
+      else
+          [[ $css ]] && printstring="rgb(%d,%d,%d)" || printstring="%d,%d,%d"
+          printf $printstring 0x${hex:0:2} 0x${hex:2:2} 0x${hex:4:2}
+      fi
+  # If it's not valid hex, return the original string
+  else
+      echo -n "$@"
+  fi
+}
+
+lips() {
+    local ip=$(ifconfig en0 | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
+    local locip extip
+
+    [ "$ip" != "" ] && locip=$ip || locip="inactive"
+
+    ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
+    [ "$ip" != "" ] && extip=$ip || extip="inactive"
+
+    printf '%11s: %s\n%11s: %s\n' "Local IP" $locip "External IP" $extip
+}

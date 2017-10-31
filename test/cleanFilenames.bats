@@ -52,7 +52,7 @@ helper() {
 
   assert_success
   #assert_output "${newfile}"
-  assert_line "${newfile}"
+  assert_line --partial "${newfile}"
   assert_file_exist "${newfile}"
 }
 
@@ -66,53 +66,52 @@ helper() {
 }
 
 @test "Fail with bad args" {
-  run "$s" -K
+  run "$s" -eK
 
   assert_failure
   assert_output --partial "[  fatal] invalid option: '-K'"
 }
 
 @test "Fail when can't find file" {
-  run $s "some non-existant file.txt"
+  run $s -e "some non-existant file.txt"
 
-  assert_failure
-  assert_output --partial 'No such file or directory'
+  assert_success
+  assert_output --partial 'error] No such file or directory'
 }
 
 @test "Fail on directories" {
   mkdir "testToFail"
-  run $s "testToFail"
+  run $s -e "testToFail"
 
-  assert_failure
-  assert_output --partial 'is a directory'
+  assert_success
+  assert_output --partial 'error] testToFail: is a directory'
 }
 
 @test "Fail on dotfiles" {
   touch ".testdotfile"
-  run $s ".testdotfile"
+  run $s -e ".testdotfile"
 
-  assert_failure
+  assert_success
+  assert_output --partial 'error'
   assert_output --partial 'is a dotfile'
 }
 
 @test "Fail without extensions" {
   touch "testfile"
-  run $s "testfile"
+  run $s -e "testfile"
 
-  assert_failure
+  assert_success
+  assert_output --partial 'error'
   assert_output --partial 'we need a file extension'
 }
 
 @test "Fail with DMG files" {
   touch "testfile.dmg"
-  run $s "testfile.dmg"
+  run $s -e "testfile.dmg"
 
-  assert_failure
+  assert_success
+  assert_output --partial 'error'
   assert_output --partial 'is not a supported extension'
-}
-
-@test "Already datestamped" {
-  helper "2016-01-01 Already datestamped.txt" "2016-01-01 Already datestamped.txt"
 }
 
 @test "YYY MM DD" {
@@ -187,13 +186,32 @@ helper() {
   assert_output --partial 'name with long number 123456789101112 test.txt'
 }
 
+@test "No change" {
+  touch "2016-01-01 already datestamped.txt"
+  run $s -LC "2016-01-01 already datestamped.txt"
+
+  assert_success
+  assert_line --partial ": No change"
+  assert_file_exist "2016-01-01 already datestamped.txt"
+}
+
+@test "No change --nonInteractive" {
+  touch "2016-01-01 already datestamped.txt"
+  run $s -LC --nonInteractive "2016-01-01 already datestamped.txt"
+
+  assert_success
+  assert_line --partial "/2016-01-01 already datestamped.txt"
+  assert_file_exist "2016-01-01 already datestamped.txt"
+}
+
 @test "Unique filename increments" {
   touch "NAME TO LOWERCASE.txt"
+  touch "name to lowercase.txt"
   run $s -LC --nonInteractive "NAME TO LOWERCASE.txt"
 
   assert_success
-  assert_line "name to lowercase 2.txt"
-  assert_file_exist 'name to lowercase 2.txt'
+  assert_line --partial "name to lowercase-2.txt"
+  assert_file_exist 'name to lowercase-2.txt'
 }
 
 @test "Files in different directories" {
@@ -223,7 +241,7 @@ helper() {
   run $s -L --nonInteractive "NAME TO LOWERCASE.txt"
 
   assert_success
-  assert_line --regexp '^[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2} name to lowercase.txt$'
+  assert_line --regexp '[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2} name to lowercase.txt$'
 }
 
 @test "Lowercase Names (--lower)" {
@@ -348,18 +366,4 @@ helper() {
   assert_success
   refute_output --regexp '\[  debug\]|\[ dryrun\]|\[success\]|\[  fatal\]'
   assert_file_exist '2016-02-05 M D YY.txt'
-}
-
-@test "_parseFilename_" {
-  touch "testfile.txt"
-  _parseFilename_ "testfile.txt"
-
-  run echo "$baseFilename"
-  assert_output "testfile"
-
-  run echo "$extension"
-  assert_output "txt"
-
-  run echo "$originalFile"
-  assert_output "testfile.txt"
 }

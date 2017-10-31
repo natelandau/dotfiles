@@ -1,5 +1,5 @@
-
 #!/usr/bin/env bash
+
 version="1.0.0"
 
 _mainScript_() {
@@ -12,7 +12,7 @@ _mainScript_() {
   if [[ "$OSTYPE" == "darwin"* ]]; then
     # This script symlinks the 'subl' CLI tool to /usr/local/bin
 
-    header "symlink 'subl' to /usr/local/bin ..."
+    header "symlink 'subl' to /usr/local/bin"
 
     if [ ! -e "/Applications/Sublime Text.app" ]; then
       warning "We don't have Sublime Text.app. Install it and try again."
@@ -25,93 +25,40 @@ _mainScript_() {
       fi
     fi
   fi
-}
 
-_trapCleanup_() {
-  echo ""
-  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
-}
+}  # end _mainScript_
 
-_safeExit_() {
-  trap - INT TERM EXIT
-  exit ${1:-0}
-}
+_sourceHelperFiles_() {
+  local filesToSource
+  local sourceFile
 
-_execute_() {
-  # v1.0.1
-  local cmd="${1:?_execute_ needs a command}"
-  local message="${2:-$1}"
-  if ${dryrun}; then
-    dryrun "${message}"
-  else
-    if $verbose; then
-      eval "$cmd"
-    else
-      eval "$cmd" &> /dev/null
-    fi
-    if [ $? -eq 0 ]; then
-      success "${message}"
-    else
-      error "${message}"
-      #die "${message}"
-    fi
-  fi
+  filesToSource=(
+    ${HOME}/dotfiles/scripting/helpers/baseHelpers.bash
+  )
+
+  for sourceFile in "${filesToSource[@]}"; do
+    [ ! -f "$sourceFile" ] \
+      &&  { echo "error: Can not find sourcefile '$sourceFile'. Exiting."; exit 1; }
+
+    source "$sourceFile"
+  done
 }
+_sourceHelperFiles_
 
 # Set Base Variables
 # ----------------------
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false;              printLog=false;             verbose=false;
+quiet=false;              printLog=false;             logErrors=true;     verbose=false;
 force=false;              strict=false;               dryrun=false;
 debug=false;              sourceOnly=false;           args=();
 
-# Set Colors
-bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
-red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
-blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
-
-# Logging & Feedback
-logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
-
-_alert_() {
-  # v1.0.0
-  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
-  if [ "${1}" = "warning" ]; then local color="${red}"; fi
-  if [ "${1}" = "success" ]; then local color="${green}"; fi
-  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
-  if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
-  if [ "${1}" = "input" ]; then local color="${bold}"; fi
-  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
-  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
-  # Don't use colors on pipes or non-recognized terminals
-  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
-
-  # Print to console when script is not 'quiet'
-  if ${quiet}; then tput cuu1 ; return; else # tput cuu1 moves cursor up one line
-   echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
-  fi
-
-  # Print to Logfile
-  if ${printLog} && [ "${1}" != "input" ]; then
-    color=""; reset="" # Don't use colors in logs
-    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
-  fi
+# Set Temp Directory
+tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
+(umask 077 && mkdir "${tmpDir}") || {
+  die "Could not create temporary directory! Exiting."
 }
-
-function die ()       { local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
-function error ()     { local _message="${*}"; echo -e "$(_alert_ error)"; }
-function warning ()   { local _message="${*}"; echo -e "$(_alert_ warning)"; }
-function notice ()    { local _message="${*}"; echo -e "$(_alert_ notice)"; }
-function info ()      { local _message="${*}"; echo -e "$(_alert_ info)"; }
-function debug ()     { local _message="${*}"; echo -e "$(_alert_ debug)"; }
-function success ()   { local _message="${*}"; echo -e "$(_alert_ success)"; }
-function dryrun()     { local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
-function input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
-function header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
-function verbose()    { if ${verbose}; then debug "$@"; fi }
-
 
 # Options and Usage
 # -----------------------------------
@@ -120,12 +67,14 @@ _usage_() {
 
 Configure the macOS application Sublime Text 3 by enabling the CLI command 'subl'
 
- ${bold}Options:${reset}
-  --rootDIR         The location of the 'dotfiles' directory
 
+ ${bold}Option Flags:${reset}
+
+  --rootDIR         The location of the 'dotfiles' directory
+  -L, --noErrorLog  Print log level error and fatal to a log (default 'true')
+  -l, --log         Print log to file
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
-  -l, --log         Print log to file
   -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
@@ -180,7 +129,9 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
+    --rootDIR) shift; baseDir="$1" ;;
     -h|--help) _usage_ >&2; _safeExit_ ;;
+    -L|--noErrorLog) logErrors=false ;;
     -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;
     -l|--log) printLog=true ;;
@@ -200,14 +151,15 @@ done
 args+=("$@")
 
 # Trap bad exits with your cleanup function
-trap _trapCleanup_ EXIT INT TERM
+trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
+  EXIT INT TERM SIGINT SIGQUIT ERR
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-# if using the 'execute' function this must be disabled for warnings to be shown if tasks fail
-#set -o errexit
+# set -o errexit
+# set -o errtrace
 
 # Force pipelines to fail on the first non-zero status code.
 set -o pipefail
@@ -217,9 +169,6 @@ if ${debug}; then set -x ; fi
 
 # Exit on empty variable
 if ${strict}; then set -o nounset ; fi
-
-# Exit the script if a command fails
-#set -e
 
 # Run your script unless in 'source-only' mode
 if ! ${sourceOnly}; then _mainScript_; fi

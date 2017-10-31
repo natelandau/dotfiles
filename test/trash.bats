@@ -62,10 +62,10 @@ teardown() {
 }
 
 @test "Fail on unknown argument" {
-  run $s -K
+  run $s -LK
 
   assert_failure
-  assert_output --partial "[  error] invalid option: '-K'. Exiting."
+  assert_output --partial "[  fatal] invalid option: '-K'."
 }
 
 @test "Print version (--version)" {
@@ -97,10 +97,10 @@ teardown() {
 }
 
 @test "Fail when can't find file" {
-  run $s "some-file-that-doesn't-exist"
+  run $s -L "some-file-that-doesn't-exist"
 
-  assert_failure
-  assert_output --partial "[  error] some-file-that-doesn't-exist: No such file or directory Exiting"
+  assert_success
+  assert_output --partial "[warning] some-file-that-doesn't-exist: No such file or directory"
 }
 
 @test "Trashing a file" {
@@ -253,28 +253,6 @@ teardown() {
   assert_output --regexp "\[ dryrun\] rm -rf \"/Users/[a-zA-Z0-9]+/\.Trash/${file}\""
 }
 
-@test "_uniqueFileName_: Count to 3" {
-  touch "test.txt"
-  touch "test 2.txt"
-
-  run _uniqueFileName_ "test.txt"
-  assert_output "test 3.txt"
-}
-
-@test "_uniqueFileName_: Don't confuse existing numbers" {
-  touch "test 2.txt"
-
-  run _uniqueFileName_ "test 2.txt"
-  assert_output "test 2 2.txt"
-}
-
-@test "_uniqueFileName_: User specified separator" {
-  touch "test.txt"
-
-  run _uniqueFileName_ "test.txt" "-"
-  assert_output "test-2.txt"
-}
-
 @test "_realpath_: true" {
   touch testfile.txt
   run _realpath_ "testfile.txt"
@@ -296,11 +274,13 @@ teardown() {
 }
 
 @test "_execute_: Bad command" {
-  touch "testfile.txt"
+  touch "testfile.txt"; logErrors=false;
   run _execute_ "rm nonexistant.txt"
-  assert_success
+
+  assert_failure
   assert_output --partial "[warning] rm nonexistant.txt"
   assert_file_exist "testfile.txt"
+  logErrors=true
 }
 
 @test "_execute_: Good command" {

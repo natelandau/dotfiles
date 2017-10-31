@@ -5,7 +5,6 @@ homebrewCasks:
   # - bartender
   # - betterzipql
   # - carbon-copy-cloner
-  - cloak
   - codekit
   # - controlplane
   - fantastical

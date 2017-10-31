@@ -17,62 +17,85 @@ blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
 _alert_() {
   # v1.1.0
 
-  local scriptName logLocation logName logFile function_name
+  local scriptName logLocation logName function_name color alertType line
+  alertType="$1"
+  line="${2}"
 
   scriptName=$(basename "$0")
   logLocation="${HOME}/logs"
   logName="${scriptName%.sh}.log"
-  logFile="${logLocation}/${logName}"
-  function_name=$(IFS="\\"; echo "${FUNCNAME[*]:3}")
 
-  if [[ "$1" =~ ^(fatal|error|warning|debug) ]]; then
-    _message="$_message ($function_name)"
+  [ -z "$logFile" ] \
+    && logFile="${logLocation}/${logName}"
+
+  function_name="func: $(echo "$(IFS="<"; echo "${FUNCNAME[*]:2}")" | sed -E 's/</ < /g')"
+
+  if [ -z "$line" ]; then
+    [[ "$1" =~ ^(fatal|error|debug) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
+      && _message="$_message ($function_name)"
+  else
+    [[ "$1" =~ ^(fatal|error|debug) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
+      && _message="$_message (line: $line) ($function_name)"
   fi
 
-  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
-  if [ "${1}" = "fatal" ]; then local color="${bold}${red}"; fi
-  if [ "${1}" = "warning" ]; then local color="${red}"; fi
-  if [ "${1}" = "success" ]; then local color="${green}"; fi
-  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
-  if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
-  if [ "${1}" = "input" ]; then local color="${bold}"; fi
-  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
-  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
+  [ "${alertType}" = "error" ]   && color="${bold}${red}"
+  [ "${alertType}" = "fatal" ]   && color="${bold}${red}"
+  [ "${alertType}" = "warning" ] && color="${red}"
+  [ "${alertType}" = "success" ] && color="${green}"
+  [ "${alertType}" = "debug" ]   && color="${purple}"
+  [ "${alertType}" = "header" ]  && color="${bold}${tan}"
+  [ "${alertType}" = "input" ]   && color="${bold}"
+  [ "${alertType}" = "dryrun" ]  && color="${blue}"
+  [ "${alertType}" = "info" ]    && color=""
+  [ "${alertType}" = "notice" ]  && color=""
 
   # Don't use colors on pipes or non-recognized terminals
   if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
 
   # Print to console when script is not 'quiet'
-  _writeToScreen_() {
-    ( "$quiet" ) \
-      && { tput cuu1; return; }  # tput cuu1 moves cursor up one line
+    _writeToScreen_() {
+      ( "$quiet" ) \
+        && { tput cuu1; return; }  # tput cuu1 moves cursor up one line
 
-     echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
-  }
-  _writeToScreen_ "$1"
+       echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
+    }
+    _writeToScreen_ "$1"
 
   # Print to Logfile
-  if ${printLog}; then
-    [[ "$1" =~ ^(input|dryrun|header|debug) ]] && return
-    [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
-    [ ! -f "$logFile" ] && touch "$logFile"
-    color=""; reset="" # Don't use colors in logs
-    echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
-  fi
+    if "${printLog}"; then
+      [[ "$alertType" =~ ^(input|dryrun|header|debug) ]] && return
+      [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
+      [ ! -f "$logFile" ] && touch "$logFile"
+      color=""; reset="" # Don't use colors in logs
+      echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
+    elif [[ "${logErrors}" == "true" && "$alertType" =~ ^(error|fatal) ]]; then
+        [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
+        [ ! -f "$logFile" ] && touch "$logFile"
+        color=""; reset="" # Don't use colors in logs
+        echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
+    else
+      return 0
+    fi
 }
 
-die ()       { local _message="${*}"; echo -e "$(_alert_ fatal)"; _safeExit_ "1";}
-fatal ()     { local _message="${*}"; echo -e "$(_alert_ fatal)"; _safeExit_ "1";}
-error ()     { local _message="${*}"; echo -e "$(_alert_ error)"; }
-warning ()   { local _message="${*}"; echo -e "$(_alert_ warning)"; }
-notice ()    { local _message="${*}"; echo -e "$(_alert_ notice)"; }
-info ()      { local _message="${*}"; echo -e "$(_alert_ info)"; }
-debug ()     { local _message="${*}"; echo -e "$(_alert_ debug)"; }
-success ()   { local _message="${*}"; echo -e "$(_alert_ success)"; }
-dryrun()     { local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
-input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
-header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
-verbose()    { if ${verbose}; then debug "$@"; fi }
+die ()       { local _message="${1}"; echo -e "$(_alert_ fatal $2)"; _safeExit_ "1";}
+fatal ()     { local _message="${1}"; echo -e "$(_alert_ fatal $2)"; _safeExit_ "1";}
+trapped ()   { local _message="${1}"; echo -e "$(_alert_ trapped $2)"; _safeExit_ "1";}
+error ()     { local _message="${1}"; echo -e "$(_alert_ error $2)"; }
+warning ()   { local _message="${1}"; echo -e "$(_alert_ warning $2)"; }
+notice ()    { local _message="${1}"; echo -e "$(_alert_ notice $2)"; }
+info ()      { local _message="${1}"; echo -e "$(_alert_ info $2)"; }
+debug ()     { local _message="${1}"; echo -e "$(_alert_ debug $2)"; }
+success ()   { local _message="${1}"; echo -e "$(_alert_ success $2)"; }
+dryrun()     { local _message="${1}"; echo -e "$(_alert_ dryrun $2)"; }
+input()      { local _message="${1}"; echo -n "$(_alert_ input $2)"; }
+header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header $2)"; }
+verbose()    {
+  ( $verbose ) \
+    && { local _message="${1}"; echo -e "$(_alert_ debug $2)"; } \
+    || return 0
+}
+
 
 ### FUNCTIONS ###
 
@@ -100,9 +123,52 @@ _execute_() {
       success "${message}"
       return 0
     else
-      error "${message}"
+      warning "${message}"
       return 1
-      #die "${message}"
+    fi
+  fi
+}
+
+_executeStrict_() {
+  # v1.0.2
+  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
+  #           and have control over the display of the results.  In "dryrun" mode these
+  #           commands are not executed at all. In Verbose mode, the commands are executed
+  #           with results printed to stderr and stdin
+  #
+  # usage:
+  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
+  local cmd="${1:?_execute_ needs a command}"
+  local message="${2:-$1}"
+  local save="$-"
+  local resetSetAdd
+  local resetSetRemove
+
+  save="$(echo "$save" | sed -E 's/(i|s)//g' )"
+
+  if [[ $save =~ e ]]; then
+    resetSetAdd="e"
+  else
+    resetSetRemove="e"
+  fi
+  if [[ $save =~ E ]]; then
+    resetSetAdd="${resetSetAdd}E"
+  else
+    resetSetRemove="${resetSetRemove}E"
+  fi
+
+  set -Ee
+  if ${dryrun}; then
+    dryrun "${message}"
+  else
+    eval "$cmd"
+    if [ $? -eq 0 ]; then
+      success "${message}"
+      set -$resetSetAdd
+      set +$resetSetRemove
+      return 0
+    else
+      fatal "${message}" "$LINENO"
     fi
   fi
 }
@@ -113,7 +179,12 @@ _findBaseDir_() {
   # usage :  baseDir="$(_findBaseDir_)"
   local SOURCE
   local DIR
-  SOURCE="${BASH_SOURCE[0]}"
+
+  # Is file sourced?
+  [[ $_ != "$0" ]] \
+    && SOURCE="${BASH_SOURCE[1]}" \
+    || SOURCE="${BASH_SOURCE[0]}"
+
   while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
     DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
     SOURCE="$(readlink "$SOURCE")"
@@ -209,7 +280,9 @@ _progressBar_() {
 
 _safeExit_() {
   # Delete temp files, if any
-  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
+  if [ -n "${tmpDir}" ]; then
+    [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
+  fi
   trap - INT TERM EXIT
   exit ${1:-0}
 }
@@ -255,8 +328,24 @@ _setPATH_() {
 }
 
 _trapCleanup_() {
-  echo ""
-  # Delete temp files, if any
-  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
-  fatal "Exit trapped. Function: '${FUNCNAME[*]:1}'"
+  local line=$1 # LINENO
+  local linecallfunc=$2
+  local command="$3"
+  local funcstack="$4"
+  local script="$5"
+  local sourced="$6"
+  local scriptSpecific="$7"
+
+  funcstack="'$(echo "$funcstack" | sed -E 's/ / < /g')'"
+
+  if [ -n "${tmpDir}" ]; then
+    [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
+  fi
+
+  #fatal "line $line - command '$command' $func"
+  if [[ "${script##*/}" == "${sourced##*/}" ]]; then
+    fatal "${7} command: '$command' (line: $line) (func: ${funcstack})"
+  else
+    fatal "${7} command: '$command' (func: ${funcstack} called at line $linecallfunc of '${script##*/}') (line: $line of '${sourced##*/}') "
+  fi
 }

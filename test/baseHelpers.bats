@@ -13,7 +13,7 @@ base="$(basename $s)"
   || { echo "Can not find script to test" ; exit 1 ; }
 
 # Set Flags
-quiet=false;              printLog=false;             verbose=false;
+quiet=false;              printLog=false;             logErrors=true;   verbose=false;
 force=false;              strict=false;               dryrun=false;
 debug=false;              sourceOnly=false;           args=();
 
@@ -54,7 +54,7 @@ teardown() {
 
 @test "error" {
   run error "testing"
-  assert_output --regexp "\[  error\] testing"
+  assert_output --partial "[  error] testing (func: run < test_error < bats_perform_test < main)"
 }
 
 @test "_execute_: Debug command" {
@@ -77,7 +77,7 @@ teardown() {
   run _execute_ "rm nonexistant.txt"
 
   assert_failure
-  assert_output --partial "[  error] rm nonexistant.txt"
+  assert_output --partial "[warning] rm nonexistant.txt"
   assert_file_exist "testfile.txt"
 }
 
@@ -91,7 +91,7 @@ teardown() {
 
 @test "_findBaseDir_" {
   run _findBaseDir_
-  assert_output "${HOME}/dotfiles/scripting/helpers"
+  assert_output "/usr/local/Cellar/bats/0.4.0/libexec"
 }
 
 @test "_haveFunction_: Success" {
@@ -122,7 +122,9 @@ teardown() {
 }
 
 @test "logging" {
-  printLog=true; logFile="${HOME}/logs/bats-exec-test.log";
+  printLog=true; logFile="${HOME}/tmp/bats-baseHelpers-test.log";
+  header "$logFile"
+  dryrun "dryrun"
   notice "testing"
   info "testing again"
   success "last test"
@@ -135,7 +137,26 @@ teardown() {
   assert_line --index 2 --partial "[success] last test"
 
   rm "$logFile"
-  printLog=false
+  printLog=false; unset logFile;
+}
+
+@test "logging: Errors only" {
+  printLog=false; logFile="${HOME}/tmp/bats-baseHelpers-tests.log"; quiet=true;
+  header "$logFile"
+  dryrun "dryrun"
+  notice "testing"
+  info "testing again"
+  success "last test"
+  error "test error"
+  warning "test warning"
+
+  assert_file_exist "${logFile}"
+
+  run cat "${logFile}"
+  assert_line --index 0 --partial "[  error] test error (func: test_logging-3a_Errors_only < bats_perform_test < main)"
+
+  rm "$logFile"
+  printLog=false; quiet=false; unset logFile;
 }
 
 @test "notice" {

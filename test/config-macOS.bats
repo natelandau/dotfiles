@@ -66,10 +66,10 @@ symlinkYAML="${BATS_TEST_DIRNAME}/fixtures/symlinks.yaml"
 
 ########### TAKING ARGUMENTS ###############
 @test "Fail on unknown argument" {
-  run $s -K
+  run $s -LK
 
   assert_failure
-  assert_output --partial "[  error] invalid option: '-K'. Exiting."
+  assert_output --partial "[  fatal] invalid option: '-K'."
 }
 
 @test "Print version (--version)" {
@@ -137,7 +137,7 @@ symlinkYAML="${BATS_TEST_DIRNAME}/fixtures/symlinks.yaml"
   touch "testfile.txt"
   run _execute_ "rm nonexistant.txt"
   assert_failure
-  assert_output --partial "[  error] rm nonexistant.txt"
+  assert_output --partial "[warning] rm nonexistant.txt"
   assert_file_exist "testfile.txt"
 }
 
@@ -147,11 +147,6 @@ symlinkYAML="${BATS_TEST_DIRNAME}/fixtures/symlinks.yaml"
   assert_success
   assert_output --partial "[success] rm testfile.txt"
   assert_file_not_exist "testfile.txt"
-}
-
-@test "_findBaseDir_" {
-  run _findBaseDir_
-  assert_output "${HOME}/dotfiles/bootstrap"
 }
 
 @test "_haveFunction_: Success" {
@@ -392,7 +387,7 @@ symlinkYAML="${BATS_TEST_DIRNAME}/fixtures/symlinks.yaml"
   run die "testing"
 
   assert_failure
-  assert_line --index 0 --partial "[  error] testing Exiting."
+  assert_line --index 0 --partial "[  fatal] testing"
 }
 
 @test "quiet" {

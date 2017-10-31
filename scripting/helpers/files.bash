@@ -10,7 +10,7 @@ _backupFile_() {
 
   local s="$1"                # Source file
   local d="${2:-backup}"      # Destination directory (optional, defaults to 'backup')
-  local n                     # New filename (created by _uniquefilename_)
+  local n                     # New filename (created by _uniqueFilename_)
 
   [ ! "$(declare -f "_execute_")" ] \
     && { echo "need function _execute_"; return 1; }
@@ -42,7 +42,8 @@ _cleanFilename_() {
 
   fileToClean="$1"
 
-  [ ! -f "$fileToClean" ] && die "_cleanFileName_ ${fileToClean}: File doesn't exist"
+  [ ! -f "$fileToClean" ] \
+    && { warning "_cleanFileName_ ${fileToClean}: File doesn't exist"; return 1; }
 
   extension="${fileToClean##*.}"
   baseFileName=${fileToClean%.*}
@@ -335,6 +336,8 @@ _realpath_() {
   # an error (esp. path not found).
   local success=true
   local path="$1"
+  local file_basename
+  local directory
 
   # make sure the string isn't empty as that implies something in further logic
   if [ -z "$path" ]; then
@@ -349,13 +352,13 @@ _realpath_() {
     fi
 
     # get the basename of the file (ignoring '.' & '..', because they're really part of the path)
-    local file_basename="${path##*/}"
+    file_basename="${path##*/}"
     if [[ ( "$file_basename" = "." ) || ( "$file_basename" = ".." ) ]]; then
       file_basename=""
     fi
 
     # extracts the directory component of the full path, if it's empty then assume '.' (the current working directory)
-    local directory="${path%$file_basename}"
+    directory="${path%$file_basename}"
     if [ -z "$directory" ]; then
       directory='.'
     fi

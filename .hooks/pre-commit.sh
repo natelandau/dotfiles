@@ -96,7 +96,7 @@ _BATS_() {
     filename="$(basename $file)"
     filename="${filename%.*}"
     [ -f "${GITROOT}/test/${filename}.bats" ] \
-      && _execute_ "${GITROOT}/test/${filename}.bats -t"
+      && { echo -e "\n## Running ${filename}.bats ##"; _execute_ "${GITROOT}/test/${filename}.bats -t"; }
     unset filename
   done
 
@@ -105,7 +105,7 @@ _BATS_() {
     filename="$(basename $file)"
     filename="${filename%.*}"
     [ -f "${GITROOT}/test/${filename}.bats" ] \
-      && _execute_ "${GITROOT}/test/${filename}.bats -t"
+      && { echo -e "\n## Running: ${filename}.bats ##"; _execute_ "${GITROOT}/test/${filename}.bats -t"; }
     unset filename
   done
 
@@ -114,7 +114,7 @@ _BATS_() {
     filename="$(basename $file)"
     filename="${filename%.*}"
     [ -f "${GITROOT}/test/${filename}.bats" ] \
-      && _execute_ "${GITROOT}/test/${filename}.bats -t"
+      && { echo -e "\n## Running: ${filename}.bats ##"; _execute_ "${GITROOT}/test/${filename}.bats -t"; }
     unset filename
   done
 

@@ -5,11 +5,11 @@ version="1.0.0"
 _mainScript_() {
 
   [[ "$OSTYPE" != "darwin"* ]] \
-    && die "We are not on macOS"
+    && die "We are not on macOS" "$LINENO"
 
   # Set Variables
-    baseDir="$(_findBaseDir_)"
-    rootDIR="$(dirname "$baseDir")"
+    baseDir="$(_findBaseDir_)" &&  verbose "baseDir: $baseDir"
+    rootDIR="$(dirname "$baseDir")" && verbose "rootDIR: $rootDIR"
     privateInstallScript="${HOME}/dotfiles-private/privateInstall.sh"
     pluginScripts="${baseDir}/plugins"
 
@@ -80,7 +80,7 @@ _mainScript_() {
     # shellcheck disable=2015
     ( _parseYAML_ "${c}" > "${t}" ) \
       && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
-      || die "Could not parse YAML config file"
+      || die "Could not parse YAML config file" "$LINENO"
 
     _sourceFile_ "$t"
 
@@ -136,7 +136,7 @@ _mainScript_() {
     # shellcheck disable=2015
     ( _parseYAML_ "${c}" > "${t}" ) \
       && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
-      || die "Could not parse YAML config file"
+      || die "Could not parse YAML config file" "$LINENO"
 
     _sourceFile_ "$t"
 
@@ -184,7 +184,7 @@ _mainScript_() {
     # shellcheck disable=2015
     ( _parseYAML_ "${c}" > "${t}" ) \
       && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
-      || die "Could not parse YAML config file"
+      || die "Could not parse YAML config file" "$LINENO"
 
     _sourceFile_ "$t"
 
@@ -243,7 +243,7 @@ _mainScript_() {
     # shellcheck disable=2015
     ( _parseYAML_ "${c}" > "${t}" ) \
       && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
-      || die "Could not parse YAML config file"
+      || die "Could not parse YAML config file" "$LINENO"
 
     _sourceFile_ "$t"
 
@@ -287,20 +287,35 @@ _mainScript_() {
   _ruby_ "$configRuby"
 
   _runPlugins_() {
-    local plugin pluginName
+    local plugin pluginName flags v d
 
     header "Running plugin scripts"
 
-    if [ ! -d "$pluginScripts" ]; then die "Can't find plugins."; fi
+    if [ ! -d "$pluginScripts" ]; then
+      error "Can't find plugins." "$LINENO"
+      return 1
+    fi
 
     # Run the bootstrap scripts in numerical order
-
-    set +e # Don't quit install.sh when a sub-script fails
     for plugin in ${pluginScripts}/*.sh; do
       pluginName="$(basename ${plugin})"
       pluginName="$(echo $pluginName | sed -e 's/[0-9][0-9]-//g' | sed -e 's/-/ /g' | sed -e 's/\.sh//g')"
       if _seekConfirmation_ "Run '${pluginName}' plugin?"; then
-        "${plugin}" "${scriptFlags[*]}" --verbose --rootDIR "$rootDIR"
+
+        #Build flags
+        [ -n "${scriptFlags[*]}" ] \
+          && flags="${scriptFlags[*]}"
+        [[ "$flags" =~ (--verbose|v) ]] \
+          || flags="${flags} --verbose"
+        ( $dryrun ) && { d=true; dryrun=false; }
+        flags="${flags} --rootDIR $rootDIR"
+
+        v=$verbose; verbose=true;
+
+        _execute_ "${plugin} ${flags}" "'${pluginName}' plugin"
+
+        verbose=$v
+        ( $d ) && dryrun=true;
       fi
     done
   }
@@ -339,7 +354,7 @@ _doSymlinks_() {
   # shellcheck disable=2015
   ( _parseYAML_ "${c}" > "${t}" ) \
     && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
-    || die "Could not parse YAML config file"
+    || die "Could not parse YAML config file" "$LINENO"
 
   _sourceFile_ "$t"
 
@@ -390,507 +405,40 @@ _checkForHomebrew_() {
   fi
 }
 
-# ### SHARED FUNCTIONS ###########################
-
-_backupFile_() {
-  # v1.0.0
-  # Creates a copy of a specified file taking two inputs:
-  #   $1 - File to be backed up
-  #   $2 - Destination
-  #
-  # NOTE: dotfiles have their leading '.' removed in their backup
-  #
-  # Usage:  _backupFile_ "sourcefile.txt" "some/backup/dir"
-
-  local s="$1"
-  local d="${2:-backup}"
-  local n
-
-  [ ! -e "$s" ] \
-    &&  { error "Source '$s' not found"; return 1; }
-  #[ ! -d "$d" ] \
-  #  &&  { error "Destination '$d' not found"; return 1; }
-
-  if ! _haveFunction_ "_execute_"; then
-    error "need function _execute_"; return 1;
-  fi
-  if ! _haveFunction_ "_uniqueFileName_"; then
-    error "need function _uniqueFileName_"; return 1;
-  fi
-
-  [ ! -d "$d" ] \
-    && _execute_ "mkdir \"$d\"" "Creating backup directory"
-
-  if [ -e "$s" ]; then
-    n="$(basename "$s")"
-    n="$(_uniqueFileName_ "${d}/${s#.}")"
-    _execute_ "cp -R \"${s}\" \"${d}/${n##*/}\"" "Backing up: '${s}' to '${d}/${n##*/}'"
-  fi
-}
-
-_execute_() {
-  # v1.0.2
-  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
-  #           and have control over the display of the results.  In "dryrun" mode these
-  #           commands are not executed at all. In Verbose mode, the commands are executed
-  #           with results printed to stderr and stdin
-  #
-  # usage:
-  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
-  local cmd="${1:?_execute_ needs a command}"
-  local message="${2:-$1}"
-  if ${dryrun}; then
-    dryrun "${message}"
-  else
-    if $verbose; then
-      eval "$cmd"
-    else
-      eval "$cmd" &> /dev/null
-    fi
-    if [ $? -eq 0 ]; then
-      success "${message}"
-    else
-      error "${message}"
-      return 1
-      #die "${message}"
-    fi
-  fi
-}
-
-_findBaseDir_() {
-  #v1.0.0
-  # fincBaseDir locates the real directory of the script being run. similar to GNU readlink -n
-  # usage :  baseDir="$(_findBaseDir_)"
-  local SOURCE
-  local DIR
-  SOURCE="${BASH_SOURCE[0]}"
-  while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-    SOURCE="$(readlink "$SOURCE")"
-    [[ $SOURCE != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
-  done
-  echo "$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
-}
-
-_haveFunction_ () {
-  # v1.0.0
-  # Tests if a function exists.  Returns 0 if yes, 1 if no
-  # usage: _haveFunction "_someFunction_"
-  local f
-  f="$1"
-
-  if declare -f "$f" &> /dev/null 2>&1; then
-    return 0
-  else
-    return 1
-  fi
-}
-
-_locateSourceFile_() {
-  # v1.0.1
-  # locateSourceFile is fed a symlink and returns the originating file
-  # usage: _locateSourceFile_ 'some/symlink'
-
-  local TARGET_FILE
-  local PHYS_DIR
-  local RESULT
-
-  TARGET_FILE="${1:?_locateSourceFile_ needs a file}"
-
-  cd "$(dirname "$TARGET_FILE")" || return 1
-  TARGET_FILE="$(basename "$TARGET_FILE")"
-
-  # Iterate down a (possible) chain of symlinks
-  while [ -L "$TARGET_FILE" ]; do
-    TARGET_FILE=$(readlink "$TARGET_FILE")
-    cd "$(dirname "$TARGET_FILE")" || return 1
-    TARGET_FILE="$(basename "$TARGET_FILE")"
-  done
-
-  # Compute the canonicalized name by finding the physical path
-  # for the directory we're in and appending the target file.
-  PHYS_DIR=$(pwd -P)
-  RESULT="${PHYS_DIR}/${TARGET_FILE}"
-  echo "$RESULT"
-}
-
-_makeSymlink_() {
-  #v1.1.0
-  # Given two arguments $1 & $2, creates a symlink from $1 (source) to $2 (destination) and
-  # will create a backup of an original file before overwriting
-  #
-  # Script arguments:
-  #
-  #   $1 - Source file
-  #   $2 - Destination for symlink
-  #   $3 - backup directory for files to be overwritten (defaults to 'backup')
-  #
-  # NOTE: This function makes use of the _execute_ function
-  #
-  # usage: _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
-  local s="$1"    # Source file
-  local d="$2"    # Destination file
-  local b="$3"    # Backup directory for originals (optional)
-  local o         # Original file
-
-  [ ! -e "$s" ] \
-    &&  { error "'$s' not found"; return 1; }
-  [ -z "$d" ] \
-    && { error "'$d' not specified"; return 1; }
-
-  # Fix files where $HOME is written as '~'
-    d="${d/\~/$HOME}"
-    s="${s/\~/$HOME}"
-    b="${b/\~/$HOME}"
-
-    if ! _haveFunction_ "_execute_"; then error "need function _execute_"; return 1; fi
-    if ! _haveFunction_ "_backupFile_"; then error "need function _backupFile_"; return 1; fi
-    if ! _haveFunction_ "_locateSourceFile_"; then error "need function _locateSourceFile_"; return 1; fi
-
-  # Create destination directory if needed
-  [ ! -d "${d%/*}" ] \
-    && _execute_ "mkdir -p \"${d%/*}\""
-
-  if [ ! -e "${d}" ]; then
-    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
-  elif [ -h "${d}" ]; then
-    o="$(_locateSourceFile_ "$d")"
-    _backupFile_ "${o}" ${b:-backup}
-    ( $dryrun ) \
-      || rm -rf "$d"
-    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
-  elif [ -e "${d}" ]; then
-    _backupFile_ "${d}" "${b:-backup}"
-    ( $dryrun ) \
-      || rm -rf "$d"
-    _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
-  else
-    warning "Error linking: ${s} → ${d}"
-    return 1
-  fi
-  return 0
-}
-
-_parseYAML_() {
-  # v1.1.0
-  local yamlFile="${1:?_parseYAML_ needs a file}"
-  local prefix=$2
-
-  [ ! -f "$yamlFile" ] && return 1
-  [ ! -s "$yamlFile" ] && return 1
-
-  local s
-  local w
-  local fs
-  s='[[:space:]]*'
-  w='[a-zA-Z0-9_]*'
-  fs="$(echo @|tr @ '\034')"
-  sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-      -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$yamlFile" |
-  awk -F"$fs" '{
-    indent = length($1)/2;
-    if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
-    vname[indent] = $2;
-    for (i in vname) {if (i > indent) {delete vname[i]}}
-    if (length($3) > 0) {
-            vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-            printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
-    }
-  }' | sed 's/_=/+=/g' | sed 's/[[:space:]]*#.*"/"/g'
-}
-
-_sourceFile_() {
-  # v1.0.0
-  # Takes a file as an argument $1 and sources it into the current script
-  # usage: _sourceFile_ "SomeFile.txt"
-  local c=$1
-
-  [ ! -f "$c" ] \
-    &&  { error "'$c' not found"; return 1; }
-
-  source "$c"
-}
-
-_readFile_() {
-  # v1.0.1
-  # Function to reads a file and prints each line.
-  # Usage: _readFile_ "some/filename"
-  local result
-  local c=$1
-
-  [ ! -f "$c" ] \
-    &&  { error "'$c' not found"; return 1; }
-
-  while read -r result; do
-    echo "${result}"
-  done < "${c}"
-}
-
-_realpath_() {
-  # v1.0.0
-  # Convert a relative path to an absolute path.
-  #
-  # From http://github.com/morgant/realpath
-  #
-  # @param string the string to converted from a relative path to an absolute path
-  # @returns Outputs the absolute path to STDOUT, returns 0 if successful or 1 if
-  # an error (esp. path not found).
-  local success=true
-  local path="$1"
-
-  # make sure the string isn't empty as that implies something in further logic
-  if [ -z "$path" ]; then
-    success=false
-  else
-    # start with the file name (sans the trailing slash)
-    path="${path%/}"
-
-    # if we stripped off the trailing slash and were left with nothing, that means we're in the root directory
-    if [ -z "$path" ]; then
-      path="/"
-    fi
-
-    # get the basename of the file (ignoring '.' & '..', because they're really part of the path)
-    local file_basename="${path##*/}"
-    if [[ ( "$file_basename" = "." ) || ( "$file_basename" = ".." ) ]]; then
-      file_basename=""
-    fi
-
-    # extracts the directory component of the full path, if it's empty then assume '.' (the current working directory)
-    local directory="${path%$file_basename}"
-    if [ -z "$directory" ]; then
-      directory='.'
-    fi
-
-    # attempt to change to the directory
-    if ! cd "$directory" &>/dev/null ; then
-      success=false
-    fi
-
-    if $success; then
-      # does the filename exist?
-      if [[ ( -n "$file_basename" ) && ( ! -e "$file_basename" ) ]]; then
-        success=false
-      fi
-
-      # get the absolute path of the current directory & change back to previous directory
-      local abs_path
-      abs_path="$(pwd -P)"
-      cd "-" &>/dev/null || return
-
-      # Append base filename to absolute path
-      if [ "${abs_path}" = "/" ]; then
-        abs_path="${abs_path}${file_basename}"
-      else
-        abs_path="${abs_path}/${file_basename}"
-      fi
-
-      # output the absolute path
-      echo "$abs_path"
-    fi
-  fi
-
-  $success
-}
-
-_seekConfirmation_() {
-  # v1.0.1
-  # Seeks a Yes or No answer to a question.  Usage:
-  #   if _seekConfirmation_ "Answer this question"; then
-  #     something
-  #   fi
-
-  input "$@"
-  if "${force}"; then
-    verbose "Forcing confirmation with '--force' flag set"
-    echo -e ""
-    return 0
-  else
-    while true; do
-      read -r -p " (y/n) " yn
-      case $yn in
-        [Yy]* ) return 0;;
-        [Nn]* ) return 1;;
-        * ) input "Please answer yes or no.";;
-      esac
-    done
-  fi
-}
-
-_setdiff_() {
-  # v1.0.0
-  # Given strings containing space-delimited words A and B, "setdiff A B" will
-  # return all words in A that do not exist in B. Arrays in bash are insane
-  # (and not in a good way).
-  #
-  #   Usage: _setdiff_ "${array1[*]}" "${array2[*]}"
-  #
-  # From http://stackoverflow.com/a/1617303/142339
-  local debug skip a b
-  if [[ "$1" == 1 ]]; then debug=1; shift; fi
-  if [[ "$1" ]]; then
-    local setdiffA setdiffB setdiffC
-    setdiffA=($1); setdiffB=($2)
-  fi
-  setdiffC=()
-  for a in "${setdiffA[@]}"; do
-    skip=
-    for b in "${setdiffB[@]}"; do
-      [[ "$a" == "$b" ]] && skip=1 && break
-    done
-    [[ "$skip" ]] || setdiffC=("${setdiffC[@]}" "$a")
-  done
-  [[ "$debug" ]] && for a in setdiffA setdiffB setdiffC; do
-    echo "$a ($(eval echo "\${#$a[*]}")) $(eval echo "\${$a[*]}")" 1>&2
-  done
-  [[ "$1" ]] && echo "${setdiffC[@]}"
-}
-
-_uniqueFileName_() {
-  # v2.0.0
-  # _uniqueFileName_ takes an input of a file and returns a unique filename.
-  # The use-case here is trying to write a file to a directory which may already
-  # have a file with the same name. To ensure unique filenames, we append a digit
-  # to files when necessary
-  #
-  # Inputs:
-  #
-  #   $1  The name of the file (may include a directory)
-  #
-  #   $2  Option separation character. Defaults to a space
-  #
-  # Usage:
-  #
-  #   _uniqueFileName_ "/some/dir/file.txt" "-"
-  #
-  #   Would return "/some/dir/file-2.txt"
-
-  local fullfile="${1:?_uniqueFileName_ needs a file}"
-  local spacer="${2:--}"
-  local directory
-  local filename
-
-  # Find directories with _realpath_ if available
-  if [ -e "$fullfile" ]; then
-    if type -t _realpath_ | grep -E '^function$' &>/dev/null; then
-      fullfile="$(_realpath_ "$fullfile")"
-    fi
-  fi
-
-  directory="$(dirname "$fullfile")"
-  filename="$(basename "$fullfile")"
-
-  # Extract extensions only when they exist
-  if [[ "$filename" =~ \.[a-zA-Z]{2,3}$ ]]; then
-    local extension=".${filename##*.}"
-    local filename="${filename%.*}"
-  fi
-
-  local newfile="${directory}/${filename}${extension}"
-
-  if [ -e "${newfile}" ]; then
-    local n=2
-    while [[ -e "${directory}/${filename}${spacer}${n}${extension}" ]]; do
-      (( n++ ))
-    done
-    newfile="${directory}/${filename}${spacer}${n}${extension}"
-  fi
-
-  echo "${newfile}"
-}
-
-_ltrim_() {
-  # Removes all leading whitespace (from the left).
-  local char=${1:-[:space:]}
-    sed "s%^[${char//%/\\%}]*%%"
-}
-
-_rtrim_() {
-  # Removes all trailing whitespace (from the right).
-  local char=${1:-[:space:]}
-  sed "s%[${char//%/\\%}]*$%%"
-}
-
-_trim_() {
-  # Removes all leading/trailing whitespace
-  # Usage examples:
-  #     echo "  foo  bar baz " | _trim_  #==> "foo  bar baz"
-  _ltrim_ "$1" | _rtrim_ "$1"
-}
-
-_trapCleanup_() {
-  echo ""
-  # Delete temp files, if any
-  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
-  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
-}
-
-_safeExit_() {
-  # Delete temp files, if any
-  [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
-  trap - INT TERM EXIT
-  exit ${1:-0}
-}
-
 # Set Base Variables
 # ----------------------
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false;              printLog=false;             verbose=false;
+quiet=false;              printLog=false;             logErrors=true;   verbose=false;
 force=false;              strict=false;               dryrun=false;
 debug=false;              sourceOnly=false;           args=();
-
-# Set Colors
-bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
-red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
-blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
 
 # Set Temp Directory
 tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
 (umask 077 && mkdir "${tmpDir}") || {
-  die "Could not create temporary directory! Exiting."
+  die "Could not create temporary directory! Exiting." "$LINENO"
 }
 
-# Logging & Feedback
-logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
+_sourceHelperFiles_() {
+  local filesToSource
+  local sourceFile
 
-_alert_() {
-  # v1.0.0
-  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
-  if [ "${1}" = "warning" ]; then local color="${red}"; fi
-  if [ "${1}" = "success" ]; then local color="${green}"; fi
-  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
-  if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
-  if [ "${1}" = "input" ]; then local color="${bold}"; fi
-  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
-  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
-  # Don't use colors on pipes or non-recognized terminals
-  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
+  filesToSource=(
+    ${HOME}/dotfiles/scripting/helpers/baseHelpers.bash
+    ${HOME}/dotfiles/scripting/helpers/files.bash
+    ${HOME}/dotfiles/scripting/helpers/arrays.bash
+    ${HOME}/dotfiles/scripting/helpers/textProcessing.bash
+  )
 
-  # Print to console when script is not 'quiet'
-  if ${quiet}; then tput cuu1 ; return; else # tput cuu1 moves cursor up one line
-   echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
-  fi
+  for sourceFile in "${filesToSource[@]}"; do
+    [ ! -f "$sourceFile" ] \
+      &&  { echo "error: Can not find sourcefile '$sourceFile'. Exiting."; exit 1; }
 
-  # Print to Logfile
-  if ${printLog} && [ "${1}" != "input" ]; then
-    color=""; reset="" # Don't use colors in logs
-    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
-  fi
+    source "$sourceFile"
+  done
 }
-
-function die ()       { local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
-function error ()     { local _message="${*}"; echo -e "$(_alert_ error)"; }
-function warning ()   { local _message="${*}"; echo -e "$(_alert_ warning)"; }
-function notice ()    { local _message="${*}"; echo -e "$(_alert_ notice)"; }
-function info ()      { local _message="${*}"; echo -e "$(_alert_ info)"; }
-function debug ()     { local _message="${*}"; echo -e "$(_alert_ debug)"; }
-function success ()   { local _message="${*}"; echo -e "$(_alert_ success)"; }
-function dryrun()     { local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
-function input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
-function header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
-function verbose()    { if ${verbose}; then debug "$@"; fi }
+_sourceHelperFiles_
 
 # Options and Usage
 # -----------------------------------
@@ -906,6 +454,7 @@ This script also looks for plugin scripts in a user configurable directory for a
 
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
+  -L, --noErrorLog  Print log level error and fatal to a log (default 'true')
   -l, --log         Print log to file
   -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
   -v, --verbose     Output more information. (Items echoed to 'verbose')
@@ -964,6 +513,7 @@ while [[ $1 = -?* ]]; do
     -h|--help) _usage_ >&2; _safeExit_ ;;
     -n|--dryrun) dryrun=true ;;
     -v|--verbose) verbose=true ;;
+    -L|--noErrorLog) logErrors=false ;;
     -l|--log) printLog=true ;;
     -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
@@ -981,14 +531,15 @@ done
 args+=("$@")
 
 # Trap bad exits with your cleanup function
-trap _trapCleanup_ EXIT INT TERM
+trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
+  EXIT INT TERM SIGINT SIGQUIT ERR
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-# if using the 'execute' function this must be disabled for warnings to be shown if tasks fail
-#set -o errexit
+# set -o errtrace
+# set -o errexit
 
 # Force pipelines to fail on the first non-zero status code.
 set -o pipefail
@@ -998,9 +549,6 @@ if ${debug}; then set -x ; fi
 
 # Exit on empty variable
 if ${strict}; then set -o nounset ; fi
-
-# Exit the script if a command fails
-#set -e
 
 # Run your script unless in 'source-only' mode
 if ! ${sourceOnly}; then _mainScript_; fi
