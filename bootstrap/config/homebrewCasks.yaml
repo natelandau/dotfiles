@@ -24,15 +24,14 @@ homebrewCasks:
   - ngrok
   - nvalt
   - omnifocus
-  - omnifocus-clip-o-tron
-  - plex-home-theater
+  - plex-media-player
   # - qlcolorcode
   # - qlmarkdown
   # - qlprettypatch
   # - qlstephen
   # - quicklook-csv
   # - quicklook-json
-  - sublime-text3
+  - sublime-text
   - tower
   - vlc
   # - webpquicklook

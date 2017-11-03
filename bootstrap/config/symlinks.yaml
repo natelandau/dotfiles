@@ -27,3 +27,4 @@ symlinks:
   - ~/bin/git-undo:                   bin/git-undo
   - ~/bin/git-churn:                  bin/git-churn
   - ~/bin/seconds:                    bin/seconds
+  - ~/bin/upgradeCasks:               bin/upgradeCasks
