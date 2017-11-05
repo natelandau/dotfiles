@@ -4,12 +4,14 @@ version="1.0.0"
 
 _mainScript_() {
 
+  [[ "$OSTYPE" != "darwin"* ]] \
+    && fatal "We are not on macOS" "$LINENO"
+
   _upgradeCasks_() {
+
     local cask casks
 
     v=$verbose; verbose=true;
-
-
 
     header "Possible Broken License Files"
     for cask in $(grep -ilr --include \*.rb license $(brew --prefix)/Caskroom/*/.metadata | awk -F '/' '{print $5}' | sort -u); do
@@ -20,30 +22,18 @@ _mainScript_() {
 
     header "Updating Casks"
 
-    casks=( $(brew cask outdated) )
+    # Do any casks need updating?
+    if [[ "$(brew cask outdated)" != "" ]]; then
 
-    if [ -n "${casks[@]}" ]; then
-      success "All casks up to date"
-    else
+      casks=( "$(brew cask outdated | awk -F ' ' '{ print $1 }')" )
       for cask in "${casks[@]}"; do
-        echo "cask: $cask"
+        _execute_ "brew cask uninstall \"$cask\" --force"
+        _execute_ "brew cask install \"$cask\" --force"
       done
+
+    else
+      info "All casks up to date"
     fi
-
-
-    # casks=( $(brew cask list) )
-    # for cask in "${casks[@]}"; do
-    #   version=$(brew cask info $cask | sed -n "s/$cask:\ \(.*\)/\1/p")
-    #   installed=$(find "/usr/local/Caskroom/$cask" -type d -maxdepth 1 -maxdepth 1 -name "$version")
-
-    #   if [[ -z $installed ]]; then
-    #     notice "'${cask}' requires update."
-    #     _execute_ "brew cask uninstall \"$cask\" --force"
-    #     _execute_ "brew cask install \"$cask\" --force"
-    #   else
-    #     notice "'${cask}' is up-to-date."
-    #   fi
-    # done
 
     verbose=$v
   }
@@ -76,12 +66,6 @@ scriptName=$(basename "$0")
 quiet=false;              printLog=false;             logErrors=true;     verbose=false;
 force=false;              strict=false;               dryrun=false;
 debug=false;              sourceOnly=false;           args=();
-
-# Set Temp Directory
-tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
-(umask 077 && mkdir "${tmpDir}") || {
-  die "Could not create temporary directory! Exiting."
-}
 
 # Options and Usage
 # -----------------------------------
