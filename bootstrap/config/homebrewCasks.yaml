@@ -31,6 +31,8 @@ homebrewCasks:
   # - qlstephen
   # - quicklook-csv
   # - quicklook-json
+  - skype
+  - steam
   - sublime-text
   - tower
   - vlc
