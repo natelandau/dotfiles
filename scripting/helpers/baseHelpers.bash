@@ -33,8 +33,10 @@ _alert_() {
   logLocation="${HOME}/logs"
   logName="${scriptName%.sh}.log"
 
-  [ -z "$logFile" ] \
-    && logFile="${logLocation}/${logName}"
+  if [ -z "$logFile" ]; then
+    mkdir -p "${logLocation}"
+    logFile="${logLocation}/${logName}"
+  fi
 
   function_name="func: $(echo "$(IFS="<"; echo "${FUNCNAME[*]:2}")" | sed -E 's/</ < /g')"
 
