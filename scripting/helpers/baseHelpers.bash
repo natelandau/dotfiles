@@ -8,9 +8,17 @@ today=$(LC_ALL=C date +"%m-%d-%Y")                      # Returns: 06-14-2015
 longdate=$(LC_ALL=C date +"%a, %d %b %Y %H:%M:%S %z")   # Returns: Sun, 10 Jan 2016 20:47:53 -0500
 gmtdate=$(LC_ALL=C date -u -R | sed 's/\+0000/GMT/')    # Returns: Wed, 13 Jan 2016 15:55:29 GMT
 
-bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
-red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
-blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
+
+if tput setaf 1 &> /dev/null; then
+  bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
+  red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
+  blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
+else
+  bold="";    reset="";         purple="";
+  red="";     green="";         tan="";
+  blue="";    underline="";
+fi
+
 
 ### ALERTS AND LOGGING ###
 
@@ -111,13 +119,17 @@ _execute_() {
   local cmd="${1:?_execute_ needs a command}"
   local message="${2:-$1}"
 
-  if ${dryrun}; then
-    dryrun "${message}"
-  else
-    if $verbose; then
-      eval "$cmd"
+  if "${dryrun}"; then
+    if [ -n "$2" ]; then
+      dryrun "${1} (${2})" }
     else
-      eval "$cmd" &> /dev/null
+      dryrun "${1}"
+    fi
+  else
+    if ${verbose}; then
+      eval "${cmd}"
+    else
+      eval "${cmd}" &> /dev/null
     fi
     if [ $? -eq 0 ]; then
       success "${message}"
