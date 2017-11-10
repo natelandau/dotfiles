@@ -73,7 +73,7 @@ _alert_() {
 
   # Print to Logfile
     if "${printLog}"; then
-      [[ "$alertType" =~ ^(input|dryrun|header|debug) ]] && return
+      [[ "$alertType" =~ ^(input|dryrun|debug) ]] && return
       [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
       [ ! -f "$logFile" ] && touch "$logFile"
       color=""; reset="" # Don't use colors in logs
