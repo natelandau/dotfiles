@@ -14,9 +14,9 @@ if tput setaf 1 &> /dev/null; then
   red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
   blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
 else
-  bold="";    reset="";         purple="";
-  red="";     green="";         tan="";
-  blue="";    underline="";
+  bold="";              reset="\033[m";             purple="\033[1;31m";
+  red="\033[0;31m";     green="\033[1;32m";         tan="\033[0;33m";
+  blue="\033[0;34m";    underline="";
 fi
 
 
