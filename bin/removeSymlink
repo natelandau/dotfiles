@@ -18,7 +18,7 @@ _mainScript_() {
 
   links=( "${args[@]}" )
 
-  [[ ${#links[@]} == 0 ]] && die "No link specified"
+  [[ ${#links[@]} == 0 ]] && { notice "No link specified"; _safeExit_; }
 
   # Work through the links
   for link in "${links[@]}"; do
@@ -34,10 +34,10 @@ _mainScript_() {
     esac
     if [ -e "${abstarget}" ]; then
       _execute_ "rm -f \"${link}\""
-      _execute_ "cp -rf \"${abstarget}\" \"${link}\""
+      _execute_ "cp -rf \"${abstarget}\" \"${link}\"" "Original file copied and symlink removed"
     else
       if _seekConfirmation_ "Can't find original, delete this link anyway?"; then
-        _execute_ "rm -f \"${link}\""
+        _execute_ "rm -f \"${link}\"" "Symlink removed"
       fi
     fi
 
@@ -51,69 +51,33 @@ _mainScript_() {
 
 }
 
-_trapCleanup_() {
-  echo ""
-  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
-}
-
-_safeExit_() {
-  trap - INT TERM EXIT
-  exit ${1:-0}
-}
-
 # Set Base Variables
 # ----------------------
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false;      printLog=false;       verbose=false;
-force=false;      strict=false;         dryrun=false;
-debug=false;      args=();
+quiet=false;              printLog=false;             logErrors=true;     verbose=false;
+force=false;              strict=false;               dryrun=false;
+debug=false;              sourceOnly=false;           args=();
 
 replaceSymlink=false;
 
-# Set Colors
-bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
-red=$(tput setaf 1);      green=$(tput setaf 76);      tan=$(tput setaf 3);
-blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
+_sourceHelperFiles_() {
+  local filesToSource
+  local sourceFile
 
-_alert_() {
-  # v1.0.0
-  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
-  if [ "${1}" = "warning" ]; then local color="${red}"; fi
-  if [ "${1}" = "success" ]; then local color="${green}"; fi
-  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
-  if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
-  if [ "${1}" = "input" ]; then local color="${bold}"; fi
-  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
-  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
-  # Don't use colors on pipes or non-recognized terminals
-  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
+  filesToSource=(
+    ${HOME}/dotfiles/scripting/helpers/baseHelpers.bash
+  )
 
-  # Print to console when script is not 'quiet'
-  if ${quiet}; then tput cuu1 ; return; else # tput cuu1 moves cursor up one line
-   echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
-  fi
+  for sourceFile in "${filesToSource[@]}"; do
+    [ ! -f "$sourceFile" ] \
+      &&  { echo "error: Can not find sourcefile '$sourceFile'. Exiting."; exit 1; }
 
-  # Print to Logfile
-  if ${printLog} && [ "${1}" != "input" ]; then
-    color=""; reset="" # Don't use colors in logs
-    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
-  fi
+    source "$sourceFile"
+  done
 }
-
-die()        { local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
-error()      { local _message="${*}"; echo -e "$(_alert_ error)"; }
-warning()    { local _message="${*}"; echo -e "$(_alert_ warning)"; }
-notice()     { local _message="${*}"; echo -e "$(_alert_ notice)"; }
-info()       { local _message="${*}"; echo -e "$(_alert_ info)"; }
-debug()      { local _message="${*}"; echo -e "$(_alert_ debug)"; }
-success()    { local _message="${*}"; echo -e "$(_alert_ success)"; }
-dryrun()     { local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
-input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
-header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
-verbose()    { if ${verbose}; then debug "$@"; fi }
-
+_sourceHelperFiles_
 
 # Options and Usage
 # -----------------------------------
@@ -128,13 +92,16 @@ delete the source file of the symlink after copying itself to the symlink's loca
   -r, --replace     Replaces the symlink with the original file AND removes the
                     original after copying
 
-  -n, --dryrun      Non-destructive run. Makes no changes.
+  -L, --noErrorLog  Print log level error and fatal to a log (default 'true')
+  -l, --log         Print log to file
+  -n, --dryrun      Non-destructive. Makes no permanent changes.
+  -q, --quiet       Quiet (no output)
+  -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
   -h, --help        Display this help and exit
-  -q, --quiet       Quiet (no output)
-  -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
       --version     Output version information and exit
+      --source-only Bypasses main script functionality to allow unit tests of functions
       --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
 }
@@ -184,6 +151,7 @@ unset options
 while [[ $1 = -?* ]]; do
   case $1 in
     -r|--replace) replaceSymlink=true ;;
+    -L|--noErrorLog) logErrors=false ;;
     -h|--help) usage >&2; _safeExit_ ;;
     --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     -n|--dryrun) dryrun=true ;;
@@ -191,6 +159,7 @@ while [[ $1 = -?* ]]; do
     -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
+    --source-only) sourceOnly=true;;
     --force) force=true ;;
     --endopts) shift; break ;;
     *) die "invalid option: '$1'." ;;
@@ -201,58 +170,9 @@ done
 # Store the remaining part as arguments.
 args+=("$@")
 
-_seekConfirmation_() {
-  # v1.0.1
-  # Seeks a Yes or No answer to a question.  Usage:
-  #   if _seekConfirmation_ "Answer this question"; then
-  #     something
-  #   fi
-
-  input "$@"
-  if "${force}"; then
-    echo -e ""
-    verbose "Forcing confirmation with '--force' flag set"
-    return 0
-  else
-    while true; do
-      read -r -p " (y/n) " yn
-      case $yn in
-        [Yy]* ) return 0;;
-        [Nn]* ) return 1;;
-        * ) input "Please answer yes or no.";;
-      esac
-    done
-  fi
-}
-
-_execute_() {
-  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
-  #           and have control over the display of the results.  In "dryrun" mode these
-  #           commands are not executed at all. In Verbose mode, the commands are executed
-  #           with results printed to stderr and stdin
-  #
-  # usage:
-  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
-  if ${dryrun}; then
-    dryrun "${2:-$1}"
-  else
-    #set +e # don't exit script if execute fails
-    if $verbose; then
-      eval "$1"
-    else
-      eval "$1" &> /dev/null
-    fi
-    if [ $? -eq 0 ]; then
-      success "${2:-$1}"
-    else
-      warning "${2:-$1}"
-    fi
-    # set -e
-  fi
-}
-
 # Trap bad exits with your cleanup function
-trap _trapCleanup_ EXIT INT TERM
+trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
+  EXIT INT TERM SIGINT SIGQUIT ERR
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'
@@ -267,11 +187,8 @@ if ${debug}; then set -x ; fi
 # Exit on empty variable
 if ${strict}; then set -o nounset ; fi
 
-# Exit the script if a command fails
-set -e
-
-# Run your script
-_mainScript_
+# Run your script unless in 'source-only' mode
+if ! ${sourceOnly}; then _mainScript_; fi
 
 # Exit cleanly
-_safeExit_
+if ! ${sourceOnly}; then _safeExit_; fi
