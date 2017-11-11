@@ -20,8 +20,6 @@ alias ax='chmod a+x'                  # ax:     Make a file executable
 alias rm='rm -i'
 alias rmd='rm -rf'
 
-
-
 if command -v less &> /dev/null; then
   alias less='less -RXcqeN'             # Preferred 'less' implementation
   alias more='less'                     # more: use 'less' instead of 'more'
@@ -30,6 +28,7 @@ fi
 # Custom commands
 alias sourcea='source ${HOME}/.bash_profile'
 alias path='echo -e ${PATH//:/\\n}'
+
 mcd () { mkdir -p "$1" ; cd "$1" || exit; }
 mkcd () { mkdir -p "$1" ; cd "$1" || exit; }
 
