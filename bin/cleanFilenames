@@ -8,10 +8,15 @@ _mainScript_() {
     # This script requires the Linux gdate (as opposed to native 'date' in OSX)
     # Here we see if it's installed. If not, we install it with homebrew.
     if ! command -v gdate &> /dev/null; then
-      warning "Need 'gdate' to continue. Installing via homebrew."
-      brew install coreutils
-      success "'coreutils' package installed. Exiting."
-      _safeExit_ "1"
+      if command -v brew &> /dev/null; then
+        warning "Need 'gdate' to continue. Installing via homebrew."
+        brew install coreutils
+        success "'coreutils' package installed. Exiting."
+        _safeExit_ "1"
+      else
+        notice "'gdate' not insalled. Exiting"
+        _safeExit_ "1"
+      fi
     fi
   }
   _errorHandling_

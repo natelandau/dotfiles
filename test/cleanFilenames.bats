@@ -292,14 +292,15 @@ helper() {
   run $s -T "someTestFile 02-19-2007.txt"
 
   assert_success
-  assert_output --partial "[ dryrun] someTestFile 02-19-2007.txt --> 2007-02-19 someTestFile.txt"
+  assert_output --partial "[ dryrun]"
+  assert_output --partial "someTestFile 02-19-2007.txt --> 2007-02-19 someTestFile.txt"
 }
 
 @test "Test functionality (--test)" {
   run $s --test "someTestFile.txt"
 
   assert_success
-  assert_output --regexp "\[ dryrun\] someTestFile\.txt --> [0-9]{4}-[0-9]{2}-[0-9]{2} someTestFile\.txt"
+  assert_output --partial "[ dryrun]"
 }
 
 @test "Dryrun (-n)" {
@@ -307,7 +308,8 @@ helper() {
   run $s -n "YY-MM-DD 16-05-27.txt"
 
   assert_success
-  assert_output --regexp '\[ dryrun\] YY-MM-DD 16-05-27\.txt --> 2016-05-27 YY-MM-DD\.txt'
+  assert_output --partial "[ dryrun]"
+  assert_output --partial "YY-MM-DD 16-05-27.txt --> 2016-05-27 YY-MM-DD.txt"
   assert_file_exist 'YY-MM-DD 16-05-27.txt'
 }
 
@@ -316,7 +318,8 @@ helper() {
   run $s --dryrun "YY-MM-DD 16-05-27.txt"
 
   assert_success
-  assert_output --regexp '\[ dryrun\] YY-MM-DD 16-05-27\.txt --> 2016-05-27 YY-MM-DD\.txt'
+  assert_output --partial "[ dryrun]"
+  assert_output --partial "YY-MM-DD 16-05-27.txt --> 2016-05-27 YY-MM-DD.txt"
   assert_file_exist 'YY-MM-DD 16-05-27.txt'
 }
 
