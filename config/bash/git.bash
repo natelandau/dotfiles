@@ -3,11 +3,12 @@ alias g='git'
 
 # Adding and Committing
 alias gm="git add .; git commit -m"     # Add and Commit git changes
-ga() { git add "${@:-.}"; }    # Add all files by default
+ga() { git add "${@:-.}"; }             # Add all files by default
 alias gcm="git --no-pager commit -m "   # Git Commit - Short message
 alias gc="git --no-pager commit"        # Git Commit - Long message
 alias gshit='git add . ; git commit --amend' # Appends current changes to the last commit
-alias gap='git add -p' # step through each change, or hunk
+alias gap='git add -p'                  # step through each change, or hunk
+alias unstage='git reset --'            # unstage a file
 
 # Add and Commit a single specified file with a commit message
 gac () { git add -A "$1";git commit -m "$2" ; }
