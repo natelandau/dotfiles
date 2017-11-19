@@ -12,8 +12,6 @@ _mainScript_() {
     local cask casks
 
     v=$verbose; verbose=true;
-
-    header "Possible Broken License Files"
     for cask in $(grep -ilr --include \*.rb license $(brew --prefix)/Caskroom/*/.metadata | awk -F '/' '{print $5}' | sort -u); do
       info "If 'brew cask list' throws license errors attempt to reinstall '$cask'"
       # find $(brew --prefix)/Caskroom/${cask}/.metadata -name "*.rb" -exec sed -i'' -e 's/license/#license/' {} \;
@@ -22,19 +20,21 @@ _mainScript_() {
 
     header "Updating Casks"
 
-    # Do any casks need updating?
-    if [[ "$(brew cask outdated)" != "" ]]; then
-
-      casks=( "$(brew cask outdated | awk -F ' ' '{ print $1 }')" )
+    # Do any casks need
+    if [[ $(brew cask outdated) != "" ]]; then
+      casks=( $(brew cask list) )
       for cask in "${casks[@]}"; do
-        _execute_ "brew cask uninstall \"$cask\" --force"
-        _execute_ "brew cask install \"$cask\" --force"
+        version=$(brew cask info $cask | sed -n "s/$cask:\ \(.*\)/\1/p")
+        installed=$(find "/usr/local/Caskroom/$cask" -type d -maxdepth 1 -maxdepth 1 -name "$version")
+        if [[ -z $installed ]]; then
+          notice "'${cask}' requires update."
+          _execute_ "brew cask uninstall \"$cask\" --force" "Uninstalled '$cask'"
+          _execute_ "brew cask install \"$cask\" --force" "Reinstalled '$cask'"
+        fi
       done
-
     else
       info "All casks up to date"
     fi
-
     verbose=$v
   }
   _upgradeCasks_
