@@ -11,16 +11,16 @@ _mainScript_() {
 
     local cask casks
 
-    v=$verbose; verbose=true;
+    # Sometimes license files can get old and cause 'brew cask' to throw errors.  This can help
+    # identify the culprits
     for cask in $(grep -ilr --include \*.rb license $(brew --prefix)/Caskroom/*/.metadata | awk -F '/' '{print $5}' | sort -u); do
-      info "If 'brew cask list' throws license errors attempt to reinstall '$cask'"
+      verbose "If 'brew cask list' throws license errors attempt to reinstall '$cask'"
       # find $(brew --prefix)/Caskroom/${cask}/.metadata -name "*.rb" -exec sed -i'' -e 's/license/#license/' {} \;
       #_execute_ "brew cask reinstall $cask"
     done
 
-    header "Updating Casks"
-
-    # Do any casks need
+    # Reinstall outdated casks
+    v=$verbose; verbose=true;
     if [[ $(brew cask outdated) != "" ]]; then
       casks=( $(brew cask list) )
       for cask in "${casks[@]}"; do
