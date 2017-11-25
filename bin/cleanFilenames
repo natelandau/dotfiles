@@ -7,15 +7,16 @@ _mainScript_() {
   _errorHandling_() {
     # This script requires the Linux gdate (as opposed to native 'date' in OSX)
     # Here we see if it's installed. If not, we install it with homebrew.
-    if ! command -v gdate &> /dev/null; then
-      if command -v brew &> /dev/null; then
-        warning "Need 'gdate' to continue. Installing via homebrew."
-        brew install coreutils
-        success "'coreutils' package installed. Exiting."
-        _safeExit_ "1"
-      else
-        notice "'gdate' not insalled. Exiting"
-        _safeExit_ "1"
+    if [[ "$OSTYPE" =~ darwin* ]]; then
+      if ! command -v gdate &> /dev/null; then
+        if command -v brew &> /dev/null; then
+          warning "Need 'gdate' to continue. Installing via homebrew."
+          brew install coreutils
+          notice "'coreutils' package installed. Exiting."
+          _safeExit_ "1"
+        else
+          fatal "'gdate' not insalled. Install 'coreutils' with homebrew."
+        fi
       fi
     fi
   }
@@ -51,7 +52,10 @@ _mainScript_() {
     regex="dmg"
     if [[ "${userFile##*.}" =~ ${regex} ]]; then
       error "'.${userFile##*.}' is not a supported extension" "$LINENO"
+      return 1
     fi
+
+    # If all is good we...
     return 0
   }
 
@@ -61,20 +65,27 @@ _mainScript_() {
 
     # Grab the directory
     if ! ${testOutput}; then originalFileWithPath="$(_realpath_ "${fileToParse}")"; fi
+
     verbose "originalFileWithPath: $originalFileWithPath"
-    filePath=$(dirname "$originalFileWithPath") && verbose "filePath: $filePath"
+
+    filePath=$(dirname "$originalFileWithPath") \
+      && verbose "filePath: $filePath"
 
     # use the basename of the userFile going forward since the path is now in $filePath
-    userFile=$(basename "${fileToParse}") && verbose "userfile: $userFile"
+    userFile=$(basename "${fileToParse}") \
+      && verbose "userfile: $userFile"
 
     # Grab the filename without the extension
-    baseFilename="${userFile%.*}" && verbose "baseFilename: $baseFilename"
+    baseFilename="${userFile%.*}" \
+      && verbose "baseFilename: $baseFilename"
 
     # Grab the extension
-    extension="$(_ext_ "${userFile}")" && verbose "extension: $extension"
+    extension="$(_ext_ "${userFile}")" \
+      && verbose "extension: $extension"
 
     # Keep track of the original file for future comparison
-    originalFile="${baseFilename}${extension}" && verbose "originalFile: $originalFile"
+    originalFile="${baseFilename}${extension}" \
+      && verbose "originalFile: $originalFile"
   }
 
   _clean_() {
