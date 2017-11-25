@@ -7,7 +7,8 @@ function _mainScript_() {
   declare -a PROCS
 
   # Exit if the specified arg is not a file
-  ! [ -f "$userFile" ] && die "${userFile}: No such file."
+  [ ! -f "$userFile" ] \
+    && { warning "No such file '${userFile}'"; _safeExit_ 1; }
 
   s=$(fuser -f "$userFile")
   PROCS=( $s )
@@ -20,78 +21,53 @@ function _mainScript_() {
     done
 
     #echo ""
-    input "Type the PID number to kill a given process, 'a' to kill all or 'q' to quit: "
+    input "Type the PID number to kill a given process, 'a' to kill all, or 'q' to quit: "
     read -r REPLY
 
     if [ "$REPLY" == "a" ] || [ "$REPLY" == "A" ] ; then
       for element in "${PROCS[@]}"; do
-       execute "kill $element" || die "Error killing processes.";
+       _execute_ "kill $element" \
+        || die "Error killing processes.";
       done
     elif [ "$REPLY" == "q" ] || [ "$REPLY" == "Q" ]; then
       notice "User canceled. Exiting."
       _safeExit_
     else
-      execute "kill $REPLY" || die "Error killing process '${REPLY}'"
+      _execute_ "kill $REPLY" \
+        || die "Error killing process '${REPLY}'"
     fi
   fi
-
 }
 
-function _trapCleanup_() {
-  echo ""
-  die "Exit trapped. In function: '${FUNCNAME[*]:1}'"
-}
+_sourceHelperFiles_() {
+  local filesToSource
+  local sourceFile
 
-function _safeExit_() {
-  trap - INT TERM EXIT
-  exit ${1:-0}
+  filesToSource=(
+    ${HOME}/dotfiles/scripting/helpers/baseHelpers.bash
+  )
+
+  for sourceFile in "${filesToSource[@]}"; do
+    [ ! -f "$sourceFile" ] \
+      &&  { echo "error: Can not find sourcefile '$sourceFile'. Exiting."; exit 1; }
+
+    source "$sourceFile"
+  done
 }
+_sourceHelperFiles_
 
 # Set Base Variables
 # ----------------------
 scriptName=$(basename "$0")
 
 # Set Flags
-verbose=false;        debug=false;        args=();
-dryrun=false;
-
-# Set Colors
-bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
-red=$(tput setaf 1);      green=$(tput setaf 76);      tan=$(tput setaf 3);
-blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
-
-function _alert_() {
-  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
-  if [ "${1}" = "warning" ]; then local color="${red}"; fi
-  if [ "${1}" = "success" ]; then local color="${green}"; fi
-  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
-  if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
-  if [ "${1}" = "input" ]; then local color="${bold}"; fi
-  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
-  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
-  # Don't use colors on pipes or non-recognized terminals
-  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
-
-  echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
-
-}
-
-function die ()       { local _message="${*} Exiting."; echo -e "$(_alert_ error)"; _safeExit_ "1";}
-function error ()     { local _message="${*}"; echo -e "$(_alert_ error)"; }
-function warning ()   { local _message="${*}"; echo -e "$(_alert_ warning)"; }
-function notice ()    { local _message="${*}"; echo -e "$(_alert_ notice)"; }
-function info ()      { local _message="${*}"; echo -e "$(_alert_ info)"; }
-function debug ()     { local _message="${*}"; echo -e "$(_alert_ debug)"; }
-function success ()   { local _message="${*}"; echo -e "$(_alert_ success)"; }
-function dryrun()     { local _message="${*}"; echo -e "$(_alert_ dryrun)"; }
-function input()      { local _message="${*}"; echo -n "$(_alert_ input)"; }
-function header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header)"; }
-function verbose()    { if ${verbose}; then debug "$@"; fi }
-
+quiet=false;              printLog=false;             logErrors=true;     verbose=false;
+force=false;              strict=false;               dryrun=false;
+debug=false;              sourceOnly=false;           args=();
 
 # Options and Usage
 # -----------------------------------
-usage() {
+_usage_ () {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
 This script takes a user specified filename and finds processes that are keeping
@@ -104,10 +80,18 @@ Adapted from: http://applehelpwriter.com/2016/08/20/how-to-fix-file-in-use-probl
 
  ${bold}Options:${reset}
 
+
+  -L, --noErrorLog  Print log level error and fatal to a log (default 'true')
+  -l, --log         Print log to file
+  -n, --dryrun      Non-destructive. Makes no permanent changes.
+  -q, --quiet       Quiet (no output)
+  -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
-  -n, --dryrun      Non-destructive. Makes no permanent changes.
   -h, --help        Display this help and exit
+      --version     Output version information and exit
+      --source-only Bypasses main script functionality to allow unit tests of functions
+      --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
 }
 
@@ -155,12 +139,17 @@ unset options
 # Read the options and set stuff
 while [[ $1 = -?* ]]; do
   case $1 in
-    -h|--help) usage >&2; _safeExit_ ;;
-    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
-    -v|--verbose) verbose=true ;;
+    -h|--help) _usage_ >&2; _safeExit_ ;;
+    -L|--noErrorLog) logErrors=false ;;
     -n|--dryrun) dryrun=true ;;
+    -v|--verbose) verbose=true ;;
+    -l|--log) printLog=true ;;
+    -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
+    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
+    --source-only) sourceOnly=true;;
+    --force) force=true ;;
     --endopts) shift; break ;;
     *) die "invalid option: '$1'." ;;
   esac
@@ -171,41 +160,20 @@ done
 #args+=("$@")
 userFile="$1"
 
-function execute() {
-  # execute - wrap an external command in 'execute' to push native output to /dev/null
-  #           and have control over the display of the results.  In "dryrun" mode these
-  #           commands are not executed at all. In Verbose mode, the commands are executed
-  #           with results printed to stderr and stdin
-  #
-  # usage:
-  #   execute "cp -R somefile.txt someNewFile.txt" "Optional message to print to user"
-  if ${dryrun}; then
-    dryrun "${2:-$1}"
-  else
-    #set +e # don't exit script if execute fails
-    if $verbose; then
-      $1
-    else
-      $1 &> /dev/null
-    fi
-    if [ $? -eq 0 ]; then
-      success "${2:-$1}"
-    else
-      warning "${2:-$1}"
-    fi
-    # set -e
-  fi
-}
 
 # Trap bad exits with your cleanup function
-trap _trapCleanup_ EXIT INT TERM
+trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
+  EXIT INT TERM SIGINT SIGQUIT ERR
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-# if using the 'execute' function this must be disabled for warnings to be shown if tasks fail
+#set -o errtrace
 #set -o errexit
+
+# Force pipelines to fail on the first non-zero status code.
+set -o pipefail
 
 # Run in debug mode, if set
 if ${debug}; then set -x ; fi
@@ -213,11 +181,8 @@ if ${debug}; then set -x ; fi
 # Exit on empty variable
 if ${strict}; then set -o nounset ; fi
 
-# Exit the script if a command fails
-set -e
-
-# Run your script
-_mainScript_
+# Run your script unless in 'source-only' mode
+if ! ${sourceOnly}; then _mainScript_; fi
 
 # Exit cleanly
-_safeExit_
+if ! ${sourceOnly}; then _safeExit_; fi
