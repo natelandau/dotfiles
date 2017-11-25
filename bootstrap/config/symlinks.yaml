@@ -24,7 +24,6 @@ symlinks:
   - ~/bin/wolcmd:                     bin/wolcmd
   - ~/bin/xld:                        bin/xld
   - ~/bin/convertVideo:               bin/convertVideo
-  - ~/bin/git-undo:                   bin/git-undo
   - ~/bin/git-churn:                  bin/git-churn
   - ~/bin/seconds:                    bin/seconds
   - ~/bin/upgradeCasks:               bin/upgradeCasks

@@ -169,3 +169,68 @@ gurl() {
   user_repo="$(echo "$remote" | perl -pe 's/.*://;s/\.git$//')"
   echo "https://${host}/${user_repo}"
 }
+
+githelp() {
+  cat <<TEXT
+
+  Git has no undo feature, but maybe these will help:
+  ===================================================
+
+  ## Unstage work
+
+    Unstage a file
+    --------------
+    ${bold}git reset HEAD <file>${reset}
+
+  ## Uncommit work (leaving changes in working directory):
+
+    Undo the last commit
+    --------------------
+    ${bold}git reset --soft HEAD^1${reset}
+
+    Undo all commits back to the state of the remote master branch
+    --------------------------------------------------------------
+    ${bold}git reset --soft origin/master${reset}
+
+  ## Amend a commit
+
+    Change the message
+    ------------------
+    ${bold}git commit --amend -m 'new message'${reset}
+
+    Add more changes to the commit
+    ------------------------------
+    ${bold}git add <file>
+    git commit --amend${reset}
+
+  ## Discard uncommitted changes
+
+    Discard all uncommitted changes in your working directory
+    ---------------------------------------------------------
+    ${bold}git reset --hard HEAD${reset}
+
+    Discard uncommitted changes to a file
+    -------------------------------------
+    ${bold}git checkout HEAD <file>${reset}
+
+  ## Discard committed changes
+
+    Reset the current branch's HEAD to a previous commit
+    ----------------------------------------------------
+    ${bold}git reset --hard <commit>${reset}
+
+    Reset the current branch's HEAD to origin/master
+    ------------------------------------------------
+    ${bold}git reset --hard origin/master${reset}
+
+  ## Recovering work after a hard reset
+
+    Restore work after you've done a 'git reset --hard'
+    ---------------------------------------------------
+    ${bold}$ git reflog${reset}
+      1a75c1d... HEAD@{0}: reset --hard HEAD^: updating HEAD
+      f6e5064... HEAD@{1}: commit: <some commit message>
+    ${bold}$ git reset --hard HEAD@{1}${reset}
+
+TEXT
+}
