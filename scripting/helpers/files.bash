@@ -173,6 +173,47 @@ _ext_() {
   echo "$exts"
 }
 
+_extract_() {
+  # Takes a file as input ($1) and attempts to extract a compressed file
+  # pass 'v' as a second variable to show verbose output
+
+  local filename
+  local foldername
+  local fullpath
+  local didfolderexist
+  local vv
+
+  [[ "$2" == "v" ]] && vv="v"
+
+  if [ -f "$1" ]; then
+    case "$1" in
+      *.tar.bz2|*.tbz|*.tbz2) tar "x${vv}jf" "$1" ;;
+      *.tar.gz|*.tgz) tar "x${vv}zf" "$1" ;;
+      *.tar.xz) xz --decompress "$1"; set -- "$@" "${1:0:-3}" ;;
+      *.tar.Z) uncompress "$1"; set -- "$@" "${1:0:-2}" ;;
+      *.bz2) bunzip2 "$1" ;;
+      *.deb) dpkg-deb -x${vv} "$1" "${1:0:-4}" ;;
+      *.pax.gz) gunzip "$1"; set -- "$@" "${1:0:-3}" ;;
+      *.gz) gunzip "$1" ;;
+      *.pax) pax -r -f "$1" ;;
+      *.pkg) pkgutil --expand "$1" "${1:0:-4}" ;;
+      *.rar) unrar x "$1" ;;
+      *.rpm) rpm2cpio "$1" | cpio -idm${vv} ;;
+      *.tar) tar "x${vv}f" "$1" ;;
+      *.txz) mv "$1" "${1:0:-4}.tar.xz"; set -- "$@" "${1:0:-4}.tar.xz" ;;
+      *.xz) xz --decompress "$1" ;;
+      *.zip|*.war|*.jar) unzip "$1" ;;
+      *.Z) uncompress "$1" ;;
+      *.7z) 7za x "$1" ;;
+      *) return 1
+    esac
+  else
+    return 1
+  fi
+  shift
+
+}
+
 _json2yaml_() {
   # v1.0.0
   # convert json files to yaml using python and PyYAML
