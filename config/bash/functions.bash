@@ -7,99 +7,6 @@ su() {
     fi
 }
 
-escape() { echo "${@}" | sed 's/[]\.|$(){}?+*^]/\\&/g'; }
-
-# Text Transformations :
-
-htmldecode() {
-  # Decode HTML characters with sed
-  # Usage: htmlDecode <string>
-  local sedLocation
-  sedLocation="${HOME}/dotfiles/config/sed/htmlDecode.sed"
-  if [ -f "$sedLocation" ]; then
-    echo "${1}" | sed -f "$sedLocation"
-  else
-    echo "error. Could not find sed translation file"
-  fi
-}
-
-htmlencode() {
-  # Encode HTML characters with sed
-  # Usage: htmlEncode <string>
-
-  local sedLocation
-  sedLocation="${HOME}/dotfiles/config/sed/htmlEncode.sed"
-  if [ -f "$sedLocation" ]; then
-    echo "${1}" | sed -f "$sedLocation"
-  else
-    echo "error. Could not find sed translation file"
-  fi
-}
-
-# URL-encode strings
-#alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1]);"'
-
-urlencode() {
-  # URL encoding/decoding from: https://gist.github.com/cdown/1163649
-  # Usage: urlencode <string>
-
-  local LANG=C
-  local length="${#1}"
-  for (( i = 0; i < length; i++ )); do
-    local c="${1:i:1}"
-    case $c in
-      [a-zA-Z0-9.~_-]) printf "$c" ;;
-      *) printf '%%%02X' "'$c" ;;
-    esac
-  done
-}
-
-alias urldecode='python -c "import sys, urllib as ul; print ul.unquote_plus(sys.argv[1])"'
-
-lower() {
-  # Convert stdin to lowercase.
-  # usage:  text=$(lower <<<"$1")
-  #         echo "MAKETHISLOWERCASE" | lower
-  tr '[:upper:]' '[:lower:]'
-}
-
-upper() {
-  # Convert stdin to uppercase.
-  # usage:  text=$(upper <<<"$1")
-  #         echo "MAKETHISUPPERCASE" | upper
-  tr '[:lower:]' '[:upper:]'
-}
-
-ltrim() {
-  # Removes all leading whitespace (from the left).
-  local char=${1:-[:space:]}
-    sed "s%^[${char//%/\\%}]*%%"
-}
-
-rtrim() {
-  # Removes all trailing whitespace (from the right).
-  local char=${1:-[:space:]}
-  sed "s%[${char//%/\\%}]*$%%"
-}
-
-trim() {
-  # Removes all leading/trailing whitespace
-  # Usage examples:
-  #     echo "  foo  bar baz " | trim  #==> "foo  bar baz"
-  ltrim "$1" | rtrim "$1"
-}
-
-squeeze() {
-  # Removes leading/trailing whitespace and condenses all other consecutive
-  # whitespace into a single space.
-  #
-  # Usage examples:
-  #     echo "  foo  bar   baz  " | squeeze  #==> "foo bar baz"
-
-  local char=${1:-[[:space:]]}
-  sed "s%\(${char//%/\\%}\)\+%\1%g" | trim "$char"
-}
-
 withBackoff() {
   # Retries a command a configurable number of times with backoff.
   # (http://stackoverflow.com/questions/8350942/how-to-re-run-the-curl-command-automatically-when-the-error-occurs/8351489#8351489)
@@ -209,7 +116,7 @@ repeat() {
   done
 }
 
-explain () {
+explain() {
   # about 'explain any bash command via mankier.com manpage API'
   # example '$ explain                # interactive mode. Type commands to explain in REPL'
   # example '$ explain cmd -o | ... # one command to explain it.'
@@ -224,49 +131,14 @@ explain () {
   fi
 }
 
-hex2rgb() {
-  # Convert hex string to rgb
-  # @param 1 (String) 3 or 6 character hex string
-  #   Case insensitive, leading # optional (01a, fff1b1, #ABB)
-  # @param 2 (Float) optional float from 0 to 1
-  #   If provided, outputs an rgba() string
-  #
-  # $ hex2rgb FA0133
-  # rgb(250,1,51)
-  # $ hex2rgb FA0133 .5
-  # rgba(250,1,51,.5)
-  local css=true
-  local printstring
-  local hex="$(tr '[:lower:]' '[:upper:]' <<< ${1#\#})"
-  # Convert ABC to AABBCC
-  if [[ $hex =~ ^[A-F0-9]{3}$ ]]; then
-      hex=$(sed -e 's/\(.\)/\1\1/g' <<< $hex)
-  fi
-
-  # If the first param is a valid hex string, convert to rgb
-  if [[ $hex =~ ^[A-F0-9]{6}$ ]]; then
-      # If second param exists and is a float between 0 and 1, output rgba
-      if [[ -n $2 && $2 =~ ^(0?\.[0-9]+|1(\.0)?)$ ]]; then
-          [[ $css ]] && printstring="rgba(%d,%d,%d,%s)" || printstring="%d,%d,%d,%s"
-          printf $printstring  0x${hex:0:2} 0x${hex:2:2} 0x${hex:4:2} $2
-      else
-          [[ $css ]] && printstring="rgb(%d,%d,%d)" || printstring="%d,%d,%d"
-          printf $printstring 0x${hex:0:2} 0x${hex:2:2} 0x${hex:4:2}
-      fi
-  # If it's not valid hex, return the original string
-  else
-      echo -n "$@"
-  fi
-}
-
 lips() {
-    local ip=$(ifconfig en0 | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
-    local locip extip
+  local ip locip extip
+  ip=$(ifconfig en0 | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
 
-    [ "$ip" != "" ] && locip=$ip || locip="inactive"
+  [ "$ip" != "" ] && locip=$ip || locip="inactive"
 
-    ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
-    [ "$ip" != "" ] && extip=$ip || extip="inactive"
+  ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
+  [ "$ip" != "" ] && extip=$ip || extip="inactive"
 
-    printf '%11s: %s\n%11s: %s\n' "Local IP" $locip "External IP" $extip
+  printf '%11s: %s\n%11s: %s\n' "Local IP" $locip "External IP" $extip
 }

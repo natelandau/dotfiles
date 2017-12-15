@@ -10,18 +10,16 @@ buf () {
   # buf :  Backup file with time stamp
   local filename
   local filetime
+
   filename="${1}"
   filetime=$(date +%Y%m%d_%H%M%S)
   cp -a "${filename}" "${filename}_${filetime}"
 }
 
 extract() {
-  local filename
-  local foldername
-  local fullpath
-  local didfolderexist
   local opt
   local OPTIND=1
+
   while getopts "hv" opt; do
     case "$opt" in
       h)
@@ -81,9 +79,9 @@ chgext() {
   #         For example 'chgext html php' will turn a directory of HTML files
   #         into PHP files.
 
-  local file
+  local f
 
-  for file in *.$1 ; do mv "$file" "${file%.$1}.$2" ; done
+  for f in *.$1 ; do mv "$f" "${f%.$1}.$2" ; done
 }
 
 j2y() {

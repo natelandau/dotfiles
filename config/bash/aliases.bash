@@ -53,7 +53,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 # Preferred implementation of shellcheck
-alias sc='shellcheck --exclude=1090,2005,2034,2086,1083,2119,2120,2059,2001,2002,2148'
+alias sc='shellcheck --exclude=1090,2005,2034,2086,1083,2119,2120,2059,2001,2002,2148,2129,1117'
 
 
 

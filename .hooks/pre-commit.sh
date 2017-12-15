@@ -6,7 +6,7 @@ trap _safeExit_ "1" EXIT INT TERM
 
 _setPATH_() {
   # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
-  PATHS=(/usr/local/bin $HOME/bin);
+  PATHS=("/usr/local/bin" "$HOME/bin");
   for newPath in "${PATHS[@]}"; do
     if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
       PATH="$newPath:$PATH"
@@ -82,7 +82,7 @@ fi
 if which shellcheck >/dev/null; then
   for file in $(git diff --cached --name-only | grep -E '\.(sh|bash)$'); do
     if [ -f "$file" ]; then
-      _execute_ "shellcheck --exclude=2016,2059,2001,2002,2148,1090,2162,2005,2034,2154,2086,2155,2181,2164,2120,2119,1083 $file"
+      _execute_ "shellcheck --exclude=2016,2059,2001,2002,2148,1090,2162,2005,2034,2154,2086,2155,2181,2164,2120,2119,1083,1117 $file"
     fi
   done
 fi

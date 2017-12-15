@@ -52,3 +52,17 @@ createTunnel() {
   fi
   ssh -N -f $user@$host -L ${localPort}:${host}:${remotePort}
 }
+
+
+lips() {
+  # Show local and external IP Address
+  local ip locip extip
+  ip=$(ifconfig en0 | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
+
+  [ "$ip" != "" ] && locip=$ip || locip="inactive"
+
+  ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
+  [ "$ip" != "" ] && extip=$ip || extip="inactive"
+
+  printf '%11s: %s\n%11s: %s\n' "Local IP" $locip "External IP" $extip
+}
