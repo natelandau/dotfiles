@@ -293,10 +293,19 @@ _progressBar_() {
 }
 
 _safeExit_() {
-  # Delete temp files, if any
-  if [ -n "${tmpDir}" ]; then
-    [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
+  # Delete temp files with option to save if error is trapped
+  if [[ -n "${tmpDir}" && -d "${tmpDir}" ]]; then
+    if [[ $1 == 1 && -n "$(ls "${tmpDir}")" ]]; then
+      if _seekConfirmation_ "Save the temp directory for debugging?"; then
+        cp -r "${tmpDir}" "${tmpDir}.save"
+        notice "'${tmpDir}.save' created"
+      fi
+      rm -r "${tmpDir}"
+    else
+      rm -r "${tmpDir}"
+    fi
   fi
+
   trap - INT TERM EXIT
   exit ${1:-0}
 }
@@ -332,7 +341,7 @@ _setPATH_() {
 
   PATHS=(
     /usr/local/bin
-    ${HOME}/bin
+    "${HOME}/bin"
     )
   for NEWPATH in "${PATHS[@]}"; do
     if ! echo "$PATH" | grep -Eq "(^|:)${NEWPATH}($|:)" ; then
@@ -352,14 +361,12 @@ _trapCleanup_() {
 
   funcstack="'$(echo "$funcstack" | sed -E 's/ / < /g')'"
 
-  if [ -n "${tmpDir}" ]; then
-    [ -d "${tmpDir}" ] && rm -r "${tmpDir}"
-  fi
-
   #fatal "line $line - command '$command' $func"
   if [[ "${script##*/}" == "${sourced##*/}" ]]; then
     fatal "${7} command: '$command' (line: $line) (func: ${funcstack})"
   else
     fatal "${7} command: '$command' (func: ${funcstack} called at line $linecallfunc of '${script##*/}') (line: $line of '${sourced##*/}') "
   fi
+
+  _safeExit_ "1"
 }

@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-version="1.0.0"
-
 _mainScript_() {
 
   echo -n
@@ -13,7 +11,7 @@ _sourceHelperFiles_() {
   local sourceFile
 
   filesToSource=(
-    ${HOME}/dotfiles/scripting/helpers/baseHelpers.bash
+    "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
   )
 
   for sourceFile in "${filesToSource[@]}"; do
@@ -25,25 +23,21 @@ _sourceHelperFiles_() {
 }
 _sourceHelperFiles_
 
-# Set Base Variables
-# ----------------------
-scriptName=$(basename "$0")
-
 # Set Flags
 quiet=false;              printLog=false;             logErrors=true;     verbose=false;
 force=false;              strict=false;               dryrun=false;
 debug=false;              sourceOnly=false;           args=();
 
 # Set Temp Directory
-tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
+tmpDir="${TMPDIR-/tmp/}$(basename "$0").$RANDOM.$RANDOM.$RANDOM.$$"
 (umask 077 && mkdir "${tmpDir}") || {
-  die "Could not create temporary directory! Exiting."
+  fatal "Could not create temporary directory! Exiting."
 }
 
 # Options and Usage
 # -----------------------------------
 _usage_() {
-  echo -n "${scriptName} [OPTION]... [FILE]...
+  echo -n "$(basename "$0") [OPTION]... [FILE]...
 
 This is a script template.  Edit this description to print help to users.
 
@@ -66,7 +60,6 @@ This is a script template.  Edit this description to print help to users.
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
   -h, --help        Display this help and exit
-      --version     Output version information and exit
       --source-only Bypasses main script functionality to allow unit tests of functions
       --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
@@ -127,7 +120,6 @@ while [[ $1 = -?* ]]; do
     -q|--quiet) quiet=true ;;
     -s|--strict) strict=true;;
     -d|--debug) debug=true;;
-    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
     --source-only) sourceOnly=true;;
     --force) force=true ;;
     --endopts) shift; break ;;
