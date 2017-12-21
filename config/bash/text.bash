@@ -1,6 +1,6 @@
 escape() { echo "${@}" | sed 's/[]\.|$(){}?+*^]/\\&/g'; }
 
-sortDomains() {
+domainSort() {
   # Take a list of URLS and sort it into a list of unique top-level domains
   local domain tmp opt helpstring list thirdLvlSubs
   local count=false
@@ -32,7 +32,7 @@ sortDomains() {
   if "${noSubs}"; then
     if "${count}"; then
       awk -v env_var="$thirdLvlSubs" -F. \
-        '{if ($(NF-1) ~ env_var) printf $(NF-2)"."; printf $(NF-1)"."$(NF)"\n"; }' "${tmp}" \
+        '/^\.$|^com$/ {next} {if ($(NF-1) ~ env_var) printf $(NF-2)"."; printf $(NF-1)"."$(NF)"\n"; }' "${tmp}" \
         | sort \
         | awk ' { tot[$0]++ } END { for (i in tot) print ""tot[i]" -",i } ' \
         | sort -rn -k1,1 -k2,2
