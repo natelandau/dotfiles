@@ -2,7 +2,7 @@
 
 _mainScript_() {
 
-  echo -n
+  echo -n "hello world"
 
 }  # end _mainScript_
 

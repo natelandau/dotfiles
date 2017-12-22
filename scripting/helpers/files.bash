@@ -145,6 +145,7 @@ _ext_() {
   while getopts ":n:" option; do
     case $option in
       n) levels=$OPTARG ;;
+      *) continue ;;
     esac
   done && shift $((OPTIND - 1))
 

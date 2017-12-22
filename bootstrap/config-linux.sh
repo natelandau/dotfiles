@@ -352,10 +352,10 @@ _sourceHelperFiles_() {
   local sourceFile
 
   filesToSource=(
-    ${HOME}/dotfiles/scripting/helpers/baseHelpers.bash
-    ${HOME}/dotfiles/scripting/helpers/files.bash
-    ${HOME}/dotfiles/scripting/helpers/arrays.bash
-    ${HOME}/dotfiles/scripting/helpers/textProcessing.bash
+    "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
+    "${HOME}/dotfiles/scripting/helpers/files.bash"
+    "${HOME}/dotfiles/scripting/helpers/arrays.bash"
+    "${HOME}/dotfiles/scripting/helpers/textProcessing.bash"
   )
 
   for sourceFile in "${filesToSource[@]}"; do

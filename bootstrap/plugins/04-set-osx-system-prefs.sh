@@ -551,7 +551,7 @@ _sourceHelperFiles_() {
   local sourceFile
 
   filesToSource=(
-    ${HOME}/dotfiles/scripting/helpers/baseHelpers.bash
+    "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
   )
 
   for sourceFile in "${filesToSource[@]}"; do
