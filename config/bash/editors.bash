@@ -1,10 +1,10 @@
 if command -v subl &> /dev/null; then
   q () {
-    # easy access to SublimeText
+    # easy access to VisualCode
     if [ $# -eq 0 ]; then
-      subl .;
+      code .;
     else
-      subl "$@";
+      code "$@";
     fi;
   }
 fi
