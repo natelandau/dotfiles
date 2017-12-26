@@ -1,25 +1,30 @@
-
 alias g='git'
 
 # Adding and Committing
-alias gm="git add .; git commit -m"     # Add and Commit git changes
-ga() { git add "${@:-.}"; }             # Add all files by default
-alias gcm="git --no-pager commit -m "   # Git Commit - Short message
-alias gc="git --no-pager commit"        # Git Commit - Long message
+alias gm="git add .; git commit -m"          # Add and Commit git changes
+ga() { git add "${@:-.}"; }                  # Add all files by default
+alias gcm="git --no-pager commit -m "        # Git Commit - Short message
+alias gc="git --no-pager commit"             # Git Commit - Long message
 alias gshit='git add . ; git commit --amend' # Appends current changes to the last commit
-alias gap='git add -p'                  # step through each change, or hunk
-alias unstage='git reset --'            # unstage a file
+alias gap='git add -p'                       # step through each change, or hunk
+alias unstage='git reset --'                 # unstage a file
 
 # Add and Commit a single specified file with a commit message
-gac () { git add -A "$1";git commit -m "$2" ; }
+gac() {
+  git add -A "$1"
+  git commit -m "$2"
+}
 
 # Cloning, Fetching, Pushing, and Pulling
 alias gp='git push'
 alias gpush='git push'
 alias gu='git pull'
-gpull() { git pull; git submodule foreach git pull origin master; }
-alias gfu="git fetch origin"      # Get updates from Origin
-alias gcl='git clone --recursive' # Clone with all submodules
+gpull() {
+  git pull
+  git submodule foreach git pull origin master
+}
+alias gfu="git fetch origin"                 # Get updates from Origin
+alias gcl='git clone --recursive'            # Clone with all submodules
 gcheckout() { git checkout "${@:-master}"; } # Checkout master by default
 
 # Submodules
@@ -30,15 +35,15 @@ alias ginitsubs='git submodule update --init --recursive'
 alias gs="git --no-pager status -s --untracked-files=all" # Git Status
 alias gsearch='git rev-list --all | xargs git grep -F'    # Find a string in Git History
 alias gss="git remote update && git status -uno"          # Check local is behind remote
-alias gr="git remote -v"  # List all configured Git remotes
-alias gl="git l"          # A nicer Git Log
-alias gb='git branch'     # Lists local branches
-alias gba='git branch -a' # Lists local and remote branches
+alias gr="git remote -v"                                  # List all configured Git remotes
+alias gl="git l"                                          # A nicer Git Log
+alias gb='git branch'                                     # Lists local branches
+alias gba='git branch -a'                                 # Lists local and remote branches
 
 # General Commands
-alias gdiff="git difftool"    # Open file in git's default diff tool
-alias gstash='git stash'      # stash git changes and put them into your list
-alias gpop='git stash pop'    # bring back your changes, but it removes them from your stash
+alias gdiff="git difftool" # Open file in git's default diff tool
+alias gstash='git stash'   # stash git changes and put them into your list
+alias gpop='git stash pop' # bring back your changes, but it removes them from your stash
 alias greset="git fetch --all;git reset --hard origin/master"
 
 # Cleaning up messes
@@ -69,7 +74,7 @@ gitRollback() {
   # Resets the current HEAD to specified commit
 
   is_clean() {
-    if [[ $(git diff --shortstat 2> /dev/null | tail -n1) != "" ]]; then
+    if [[ $(git diff --shortstat 2>/dev/null | tail -n1) != "" ]]; then
       echo "Your branch is dirty, please commit your changes"
       kill -INT $$
     fi
@@ -85,36 +90,35 @@ gitRollback() {
   }
 
   keep_changes() {
-    while true
-    do
+    while true; do
       read -r -p "Do you want to keep all changes from rolled back revisions in your working tree? [Y/N]" RESP
-      case $RESP
-      in
-      [yY])
-        echo "Rolling back to commit ${1} with unstaged changes"
-        git reset "$1"
-        break
-        ;;
-      [nN])
-        echo "Rolling back to commit ${1} with a clean working tree"
-        git reset --hard "$1"
-        break
-        ;;
-      *)
-        echo "Please enter Y or N"
+      case $RESP in
+
+        [yY])
+          echo "Rolling back to commit ${1} with unstaged changes"
+          git reset "$1"
+          break
+          ;;
+        [nN])
+          echo "Rolling back to commit ${1} with a clean working tree"
+          git reset --hard "$1"
+          break
+          ;;
+        *)
+          echo "Please enter Y or N"
+          ;;
       esac
     done
   }
 
-  if [ -n "$(git symbolic-ref HEAD 2> /dev/null)" ]; then
+  if [ -n "$(git symbolic-ref HEAD 2>/dev/null)" ]; then
     is_clean
     commit_exists "$1"
 
-    while true
-    do
+    while true; do
       read -r -p "WARNING: This will change your history and move the current HEAD back to commit ${1}, continue? [Y/N]" RESP
-      case $RESP
-        in
+      case $RESP in
+
         [yY])
           keep_changes "$1"
           break
@@ -124,6 +128,7 @@ gitRollback() {
           ;;
         *)
           echo "Please enter Y or N"
+          ;;
       esac
     done
   else

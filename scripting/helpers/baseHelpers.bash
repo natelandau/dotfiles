@@ -1,24 +1,32 @@
 ### VARIABLES ###
 
-now=$(LC_ALL=C date +"%m-%d-%Y %r")                     # Returns: 06-14-2015 10:34:40 PM
-datestamp=$(LC_ALL=C date +%Y-%m-%d)                    # Returns: 2015-06-14
-hourstamp=$(LC_ALL=C date +%r)                          # Returns: 10:34:40 PM
-timestamp=$(LC_ALL=C date +%Y%m%d_%H%M%S)               # Returns: 20150614_223440
-today=$(LC_ALL=C date +"%m-%d-%Y")                      # Returns: 06-14-2015
-longdate=$(LC_ALL=C date +"%a, %d %b %Y %H:%M:%S %z")   # Returns: Sun, 10 Jan 2016 20:47:53 -0500
-gmtdate=$(LC_ALL=C date -u -R | sed 's/\+0000/GMT/')    # Returns: Wed, 13 Jan 2016 15:55:29 GMT
+now=$(LC_ALL=C date +"%m-%d-%Y %r")                   # Returns: 06-14-2015 10:34:40 PM
+datestamp=$(LC_ALL=C date +%Y-%m-%d)                  # Returns: 2015-06-14
+hourstamp=$(LC_ALL=C date +%r)                        # Returns: 10:34:40 PM
+timestamp=$(LC_ALL=C date +%Y%m%d_%H%M%S)             # Returns: 20150614_223440
+today=$(LC_ALL=C date +"%m-%d-%Y")                    # Returns: 06-14-2015
+longdate=$(LC_ALL=C date +"%a, %d %b %Y %H:%M:%S %z") # Returns: Sun, 10 Jan 2016 20:47:53 -0500
+gmtdate=$(LC_ALL=C date -u -R | sed 's/\+0000/GMT/')  # Returns: Wed, 13 Jan 2016 15:55:29 GMT
 
-
-if tput setaf 1 &> /dev/null; then
-  bold=$(tput bold);        reset=$(tput sgr0);         purple=$(tput setaf 171);
-  red=$(tput setaf 1);      green=$(tput setaf 76);     tan=$(tput setaf 3);
-  blue=$(tput setaf 38);    underline=$(tput sgr 0 1);
+if tput setaf 1 &>/dev/null; then
+  bold=$(tput bold)
+  reset=$(tput sgr0)
+  purple=$(tput setaf 171)
+  red=$(tput setaf 1)
+  green=$(tput setaf 76)
+  tan=$(tput setaf 3)
+  blue=$(tput setaf 38)
+  underline=$(tput sgr 0 1)
 else
-  bold="";              reset="\033[m";             purple="\033[1;31m";
-  red="\033[0;31m";     green="\033[1;32m";         tan="\033[0;33m";
-  blue="\033[0;34m";    underline="";
+  bold=""
+  reset="\033[m"
+  purple="\033[1;31m"
+  red="\033[0;31m"
+  green="\033[1;32m"
+  tan="\033[0;33m"
+  blue="\033[0;34m"
+  underline=""
 fi
-
 
 ### ALERTS AND LOGGING ###
 
@@ -38,7 +46,10 @@ _alert_() {
     logFile="${logLocation}/${logName}"
   fi
 
-  function_name="func: $(echo "$(IFS="<"; echo "${FUNCNAME[*]:2}")" | sed -E 's/</ < /g')"
+  function_name="func: $(echo "$(
+    IFS="<"
+    echo "${FUNCNAME[*]:2}"
+  )" | sed -E 's/</ < /g')"
 
   if [ -z "$line" ]; then
     [[ "$1" =~ ^(fatal|error|debug) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
@@ -48,64 +59,112 @@ _alert_() {
       && _message="$_message (line: $line) ($function_name)"
   fi
 
-  [ "${alertType}" = "error" ]   && color="${bold}${red}"
-  [ "${alertType}" = "fatal" ]   && color="${bold}${red}"
+  [ "${alertType}" = "error" ] && color="${bold}${red}"
+  [ "${alertType}" = "fatal" ] && color="${bold}${red}"
   [ "${alertType}" = "warning" ] && color="${red}"
   [ "${alertType}" = "success" ] && color="${green}"
-  [ "${alertType}" = "debug" ]   && color="${purple}"
-  [ "${alertType}" = "header" ]  && color="${bold}${tan}"
-  [ "${alertType}" = "input" ]   && color="${bold}"
-  [ "${alertType}" = "dryrun" ]  && color="${blue}"
-  [ "${alertType}" = "info" ]    && color=""
-  [ "${alertType}" = "notice" ]  && color=""
+  [ "${alertType}" = "debug" ] && color="${purple}"
+  [ "${alertType}" = "header" ] && color="${bold}${tan}"
+  [ "${alertType}" = "input" ] && color="${bold}"
+  [ "${alertType}" = "dryrun" ] && color="${blue}"
+  [ "${alertType}" = "info" ] && color=""
+  [ "${alertType}" = "notice" ] && color=""
 
   # Don't use colors on pipes or non-recognized terminals
-  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then color=""; reset=""; fi
+  if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then
+    color=""
+    reset=""
+  fi
 
   # Print to console when script is not 'quiet'
-    _writeToScreen_() {
-      ( "$quiet" ) \
-        && { tput cuu1; return; }  # tput cuu1 moves cursor up one line
+  _writeToScreen_() {
+    ("$quiet") \
+      && {
+        tput cuu1
+        return
+      } # tput cuu1 moves cursor up one line
 
-       echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}";
-    }
-    _writeToScreen_ "$1"
+    echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}"
+  }
+  _writeToScreen_ "$1"
 
   # Print to Logfile
-    if "${printLog}"; then
-      [[ "$alertType" =~ ^(input|dryrun|debug) ]] && return
-      [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
-      [ ! -f "$logFile" ] && touch "$logFile"
-      color=""; reset="" # Don't use colors in logs
-      echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
-    elif [[ "${logErrors}" == "true" && "$alertType" =~ ^(error|fatal) ]]; then
-        [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
-        [ ! -f "$logFile" ] && touch "$logFile"
-        color=""; reset="" # Don't use colors in logs
-        echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${1}") ${_message}" >> "${logFile}";
-    else
-      return 0
-    fi
+  if "${printLog}"; then
+    [[ "$alertType" =~ ^(input|dryrun|debug) ]] && return
+    [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
+    [ ! -f "$logFile" ] && touch "$logFile"
+    color=""
+    reset="" # Don't use colors in logs
+    echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${1}") ${_message}" >>"${logFile}"
+  elif [[ "${logErrors}" == "true" && "$alertType" =~ ^(error|fatal) ]]; then
+    [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
+    [ ! -f "$logFile" ] && touch "$logFile"
+    color=""
+    reset="" # Don't use colors in logs
+    echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${1}") ${_message}" >>"${logFile}"
+  else
+    return 0
+  fi
 }
-
-die ()       { local _message="${1}"; echo -e "$(_alert_ fatal $2)"; _safeExit_ "1";}
-fatal ()     { local _message="${1}"; echo -e "$(_alert_ fatal $2)"; _safeExit_ "1";}
-trapped ()   { local _message="${1}"; echo -e "$(_alert_ trapped $2)"; _safeExit_ "1";}
-error ()     { local _message="${1}"; echo -e "$(_alert_ error $2)"; }
-warning ()   { local _message="${1}"; echo -e "$(_alert_ warning $2)"; }
-notice ()    { local _message="${1}"; echo -e "$(_alert_ notice $2)"; }
-info ()      { local _message="${1}"; echo -e "$(_alert_ info $2)"; }
-debug ()     { local _message="${1}"; echo -e "$(_alert_ debug $2)"; }
-success ()   { local _message="${1}"; echo -e "$(_alert_ success $2)"; }
-dryrun()     { local _message="${1}"; echo -e "$(_alert_ dryrun $2)"; }
-input()      { local _message="${1}"; echo -n "$(_alert_ input $2)"; }
-header()     { local _message="== ${*} ==  "; echo -e "$(_alert_ header $2)"; }
-verbose()    {
-  ( $verbose ) \
-    && { local _message="${1}"; echo -e "$(_alert_ debug $2)"; } \
+die() {
+  local _message="${1}"
+  echo -e "$(_alert_ fatal $2)"
+  _safeExit_ "1"
+}
+fatal() {
+  local _message="${1}"
+  echo -e "$(_alert_ fatal $2)"
+  _safeExit_ "1"
+}
+trapped() {
+  local _message="${1}"
+  echo -e "$(_alert_ trapped $2)"
+  _safeExit_ "1"
+}
+error() {
+  local _message="${1}"
+  echo -e "$(_alert_ error $2)"
+}
+warning() {
+  local _message="${1}"
+  echo -e "$(_alert_ warning $2)"
+}
+notice() {
+  local _message="${1}"
+  echo -e "$(_alert_ notice $2)"
+}
+info() {
+  local _message="${1}"
+  echo -e "$(_alert_ info $2)"
+}
+debug() {
+  local _message="${1}"
+  echo -e "$(_alert_ debug $2)"
+}
+success() {
+  local _message="${1}"
+  echo -e "$(_alert_ success $2)"
+}
+dryrun() {
+  local _message="${1}"
+  echo -e "$(_alert_ dryrun $2)"
+}
+input() {
+  local _message="${1}"
+  echo -n "$(_alert_ input $2)"
+}
+header() {
+  local _message="== ${*} ==  "
+  echo -e "$(_alert_ header $2)"
+}
+verbose() {
+  ($verbose) \
+    && {
+      local _message="${1}"
+      echo -e "$(_alert_ debug $2)"
+    } \
     || return 0
 }
-
 
 ### FUNCTIONS ###
 
@@ -131,7 +190,7 @@ _execute_() {
     if ${verbose}; then
       eval "${cmd}"
     else
-      eval "${cmd}" &> /dev/null
+      eval "${cmd}" &>/dev/null
     fi
     if [ $? -eq 0 ]; then
       success "${message}"
@@ -158,7 +217,7 @@ _executeStrict_() {
   local resetSetAdd
   local resetSetRemove
 
-  save="$(echo "$save" | sed -E 's/(i|s)//g' )"
+  save="$(echo "$save" | sed -E 's/(i|s)//g')"
 
   if [[ $save =~ e ]]; then
     resetSetAdd="e"
@@ -200,11 +259,11 @@ _findBaseDir_() {
     || SOURCE="${BASH_SOURCE[0]}"
 
   while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
     SOURCE="$(readlink "$SOURCE")"
     [[ $SOURCE != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
   done
-  echo "$( cd -P "$( dirname "${SOURCE}" )" && pwd )"
+  echo "$(cd -P "$(dirname "${SOURCE}")" && pwd)"
 }
 
 _haveFunction_() {
@@ -214,7 +273,7 @@ _haveFunction_() {
   local f
   f="$1"
 
-  if declare -f "$f" &> /dev/null 2>&1; then
+  if declare -f "$f" &>/dev/null 2>&1; then
     return 0
   else
     return 1
@@ -250,28 +309,29 @@ _progressBar_() {
   #   done
   # -----------------------------------
 
-  ( $quiet ) && return
-  ( $verbose ) && return
-  [ ! -t 1 ] && return  # Do nothing if the output is not a terminal
+  ($quiet) && return
+  ($verbose) && return
+  [ ! -t 1 ] && return # Do nothing if the output is not a terminal
 
   local width bar_char perc num bar progressBarLine barTitle n
 
-  n="${1:?_progressBar_ needs input}" ; (( n = n - 1 )) ;
+  n="${1:?_progressBar_ needs input}"
+  ((n = n - 1))
   barTitle="${2:-Running Process}"
   width=30
   bar_char="#"
 
   # Reset the count
   [ -z "${progressBarProgress}" ] && progressBarProgress=0
-  tput civis   # Hide the cursor
+  tput civis # Hide the cursor
   trap 'tput cnorm; exit 1' SIGINT
 
   if [ ! "${progressBarProgress}" -eq $n ]; then
     #echo "progressBarProgress: $progressBarProgress"
     # Compute the percentage.
-    perc=$(( progressBarProgress * 100 / $1 ))
+    perc=$((progressBarProgress * 100 / $1))
     # Compute the number of blocks to represent the percentage.
-    num=$(( progressBarProgress * width / $1 ))
+    num=$((progressBarProgress * width / $1))
     # Create the progress bar string.
     bar=""
     if [ ${num} -gt 0 ]; then
@@ -280,11 +340,11 @@ _progressBar_() {
     # Print the progress bar.
     progressBarLine=$(printf "%s [%-${width}s] (%d%%)" "  ${barTitle}" "${bar}" "${perc}")
     echo -ne "${progressBarLine}\r"
-    progressBarProgress=$(( progressBarProgress + 1 ))
+    progressBarProgress=$((progressBarProgress + 1))
   else
     # Clear the progress bar when complete
     # echo -ne "\033[0K\r"
-    tput el   # Clear the line
+    tput el # Clear the line
 
     unset progressBarProgress
   fi
@@ -326,9 +386,9 @@ _seekConfirmation_() {
     while true; do
       read -r -p " (y/n) " yn
       case $yn in
-        [Yy]* ) return 0;;
-        [Nn]* ) return 1;;
-        * ) input "Please answer yes or no.";;
+        [Yy]*) return 0 ;;
+        [Nn]*) return 1 ;;
+        *) input "Please answer yes or no." ;;
       esac
     done
   fi
@@ -342,12 +402,12 @@ _setPATH_() {
   PATHS=(
     /usr/local/bin
     "${HOME}/bin"
-    )
+  )
   for NEWPATH in "${PATHS[@]}"; do
-    if ! echo "$PATH" | grep -Eq "(^|:)${NEWPATH}($|:)" ; then
+    if ! echo "$PATH" | grep -Eq "(^|:)${NEWPATH}($|:)"; then
       PATH="${NEWPATH}:${PATH}"
-   fi
- done
+    fi
+  done
 }
 
 _trapCleanup_() {

@@ -28,9 +28,9 @@ _writeCSV_() {
   # Takes passed arguments and writes them as a comma separated line
   # Usage '_writeCSV_ column1 column2 column3'
 
-  local csvInput=($@)
+  local csvInput=("$@")
   saveIFS=$IFS
   IFS=','
-  echo "${csvInput[*]}" >> "${csvFile}"
+  echo "${csvInput[*]}" >>"${csvFile}"
   IFS=$saveIFS
 }

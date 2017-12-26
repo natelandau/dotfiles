@@ -12,24 +12,24 @@ _mainScript_() {
   sudo -v
 
   # Set Variables
-    baseDir="$(_findBaseDir_)"
-    rootDIR="$(dirname "$baseDir")"
-    privateInstallScript="${HOME}/dotfiles-private/privateInstall.sh"
-    pluginScripts="${baseDir}/plugins"
+  baseDir="$(_findBaseDir_)"
+  rootDIR="$(dirname "$baseDir")"
+  privateInstallScript="${HOME}/dotfiles-private/privateInstall.sh"
+  pluginScripts="${baseDir}/plugins"
 
   # Config files
-    configSymlinks="${baseDir}/config/symlinks.yaml"
-    configAptGet="${baseDir}/config/aptGet.yaml"
-    configNode="${baseDir}/config/node.yaml"
-    configRuby="${baseDir}/config/ruby.yaml"
+  configSymlinks="${baseDir}/config/symlinks.yaml"
+  configAptGet="${baseDir}/config/aptGet.yaml"
+  configNode="${baseDir}/config/node.yaml"
+  configRuby="${baseDir}/config/ruby.yaml"
 
   scriptFlags=()
-    ( $dryrun ) && scriptFlags+=(--dryrun)
-    ( $quiet ) && scriptFlags+=(--quiet)
-    ( $printLog ) && scriptFlags+=(--log)
-    ( $verbose ) && scriptFlags+=(--verbose)
-    ( $debug ) && scriptFlags+=(--debug)
-    ( $strict ) && scriptFlags+=(--strict)
+  ($dryrun) && scriptFlags+=(--dryrun)
+  ($quiet) && scriptFlags+=(--quiet)
+  ($printLog) && scriptFlags+=(--log)
+  ($verbose) && scriptFlags+=(--verbose)
+  ($debug) && scriptFlags+=(--debug)
+  ($strict) && scriptFlags+=(--strict)
 
   # Create symlinks
   if _seekConfirmation_ "Create symlinks to configuration files?"; then
@@ -40,7 +40,10 @@ _mainScript_() {
   _privateRepo_() {
     if _seekConfirmation_ "Run Private install script"; then
       [ ! -f "${privateInstallScript}" ] \
-        && { warning "Could not find private install script" ; return 1; }
+        && {
+          warning "Could not find private install script"
+          return 1
+        }
       "${privateInstallScript}" "${scriptFlags[*]}"
     fi
   }
@@ -60,7 +63,8 @@ _mainScript_() {
   _generateKey_
 
   _upgradeAptGet_() {
-    local v=$verbose; verbose=true;
+    local v=$verbose
+    verbose=true
 
     if [ -f "/etc/apt/sources.list" ]; then
       header "Upgrading apt-get....(May take a while)"
@@ -74,26 +78,33 @@ _mainScript_() {
   }
   _upgradeAptGet_
 
-  _aptGet_ () {
+  _aptGet_() {
     local t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
-    local c="$1"  # Config YAML file
+    local c="$1" # Config YAML file
 
     if ! _seekConfirmation_ "Install Apt Get Packages?"; then return; fi
     header "Installing apt-get packages"
 
     [ ! -f "$c" ] \
-      && { error "Can not find config file '$c'"; return 1; }
+      && {
+        error "Can not find config file '$c'"
+        return 1
+      }
 
     # Parse & source Config File
     # shellcheck disable=2015
-    ( _parseYAML_ "${c}" > "${t}" ) \
-      && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
+    (_parseYAML_ "${c}" >"${t}") \
+      && { if $verbose; then
+        verbose "-- Config Variables"
+        _readFile_ "$t"
+      fi; } \
       || die "Could not parse YAML config file"
 
     _sourceFile_ "$t"
 
     # apt-get updates can take forever. Show the output.
-    local v=$verbose; verbose=true;
+    local v=$verbose
+    verbose=true
 
     # shellcheck disable=2154
     for package in "${GeneralPackages[@]}"; do
@@ -118,23 +129,30 @@ _mainScript_() {
     local npmPackages
     local modules
     local t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
-    local c="$1"  # Config YAML file
+    local c="$1" # Config YAML file
 
     if ! _seekConfirmation_ "Install Node Packages?"; then return; fi
 
     [ ! -f "$c" ] \
-      && { error "Can not find config file '$c'"; return 1; }
+      && {
+        error "Can not find config file '$c'"
+        return 1
+      }
 
     # Parse & source Config File
     # shellcheck disable=2015
-    ( _parseYAML_ "${c}" > "${t}" ) \
-      && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
+    (_parseYAML_ "${c}" >"${t}") \
+      && { if $verbose; then
+        verbose "-- Config Variables"
+        _readFile_ "$t"
+      fi; } \
       || die "Could not parse YAML config file"
 
     _sourceFile_ "$t"
 
     header "Installing node"
-    local v=$verbose; verbose=true;
+    local v=$verbose
+    verbose=true
 
     notice "Installing nvm, node, and packages"
     _execute_ "sudo apt-get install -y build-essential libssl-dev checkinstall"
@@ -153,21 +171,28 @@ _mainScript_() {
     fi
 
     # Grab packages already installed
-    { pushd "$(npm config get prefix)/lib/node_modules"; installed=(*); popd; } &> /dev/null
+    {
+      pushd "$(npm config get prefix)/lib/node_modules"
+      installed=(*)
+      popd
+    } &>/dev/null
 
     #Show nodes's detailed install information
-    saveVerbose=$verbose; verbose=true;
+    saveVerbose=$verbose
+    verbose=true
 
     # If comments exist in the list of npm packaged to be installed remove them
     # shellcheck disable=2154
     for package in "${nodePackages[@]}"; do
-      npmPackages+=($(echo "${package}" | cut -d'#' -f1 | _trim_) )
+      npmPackages+=($(echo "${package}" | cut -d'#' -f1 | _trim_))
     done
 
     # Install packages that do not already exist
     modules=($(_setdiff_ "${npmPackages[*]}" "${installed[*]}"))
-    if (( ${#modules[@]} > 0 )); then
-      pushd ${HOME} > /dev/null; _execute_ "npm install -g ${modules[*]}"; popd > /dev/null;
+    if ((${#modules[@]} > 0)); then
+      pushd ${HOME} >/dev/null
+      _execute_ "npm install -g ${modules[*]}"
+      popd >/dev/null
     else
       info "All node packages already installed"
     fi
@@ -182,18 +207,24 @@ _mainScript_() {
     local gem
     local testInstalled
     local t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
-    local c="$1"  # Config YAML file
+    local c="$1" # Config YAML file
 
     if ! _seekConfirmation_ "Install Ruby, RVM, and Gems?"; then return; fi
     header "Installing ruby"
 
     [ ! -f "$c" ] \
-      && { error "Can not find config file '$c'"; return 1; }
+      && {
+        error "Can not find config file '$c'"
+        return 1
+      }
 
     # Parse & source Config File
     # shellcheck disable=2015
-    ( _parseYAML_ "${c}" > "${t}" ) \
-      && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
+    (_parseYAML_ "${c}" >"${t}") \
+      && { if $verbose; then
+        verbose "-- Config Variables"
+        _readFile_ "$t"
+      fi; } \
       || die "Could not parse YAML config file"
 
     _sourceFile_ "$t"
@@ -204,7 +235,7 @@ _mainScript_() {
     _execute_ "sudo apt-get install -y libmagickcore-dev"
     _execute_ "sudo apt-get install -y libmagickwand-dev"
 
-    if ! command -v rvm &> /dev/null; then
+    if ! command -v rvm &>/dev/null; then
       pushd "${HOME}"
       _execute_ "curl -sSL https://get.rvm.io | bash -s stable"
       export PATH="${PATH}:${HOME}/.rvm/bin"
@@ -215,7 +246,8 @@ _mainScript_() {
     fi
 
     header "Installing global ruby gems..."
-    local v=$verbose; verbose=true;
+    local v=$verbose
+    verbose=true
 
     # shellcheck disable=2154
     for gem in "${rubyGems[@]}"; do
@@ -259,47 +291,60 @@ _mainScript_() {
           && flags="${scriptFlags[*]}"
         [[ "$flags" =~ (--verbose|v) ]] \
           || flags="${flags} --verbose"
-        ( $dryrun ) && { d=true; dryrun=false; }
+        ($dryrun) && {
+          d=true
+          dryrun=false
+        }
         flags="${flags} --rootDIR $rootDIR"
 
-        v=$verbose; verbose=true;
+        v=$verbose
+        verbose=true
 
         _execute_ "${plugin} ${flags}" "'${pluginName}' plugin"
 
         verbose=$v
-        ( $d ) && dryrun=true;
+        ($d) && dryrun=true
       fi
     done
   }
   _runPlugins_
 
-}  # end _mainScript_
+} # end _mainScript_
 
 # ### CUSTOM FUNCTIONS ###########################
 
 _doSymlinks_() {
   # Takes an input of a configuration YAML file and creates symlinks from it.
   # Note that the YAML file must group symlinks in a section named 'symlinks'
-  local l                                     # link
-  local d                                     # destination
-  local s                                     # source
-  local c="${1:?Must have a config file}"     # config file
+  local l                                 # link
+  local d                                 # destination
+  local s                                 # source
+  local c="${1:?Must have a config file}" # config file
   local line
   local t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
 
   [ ! -f "$c" ] \
-    && { error "Can not find config file '$c'"; return 1; }
+    && {
+      error "Can not find config file '$c'"
+      return 1
+    }
 
   # Parse & source Config File
   # shellcheck disable=2015
-  ( _parseYAML_ "${c}" > "${t}" ) \
-    && { if $verbose; then verbose "-- Config Variables"; _readFile_ "$t"; fi; } \
+  (_parseYAML_ "${c}" >"${t}") \
+    && { if $verbose; then
+      verbose "-- Config Variables"
+      _readFile_ "$t"
+    fi; } \
     || die "Could not parse YAML config file"
 
   _sourceFile_ "$t"
 
   [ "${#symlinks[@]}" -eq 0 ] \
-    && { warning "No symlinks found in '$c'"; return 1; }
+    && {
+      warning "No symlinks found in '$c'"
+      return 1
+    }
 
   # For each link do the following
   for l in "${symlinks[@]}"; do
@@ -323,23 +368,35 @@ _doSymlinks_() {
 
     # If we can't find a source file, skip it
     [ ! -e "${s}" ] \
-      && { warning "Can't find source '${s}'"; continue; }
+      && {
+        warning "Can't find source '${s}'"
+        continue
+      }
 
-    ( _makeSymlink_ "${s}" "${d}" ) \
-      || { warning "_makeSymlink_ failed for source: '$s'"; return 1; }
+    (_makeSymlink_ "${s}" "${d}") \
+      || {
+        warning "_makeSymlink_ failed for source: '$s'"
+        return 1
+      }
 
   done
 }
-
 
 # Set Base Variables
 # ----------------------
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false;              printLog=false;             logErrors=true;   verbose=false;
-force=false;              strict=false;               dryrun=false;
-debug=false;              sourceOnly=false;           args=();
+quiet=false
+printLog=false
+logErrors=true
+verbose=false
+force=false
+strict=false
+dryrun=false
+debug=false
+sourceOnly=false
+args=()
 
 # Set Temp Directory
 tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
@@ -360,13 +417,15 @@ _sourceHelperFiles_() {
 
   for sourceFile in "${filesToSource[@]}"; do
     [ ! -f "$sourceFile" ] \
-      &&  { echo "error: Can not find sourcefile '$sourceFile'. Exiting."; exit 1; }
+      && {
+        echo "error: Can not find sourcefile '$sourceFile'. Exiting."
+        exit 1
+      }
 
     source "$sourceFile"
   done
 }
 _sourceHelperFiles_
-
 
 # Options and Usage
 # -----------------------------------
@@ -400,7 +459,7 @@ while (($#)); do
     # If option is of type -ab
     -[!-]?*)
       # Loop over each character starting with the second
-      for ((i=1; i < ${#1}; i++)); do
+      for ((i = 1; i < ${#1}; i++)); do
         c=${1:i:1}
 
         # Add current char to options
@@ -408,7 +467,7 @@ while (($#)); do
 
         # If option takes a required argument, and it's not the last char make
         # the rest of the string its argument
-        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+        if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
           options+=("${1:i+1}")
           break
         fi
@@ -433,23 +492,41 @@ unset options
 # [[ $# -eq 0 ]] && set -- "--help"
 
 # Read the options and set stuff
-while [[ $1 = -?* ]]; do
+while [[ $1 == -?* ]]; do
   case $1 in
-    -h|--help) _usage_ >&2; _safeExit_ ;;
-    -u|--username) shift; username=${1} ;;
-    -p|--password) shift; echo "Enter Pass: "; stty -echo; read -r PASS; stty echo;
-      echo ;;
-    -L|--noErrorLog) logErrors=false ;;
-    -n|--dryrun) dryrun=true ;;
-    -v|--verbose) verbose=true ;;
-    -l|--log) printLog=true ;;
-    -q|--quiet) quiet=true ;;
-    -s|--strict) strict=true;;
-    -d|--debug) debug=true;;
-    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
-    --source-only) sourceOnly=true;;
+    -h | --help)
+      _usage_ >&2
+      _safeExit_
+      ;;
+    -u | --username)
+      shift
+      username=${1}
+      ;;
+    -p | --password)
+      shift
+      echo "Enter Pass: "
+      stty -echo
+      read -r PASS
+      stty echo
+      echo
+      ;;
+    -L | --noErrorLog) logErrors=false ;;
+    -n | --dryrun) dryrun=true ;;
+    -v | --verbose) verbose=true ;;
+    -l | --log) printLog=true ;;
+    -q | --quiet) quiet=true ;;
+    -s | --strict) strict=true ;;
+    -d | --debug) debug=true ;;
+    --version)
+      echo "$(basename $0) ${version}"
+      _safeExit_
+      ;;
+    --source-only) sourceOnly=true ;;
     --force) force=true ;;
-    --endopts) shift; break ;;
+    --endopts)
+      shift
+      break
+      ;;
     *) die "invalid option: '$1'." ;;
   esac
   shift
@@ -473,10 +550,10 @@ IFS=$' \n\t'
 set -o pipefail
 
 # Run in debug mode, if set
-if ${debug}; then set -x ; fi
+if ${debug}; then set -x; fi
 
 # Exit on empty variable
-if ${strict}; then set -o nounset ; fi
+if ${strict}; then set -o nounset; fi
 
 # Run your script unless in 'source-only' mode
 if ! ${sourceOnly}; then _mainScript_; fi

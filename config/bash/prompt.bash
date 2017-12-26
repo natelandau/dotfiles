@@ -5,10 +5,10 @@ if [[ "$OSTYPE" =~ linux ]]; then
     local branchName=''
 
     # Check if the current directory is in a Git repository.
-    if [ "$(git rev-parse --is-inside-work-tree &>/dev/null; echo "${?}")" == '0' ]; then
+  if [ "$(git rev-parse --is-inside-work-tree &>/dev/null; echo "${?}")" == '0' ]; then
       # check if the current directory is in .git before running git checks
 
-      if [ "$(git rev-parse --is-inside-git-dir 2> /dev/null)" == 'false' ]; then
+      if [ "$(git rev-parse --is-inside-git-dir 2>/dev/null)" == 'false' ]; then
 
         # Ensure the index is up to date.
         git update-index --really-refresh -q &>/dev/null
@@ -37,25 +37,24 @@ if [[ "$OSTYPE" =~ linux ]]; then
       # Get the short symbolic ref.
       # If HEAD isn’t a symbolic ref, get the short SHA for the latest commit
       # Otherwise, just give up.
-      branchName="$(git symbolic-ref --quiet --short HEAD 2> /dev/null || \
-        git rev-parse --short HEAD 2> /dev/null || \
-        echo '(unknown)')";
+      branchName="$(git symbolic-ref --quiet --short HEAD 2>/dev/null \
+        || git rev-parse --short HEAD 2>/dev/null \
+        || echo '(unknown)')"
 
-      [ -n "${s}" ] && s=" [${s}]";
+      [ -n "${s}" ] && s=" [${s}]"
 
-      echo -e "${1}${branchName}${s}";
+      echo -e "${1}${branchName}${s}"
     else
-      return;
+      return
     fi
   }
 
   export PS1="\[$WHITE\]________________________________________________________________________________\n| \
 \[${BOLD}${MAGENTA}\]\u \[$WHITE\]at \[$ORANGE\]\h \
-\[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\
-\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\
+\[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\
 \[$PURPLE\]\$(_promptGit_ \"$PRUPLE\")\[$WHITE\]\[$reset\] \
 \n\[$WHITE\]| =>\[$reset\] "
-    export PS2="\[$WHITE\]→ $reset"
+  export PS2="\[$WHITE\]→ $reset"
 
 else
   # ####################################################
@@ -86,9 +85,18 @@ else
     oldBG=""
 
     reset="\[$(tput sgr0)\]"
-    local whi=231;  local blu=27;     local ora=208;   local red=1;
-    local grn=10;   local pur=5;      local yel=3;     local blck=233
-    local mag=9;    local gry=241;    local blu2=38;   local gry2=239;
+    local whi=231
+    local blu=27
+    local ora=208
+    local red=1
+    local grn=10
+    local pur=5
+    local yel=3
+    local blck=233
+    local mag=9
+    local gry=241
+    local blu2=38
+    local gry2=239
 
     _parseSegments_() {
       # This function is called by the prompt plugins to create the prompt
@@ -98,7 +106,7 @@ else
       local bg="${3:-241}"
       local enabled="${4:-true}"
 
-      if ! ${enabled}; then return ; fi
+      if ! ${enabled}; then return; fi
 
       # if there was a previous segment, print the separator
       [ -n "$oldBG" ] && PS1+="\[$(tput setab $bg)\]\[$(tput setaf $oldBG)\]$seperator ${reset}"
@@ -140,8 +148,6 @@ else
         [ -f "${plugin}" ] && ((iii++))
       done
     fi
-
-
 
     # If we don't have any bottom plugins, add a simple prompt
     [ $iii -eq 0 ] && PS1+="\[$(tput setab $gry)\]\[$(tput setaf $whi)\]  ${reset}" && oldBG=$gry

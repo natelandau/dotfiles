@@ -8,12 +8,15 @@ function _mainScript_() {
 
   # Exit if the specified arg is not a file
   [ ! -f "$userFile" ] \
-    && { warning "No such file '${userFile}'"; _safeExit_ 1; }
+    && {
+      warning "No such file '${userFile}'"
+      _safeExit_ 1
+    }
 
   s=$(fuser -f "$userFile")
-  PROCS=( $s )
+  PROCS=($s)
 
-  if [ "${#PROCS[@]}" == 0 ] ; then
+  if [ "${#PROCS[@]}" == 0 ]; then
     warning "File '$userFile' is not open."
   else
     for element in "${PROCS[@]}"; do
@@ -24,10 +27,10 @@ function _mainScript_() {
     input "Type the PID number to kill a given process, 'a' to kill all, or 'q' to quit: "
     read -r REPLY
 
-    if [ "$REPLY" == "a" ] || [ "$REPLY" == "A" ] ; then
+    if [ "$REPLY" == "a" ] || [ "$REPLY" == "A" ]; then
       for element in "${PROCS[@]}"; do
-       _execute_ "kill $element" \
-        || die "Error killing processes.";
+        _execute_ "kill $element" \
+          || die "Error killing processes."
       done
     elif [ "$REPLY" == "q" ] || [ "$REPLY" == "Q" ]; then
       notice "User canceled. Exiting."
@@ -49,7 +52,10 @@ _sourceHelperFiles_() {
 
   for sourceFile in "${filesToSource[@]}"; do
     [ ! -f "$sourceFile" ] \
-      &&  { echo "error: Can not find sourcefile '$sourceFile'. Exiting."; exit 1; }
+      && {
+        echo "error: Can not find sourcefile '$sourceFile'. Exiting."
+        exit 1
+      }
 
     source "$sourceFile"
   done
@@ -61,13 +67,20 @@ _sourceHelperFiles_
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false;              printLog=false;             logErrors=true;     verbose=false;
-force=false;              strict=false;               dryrun=false;
-debug=false;              sourceOnly=false;           args=();
+quiet=false
+printLog=false
+logErrors=true
+verbose=false
+force=false
+strict=false
+dryrun=false
+debug=false
+sourceOnly=false
+args=()
 
 # Options and Usage
 # -----------------------------------
-_usage_ () {
+_usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
 This script takes a user specified filename and finds processes that are keeping
@@ -104,7 +117,7 @@ while (($#)); do
     # If option is of type -ab
     -[!-]?*)
       # Loop over each character starting with the second
-      for ((i=1; i < ${#1}; i++)); do
+      for ((i = 1; i < ${#1}; i++)); do
         c=${1:i:1}
 
         # Add current char to options
@@ -112,7 +125,7 @@ while (($#)); do
 
         # If option takes a required argument, and it's not the last char make
         # the rest of the string its argument
-        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+        if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
           options+=("${1:i+1}")
           break
         fi
@@ -137,20 +150,29 @@ unset options
 [[ $# -eq 0 ]] && set -- "--help"
 
 # Read the options and set stuff
-while [[ $1 = -?* ]]; do
+while [[ $1 == -?* ]]; do
   case $1 in
-    -h|--help) _usage_ >&2; _safeExit_ ;;
-    -L|--noErrorLog) logErrors=false ;;
-    -n|--dryrun) dryrun=true ;;
-    -v|--verbose) verbose=true ;;
-    -l|--log) printLog=true ;;
-    -q|--quiet) quiet=true ;;
-    -s|--strict) strict=true;;
-    -d|--debug) debug=true;;
-    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
-    --source-only) sourceOnly=true;;
+    -h | --help)
+      _usage_ >&2
+      _safeExit_
+      ;;
+    -L | --noErrorLog) logErrors=false ;;
+    -n | --dryrun) dryrun=true ;;
+    -v | --verbose) verbose=true ;;
+    -l | --log) printLog=true ;;
+    -q | --quiet) quiet=true ;;
+    -s | --strict) strict=true ;;
+    -d | --debug) debug=true ;;
+    --version)
+      echo "$(basename $0) ${version}"
+      _safeExit_
+      ;;
+    --source-only) sourceOnly=true ;;
     --force) force=true ;;
-    --endopts) shift; break ;;
+    --endopts)
+      shift
+      break
+      ;;
     *) die "invalid option: '$1'." ;;
   esac
   shift
@@ -159,7 +181,6 @@ done
 # Store the remaining part as an argument.
 #args+=("$@")
 userFile="$1"
-
 
 # Trap bad exits with your cleanup function
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
@@ -176,10 +197,10 @@ IFS=$' \n\t'
 set -o pipefail
 
 # Run in debug mode, if set
-if ${debug}; then set -x ; fi
+if ${debug}; then set -x; fi
 
 # Exit on empty variable
-if ${strict}; then set -o nounset ; fi
+if ${strict}; then set -o nounset; fi
 
 # Run your script unless in 'source-only' mode
 if ! ${sourceOnly}; then _mainScript_; fi

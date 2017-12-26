@@ -11,22 +11,28 @@ domainSort() {
   while getopts "hcs" opt; do
     case $opt in
       c) count=true ;;
-      s) noSubs=true;;
-      h) echo -e "$helpstring"; return;;
-      *) return 1;;
+      s) noSubs=true ;;
+      h)
+        echo -e "$helpstring"
+        return
+        ;;
+      *) return 1 ;;
     esac
   done
-  shift $((OPTIND-1))
+  shift $((OPTIND - 1))
 
   list="$1"
   thirdLvlSubs="^co$|^com$|^ny$|^ac$|^gov$|^org$|^ca$|^blogspot$"
   tmp="$(mktemp "/tmp/XXXXXXXXXXXX")"
 
   [ ! -f "$list" ] \
-    && { echo "Error: can not find '${list}'"; return 1; }
+    && {
+      echo "Error: can not find '${list}'"
+      return 1
+    }
 
   # Remove protocol and file paths
-  cat "$list" | sed 's/https?:\/\///;s|\/.*||' >| "$tmp"
+  cat "$list" | sed 's/https?:\/\///;s|\/.*||' >|"$tmp"
 
   # Generate output
   if "${noSubs}"; then
@@ -89,7 +95,7 @@ urlencode() {
 
   local LANG=C
   local length="${#1}"
-  for (( i = 0; i < length; i++ )); do
+  for ((i = 0; i < length; i++)); do
     local c="${1:i:1}"
     case $c in
       [a-zA-Z0-9.~_-]) printf "$c" ;;
@@ -117,7 +123,7 @@ upper() {
 ltrim() {
   # Removes all leading whitespace (from the left).
   local char=${1:-[:space:]}
-    sed "s%^[${char//%/\\%}]*%%"
+  sed "s%^[${char//%/\\%}]*%%"
 }
 
 rtrim() {

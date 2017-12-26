@@ -1,4 +1,3 @@
-
 # Record each line as it gets issued
 #PROMPT_COMMAND='history -a' # depreciated due to 'autojump'
 # Here is autojump's recommended prompt-command

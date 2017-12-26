@@ -6,12 +6,12 @@ trap _safeExit_ "1" EXIT INT TERM
 
 _setPATH_() {
   # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
-  PATHS=("/usr/local/bin" "$HOME/bin");
+  PATHS=("/usr/local/bin" "$HOME/bin")
   for newPath in "${PATHS[@]}"; do
-    if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
+    if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)"; then
       PATH="$newPath:$PATH"
-   fi
- done
+    fi
+  done
 }
 _setPATH_
 
@@ -29,7 +29,7 @@ _execute_() {
 }
 
 # Ensure that no symlinks are added. Here we add them to .gitignore
-GITROOT=$(git rev-parse --show-toplevel 2> /dev/null)
+GITROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 
 _ignoreSymlinks_() {
   # Ensure that no symlinks have been added to the repository.
@@ -41,7 +41,7 @@ _ignoreSymlinks_() {
   for f in $(git status --porcelain | grep '^??' | sed 's/^?? //'); do
     if test -L "$f"; then
       if ! grep "$f" "$gitIgnore"; then
-        echo -e "\n$f" >> "$gitIgnore"
+        echo -e "\n$f" >>"$gitIgnore"
       fi
       havesymlink=true
     fi
@@ -52,7 +52,7 @@ _ignoreSymlinks_() {
     if test -L "$f"; then
       if ! grep "$f" "$gitIgnore"; then
         git reset -q "$f"
-        echo -e "\n$f" >> "$gitIgnore"
+        echo -e "\n$f" >>"$gitIgnore"
       fi
       havesymlink=true
     fi
@@ -69,7 +69,6 @@ _ignoreSymlinks_
 
 # if you only want to lint the staged changes, not any un-staged changes, use:
 # git show ":$file" | <command>
-
 
 # Lint YAML files
 if which yaml-lint >/dev/null; then
@@ -96,7 +95,10 @@ _BATS_() {
     filename="$(basename $file)"
     filename="${filename%.*}"
     [ -f "${GITROOT}/test/${filename}.bats" ] \
-      && { echo -e "\n## Running ${filename}.bats ##"; _execute_ "${GITROOT}/test/${filename}.bats -t"; }
+      && {
+        echo -e "\n## Running ${filename}.bats ##"
+        _execute_ "${GITROOT}/test/${filename}.bats -t"
+      }
     unset filename
   done
 
@@ -105,7 +107,10 @@ _BATS_() {
     filename="$(basename $file)"
     filename="${filename%.*}"
     [ -f "${GITROOT}/test/${filename}.bats" ] \
-      && { echo -e "\n## Running: ${filename}.bats ##"; _execute_ "${GITROOT}/test/${filename}.bats -t"; }
+      && {
+        echo -e "\n## Running: ${filename}.bats ##"
+        _execute_ "${GITROOT}/test/${filename}.bats -t"
+      }
     unset filename
   done
 
@@ -114,11 +119,14 @@ _BATS_() {
     filename="$(basename $file)"
     filename="${filename%.*}"
     [ -f "${GITROOT}/test/${filename}.bats" ] \
-      && { echo -e "\n## Running: ${filename}.bats ##"; _execute_ "${GITROOT}/test/${filename}.bats -t"; }
+      && {
+        echo -e "\n## Running: ${filename}.bats ##"
+        _execute_ "${GITROOT}/test/${filename}.bats -t"
+      }
     unset filename
   done
 
 }
-if command -v bats &> /dev/null; then _BATS_; fi
+if command -v bats &>/dev/null; then _BATS_; fi
 
 _safeExit_

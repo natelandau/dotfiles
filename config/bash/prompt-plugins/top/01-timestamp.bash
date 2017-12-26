@@ -1,7 +1,7 @@
 segmentTimestamp() {
   local fground=$whi
   local bground=$gry2
-  local enabled=true  # If false, this segment will be ignored
+  local enabled=true # If false, this segment will be ignored
 
   local promptSegment=" $(date "+%H:%M:%S") "
 

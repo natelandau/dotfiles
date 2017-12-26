@@ -77,7 +77,7 @@ _mainScript_() {
     if _have_scriptable_finder_; then
       notice "Telling Finder to empty trash..."
       _execute_ "/usr/bin/osascript -e 'tell application \"Finder\" to empty trash'" "Trash emptied"
-    else
+      else
        notice "Emptying trash..."
 
       # delete the contents of user's .Trash folder
@@ -148,8 +148,8 @@ _mainScript_() {
 }  # end _mainScript_
 
 filesToSource=(
-  ${HOME}/dotfiles/scripting/helpers/baseHelpers.bash
-  ${HOME}/dotfiles/scripting/helpers/files.bash
+  "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
+  "${HOME}/dotfiles/scripting/helpers/files.bash"
 )
 
 for sourceFile in "${filesToSource[@]}"; do
@@ -259,7 +259,7 @@ while [[ $1 = -?* ]]; do
     -v|--verbose) verbose=true ;;
     --log) printLog=true ;;
     -q|--quiet) quiet=true ;;
-    -s|--strict) strict=true;;
+    -S|--strict) strict=true;;
     -d|--debug) debug=true;;
     --source-only) sourceOnly=true;;
     --endopts) shift; break ;;

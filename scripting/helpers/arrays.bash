@@ -2,9 +2,10 @@ _inArray_() {
   # v1.0.0
   # Determine if a value is in an array.
   # Usage: if _inArray_ "VALUE" "${ARRAY[@]}"; then ...
-  local value="$1"; shift
+  local value="$1"
+  shift
   for arrayItem in "$@"; do
-      [[ "${arrayItem}" == "${value}" ]] && return 0
+    [[ "${arrayItem}" == "${value}" ]] && return 0
   done
   return 1
 }
@@ -18,7 +19,9 @@ _join_() {
   #   _join_ , a "b c" d #a,b c,d
   #   _join_ / var local tmp #var/local/tmp
   #   _join_ , "${foo[@]}" #a,b,c
-  local IFS="${1}"; shift; echo "${*}";
+  local IFS="${1}"
+  shift
+  echo "${*}"
 }
 
 _setdiff_() {
@@ -31,10 +34,16 @@ _setdiff_() {
   #
   # From http://stackoverflow.com/a/1617303/142339
   local debug skip a b
-  if [[ "$1" == 1 ]]; then debug=1; shift; fi
+  if [[ "$1" == 1 ]]; then
+    debug=1
+    shift
+  fi
   if [[ "$1" ]]; then
     local setdiffA setdiffB setdiffC
-    setdiffA=($1); setdiffB=($2)
+    # shellcheck disable=SC2206
+    setdiffA=($1)
+    # shellcheck disable=SC2206
+    setdiffB=($2)
   fi
   setdiffC=()
   for a in "${setdiffA[@]}"; do

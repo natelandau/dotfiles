@@ -7,7 +7,7 @@ _escape_() {
   # usage: _escape_ "Some text here"
 
   # shellcheck disable=2001
-  echo "${@}" | sed 's/[]\.|$[ (){}?+*^]/\\&/g' ;
+  echo "${@}" | sed 's/[]\.|$[ (){}?+*^]/\\&/g'
 }
 
 _htmlDecode_() {
@@ -19,7 +19,7 @@ _htmlDecode_() {
   sedFile="${HOME}/.sed/htmlDecode.sed"
 
   [ -f "${sedFile}" ] \
-    && { echo "${1}" | sed -f "${sedFile}" ; } \
+    && { echo "${1}" | sed -f "${sedFile}"; } \
     || return 1
 }
 
@@ -32,7 +32,7 @@ _htmlEncode_() {
   sedFile="${HOME}/.sed/htmlEncode.sed"
 
   [ -f "${sedFile}" ] \
-    && { echo "${1}" | sed -f "${sedFile}" ; } \
+    && { echo "${1}" | sed -f "${sedFile}"; } \
     || return 1
 }
 
@@ -46,7 +46,7 @@ _lower_() {
 _ltrim_() {
   # Removes all leading whitespace (from the left).
   local char=${1:-[:space:]}
-    sed "s%^[${char//%/\\%}]*%%"
+  sed "s%^[${char//%/\\%}]*%%"
 }
 
 _rtrim_() {
@@ -77,7 +77,7 @@ _urlEncode_() {
   local LANG=C
   local i
 
-  for ((i=0;i<${#1};i++)); do
+  for ((i = 0; i < ${#1}; i++)); do
     if [[ ${1:$i:1} =~ ^[a-zA-Z0-9\.\~_-]$ ]]; then
       printf "${1:$i:1}"
     else

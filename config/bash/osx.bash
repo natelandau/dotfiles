@@ -1,20 +1,19 @@
-
 if [[ "$OSTYPE" == "darwin"* ]]; then
 
   ## ALIASES ##
   alias top='top -R -F -s 10 -o rsize'
-  alias chrome='open -a Google\ Chrome'         # chrome:   Open item in Google Chrome browser
-  alias f='open -a Finder ./'                   # f:        Opens current directory in MacOS Finder
-  alias cpwd='pwd|tr -d "\n"|pbcopy'            # cpwd:     Copy the current path to mac clipboard
-  alias cl="fc -e -|pbcopy"                     # cl:       Copy output of last command to mac clipboard
-  alias caff="caffeinate -ism"                  # caff:     Run command without letting mac sleep
+  alias chrome='open -a Google\ Chrome' # chrome:   Open item in Google Chrome browser
+  alias f='open -a Finder ./'           # f:        Opens current directory in MacOS Finder
+  alias cpwd='pwd|tr -d "\n"|pbcopy'    # cpwd:     Copy the current path to mac clipboard
+  alias cl="fc -e -|pbcopy"             # cl:       Copy output of last command to mac clipboard
+  alias caff="caffeinate -ism"          # caff:     Run command without letting mac sleep
   alias cleanupDS="find . -type f -name '*.DS_Store' -ls -delete"
   alias finderShowHidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
   alias finderHideHidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
   alias screensaverDesktop='/System/Library/Frameworks/ScreenSaver.framework/Resources/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine -background'
 
   # Opens any file in MacOS Quicklook Preview
-  ql () { qlmanage -p "$*" >& /dev/null; }
+  ql() { qlmanage -p "$*" >&/dev/null; }
 
   # Clean up LaunchServices to remove duplicates in the "Open With" menu
   alias cleanupLS="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder"
@@ -40,7 +39,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # example '$ ron -5 man/rip.5.ron | browser'
     local f
     f="/tmp/browser.$RANDOM.html"
-    cat /dev/stdin > $f
+    cat /dev/stdin >$f
     open -a safari $f
   }
 
@@ -57,11 +56,11 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # list all files with any tags
     if [[ -z $1 || $1 == "+" ]]; then
       query="kMDItemUserTags == '*'"
-    # if the first argument is "-"
-    # list only files without tags
+      # if the first argument is "-"
+      # list only files without tags
     elif [[ $1 == "-" ]]; then
       query="kMDItemUserTags != '*'"
-    # Otherwise, build a Spotlight syntax query string
+      # Otherwise, build a Spotlight syntax query string
     else
       query="tag:$1"
       shift
@@ -88,9 +87,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
       -e 'else' \
       -e 'get POSIX path of (desktop as alias)' \
       -e 'end if' \
-      -e 'end tell';)
+      -e 'end tell')
 
-      echo "$finderPath"
+    echo "$finderPath"
   }
 
   ## SPOTLIGHT MAINTENANCE ##
@@ -102,5 +101,5 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   alias spot-file="lsof -c '/mds$/'"
 
   # Search for a file using MacOS Spotlight's metadata
-  spotlight () { mdfind "kMDItemDisplayName == '$1'wc"; }
+  spotlight() { mdfind "kMDItemDisplayName == '$1'wc"; }
 fi

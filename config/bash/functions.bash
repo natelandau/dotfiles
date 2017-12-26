@@ -1,10 +1,10 @@
 su() {
   # su: Do sudo to a command, or do sudo to the last typed command if no argument given
-    if [[ $# == 0 ]]; then
-        sudo "$(history -p '!!')"
-    else
-        sudo "$@"
-    fi
+  if [[ $# == 0 ]]; then
+    sudo "$(history -p '!!')"
+  else
+    sudo "$@"
+  fi
 }
 
 withBackoff() {
@@ -25,26 +25,23 @@ withBackoff() {
   local attempt=0
   local exitCode=0
 
-  while (( attempt < max_attempts ))
-  do
+  while ((attempt < max_attempts)); do
     set +e
     "$@"
     exitCode=$?
     set -e
 
-    if [[ ${exitCode} == 0 ]]
-    then
+    if [[ ${exitCode} == 0 ]]; then
       break
     fi
 
     echo "Failure! Retrying in ${timeout}.." 1>&2
     sleep "${timeout}"
-    attempt=$(( attempt + 1 ))
-    timeout=$(( timeout * 2 ))
+    attempt=$((attempt + 1))
+    timeout=$((timeout * 2))
   done
 
-  if [[ ${exitCode} != 0 ]]
-  then
+  if [[ ${exitCode} != 0 ]]; then
     echo "You've failed me for the last time! ($*)" 1>&2
   fi
   return ${exitCode}
@@ -61,11 +58,14 @@ halp() {
   while getopts "kh" opt; do
     case $opt in
       k) apro=1 ;;
-      h) echo -e "$helpstring"; return;;
-      *) return 1;;
+      h)
+        echo -e "$helpstring"
+        return
+        ;;
+      *) return 1 ;;
     esac
   done
-  shift $((OPTIND-1))
+  shift $((OPTIND - 1))
 
   if [ $# -ne 1 ]; then
     echo -e "$helpstring"
@@ -97,7 +97,7 @@ halp() {
     fi
   elif [[ $cmdtest == "alias" ]]; then
     echo -ne "${YELLOW}${cmd} is an alias:  ${RESET}"
-    alias "${cmd}"|sed -E "s/alias $cmd='(.*)'/\1/"
+    alias "${cmd}" | sed -E "s/alias $cmd='(.*)'/\1/"
   elif [[ $cmdtest == "builtin" ]]; then
     echo -ne "${YELLOW}${cmd} is a builtin command:  ${RESET}"
     man $cmd
@@ -110,9 +110,10 @@ halp() {
 repeat() {
   # Repeat n times command.
   local i max
-  max=$1; shift;
-  for ((i=1; i <= max ; i++)); do
-      eval "$@";
+  max=$1
+  shift
+  for ((i = 1; i <= max; i++)); do
+    eval "$@"
   done
 }
 

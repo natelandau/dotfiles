@@ -8,16 +8,25 @@ _backupFile_() {
   #
   # Usage:  _backupFile_ "sourcefile.txt" "some/backup/dir"
 
-  local s="$1"                # Source file
-  local d="${2:-backup}"      # Destination directory (optional, defaults to 'backup')
-  local n                     # New filename (created by _uniqueFilename_)
+  local s="$1"           # Source file
+  local d="${2:-backup}" # Destination directory (optional, defaults to 'backup')
+  local n                # New filename (created by _uniqueFilename_)
 
   [ ! "$(declare -f "_execute_")" ] \
-    && { echo "need function _execute_"; return 1; }
+    && {
+      echo "need function _execute_"
+      return 1
+    }
   [ ! "$(declare -f "_uniqueFileName_")" ] \
-    && { echo "need function _uniqueFileName_"; return 1; }
+    && {
+      echo "need function _uniqueFileName_"
+      return 1
+    }
   [ ! -e "$s" ] \
-    &&  { error "Source '$s' not found"; return 1; }
+    && {
+      error "Source '$s' not found"
+      return 1
+    }
 
   [ ! -d "$d" ] \
     && _execute_ "mkdir \"$d\"" "Creating backup directory"
@@ -43,7 +52,10 @@ _cleanFilename_() {
   fileToClean="$1"
 
   [ ! -f "$fileToClean" ] \
-    && { warning "_cleanFileName_ ${fileToClean}: File doesn't exist"; return 1; }
+    && {
+      warning "_cleanFileName_ ${fileToClean}: File doesn't exist"
+      return 1
+    }
 
   extension="${fileToClean##*.}"
   baseFileName=${fileToClean%.*}
@@ -81,7 +93,10 @@ _decryptFile_() {
   decryptedFile="${2:-$defaultName.decrypt}"
 
   [ ! "$(declare -f "_execute_")" ] \
-    && { echo "need function _execute_"; return 1; }
+    && {
+      echo "need function _execute_"
+      return 1
+    }
 
   [ ! -f "$fileToDecrypt" ] && return 1
 
@@ -112,7 +127,10 @@ _encryptFile_() {
   [ ! -f "$fileToEncrypt" ] && return 1
 
   [ ! "$(declare -f "_execute_")" ] \
-    && { echo "need function _execute_"; return 1; }
+    && {
+      echo "need function _execute_"
+      return 1
+    }
 
   if [ -z $PASS ]; then
     _execute_ "openssl enc -aes-256-cbc -salt -in \"${fileToEncrypt}\" -out \"${encryptedFile}\"" "Encrypt ${fileToEncrypt}"
@@ -158,13 +176,13 @@ _ext_() {
   # Detect some common multi-extensions
   if [[ ! $levels ]]; then
     case $(tr '[:upper:]' '[:lower:]' <<<$filename) in
-      *.tar.gz|*.tar.bz2) levels=2 ;;
+      *.tar.gz | *.tar.bz2) levels=2 ;;
     esac
   fi
 
   levels=${levels:-1}
 
-  for (( i=0; i<levels; i++ )); do
+  for ((i = 0; i < levels; i++)); do
     ext=.${fn##*.}
     exts=$ext$exts
     fn=${fn%$ext}
@@ -188,25 +206,37 @@ _extract_() {
 
   if [ -f "$1" ]; then
     case "$1" in
-      *.tar.bz2|*.tbz|*.tbz2) tar "x${vv}jf" "$1" ;;
-      *.tar.gz|*.tgz) tar "x${vv}zf" "$1" ;;
-      *.tar.xz) xz --decompress "$1"; set -- "$@" "${1:0:-3}" ;;
-      *.tar.Z) uncompress "$1"; set -- "$@" "${1:0:-2}" ;;
+      *.tar.bz2 | *.tbz | *.tbz2) tar "x${vv}jf" "$1" ;;
+      *.tar.gz | *.tgz) tar "x${vv}zf" "$1" ;;
+      *.tar.xz)
+        xz --decompress "$1"
+        set -- "$@" "${1:0:-3}"
+        ;;
+      *.tar.Z)
+        uncompress "$1"
+        set -- "$@" "${1:0:-2}"
+        ;;
       *.bz2) bunzip2 "$1" ;;
       *.deb) dpkg-deb -x${vv} "$1" "${1:0:-4}" ;;
-      *.pax.gz) gunzip "$1"; set -- "$@" "${1:0:-3}" ;;
+      *.pax.gz)
+        gunzip "$1"
+        set -- "$@" "${1:0:-3}"
+        ;;
       *.gz) gunzip "$1" ;;
       *.pax) pax -r -f "$1" ;;
       *.pkg) pkgutil --expand "$1" "${1:0:-4}" ;;
       *.rar) unrar x "$1" ;;
       *.rpm) rpm2cpio "$1" | cpio -idm${vv} ;;
       *.tar) tar "x${vv}f" "$1" ;;
-      *.txz) mv "$1" "${1:0:-4}.tar.xz"; set -- "$@" "${1:0:-4}.tar.xz" ;;
+      *.txz)
+        mv "$1" "${1:0:-4}.tar.xz"
+        set -- "$@" "${1:0:-4}.tar.xz"
+        ;;
       *.xz) xz --decompress "$1" ;;
-      *.zip|*.war|*.jar) unzip "$1" ;;
+      *.zip | *.war | *.jar) unzip "$1" ;;
       *.Z) uncompress "$1" ;;
       *.7z) 7za x "$1" ;;
-      *) return 1
+      *) return 1 ;;
     esac
   else
     return 1
@@ -219,7 +249,7 @@ _json2yaml_() {
   # v1.0.0
   # convert json files to yaml using python and PyYAML
   # usage: _json2yaml_ "dir/somefile.json"
-  python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < "${1:?_json2yaml_ needs a file}"
+  python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' <"${1:?_json2yaml_ needs a file}"
 }
 
 _locateSourceFile_() {
@@ -264,26 +294,41 @@ _makeSymlink_() {
   # NOTE: This function makes use of the _execute_ function
   #
   # usage: _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
-  local s="$1"    # Source file
-  local d="$2"    # Destination file
-  local b="$3"    # Backup directory for originals (optional)
-  local o         # Original file
+  local s="$1" # Source file
+  local d="$2" # Destination file
+  local b="$3" # Backup directory for originals (optional)
+  local o      # Original file
 
   [ ! -e "$s" ] \
-    &&  { error "'$s' not found"; return 1; }
+    && {
+      error "'$s' not found"
+      return 1
+    }
   [ -z "$d" ] \
-    && { error "'$d' not specified"; return 1; }
+    && {
+      error "'$d' not specified"
+      return 1
+    }
   [ ! "$(declare -f "_execute_")" ] \
-    && { echo "need function _execute_"; return 1; }
+    && {
+      echo "need function _execute_"
+      return 1
+    }
   [ ! "$(declare -f "_backupFile_")" ] \
-    && { echo "need function _backupFile_"; return 1; }
+    && {
+      echo "need function _backupFile_"
+      return 1
+    }
   [ ! "$(declare -f "_locateSourceFile_")" ] \
-      && { echo "need function _locateSourceFile_"; return 1; }
+    && {
+      echo "need function _locateSourceFile_"
+      return 1
+    }
 
   # Fix files where $HOME is written as '~'
-    d="${d/\~/$HOME}"
-    s="${s/\~/$HOME}"
-    b="${b/\~/$HOME}"
+  d="${d/\~/$HOME}"
+  s="${s/\~/$HOME}"
+  b="${b/\~/$HOME}"
 
   # Create destination directory if needed
   [ ! -d "${d%/*}" ] \
@@ -294,12 +339,12 @@ _makeSymlink_() {
   elif [ -h "${d}" ]; then
     o="$(_locateSourceFile_ "$d")"
     _backupFile_ "${o}" ${b:-backup}
-    ( $dryrun ) \
+    ($dryrun) \
       || rm -rf "$d"
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -e "${d}" ]; then
     _backupFile_ "${d}" "${b:-backup}"
-    ( $dryrun ) \
+    ($dryrun) \
       || rm -rf "$d"
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   else
@@ -337,10 +382,10 @@ _parseYAML_() {
 
   s='[[:space:]]*'
   w='[a-zA-Z0-9_]*'
-  fs="$(echo @|tr @ '\034')"
+  fs="$(echo @ | tr @ '\034')"
   sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-      -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$yamlFile" |
-  awk -F"$fs" '{
+    -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$yamlFile" \
+    | awk -F"$fs" '{
     indent = length($1)/2;
     if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
     vname[indent] = $2;
@@ -360,11 +405,14 @@ _readFile_() {
   local c="$1"
 
   [ ! -f "$c" ] \
-    &&  { echo "'$c' not found"; return 1; }
+    && {
+      echo "'$c' not found"
+      return 1
+    }
 
   while read -r result; do
     echo "${result}"
-  done < "${c}"
+  done <"${c}"
 }
 
 _realpath_() {
@@ -395,7 +443,7 @@ _realpath_() {
 
     # get the basename of the file (ignoring '.' & '..', because they're really part of the path)
     file_basename="${path##*/}"
-    if [[ ( "$file_basename" = "." ) || ( "$file_basename" = ".." ) ]]; then
+    if [[ ("$file_basename" == ".") || ("$file_basename" == "..") ]]; then
       file_basename=""
     fi
 
@@ -406,13 +454,13 @@ _realpath_() {
     fi
 
     # attempt to change to the directory
-    if ! cd "$directory" &>/dev/null ; then
+    if ! cd "$directory" &>/dev/null; then
       success=false
     fi
 
     if $success; then
       # does the filename exist?
-      if [[ ( -n "$file_basename" ) && ( ! -e "$file_basename" ) ]]; then
+      if [[ (-n "$file_basename") && (! -e "$file_basename") ]]; then
         success=false
       fi
 
@@ -443,7 +491,10 @@ _sourceFile_() {
   local c="$1"
 
   [ ! -f "$c" ] \
-    &&  { echo "error: '$c' not found"; return 1; }
+    && {
+      echo "error: '$c' not found"
+      return 1
+    }
 
   source "$c"
 }
@@ -477,7 +528,7 @@ _uniqueFileName_() {
 
   # Find directories with _realpath_ if available
   if [ -e "$fullfile" ]; then
-    if type -t _realpath_ | grep -E '^function$' &> /dev/null; then
+    if type -t _realpath_ | grep -E '^function$' &>/dev/null; then
       fullfile="$(_realpath_ "$fullfile")"
     fi
   fi
@@ -496,7 +547,7 @@ _uniqueFileName_() {
   if [ -e "${newfile}" ]; then
     n=2
     while [[ -e "${directory}/${filename}${spacer}${n}${extension}" ]]; do
-      (( n++ ))
+      ((n++))
     done
     newfile="${directory}/${filename}${spacer}${n}${extension}"
   fi
@@ -508,5 +559,5 @@ _yaml2json_() {
   # v1.0.0
   # convert yaml files to json using python and PyYAML
   # usage: _yaml2json_ "dir/somefile.yaml"
-  python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "${1:?_yaml2json_ needs a file}"
+  python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' <"${1:?_yaml2json_ needs a file}"
 }

@@ -96,7 +96,6 @@ _mainScript_() {
 
     #_execute_ "sudo pmset -a hibernatemode 0" "Disable hibernation? (speeds up entering sleep mode)"
 
-
     # Input Device Preferences
     # ---------------------------
 
@@ -131,7 +130,6 @@ _mainScript_() {
 
     _execute_ "defaults write NSGlobalDomain InitialKeyRepeat -int 12" "Set a shorter Delay until key repeat"
 
-
     _execute_ "defaults write com.apple.BezelServices kDim -bool true" "Automatically illuminate built-in MacBook keyboard in low light"
 
     _execute_ "defaults write com.apple.BezelServices kDimTime -int 300" "Turn off keyboard illumination when computer is not used for 5 minutes"
@@ -145,7 +143,7 @@ _mainScript_() {
     defaults write NSGlobalDomain AppleMetricUnits -bool false
 
     success "Set the timezone to New York"
-    systemsetup -settimezone "America/New_York" > /dev/null
+    systemsetup -settimezone "America/New_York" >/dev/null
     #see `systemsetup -listtimezones` for other values
 
     #success "Disable spelling auto-correct"
@@ -153,7 +151,6 @@ _mainScript_() {
 
     # Stop iTunes from responding to the keyboard media keys
     #launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist 2> /dev/null
-
 
     # Screen Preferences
     # ---------------------------
@@ -277,7 +274,6 @@ _mainScript_() {
     # Enable AirDrop over Ethernet and on unsupported Macs running Lion
     # defaults write com.apple.NetworkBrowser BrowseAllInterfaces -bool true
 
-
     # Dock & Dashboard Preferences
     # ---------------------------
 
@@ -340,7 +336,6 @@ _mainScript_() {
 
     success "Make Dock icons of hidden applications translucent"
     defaults write com.apple.dock showhidden -bool true
-
 
     # Add a spacer to the left side of the Dock (where the applications are)
     #defaults write com.apple.dock persistent-apps -array-add '{tile-data={}; tile-type="spacer-tile";}'
@@ -446,42 +441,42 @@ _mainScript_() {
     sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes"
 
     success "Change indexing order and disable some file types"
-      # Newer-specific search results (remove them if your are using OS X 10.9 or older):
-      #   MENU_DEFINITION
-      #   MENU_CONVERSION
-      #   MENU_EXPRESSION
-      #   MENU_SPOTLIGHT_SUGGESTIONS (send search queries to Apple)
-      #   MENU_WEBSEARCH             (send search queries to Apple)
-      #   MENU_OTHER
-      # defaults write com.apple.spotlight orderedItems -array \
-      #   '{"enabled" = 1;"name" = "APPLICATIONS";}' \
-      #   '{"enabled" = 1;"name" = "SYSTEM_PREFS";}' \
-      #   '{"enabled" = 1;"name" = "DIRECTORIES";}' \
-      #   '{"enabled" = 1;"name" = "PDF";}' \
-      #   '{"enabled" = 1;"name" = "FONTS";}' \
-      #   '{"enabled" = 0;"name" = "DOCUMENTS";}' \
-      #   '{"enabled" = 0;"name" = "MESSAGES";}' \
-      #   '{"enabled" = 0;"name" = "CONTACT";}' \
-      #  '{"enabled" = 0;"name" = "EVENT_TODO";}' \
-      #   '{"enabled" = 0;"name" = "IMAGES";}' \
-      #   '{"enabled" = 0;"name" = "BOOKMARKS";}' \
-      #   '{"enabled" = 0;"name" = "MUSIC";}' \
-      #   '{"enabled" = 0;"name" = "MOVIES";}' \
-      #   '{"enabled" = 0;"name" = "PRESENTATIONS";}' \
-      #   '{"enabled" = 0;"name" = "SPREADSHEETS";}' \
-      #   '{"enabled" = 0;"name" = "SOURCE";}' \
-      #   '{"enabled" = 0;"name" = "MENU_DEFINITION";}' \
-      #   '{"enabled" = 0;"name" = "MENU_OTHER";}' \
-      #   '{"enabled" = 0;"name" = "MENU_CONVERSION";}' \
-      #   '{"enabled" = 0;"name" = "MENU_EXPRESSION";}' \
-      #   '{"enabled" = 0;"name" = "MENU_WEBSEARCH";}' \
-      #   '{"enabled" = 0;"name" = "MENU_SPOTLIGHT_SUGGESTIONS";}'
-      # Load new settings before rebuilding the index
-      # killall mds > /dev/null 2>&1
-      # Make sure indexing is enabled for the main volume
-      #sudo mdutil -i on / > /dev/null
-      # Rebuild the index from scratch
-      #sudo mdutil -E / > /dev/null
+    # Newer-specific search results (remove them if your are using OS X 10.9 or older):
+    #   MENU_DEFINITION
+    #   MENU_CONVERSION
+    #   MENU_EXPRESSION
+    #   MENU_SPOTLIGHT_SUGGESTIONS (send search queries to Apple)
+    #   MENU_WEBSEARCH             (send search queries to Apple)
+    #   MENU_OTHER
+    # defaults write com.apple.spotlight orderedItems -array \
+    #   '{"enabled" = 1;"name" = "APPLICATIONS";}' \
+    #   '{"enabled" = 1;"name" = "SYSTEM_PREFS";}' \
+    #   '{"enabled" = 1;"name" = "DIRECTORIES";}' \
+    #   '{"enabled" = 1;"name" = "PDF";}' \
+    #   '{"enabled" = 1;"name" = "FONTS";}' \
+    #   '{"enabled" = 0;"name" = "DOCUMENTS";}' \
+    #   '{"enabled" = 0;"name" = "MESSAGES";}' \
+    #   '{"enabled" = 0;"name" = "CONTACT";}' \
+    #  '{"enabled" = 0;"name" = "EVENT_TODO";}' \
+    #   '{"enabled" = 0;"name" = "IMAGES";}' \
+    #   '{"enabled" = 0;"name" = "BOOKMARKS";}' \
+    #   '{"enabled" = 0;"name" = "MUSIC";}' \
+    #   '{"enabled" = 0;"name" = "MOVIES";}' \
+    #   '{"enabled" = 0;"name" = "PRESENTATIONS";}' \
+    #   '{"enabled" = 0;"name" = "SPREADSHEETS";}' \
+    #   '{"enabled" = 0;"name" = "SOURCE";}' \
+    #   '{"enabled" = 0;"name" = "MENU_DEFINITION";}' \
+    #   '{"enabled" = 0;"name" = "MENU_OTHER";}' \
+    #   '{"enabled" = 0;"name" = "MENU_CONVERSION";}' \
+    #   '{"enabled" = 0;"name" = "MENU_EXPRESSION";}' \
+    #   '{"enabled" = 0;"name" = "MENU_WEBSEARCH";}' \
+    #   '{"enabled" = 0;"name" = "MENU_SPOTLIGHT_SUGGESTIONS";}'
+    # Load new settings before rebuilding the index
+    # killall mds > /dev/null 2>&1
+    # Make sure indexing is enabled for the main volume
+    #sudo mdutil -i on / > /dev/null
+    # Rebuild the index from scratch
+    #sudo mdutil -E / > /dev/null
 
     # Time Machine Preferences
     # ---------------------------
@@ -489,7 +484,7 @@ _mainScript_() {
     defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool true
 
     success "Disable local Time Machine backups"
-    hash tmutil &> /dev/null && sudo tmutil disablelocal
+    hash tmutil &>/dev/null && sudo tmutil disablelocal
 
     # Random Application Preferences
     # ---------------------------
@@ -544,7 +539,7 @@ _mainScript_() {
     defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "continuousSpellCheckingEnabled" -bool false
   fi
 
-}  # end _mainScript_
+} # end _mainScript_
 
 _sourceHelperFiles_() {
   local filesToSource
@@ -556,7 +551,10 @@ _sourceHelperFiles_() {
 
   for sourceFile in "${filesToSource[@]}"; do
     [ ! -f "$sourceFile" ] \
-      &&  { echo "error: Can not find sourcefile '$sourceFile'. Exiting."; exit 1; }
+      && {
+        echo "error: Can not find sourcefile '$sourceFile'. Exiting."
+        exit 1
+      }
 
     source "$sourceFile"
   done
@@ -568,9 +566,16 @@ _sourceHelperFiles_
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false;              printLog=false;             logErrors=true;     verbose=false;
-force=false;              strict=false;               dryrun=false;
-debug=false;              sourceOnly=false;           args=();
+quiet=false
+printLog=false
+logErrors=true
+verbose=false
+force=false
+strict=false
+dryrun=false
+debug=false
+sourceOnly=false
+args=()
 
 # Set Temp Directory
 tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
@@ -612,7 +617,7 @@ while (($#)); do
     # If option is of type -ab
     -[!-]?*)
       # Loop over each character starting with the second
-      for ((i=1; i < ${#1}; i++)); do
+      for ((i = 1; i < ${#1}; i++)); do
         c=${1:i:1}
 
         # Add current char to options
@@ -620,7 +625,7 @@ while (($#)); do
 
         # If option takes a required argument, and it's not the last char make
         # the rest of the string its argument
-        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+        if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
           options+=("${1:i+1}")
           break
         fi
@@ -645,21 +650,33 @@ unset options
 # [[ $# -eq 0 ]] && set -- "--help"
 
 # Read the options and set stuff
-while [[ $1 = -?* ]]; do
+while [[ $1 == -?* ]]; do
   case $1 in
-    --rootDIR) shift; baseDir="$1" ;;
-    -h|--help) _usage_ >&2; _safeExit_ ;;
-    -L|--noErrorLog) logErrors=false ;;
-    -n|--dryrun) dryrun=true ;;
-    -v|--verbose) verbose=true ;;
-    -l|--log) printLog=true ;;
-    -q|--quiet) quiet=true ;;
-    -s|--strict) strict=true;;
-    -d|--debug) debug=true;;
-    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
-    --source-only) sourceOnly=true;;
+    --rootDIR)
+      shift
+      baseDir="$1"
+      ;;
+    -h | --help)
+      _usage_ >&2
+      _safeExit_
+      ;;
+    -L | --noErrorLog) logErrors=false ;;
+    -n | --dryrun) dryrun=true ;;
+    -v | --verbose) verbose=true ;;
+    -l | --log) printLog=true ;;
+    -q | --quiet) quiet=true ;;
+    -s | --strict) strict=true ;;
+    -d | --debug) debug=true ;;
+    --version)
+      echo "$(basename $0) ${version}"
+      _safeExit_
+      ;;
+    --source-only) sourceOnly=true ;;
     --force) force=true ;;
-    --endopts) shift; break ;;
+    --endopts)
+      shift
+      break
+      ;;
     *) die "invalid option: '$1'." ;;
   esac
   shift
@@ -683,10 +700,10 @@ IFS=$' \n\t'
 set -o pipefail
 
 # Run in debug mode, if set
-if ${debug}; then set -x ; fi
+if ${debug}; then set -x; fi
 
 # Exit on empty variable
-if ${strict}; then set -o nounset ; fi
+if ${strict}; then set -o nounset; fi
 
 # Run your script unless in 'source-only' mode
 if ! ${sourceOnly}; then _mainScript_; fi

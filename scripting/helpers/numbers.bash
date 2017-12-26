@@ -8,9 +8,9 @@ _convertSecs_() {
   #   ENDTIME=$(date +"%s")
   #   TOTALTIME=$(($ENDTIME-$STARTTIME)) # human readable time
 
-  ((h=${1}/3600))
-  ((m=(${1}%3600)/60))
-  ((s=${1}%60))
+  ((h = ${1} / 3600))
+  ((m = (${1} % 3600) / 60))
+  ((s = ${1} % 60))
   printf "%02d:%02d:%02d\n" $h $m $s
 }
 
@@ -28,11 +28,11 @@ _countdown_() {
   local n=${1:-10}
   local stime=${2:-1}
   local message="${3:-...}"
-  ((t=n+1))
+  ((t = n + 1))
 
-  for (( i=1; i<=n; i++ )); do
-    ((ii=t-i))
-    if declare -f "info" &> /dev/null 2>&1; then
+  for ((i = 1; i <= n; i++)); do
+    ((ii = t - i))
+    if declare -f "info" &>/dev/null 2>&1; then
       info "${message} ${ii}"
     else
       echo "${message} ${ii}"

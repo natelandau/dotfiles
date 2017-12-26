@@ -1,4 +1,3 @@
-
 alias netCons='lsof -i'                           # netCons:   Show all open TCP/IP sockets
 alias flushDNS='dscacheutil -flushcache'          # flushDNS:  Flush out the DNS Cache
 alias lsock='sudo /usr/sbin/lsof -i -P'           # lsock:     Display open sockets
@@ -12,14 +11,14 @@ alias newDHCP='sudo ipconfig set en0 DHCP'        # newDHCP:    Renews DHCP leas
 
 clearDNS() {
   # clearDNS:   Clears the DNS cache to help fix networking errors
-  sudo dscacheutil -flushcache && \
-  sudo killall -HUP mDNSResponder
+  sudo dscacheutil -flushcache \
+    && sudo killall -HUP mDNSResponder
 }
 
 down4me() {
   # down4me:  checks whether a website is down for you, or everybody
   #           example '$ down4me http://www.google.com'
-    curl -s "http://www.downforeveryoneorjustme.com/$1" | sed '/just you/!d;s/<[^>]*>//g'
+  curl -s "http://www.downforeveryoneorjustme.com/$1" | sed '/just you/!d;s/<[^>]*>//g'
 }
 
 myip() {
@@ -30,29 +29,30 @@ myip() {
 
 createTunnel() {
   # createTunnel:  Create a ssh tunnel with arguments or querying for it.
-  if [ $# -eq 3 ]
-  then
+  if [ $# -eq 3 ]; then
     user=$1
     host=$2
     localPort=$3
     remotePort=$3
   else
-    if [ $# -eq 4 ]
-    then
+    if [ $# -eq 4 ]; then
       user=$1
       host=$2
       localPort=$3
       remotePort=$4
     else
-      echo -n "User: "; read -r user
-      echo -n "host: "; read -r host
-      echo -n "Distant host: "; read -r remotePort
-      echo -n "Local port: "; read -r localPort
+      echo -n "User: "
+      read -r user
+      echo -n "host: "
+      read -r host
+      echo -n "Distant host: "
+      read -r remotePort
+      echo -n "Local port: "
+      read -r localPort
     fi
   fi
   ssh -N -f $user@$host -L ${localPort}:${host}:${remotePort}
 }
-
 
 lips() {
   # Show local and external IP Address

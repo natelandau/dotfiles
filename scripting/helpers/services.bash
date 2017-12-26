@@ -4,7 +4,8 @@ _guiInput_() {
   #
   # Credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md
   guiPrompt="${1:-Password:}"
-  guiInput=$(osascript &> /dev/null <<EOF
+  guiInput=$(
+    osascript &>/dev/null <<EOF
     tell application "System Events"
         activate
         text returned of (display dialog "${guiPrompt}" default answer "" with hidden answer)
@@ -50,7 +51,7 @@ _httpStatus_() {
 
   #      __________ get the CODE which is numeric:
   code=$(echo "$(curl --write-out %{http_code} --silent --connect-timeout ${timeout} \
-                    --no-keepalive ${curlops} --output /dev/null ${url})")
+    --no-keepalive ${curlops} --output /dev/null ${url})")
 
   #      __________ get the STATUS (from code) which is human interpretable:
   case $code in
@@ -96,15 +97,15 @@ _httpStatus_() {
     503) status="Server Error: Service Unavailable" ;;
     504) status="Server Error: Gateway Timeout within ${timeout} seconds" ;;
     505) status="Server Error: HTTP Version Not Supported" ;;
-    *)   die " !!  httpstatus: status not defined." ;;
+    *) die " !!  httpstatus: status not defined." ;;
   esac
 
   case ${flag} in
     --status) echo "${code} ${status}" ;;
-    -s)       echo "${code} ${status}" ;;
-    --code)   echo "${code}"         ;;
-    -c)       echo "${code}"         ;;
-    *)        echo " !!  httpstatus: bad flag" && _safeExit_;;
+    -s) echo "${code} ${status}" ;;
+    --code) echo "${code}" ;;
+    -c) echo "${code}" ;;
+    *) echo " !!  httpstatus: bad flag" && _safeExit_ ;;
   esac
 
   IFS="${saveIFS}"
@@ -134,10 +135,10 @@ _pushover_() {
   TITLE="${1}"
   MESSAGE="${2}"
   curl \
-  -F "token=${API_KEY}" \
-  -F "user=${USER_KEY}" \
-  -F "device=${DEVICE}" \
-  -F "title=${TITLE}" \
-  -F "message=${MESSAGE}" \
-  "${PUSHOVERURL}" > /dev/null 2>&1
+    -F "token=${API_KEY}" \
+    -F "user=${USER_KEY}" \
+    -F "device=${DEVICE}" \
+    -F "title=${TITLE}" \
+    -F "message=${MESSAGE}" \
+    "${PUSHOVERURL}" >/dev/null 2>&1
 }

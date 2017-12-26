@@ -59,7 +59,7 @@ function dirsHelp() {
 # ADD BOOKMARKing functionality
 # usage:
 
-if [ ! -f ~/.dirs ]; then  # if doesn't exist, create it
+if [ ! -f ~/.dirs ]; then # if doesn't exist, create it
   touch ~/.dirs
 else
   source ~/.dirs
@@ -67,34 +67,39 @@ fi
 
 alias L='cat ~/.dirs'
 
-
-G () {
+G() {
   # goes to destination dir otherwise, stay in the dir
   # example '$ G ..'
-  cd "${1:-$(pwd)}" ;
+  cd "${1:-$(pwd)}"
 }
 
-S () {
+S() {
   # 'save a bookmark'
   # example '$ S mybkmrk'
 
-  [[ $# -eq 1 ]] || { echo "${FUNCNAME[0]} function requires 1 argument"; return 1; }
+  [[ $# -eq 1 ]] || {
+    echo "${FUNCNAME[0]} function requires 1 argument"
+    return 1
+  }
 
-  sed "/${*}/d" ~/.dirs > ~/.dirs1;
-  echo "${*}=\"$(pwd)\"" >> ~/.dirs;
-  source ~/.dirs ;
+  sed "/${*}/d" ~/.dirs >~/.dirs1
+  echo "${*}=\"$(pwd)\"" >>~/.dirs
+  source ~/.dirs
 }
 
-R () {
+R() {
   # 'remove a bookmark'
   # example '$ R mybkmrk'
 
-  [[ $# -eq 1 ]] || { echo "${FUNCNAME[0]} function requires 1 argument"; return 1; }
+  [[ $# -eq 1 ]] || {
+    echo "${FUNCNAME[0]} function requires 1 argument"
+    return 1
+  }
 
-  sed "/$*/d" ~/.dirs > ~/.dirs1;
+  sed "/$*/d" ~/.dirs >~/.dirs1
 }
 
-alias U='source ~/.dirs'  # Update BOOKMARK stack
+alias U='source ~/.dirs' # Update BOOKMARK stack
 
 # set the bash option so that no '$' is required when using the above facility
 shopt -s cdable_vars

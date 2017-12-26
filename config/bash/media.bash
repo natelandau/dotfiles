@@ -1,11 +1,10 @@
-if command -v ffmpeg &>/dev/null ; then
+if command -v ffmpeg &>/dev/null; then
 
   ffjson() {
     # Use ffmpeg's built in file checker to output a JSON containing all
     # the stream information from a media file
     ffprobe -v quiet -print_format json -show_format -show_streams "$1"
   }
-
 
   gifify() {
     # about 'Converts a .mov file into an into an animated GIF.'
@@ -32,7 +31,7 @@ if command -v ffmpeg &>/dev/null ; then
     fi
 
     ffmpeg -loglevel panic -i $1 $maxsize -r 10 -vcodec png gifify-tmp-%05d.png
-    convert +dither -layers Optimize gifify-tmp-*.png GIF:- | gifsicle --no-warnings --colors 256 --delay=10 --loop --optimize=3 --multifile - > $output_file
+    convert +dither -layers Optimize gifify-tmp-*.png GIF:- | gifsicle --no-warnings --colors 256 --delay=10 --loop --optimize=3 --multifile - >$output_file
     rm gifify-tmp-*.png
 
     echo "$(tput setaf 2)Done.$(tput sgr 0)"
@@ -43,8 +42,8 @@ imgSize() {
   # imgSize:  Quickly get image dimensions from the command line
   local width height
   if [[ -f $1 ]]; then
-    height=$(sips -g pixelHeight "$1"|tail -n 1|awk '{print $2}')
-    width=$(sips -g pixelWidth "$1"|tail -n 1|awk '{print $2}')
+    height=$(sips -g pixelHeight "$1" | tail -n 1 | awk '{print $2}')
+    width=$(sips -g pixelWidth "$1" | tail -n 1 | awk '{print $2}')
     echo "${width} x ${height}"
   else
     echo "File not found"
@@ -53,7 +52,7 @@ imgSize() {
 
 64enc() {
   # Encode a given image file as base64 and output css background property to clipboard
-  openssl base64 -in "$1" | awk -v ext="${1#*.}" '{ str1=str1 $0 }END{ print "background:url(data:image/"ext";base64,"str1");" }'|pbcopy
+  openssl base64 -in "$1" | awk -v ext="${1#*.}" '{ str1=str1 $0 }END{ print "background:url(data:image/"ext";base64,"str1");" }' | pbcopy
   echo "$1 encoded to clipboard"
 }
 

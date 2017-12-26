@@ -127,7 +127,7 @@ teardown() {
   run $s -n "$file"
 
   assert_success
-  assert_output --partial "[ dryrun] '${file}' moved to trash"
+  assert_output --partial "[ dryrun] "
   assert_file_exist "${file}"
 }
 
@@ -137,7 +137,7 @@ teardown() {
   run $s --dryrun "$file"
 
   assert_success
-  assert_output --partial "[ dryrun] '${file}' moved to trash"
+  assert_output --partial "[ dryrun] "
   assert_file_exist "${file}"
 }
 
@@ -230,7 +230,7 @@ teardown() {
   run $s -e --dryrun
 
   assert_success
-  assert_output --regexp "\[ dryrun\] Trash emptied"
+  assert_output --partial "[ dryrun] /usr/bin/osascript -e 'tell application \"Finder\" to empty trash' (Trash emptied)"
 }
 
 @test "Empty Trash (--empty)" {
@@ -240,7 +240,7 @@ teardown() {
   run $s --empty --dryrun
 
   assert_success
-  assert_output --regexp "\[ dryrun\] Trash emptied"
+  assert_output --partial "[ dryrun] /usr/bin/osascript -e 'tell application \"Finder\" to empty trash' (Trash emptied)"
 }
 
 @test "Empty Trash (-e, --bypassFinder)" {

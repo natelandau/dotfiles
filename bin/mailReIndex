@@ -3,6 +3,33 @@
 version="1.0.0"
 
 function _mainScript_() {
+#   (*
+# Speed up Mail.app by vacuuming the Envelope Index
+# Code from: http://www.hawkwings.net/2007/03/03/scripts-to-automate-the-mailapp-envelope-speed-trick/
+# Originally by "pmbuko" with modifications by Romulo
+# Updated by Brett Terpstra 2012
+# Updated by Mathias Törnblom 2015 to support V3 in El Capitan and still keep backwards compability
+# Updated by @lbutlr for V5 and Container folder in High Sierra and use du
+# *)
+
+# tell application "Mail" to quit
+# set os_version to do shell script "sw_vers -productVersion"
+# set mail_version to "V2"
+# considering numeric strings
+#   if "10.10" ≤ os_version then set mail_version to "~/Library/Mail/V3/Maildata/Envelope\\ Index"
+#   if "10.12" < os_version then set mail_version to "~/Library/Mail/V4/Maildata/Envelope\\ Index"
+#   if "10.13" ≤ os_version then set mail_version to "~/Library/Containers/com.apple.mail/Data/Library/Mail/V5/Maildata/Envelope\\ Index"
+# end considering
+
+# set sizeBefore to do shell script "du -h  " & mail_version & "|  awk {'print $1'}"
+# do shell script "/usr/bin/sqlite3 " & mail_version & " vacuum"
+# set sizeAfter to do shell script "du -h " & mail_version & "| awk {'print $1'}"
+# display dialog ("Mail index before: " & sizeBefore & return & "Mail index after: " & sizeAfter & return & return & "Enjoy the new speed!")
+# tell application "Mail" to activate
+
+
+
+
   oldIFS="$IFS"
   IFS=$'\n\t'
 

@@ -8,8 +8,8 @@ _mainScript_() {
     # This script requires the Linux gdate (as opposed to native 'date' in OSX)
     # Here we see if it's installed. If not, we install it with homebrew.
     if [[ "$OSTYPE" =~ darwin* ]]; then
-      if ! command -v gdate &> /dev/null; then
-        if command -v brew &> /dev/null; then
+      if ! command -v gdate &>/dev/null; then
+        if command -v brew &>/dev/null; then
           warning "Need 'gdate' to continue. Installing via homebrew."
           brew install coreutils
           notice "'coreutils' package installed. Exiting."
@@ -25,7 +25,7 @@ _mainScript_() {
   _isGoodFile_() {
 
     #Bypass file check when testing input
-    ( $testOutput ) && return 0
+    ($testOutput) && return 0
 
     # Ensure file exists
     if [ ! -e "${userFile}" ]; then
@@ -118,114 +118,114 @@ _mainScript_() {
     if "${cleanOnly}"; then return; fi
 
     #Match "YYYY-MM-DD in Filename"
-      regex="[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2}"
-      if [[ "${baseFilename}" =~ ${regex} ]]; then
-        verbose "\t match: YYYY-MM-DD"
-        dateCommand="awk -v FS=- -v OFS=- '{print \$1,\$2,\$3}'"
-        _changeFilename_ "$regex" "$dateCommand"
-        return
-      fi
+    regex="[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2}"
+    if [[ "${baseFilename}" =~ ${regex} ]]; then
+      verbose "\t match: YYYY-MM-DD"
+      dateCommand="awk -v FS=- -v OFS=- '{print \$1,\$2,\$3}'"
+      _changeFilename_ "$regex" "$dateCommand"
+      return
+    fi
 
     #Match "MM-DD-YYYY in Filename"
-      regex="[0-9]{2}[_ -][0-9]{2}[_ -][0-9]{4}"
-      if [[ "${baseFilename}" =~ ${regex} ]]; then
-        verbose "\t match: MM-DD-YYYY"
-        dateCommand="awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-        _changeFilename_ "$regex" "$dateCommand"
-        return
-      fi
+    regex="[0-9]{2}[_ -][0-9]{2}[_ -][0-9]{4}"
+    if [[ "${baseFilename}" =~ ${regex} ]]; then
+      verbose "\t match: MM-DD-YYYY"
+      dateCommand="awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
+      _changeFilename_ "$regex" "$dateCommand"
+      return
+    fi
 
     # Match "MMDDYYYY or YYYYMMDD in Filename"
-      regex='(^|[[:space:]]|-)[0-9]{8}($|[[:space:]]|-)'
-      if [[ "${baseFilename}" =~ $regex ]]; then
-        yearRegex="(^|[[:space:]]|-)20[0-9][0-9][0-9][0-9][0-9][0-9]"
-        regex="[0-9]{8}"
-        if [[ "${baseFilename}" =~ ${yearRegex} ]]; then
-          verbose "\t match: YYYYMMDD"
-          dateCommand="sed -E 's/([0-9]{4})([0-9]{2})([0-9]{2})/\1-\2-\3/g' | awk -v FS=- -v OFS=- '{print \$1,\$2,\$3}'"
-        else
-          verbose "\t match: MMDDYYYY"
-          dateCommand="sed -E 's/([0-9]{2})([0-9]{2})([0-9]{4})/\1-\2-\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-        fi
-        _changeFilename_ "$regex" "$dateCommand"
-        return
+    regex='(^|[[:space:]]|-)[0-9]{8}($|[[:space:]]|-)'
+    if [[ "${baseFilename}" =~ $regex ]]; then
+      yearRegex="(^|[[:space:]]|-)20[0-9][0-9][0-9][0-9][0-9][0-9]"
+      regex="[0-9]{8}"
+      if [[ "${baseFilename}" =~ ${yearRegex} ]]; then
+        verbose "\t match: YYYYMMDD"
+        dateCommand="sed -E 's/([0-9]{4})([0-9]{2})([0-9]{2})/\1-\2-\3/g' | awk -v FS=- -v OFS=- '{print \$1,\$2,\$3}'"
+      else
+        verbose "\t match: MMDDYYYY"
+        dateCommand="sed -E 's/([0-9]{2})([0-9]{2})([0-9]{4})/\1-\2-\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
       fi
+      _changeFilename_ "$regex" "$dateCommand"
+      return
+    fi
 
     # Match "MMDDYY or YYMMDD in Filename"
-      regex="(^|[[:space:]]|-)[0-9]{6}($|[[:space:]]|-)"
-      if [[ "${baseFilename}" =~ ${regex} ]]; then
-        yearRegex="1[3-9][0-9]{4}"
-        regex="[0-9]{6}"
-        if [[ "${baseFilename}" =~ ${yearRegex} ]]; then
-          verbose "\t match: YYMMDD"
-          dateCommand="sed -E 's/([0-9]{2})([0-9]{2})([0-9]{2})/20\1-\2-\3/g' | awk -v FS=- -v OFS=- '{print \$1,\$2,\$3}'"
-        else
-          verbose "\t match: MMDDYY"
-          dateCommand="sed -E 's/([0-9]{2})([0-9]{2})([0-9]{2})/\1-\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-        fi
-        _changeFilename_ "$regex" "$dateCommand"
-        return
+    regex="(^|[[:space:]]|-)[0-9]{6}($|[[:space:]]|-)"
+    if [[ "${baseFilename}" =~ ${regex} ]]; then
+      yearRegex="1[3-9][0-9]{4}"
+      regex="[0-9]{6}"
+      if [[ "${baseFilename}" =~ ${yearRegex} ]]; then
+        verbose "\t match: YYMMDD"
+        dateCommand="sed -E 's/([0-9]{2})([0-9]{2})([0-9]{2})/20\1-\2-\3/g' | awk -v FS=- -v OFS=- '{print \$1,\$2,\$3}'"
+      else
+        verbose "\t match: MMDDYY"
+        dateCommand="sed -E 's/([0-9]{2})([0-9]{2})([0-9]{2})/\1-\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
       fi
+      _changeFilename_ "$regex" "$dateCommand"
+      return
+    fi
 
     # Match "MM-DD-YY or YY-MM-DD  in Filename"
-      regex="[0-9]{2}[_ -][0-9]{2}[_ -][0-9]{2}"
-      if [[ "${baseFilename}" =~ ${regex} ]]; then
-        yearRegex="1[3-9][_ -][0-9][0-9][_ -][0-9][0-9]"
-        if [[ "${baseFilename}" =~ ${yearRegex} ]]; then
-          verbose "\t match: YY-MM-DD"
-          dateCommand="awk -v FS=- -v OFS=- '{print 20\$1,\$2,\$3}'"
-        else
-          verbose "\t match: MM-DD-YY"
-          dateCommand="awk -v FS=- -v OFS=- '{print 20\$3,\$1,\$2}'"
-        fi
-        _changeFilename_ "$regex" "$dateCommand"
-        return
+    regex="[0-9]{2}[_ -][0-9]{2}[_ -][0-9]{2}"
+    if [[ "${baseFilename}" =~ ${regex} ]]; then
+      yearRegex="1[3-9][_ -][0-9][0-9][_ -][0-9][0-9]"
+      if [[ "${baseFilename}" =~ ${yearRegex} ]]; then
+        verbose "\t match: YY-MM-DD"
+        dateCommand="awk -v FS=- -v OFS=- '{print 20\$1,\$2,\$3}'"
+      else
+        verbose "\t match: MM-DD-YY"
+        dateCommand="awk -v FS=- -v OFS=- '{print 20\$3,\$1,\$2}'"
       fi
+      _changeFilename_ "$regex" "$dateCommand"
+      return
+    fi
 
     # Match "M DD YY in Filename"
-      regex="[0-9]{1}[_ -][0-9]{2}[_ -][0-9]{2}"
-      if [[ "${baseFilename}" =~ ${regex} ]]; then
-        verbose "\t match: M DD YY "
-        dateCommand="sed -E 's/([0-9])[_ -]([0-9]{2})[_ -]([0-9]{2})/0\1-\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-        _changeFilename_ "$regex" "$dateCommand"
-        return
-      fi
+    regex="[0-9]{1}[_ -][0-9]{2}[_ -][0-9]{2}"
+    if [[ "${baseFilename}" =~ ${regex} ]]; then
+      verbose "\t match: M DD YY "
+      dateCommand="sed -E 's/([0-9])[_ -]([0-9]{2})[_ -]([0-9]{2})/0\1-\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
+      _changeFilename_ "$regex" "$dateCommand"
+      return
+    fi
 
     # Match "M D YY in Filename"
-      regex="[0-9][_ -][0-9][_ -][0-9][0-9]"
-      if [[ "${baseFilename}" =~ ${regex} ]]; then
-        verbose "\t match: M D YY "
-        dateCommand="sed -E 's/([0-9])[_ -]([0-9])[_ -]([0-9]{2})/0\1-0\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-        _changeFilename_ "$regex" "$dateCommand"
-        return
-      fi
+    regex="[0-9][_ -][0-9][_ -][0-9][0-9]"
+    if [[ "${baseFilename}" =~ ${regex} ]]; then
+      verbose "\t match: M D YY "
+      dateCommand="sed -E 's/([0-9])[_ -]([0-9])[_ -]([0-9]{2})/0\1-0\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
+      _changeFilename_ "$regex" "$dateCommand"
+      return
+    fi
 
     # Match month-DD-YYYY
-      regex="([Jj](an|anuary)|[Ff](eb|ebruary)|[Mm](ar|arch)|[Aa](pr|pril)|[Mm]ay|[Jj](un|une)|[Jj](ul|uly)|[Aa](ug|ugust)|[Ss](ep|ept|eptember)|[Oo](ct|ctober)|[Nn](ov|ovember)|[Dd](ec|ecember))[_ -][0-9]{2}[_ -][0-9]{4}"
-      if [[ "${baseFilename}" =~ ${regex} ]]; then
-        verbose "\t match: Month-DD-YYYY"
-        dateCommand='{ read ddate ; gdate -d "$ddate" +%Y-%m-%d ; }'
-        _changeFilename_ "$regex" "$dateCommand"
-        return
-      fi
+    regex="([Jj](an|anuary)|[Ff](eb|ebruary)|[Mm](ar|arch)|[Aa](pr|pril)|[Mm]ay|[Jj](un|une)|[Jj](ul|uly)|[Aa](ug|ugust)|[Ss](ep|ept|eptember)|[Oo](ct|ctober)|[Nn](ov|ovember)|[Dd](ec|ecember))[_ -][0-9]{2}[_ -][0-9]{4}"
+    if [[ "${baseFilename}" =~ ${regex} ]]; then
+      verbose "\t match: Month-DD-YYYY"
+      dateCommand='{ read ddate ; gdate -d "$ddate" +%Y-%m-%d ; }'
+      _changeFilename_ "$regex" "$dateCommand"
+      return
+    fi
 
     # Match month-DD-YY
-      regex="([Jj](an|anuary)|[Ff](eb|ebruary)|[Mm](ar|arch)|[Aa](pr|pril)|[Mm]ay|[Jj](un|une)|[Jj](ul|uly)|[Aa](ug|ugust)|[Ss](ep|ept|eptember)|[Oo](ct|ctober)|[Nn](ov|ovember)|[Dd](ec|ecember))[_ -][0-9]{2}[_ -][0-9]{2}"
-      if [[ "${baseFilename}" =~ ${regex} ]]; then
-        verbose "\t match: Month-DD-YY"
-        dateCommand='awk -v FS=- -v OFS=- "{print \$1,\$2,20\$3}" | { read ddate ; gdate -d "$ddate" +%Y-%m-%d ; }'
-        _changeFilename_ "$regex" "$dateCommand"
-        return
-      fi
+    regex="([Jj](an|anuary)|[Ff](eb|ebruary)|[Mm](ar|arch)|[Aa](pr|pril)|[Mm]ay|[Jj](un|une)|[Jj](ul|uly)|[Aa](ug|ugust)|[Ss](ep|ept|eptember)|[Oo](ct|ctober)|[Nn](ov|ovember)|[Dd](ec|ecember))[_ -][0-9]{2}[_ -][0-9]{2}"
+    if [[ "${baseFilename}" =~ ${regex} ]]; then
+      verbose "\t match: Month-DD-YY"
+      dateCommand='awk -v FS=- -v OFS=- "{print \$1,\$2,20\$3}" | { read ddate ; gdate -d "$ddate" +%Y-%m-%d ; }'
+      _changeFilename_ "$regex" "$dateCommand"
+      return
+    fi
 
     # Match month-YYYY
-      regex="([Jj](an|anuary)|[Ff](eb|ebruary)|[Mm](ar|arch)|[Aa](pr|pril)|[Mm]ay|[Jj](un|une)|[Jj](ul|uly)|[Aa](ug|ugust)|[Ss](ep|ept|eptember)|[Oo](ct|ctober)|[Nn](ov|ovember)|[Dd](ec|ecember))[_ -][0-9]{4}"
-      if [[ "${baseFilename}" =~ ${regex} ]]; then
-        verbose "\t match: Month-YYYY"
-        dateCommand='echo "01 $origDate" | { read ddate ; gdate -d "$ddate" +%Y-%m-%d ; }'
-        _changeFilename_ "$regex" "$dateCommand"
-        return
-      fi
+    regex="([Jj](an|anuary)|[Ff](eb|ebruary)|[Mm](ar|arch)|[Aa](pr|pril)|[Mm]ay|[Jj](un|une)|[Jj](ul|uly)|[Aa](ug|ugust)|[Ss](ep|ept|eptember)|[Oo](ct|ctober)|[Nn](ov|ovember)|[Dd](ec|ecember))[_ -][0-9]{4}"
+    if [[ "${baseFilename}" =~ ${regex} ]]; then
+      verbose "\t match: Month-YYYY"
+      dateCommand='echo "01 $origDate" | { read ddate ; gdate -d "$ddate" +%Y-%m-%d ; }'
+      _changeFilename_ "$regex" "$dateCommand"
+      return
+    fi
 
     # Act on files which don't match known patterns
     verbose "\t No recognized date in filename. Using creation date or today"
@@ -233,12 +233,12 @@ _mainScript_() {
     # Add a date to files which don't already have one.
     # use mdls to find the creation date of the file. if it exists, use that. if not, use today
     if ${removeDates}; then return; fi # don't do this step if we are trying to remove dates
-    if mdls -raw -name kMDItemContentCreationDate "${originalFileWithPath}" &> /dev/null; then
+    if mdls -raw -name kMDItemContentCreationDate "${originalFileWithPath}" &>/dev/null; then
       creationDate=$(mdls -raw -name kMDItemContentCreationDate "${originalFileWithPath}")
       if [[ "$creationDate" =~ null ]]; then
         newDate="$(date +%Y-%m-%d)"
       else
-        newDate=$(echo "$creationDate" | awk 'BEGIN { FS="[ ]" } ; { print $1 }' )
+        newDate=$(echo "$creationDate" | awk 'BEGIN { FS="[ ]" } ; { print $1 }')
       fi
     else
       newDate="$(date +%Y-%m-%d)"
@@ -316,20 +316,23 @@ _mainScript_() {
       _findDate_
       _rebuildFileName_
       _renameFiles_
-      if ${nonInteractive}; then echo "${newFile}" ; fi
+      if ${nonInteractive}; then echo "${newFile}"; fi
     fi
   done
 
 } # end _mainScript_
 
 filesToSource=(
-  ${HOME}/dotfiles/scripting/helpers/baseHelpers.bash
-  ${HOME}/dotfiles/scripting/helpers/files.bash
+  "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
+  "${HOME}/dotfiles/scripting/helpers/files.bash"
 )
 
 for sourceFile in "${filesToSource[@]}"; do
   [ ! -f "$sourceFile" ] \
-    &&  { echo "error: Can not find sourcefile '$sourceFile'. Exiting."; exit 1; }
+    && {
+      echo "error: Can not find sourcefile '$sourceFile'. Exiting."
+      exit 1
+    }
 
   source "$sourceFile"
 done
@@ -339,12 +342,23 @@ done
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false;        printLog=false;            logErrors=true;    verbose=false;
-force=false;        strict=false;              dryrun=false;
-debug=false;        sourceOnly=false;          args=();
+quiet=false
+printLog=false
+logErrors=true
+verbose=false
+force=false
+strict=false
+dryrun=false
+debug=false
+sourceOnly=false
+args=()
 
-cleanOnly=false;    nonInteractive=false;       lowerCase=false;
-ignoreFile=false;   removeDates=false;          testOutput=false;
+cleanOnly=false
+nonInteractive=false
+lowerCase=false
+ignoreFile=false
+removeDates=false
+testOutput=false
 
 # Options and Usage
 # -----------------------------------
@@ -422,7 +436,7 @@ while (($#)); do
     # If option is of type -ab
     -[!-]?*)
       # Loop over each character starting with the second
-      for ((i=1; i < ${#1}; i++)); do
+      for ((i = 1; i < ${#1}; i++)); do
         c=${1:i:1}
 
         # Add current char to options
@@ -430,7 +444,7 @@ while (($#)); do
 
         # If option takes a required argument, and it's not the last char make
         # the rest of the string its argument
-        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+        if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
           options+=("${1:i+1}")
           break
         fi
@@ -455,24 +469,39 @@ unset options
 [[ $# -eq 0 ]] && set -- "--help"
 
 # Read the options and set stuff
-while [[ $1 = -?* ]]; do
+while [[ $1 == -?* ]]; do
   case $1 in
-    -C|--clean) cleanOnly=true ;;
-    -R| --removeDate) removeDates=true ;;
-    -L| --lower) lowerCase=true ;;
-    -e|--noErrorLog) logErrors=false ;;
-    -n|--dryrun) dryrun=true ;;
-    --nonInteractive) nonInteractive=true; quiet=true; ;;
-    -h|--help) _usage_ >&2 ; _safeExit_ ;;
-    -T|--test) testOutput=true; dryrun=true ;;
-    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
-    -v|--verbose) verbose=true ;;
-    -l|--log) printLog=true ;;
-    -q|--quiet) quiet=true ;;
-    -s|--strict) strict=true;;
-    -d|--debug) debug=true;;
-    --source-only) sourceOnly=true;;
-    --endopts) shift; break ;;
+    -C | --clean) cleanOnly=true ;;
+    -R | --removeDate) removeDates=true ;;
+    -L | --lower) lowerCase=true ;;
+    -e | --noErrorLog) logErrors=false ;;
+    -n | --dryrun) dryrun=true ;;
+    --nonInteractive)
+      nonInteractive=true
+      quiet=true
+      ;;
+    -h | --help)
+      _usage_ >&2
+      _safeExit_
+      ;;
+    -T | --test)
+      testOutput=true
+      dryrun=true
+      ;;
+    --version)
+      echo "$(basename $0) ${version}"
+      _safeExit_
+      ;;
+    -v | --verbose) verbose=true ;;
+    -l | --log) printLog=true ;;
+    -q | --quiet) quiet=true ;;
+    -s | --strict) strict=true ;;
+    -d | --debug) debug=true ;;
+    --source-only) sourceOnly=true ;;
+    --endopts)
+      shift
+      break
+      ;;
     *) die "invalid option: '$1'." ;;
   esac
   shift
@@ -494,13 +523,13 @@ IFS=$' \n\t'
 # set -o errtrace
 
 # Run in debug mode, if set
-if ${debug}; then set -x ; fi
+if ${debug}; then set -x; fi
 
 # Exit on empty variable
-if ${strict}; then set -o nounset ; fi
+if ${strict}; then set -o nounset; fi
 
 # Run your script unless in source only mode
-if ! ${sourceOnly}; then _mainScript_ ; fi
+if ! ${sourceOnly}; then _mainScript_; fi
 
 # Exit cleanly
-if ! ${sourceOnly}; then _safeExit_ ; fi
+if ! ${sourceOnly}; then _safeExit_; fi

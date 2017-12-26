@@ -1,4 +1,4 @@
-if command -v brew &>/dev/null ; then
+if command -v brew &>/dev/null; then
 
   if [[ -s $(brew --prefix)/etc/profile.d/autojump.sh ]]; then
     . "$(brew --prefix)/etc/profile.d/autojump.sh"
@@ -28,7 +28,7 @@ if command -v brew &>/dev/null ; then
   export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 
   alias cask='brew cask'
-  alias brwe='brew'  #typos
+  alias brwe='brew' #typos
 
   bup() {
     brew update

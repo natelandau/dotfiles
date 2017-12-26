@@ -1,8 +1,9 @@
-
 # Enable GO
-if command -v go &>/dev/null ; then
-  GOPATH=${HOME}/go; export GOPATH;
-  GOBIN=${GOPATH}/bin; export GOBIN;
+if command -v go &>/dev/null; then
+  GOPATH=${HOME}/go
+  export GOPATH
+  GOBIN=${GOPATH}/bin
+  export GOBIN
   export PATH="$PATH:${GOBIN}"
 fi
 

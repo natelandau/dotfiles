@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-zipf () { zip -r "$1".zip "$1" ; }        # zipf:       To create a ZIP archive of a folder
-alias numFiles='echo $(ls -1 | wc -l)'    # numFiles:   Count of non-hidden files in current dir
-alias make1mb='mkfile 1m ./1MB.dat'       # make1mb:    Creates a file of 1mb size (all zeros)
-alias make5mb='mkfile 5m ./5MB.dat'       # make5mb:    Creates a file of 5mb size (all zeros)
-alias make10mb='mkfile 10m ./10MB.dat'    # make10mb:   Creates a file of 10mb size (all zeros)
+zipf() { zip -r "$1".zip "$1"; }       # zipf:       To create a ZIP archive of a folder
+alias numFiles='echo $(ls -1 | wc -l)' # numFiles:   Count of non-hidden files in current dir
+alias make1mb='mkfile 1m ./1MB.dat'    # make1mb:    Creates a file of 1mb size (all zeros)
+alias make5mb='mkfile 5m ./5MB.dat'    # make5mb:    Creates a file of 5mb size (all zeros)
+alias make10mb='mkfile 10m ./10MB.dat' # make10mb:   Creates a file of 10mb size (all zeros)
 
-buf () {
+buf() {
   # buf :  Backup file with time stamp
   local filename
   local filetime
@@ -29,42 +29,54 @@ Usage: ${FUNCNAME[0]} [option] <archives>
     -h  show this message and exit
     -v  verbosely list files processed
 End-Of-Usage
-    return
-      ;;
-    v)
-      local -r verbose='v'
-      ;;
-    ?)
-      extract -h >&2
-      return 1
-      ;;
+        return
+        ;;
+      v)
+        local -r verbose='v'
+        ;;
+      ?)
+        extract -h >&2
+        return 1
+        ;;
     esac
   done
-  shift $((OPTIND-1))
+  shift $((OPTIND - 1))
 
   [ $# -eq 0 ] && extract -h && return 1
   while [ $# -gt 0 ]; do
     if [ -f "$1" ]; then
       case "$1" in
-        *.tar.bz2|*.tbz|*.tbz2) tar "x${verbose}jf" "$1" ;;
-        *.tar.gz|*.tgz) tar "x${verbose}zf" "$1" ;;
-        *.tar.xz) xz --decompress "$1"; set -- "$@" "${1:0:-3}" ;;
-        *.tar.Z) uncompress "$1"; set -- "$@" "${1:0:-2}" ;;
+        *.tar.bz2 | *.tbz | *.tbz2) tar "x${verbose}jf" "$1" ;;
+        *.tar.gz | *.tgz) tar "x${verbose}zf" "$1" ;;
+        *.tar.xz)
+          xz --decompress "$1"
+          set -- "$@" "${1:0:-3}"
+          ;;
+        *.tar.Z)
+          uncompress "$1"
+          set -- "$@" "${1:0:-2}"
+          ;;
         *.bz2) bunzip2 "$1" ;;
         *.deb) dpkg-deb -x${verbose} "$1" "${1:0:-4}" ;;
-        *.pax.gz) gunzip "$1"; set -- "$@" "${1:0:-3}" ;;
+        *.pax.gz)
+          gunzip "$1"
+          set -- "$@" "${1:0:-3}"
+          ;;
         *.gz) gunzip "$1" ;;
         *.pax) pax -r -f "$1" ;;
         *.pkg) pkgutil --expand "$1" "${1:0:-4}" ;;
         *.rar) unrar x "$1" ;;
         *.rpm) rpm2cpio "$1" | cpio -idm${verbose} ;;
         *.tar) tar "x${verbose}f" "$1" ;;
-        *.txz) mv "$1" "${1:0:-4}.tar.xz"; set -- "$@" "${1:0:-4}.tar.xz" ;;
+        *.txz)
+          mv "$1" "${1:0:-4}.tar.xz"
+          set -- "$@" "${1:0:-4}.tar.xz"
+          ;;
         *.xz) xz --decompress "$1" ;;
-        *.zip|*.war|*.jar) unzip "$1" ;;
+        *.zip | *.war | *.jar) unzip "$1" ;;
         *.Z) uncompress "$1" ;;
         *.7z) 7za x "$1" ;;
-        *) echo "'$1' cannot be extracted via extract" >&2;;
+        *) echo "'$1' cannot be extracted via extract" >&2 ;;
       esac
     else
       echo "extract: '$1' is not a valid file" >&2
@@ -73,7 +85,6 @@ End-Of-Usage
   done
 }
 
-
 chgext() {
   # chgext: Batch change extension
   #         For example 'chgext html php' will turn a directory of HTML files
@@ -81,15 +92,15 @@ chgext() {
 
   local f
 
-  for f in *.$1 ; do mv "$f" "${f%.$1}.$2" ; done
+  for f in *.$1; do mv "$f" "${f%.$1}.$2"; done
 }
 
 j2y() {
   # convert json files to yaml using python and PyYAML
-  python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < "$1"
+  python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' <"$1"
 }
 
 y2j() {
   # convert yaml files to json using python and PyYAML
-  python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' < "$1"
+  python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' <"$1"
 }

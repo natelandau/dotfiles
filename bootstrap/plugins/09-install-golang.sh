@@ -4,7 +4,7 @@ version="1.0.0"
 
 _mainScript_() {
 
-  if command -v go &> /dev/null; then
+  if command -v go &>/dev/null; then
     success "'go' installed"
     _safeExit_
   fi
@@ -14,15 +14,17 @@ _mainScript_() {
   if [[ "$OSTYPE" =~ "linux-gnu"* ]]; then
 
     _executeStrict_ "git clone https://github.com/udhos/update-golang"
-    pushd update-golang &> /dev/null;
+    pushd update-golang &>/dev/null
     sudo ./update-golang.sh
     if [ ! -e "/usr/bin/go" ] && [ -e "/usr/local/go/bin/go" ]; then
       sudo ln -s /usr/local/go/bin/go /usr/bin/go
     fi
-    popd &> /dev/null;
+    popd &>/dev/null
 
-    GOPATH="${HOME}/go"; export GOPATH;
-    GOBIN=${GOPATH}/bin; export GOBIN;
+    GOPATH="${HOME}/go"
+    export GOPATH
+    GOBIN=${GOPATH}/bin
+    export GOBIN
 
   elif [[ "$OSTYPE" == "darwin"* ]]; then
 
@@ -32,7 +34,7 @@ _mainScript_() {
     warning "Could not install 'golang'"
   fi
 
-}  # end _mainScript_
+} # end _mainScript_
 
 _sourceHelperFiles_() {
   local filesToSource
@@ -44,7 +46,10 @@ _sourceHelperFiles_() {
 
   for sourceFile in "${filesToSource[@]}"; do
     [ ! -f "$sourceFile" ] \
-      &&  { echo "error: Can not find sourcefile '$sourceFile'. Exiting."; exit 1; }
+      && {
+        echo "error: Can not find sourcefile '$sourceFile'. Exiting."
+        exit 1
+      }
 
     source "$sourceFile"
   done
@@ -56,9 +61,16 @@ _sourceHelperFiles_
 scriptName=$(basename "$0")
 
 # Set Flags
-quiet=false;              printLog=false;             logErrors=true;     verbose=false;
-force=false;              strict=false;               dryrun=false;
-debug=false;              sourceOnly=false;           args=();
+quiet=false
+printLog=false
+logErrors=true
+verbose=false
+force=false
+strict=false
+dryrun=false
+debug=false
+sourceOnly=false
+args=()
 
 # Set Temp Directory
 tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
@@ -100,7 +112,7 @@ while (($#)); do
     # If option is of type -ab
     -[!-]?*)
       # Loop over each character starting with the second
-      for ((i=1; i < ${#1}; i++)); do
+      for ((i = 1; i < ${#1}; i++)); do
         c=${1:i:1}
 
         # Add current char to options
@@ -108,7 +120,7 @@ while (($#)); do
 
         # If option takes a required argument, and it's not the last char make
         # the rest of the string its argument
-        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+        if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
           options+=("${1:i+1}")
           break
         fi
@@ -133,21 +145,33 @@ unset options
 # [[ $# -eq 0 ]] && set -- "--help"
 
 # Read the options and set stuff
-while [[ $1 = -?* ]]; do
+while [[ $1 == -?* ]]; do
   case $1 in
-    --rootDIR) shift; baseDir="$1" ;;
-    -h|--help) _usage_ >&2; _safeExit_ ;;
-    -L|--noErrorLog) logErrors=false ;;
-    -n|--dryrun) dryrun=true ;;
-    -v|--verbose) verbose=true ;;
-    -l|--log) printLog=true ;;
-    -q|--quiet) quiet=true ;;
-    -s|--strict) strict=true;;
-    -d|--debug) debug=true;;
-    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
-    --source-only) sourceOnly=true;;
+    --rootDIR)
+      shift
+      baseDir="$1"
+      ;;
+    -h | --help)
+      _usage_ >&2
+      _safeExit_
+      ;;
+    -L | --noErrorLog) logErrors=false ;;
+    -n | --dryrun) dryrun=true ;;
+    -v | --verbose) verbose=true ;;
+    -l | --log) printLog=true ;;
+    -q | --quiet) quiet=true ;;
+    -s | --strict) strict=true ;;
+    -d | --debug) debug=true ;;
+    --version)
+      echo "$(basename $0) ${version}"
+      _safeExit_
+      ;;
+    --source-only) sourceOnly=true ;;
     --force) force=true ;;
-    --endopts) shift; break ;;
+    --endopts)
+      shift
+      break
+      ;;
     *) die "invalid option: '$1'." ;;
   esac
   shift
@@ -171,10 +195,10 @@ IFS=$' \n\t'
 set -o pipefail
 
 # Run in debug mode, if set
-if ${debug}; then set -x ; fi
+if ${debug}; then set -x; fi
 
 # Exit on empty variable
-if ${strict}; then set -o nounset ; fi
+if ${strict}; then set -o nounset; fi
 
 # Run your script unless in 'source-only' mode
 if ! ${sourceOnly}; then _mainScript_; fi

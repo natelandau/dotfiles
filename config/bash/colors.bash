@@ -34,7 +34,16 @@
 showAllColors() {
   # will print all tput colors to terminal
   local x y i os
-  ( x=$(tput op) y=$(printf %$((COLUMNS-6))s);for i in {0..256};do o=00$i;echo -e ${o:${#o}-3:3} "$(tput setaf $i;tput setab $i)"${y// /=}$x;done; )
+  (
+    x=$(tput op) y=$(printf %$((COLUMNS - 6))s)
+    for i in {0..256}; do
+      o=00$i
+      echo -e ${o:${#o}-3:3} "$(
+        tput setaf $i
+        tput setab $i
+      )"${y// /=}$x
+    done
+  )
 }
 
 # Add color to terminal
@@ -52,7 +61,7 @@ export LSCOLORS="GxFxCxDxCxegedabagaced"
 # export LESS_TERMCAP_ue=$'\E[0m'
 # export LESS_TERMCAP_us=$'\E[01;32m'
 
-if [[ $COLORTERM = gnome-* && $TERM = xterm ]] && infocmp gnome-256color >/dev/null 2>&1; then
+if [[ $COLORTERM == gnome-* && $TERM == xterm ]] && infocmp gnome-256color >/dev/null 2>&1; then
   export TERM=gnome-256color
 elif infocmp xterm-256color >/dev/null 2>&1; then
   export TERM=xterm-256color
@@ -60,7 +69,7 @@ else
   export TERM=xterm-256color
 fi
 
-if tput setaf 1 &> /dev/null; then
+if tput setaf 1 &>/dev/null; then
   tput sgr0
   if [[ $(tput colors) -ge 256 ]] 2>/dev/null; then
     MAGENTA=$(tput setaf 9)

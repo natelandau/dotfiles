@@ -3,7 +3,7 @@ if [[ -e ~/.ssh/known_hosts ]]; then
   complete -o default -W "$(cat ${HOME}/.ssh/known_hosts | sed 's/[, ].*//' | sort | uniq | grep -v '[0-9]')" ssh scp sftp
 fi
 
-alias sshCopy='pbcopy < ~/.ssh/id_rsa.pub'  # Clipboards id_rsa.pub
+alias sshCopy='pbcopy < ~/.ssh/id_rsa.pub' # Clipboards id_rsa.pub
 
 add_ssh() {
   # about 'add entry to ssh config'
@@ -11,7 +11,7 @@ add_ssh() {
   # param '2: hostname'
   # param '3: user'
 
-  echo -en "\n\nHost $1\n  HostName $2\n  User $3\n  ServerAliveInterval 30\n  ServerAliveCountMax 120" >> ~/.ssh/config
+  echo -en "\n\nHost $1\n  HostName $2\n  User $3\n  ServerAliveInterval 30\n  ServerAliveCountMax 120" >>~/.ssh/config
 }
 
 sshlist() {

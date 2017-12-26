@@ -2,8 +2,8 @@
 
 # If not running interactively, don't do anything
 case $- in
-    *i*) ;;
-      *) return;;
+  *i*) ;;
+  *) return ;;
 esac
 [ -z "$PS1" ] && return
 
@@ -17,9 +17,9 @@ export PATH="/usr/local/bin:$PATH:$HOME/bin"
 
 # Locations containing files *.bash to be sourced to your environment
 bashFileLocations=(
-  ${HOME}/dotfiles/config/bash
-  ${HOME}/dotfiles-private/config/bash
-  )
+  "${HOME}/dotfiles/config/bash"
+  "${HOME}/dotfiles-private/config/bash"
+)
 
 for bashFileLocation in "${bashFileLocations[@]}"; do
   if [ -d "${bashFileLocation}" ]; then
@@ -33,4 +33,7 @@ done
 
 # Always list directory contents upon 'cd'.
 # (Somehow this always failed when I put it in a sourced file)
-cd() { builtin cd "$@"; ll ; }
+cd() {
+  builtin cd "$@"
+  ll
+}
