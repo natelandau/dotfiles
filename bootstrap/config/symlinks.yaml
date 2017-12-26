@@ -11,7 +11,6 @@ symlinks:
   - ~/.hushlogin:     config/shell/hushlogin
   - ~/.inputrc:       config/shell/inputrc
   - ~/.profile:       config/shell/profile
-  - ~/.slap:          config/shell/slap
   - ~/.sed:           config/shell/sed
   - ~/.ruby-version:  config/shell/ruby-version
   - ~/.config/micro/bindings.json:    config/shell/micro/bindings.json
