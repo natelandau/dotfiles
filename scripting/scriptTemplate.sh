@@ -2,9 +2,9 @@
 
 _mainScript_() {
 
-  echo -n "hello world"
+  echo -e "hello world"
 
-}  # end _mainScript_
+} # end _mainScript_
 
 _sourceHelperFiles_() {
   local filesToSource
@@ -16,7 +16,10 @@ _sourceHelperFiles_() {
 
   for sourceFile in "${filesToSource[@]}"; do
     [ ! -f "$sourceFile" ] \
-      &&  { echo "error: Can not find sourcefile '$sourceFile'. Exiting."; exit 1; }
+      && {
+        echo "error: Can not find sourcefile '$sourceFile'. Exiting."
+        exit 1
+      }
 
     source "$sourceFile"
   done
@@ -24,9 +27,16 @@ _sourceHelperFiles_() {
 _sourceHelperFiles_
 
 # Set Flags
-quiet=false;              printLog=false;             logErrors=true;     verbose=false;
-force=false;              strict=false;               dryrun=false;
-debug=false;              sourceOnly=false;           args=();
+quiet=false
+printLog=false
+logErrors=true
+verbose=false
+force=false
+strict=false
+dryrun=false
+debug=false
+sourceOnly=false
+args=()
 
 # Set Temp Directory
 tmpDir="${TMPDIR-/tmp/}$(basename "$0").$RANDOM.$RANDOM.$RANDOM.$$"
@@ -74,7 +84,7 @@ while (($#)); do
     # If option is of type -ab
     -[!-]?*)
       # Loop over each character starting with the second
-      for ((i=1; i < ${#1}; i++)); do
+      for ((i = 1; i < ${#1}; i++)); do
         c=${1:i:1}
 
         # Add current char to options
@@ -82,7 +92,7 @@ while (($#)); do
 
         # If option takes a required argument, and it's not the last char make
         # the rest of the string its argument
-        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+        if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
           options+=("${1:i+1}")
           break
         fi
@@ -107,22 +117,37 @@ unset options
 # [[ $# -eq 0 ]] && set -- "--help"
 
 # Read the options and set stuff
-while [[ $1 = -?* ]]; do
+while [[ $1 == -?* ]]; do
   case $1 in
-    -h|--help) _usage_ >&2; _safeExit_ ;;
-    -u|--username) shift; username=${1} ;;
-    -p|--password) shift; echo "Enter Pass: "; stty -echo; read -r PASS; stty echo;
-      echo ;;
-    -L|--noErrorLog) logErrors=false ;;
-    -n|--dryrun) dryrun=true ;;
-    -v|--verbose) verbose=true ;;
-    -l|--log) printLog=true ;;
-    -q|--quiet) quiet=true ;;
-    -s|--strict) strict=true;;
-    -d|--debug) debug=true;;
-    --source-only) sourceOnly=true;;
+    -h | --help)
+      _usage_ >&2
+      _safeExit_
+      ;;
+    -u | --username)
+      shift
+      username=${1}
+      ;;
+    -p | --password)
+      shift
+      echo "Enter Pass: "
+      stty -echo
+      read -r PASS
+      stty echo
+      echo
+      ;;
+    -L | --noErrorLog) logErrors=false ;;
+    -n | --dryrun) dryrun=true ;;
+    -v | --verbose) verbose=true ;;
+    -l | --log) printLog=true ;;
+    -q | --quiet) quiet=true ;;
+    -s | --strict) strict=true ;;
+    -d | --debug) debug=true ;;
+    --source-only) sourceOnly=true ;;
     --force) force=true ;;
-    --endopts) shift; break ;;
+    --endopts)
+      shift
+      break
+      ;;
     *) die "invalid option: '$1'." ;;
   esac
   shift
@@ -146,10 +171,10 @@ IFS=$' \n\t'
 set -o pipefail
 
 # Run in debug mode, if set
-if ${debug}; then set -x ; fi
+if ${debug}; then set -x; fi
 
 # Exit on empty variable
-if ${strict}; then set -o nounset ; fi
+if ${strict}; then set -o nounset; fi
 
 # Run your script unless in 'source-only' mode
 if ! ${sourceOnly}; then _mainScript_; fi

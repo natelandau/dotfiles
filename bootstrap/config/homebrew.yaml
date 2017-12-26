@@ -46,6 +46,7 @@ homebrewPackages:
   - readline            # Library for command-line editing
   - rename              # File rename script with many helpful built-ins
   - shellcheck          # Bash linter
+  - shfmt               # Shell script formatter
   - source-highlight    # Source-code syntax highlighter
   - speedtest_cli
   - ssh-copy-id         # Add a public key to a remote machine's authorized_keys file
