@@ -68,13 +68,6 @@ teardown() {
   assert_output --partial "[  fatal] invalid option: '-K'."
 }
 
-@test "Print version (--version)" {
-  run $s --version
-
-  assert_success
-  assert_output --regexp "trash [v|V]?[0-9]+\.[0-9]+\.[0-9]+"
-}
-
 @test "Usage (no args)" {
   run $s
 

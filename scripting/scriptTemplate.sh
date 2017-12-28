@@ -9,18 +9,22 @@ _mainScript_() {
 _sourceHelperFiles_() {
   local filesToSource
   local sourceFile
-
   filesToSource=(
     "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
+    "${HOME}/dotfiles/scripting/helpers/arrays.bash"
+    "${HOME}/dotfiles/scripting/helpers/files.bash"
+    "${HOME}/dotfiles/scripting/helpers/macOS.bash"
+    "${HOME}/dotfiles/scripting/helpers/numbers.bash"
+    "${HOME}/dotfiles/scripting/helpers/services.bash"
+    "${HOME}/dotfiles/scripting/helpers/textProcessing.bash"
   )
-
   for sourceFile in "${filesToSource[@]}"; do
     [ ! -f "$sourceFile" ] \
       && {
-        echo "error: Can not find sourcefile '$sourceFile'. Exiting."
+        echo "error: Can not find sourcefile '$sourceFile'."
+        echo "exiting..."
         exit 1
       }
-
     source "$sourceFile"
   done
 }
@@ -163,9 +167,9 @@ trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "
 # Set IFS to preferred implementation
 IFS=$' \n\t'
 
-# Exit on error. Append '||true' when you run the script if you expect an error.
-#set -o errtrace
-#set -o errexit
+# Exit on error. Append '||true' to a command when you run the script if you expect an error.
+set -o errtrace
+set -o errexit
 
 # Force pipelines to fail on the first non-zero status code.
 set -o pipefail
@@ -176,7 +180,7 @@ if ${debug}; then set -x; fi
 # Exit on empty variable
 if ${strict}; then set -o nounset; fi
 
-# Run your script unless in 'source-only' mode
+# Run script unless in 'source-only' mode
 if ! ${sourceOnly}; then _mainScript_; fi
 
 # Exit cleanly

@@ -1,72 +1,51 @@
 #!/usr/bin/env bash
 
-version="2.0.0"
-
 _mainScript_() {
   local user
   local uid
-  local finder_pid
 
   user=$(whoami)
   uid=$(id -u "$user")
-  #shellcheck disable=2009
-  finder_pid=$(ps -u "$user" | grep /System/Library/CoreServices/Finder.app | grep -v grep | awk '{print $1}')
-
-  _have_scriptable_finder_() {
-    # Determine whether we can script the Finder or not
-    # We must have a valid PID for Finder, plus we cannot be in
-    # `screen` (another thing that's broken)
-    if [[ (${finder_pid} -gt 1) && ("$STY" == "") ]]; then
-      if ${bypassFinder}; then
-        return 1
-      else
-        return 0
-      fi
-    else
-      return 1
-    fi
-  }
 
   _listTrash_() {
-    local num_volumes
-    local total_blocks
+    local num_volumes=0
+    local total_blocks=0
     local blocks
     local size
-
-    num_volumes=0
-    total_blocks=0
 
     notice "Listing items in Trash"
 
     # list file contents & calculate size for user's .Trash folder
     if find "/Users/${user}/.Trash" -depth 1 ! -depth 0; then
-      num_volumes=$(( num_volumes + 1 ))
+      num_volumes=$((num_volumes + 1))
       blocks=$(du -cs "/Users/${user}/.Trash" | tail -n 1 | cut -f 1)
-      total_blocks=$(( total_blocks + blocks ))
+      total_blocks=$((total_blocks + blocks))
     fi
+
     # list file contents & calculate size for volume-specific .Trashes folders
     for file in /Volumes/*; do
       if [ -d "$file" ]; then
         folder="${file}/.Trashes/${uid}"
         if [ -d "${folder}" ]; then
           if find "${folder}" -depth 1 ! -depth 0; then
-            num_volumes=$(( num_volumes + 1 ))
+            num_volumes=$((num_volumes + 1))
             blocks=$(du -cs "${folder}" | tail -n 1 | cut -f 1)
-            total_blocks=$(( total_blocks + blocks ))
+            total_blocks=$((total_blocks + blocks))
           fi
         fi
       fi
     done
+
     # convert blocks to human readable size
     size=0
-    if (( total_blocks >= 2097152 )); then
-      size=$(bc <<< "scale=2; ${total_blocks} / 2097152")
+    if ((total_blocks >= 2097152)); then
+      size=$(bc <<<"scale=2; ${total_blocks} / 2097152")
       size="${size}GB"
-    elif (( total_blocks >= 2048 )); then
-      size=$(bc <<< "scale=2; ${total_blocks} / 2048")
+    elif ((total_blocks >= 2048)); then
+      size=$(bc <<<"scale=2; ${total_blocks} / 2048")
       size="${size}MB"
     else
-      size=$(bc <<< "scale=2; ${total_blocks} / 2")
+      size=$(bc <<<"scale=2; ${total_blocks} / 2")
       size="${size}K"
     fi
     info "${size} across ${num_volumes} volume(s)."
@@ -74,16 +53,16 @@ _mainScript_() {
 
   _emptyTheTrash_() {
     # Determine if we can tell Finder to empty trash via AppleScript
-    if _have_scriptable_finder_; then
+    if ! ${bypassFinder} && _haveScriptableFinder_; then
       notice "Telling Finder to empty trash..."
       _execute_ "/usr/bin/osascript -e 'tell application \"Finder\" to empty trash'" "Trash emptied"
-      else
-       notice "Emptying trash..."
-
-      # delete the contents of user's .Trash folder
+    else
+      notice "Emptying trash..."
+      # Delete the contents of user's .Trash folder
       while read -r fileToTrash; do
-        [ -e "$fileToTrash" ] && _execute_ "rm -rf \"$fileToTrash\""
-      done< <(find "/Users/${user}/.Trash" -depth 1 ! -depth 0)
+        [ -e "$fileToTrash" ] \
+          && _execute_ "rm -rf \"$fileToTrash\""
+      done < <(find "/Users/${user}/.Trash" -depth 1 ! -depth 0)
 
       # delete the contents of the volume-specific .Trashes folders
       for volume in /Volumes/*; do
@@ -91,7 +70,8 @@ _mainScript_() {
           folder="${volume}/.Trashes/${uid}"
           if [ -d "${folder}" ]; then
             while read -r fileToTrash; do
-              [ -e "$fileToTrash" ] && _execute_ "rm -rf \"$fileToTrash\""
+              [ -e "$fileToTrash" ] \
+                && _execute_ "rm -rf \"$fileToTrash\""
             done < <(find "${folder}" -depth 1 ! -depth 0)
           fi
         fi
@@ -112,8 +92,9 @@ _mainScript_() {
         continue
       fi
 
-      # determine whether we have an absolute path name to the file or not
-      [[ ! "${userFile:0:1}" = "/" ]] && userFile="$(_realpath_ "${userFile}")"
+      # Determine whether we have an absolute path name to the file or not
+      [[ ! "${userFile:0:1}" == "/" ]] \
+        && userFile="$(_realpath_ "${userFile}")"
       baseFile="$(basename "${userFile}")"
 
       # Use system's 'rm' when specified
@@ -122,60 +103,71 @@ _mainScript_() {
         continue
       fi
 
-    # determine if we'll tell Finder to trash the file via AppleScript (very easy, plus free undo
-    # support, but Finder must be running for the user and is DOES NOT work from within `screen`)
-    if _have_scriptable_finder_; then
-      verbose "Telling Finder to trash '${baseFile}'..."
-      _execute_ "/usr/bin/osascript -e 'tell application \"Finder\" to delete POSIX file \"${userFile}\"' &>/dev/null" "'${baseFile}' moved to trash"
-    else
-      verbose "Telling system to trash '${baseFile}'..."
-      trash="/Users/${user}/.Trash/"
-      # create the trash folder if necessary
-      if [ ! -d "${trash}" ]; then
-        _execute_ "mkdir \"${trash}\""
+      # Determine if we'll tell Finder to trash the file via AppleScript (very easy, plus free undo
+      # support, but Finder must be running for the user and is DOES NOT work from within `screen`)
+      if ! ${bypassFinder} && _haveScriptableFinder_; then
+        verbose "Telling Finder to trash '${baseFile}'..."
+        _execute_ "/usr/bin/osascript -e 'tell application \"Finder\" to delete POSIX file \"${userFile}\"' &>/dev/null" "'${baseFile}' moved to trash"
+      else
+        verbose "Telling system to trash '${baseFile}'..."
+        trash="/Users/${user}/.Trash/"
+        # create the trash folder if necessary
+        if [ ! -d "${trash}" ]; then
+          _execute_ "mkdir \"${trash}\""
+        fi
+        newBase="$(basename "${userFile}")"
+        new="$(_uniqueFileName_ "${trash}${newBase}")"
+        _execute_ "mv \"${userFile}\" \"${new}\"" "'${baseFile}' moved to trash"
       fi
-      newBase="$(basename "${userFile}")"
-      new="$(_uniqueFileName_ "${trash}${newBase}")"
-      _execute_ "mv \"${userFile}\" \"${new}\"" "'${baseFile}' moved to trash"
-    fi
     done
   }
 
-  if ${list}; then _listTrash_; _safeExit_; fi
-  if ${emptyTrash}; then _emptyTheTrash_; _safeExit_; fi
+  if ${list}; then
+    _listTrash_
+    _safeExit_
+  fi
+  if ${emptyTrash}; then
+    _emptyTheTrash_
+    _safeExit_
+  fi
   # Default behavior without flags is to delete a file
   _trashAFile_
-}  # end _mainScript_
+} # end _mainScript_
 
 filesToSource=(
   "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
   "${HOME}/dotfiles/scripting/helpers/files.bash"
+  "${HOME}/dotfiles/scripting/helpers/macOS.bash"
 )
-
 for sourceFile in "${filesToSource[@]}"; do
   [ ! -f "$sourceFile" ] \
-    &&  { echo "error: Can not find sourcefile '$sourceFile'. Exiting."; exit 1; }
-
+    && {
+      echo "error: Can not find sourcefile '$sourceFile'. Exiting."
+      exit 1
+    }
   source "$sourceFile"
 done
 
-# Set Base Variables
-# ----------------------
-scriptName=$(basename "$0")
-
 # Set Flags
-quiet=false;      printLog=false;       logErrors=true;       verbose=false;
-strict=false;     dryrun=false;         sourceOnly=false;
-debug=false;      args=();
+quiet=false
+printLog=false
+logErrors=true
+verbose=false
+strict=false
+dryrun=false
+sourceOnly=false
+debug=false
+args=()
 
-list=false;       emptyTrash=false;    bypassFinder="false"
+list=false
+emptyTrash=false
+bypassFinder="false"
 systemRM=false
-
 
 # Options and Usage
 # -----------------------------------
 _usage_() {
-  echo -n "${scriptName} [OPTION]... [FILE]...
+  echo -n "$(basename "$0") [OPTION]... [FILE]...
 
  ${bold}Trash${reset} allows MacOS trashing of files instead of tempting fate with ${bold}rm${reset}.
  Anything deleted with Trash will be moved to the native MacOS trash folder.
@@ -200,7 +192,6 @@ _usage_() {
   -v, --verbose       Output more information. (Items echoed to 'verbose')
   -d, --debug         Runs script in BASH debug mode (set -x)
   -h, --help          Display this help and exit
-      --version       Output version information and exit
 "
 }
 
@@ -213,7 +204,7 @@ while (($#)); do
     # If option is of type -ab
     -[!-]?*)
       # Loop over each character starting with the second
-      for ((i=1; i < ${#1}; i++)); do
+      for ((i = 1; i < ${#1}; i++)); do
         c=${1:i:1}
 
         # Add current char to options
@@ -221,7 +212,7 @@ while (($#)); do
 
         # If option takes a required argument, and it's not the last char make
         # the rest of the string its argument
-        if [[ $optstring = *"$c:"* && ${1:i+1} ]]; then
+        if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
           options+=("${1:i+1}")
           break
         fi
@@ -246,23 +237,28 @@ unset options
 [[ $# -eq 0 ]] && set -- "--help"
 
 # Read the options and set stuff
-while [[ $1 = -?* ]]; do
+while [[ $1 == -?* ]]; do
   case $1 in
-    -h|--help) _usage_ >&2; _safeExit_ ;;
-    --version) echo "$(basename $0) ${version}"; _safeExit_ ;;
+    -h | --help)
+      _usage_ >&2
+      _safeExit_
+      ;;
     --bypassFinder) bypassFinder=true ;;
-    -s|--system) systemRM=true ;;
-    -L|--noErrorLog) logErrors=false ;;
-    -l|--list) list=true ;;
-    -e|--empty) emptyTrash=true ;;
-    -n|--dryrun) dryrun=true ;;
-    -v|--verbose) verbose=true ;;
+    -s | --system) systemRM=true ;;
+    -L | --noErrorLog) logErrors=false ;;
+    -l | --list) list=true ;;
+    -e | --empty) emptyTrash=true ;;
+    -n | --dryrun) dryrun=true ;;
+    -v | --verbose) verbose=true ;;
     --log) printLog=true ;;
-    -q|--quiet) quiet=true ;;
-    -S|--strict) strict=true;;
-    -d|--debug) debug=true;;
-    --source-only) sourceOnly=true;;
-    --endopts) shift; break ;;
+    -q | --quiet) quiet=true ;;
+    -S | --strict) strict=true ;;
+    -d | --debug) debug=true ;;
+    --source-only) sourceOnly=true ;;
+    --endopts)
+      shift
+      break
+      ;;
     *) die "invalid option: '$1'." ;;
   esac
   shift
@@ -279,14 +275,14 @@ trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "
 IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-#set -o errexit
-#set -o errtrace
+set -o errexit
+set -o errtrace
 
 # Run in debug mode, if set
-if ${debug}; then set -x ; fi
+if ${debug}; then set -x; fi
 
 # Exit on empty variable
-if ${strict}; then set -o nounset ; fi
+if ${strict}; then set -o nounset; fi
 
 # Run your script unless in 'source-only' mode
 if ! ${sourceOnly}; then _mainScript_; fi
