@@ -69,14 +69,14 @@
 
 	# Make `git rebase` safer on OS X
 	# More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
-		trustctime = false
+	trustctime = false
 
 	# Prevent showing files whose names contain non-ASCII symbols as unversioned.
 	# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
 	precomposeunicode = false
 
-	# Set default editor
-	editor = subl -n -w
+	# Set default editor to use VisualCode
+	editor = code -w
 
 [color]
 
