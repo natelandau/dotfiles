@@ -13,6 +13,7 @@ _mainScript_() {
 
     # Sometimes license files can get old and cause 'brew cask' to throw errors.  This can help
     # identify the culprits
+    # shellcheck disable=2046,2063
     while read -r cask; do
       verbose "If 'brew cask list' throws license errors attempt to reinstall '$cask'"
       # find $(brew --prefix)/Caskroom/${cask}/.metadata -name "*.rb" -exec sed -i'' -e 's/license/#license/' {} \;

@@ -233,12 +233,13 @@ _mainScript_() {
     verbose=true
 
     # If comments exist in the list of npm packaged to be installed remove them
-    # shellcheck disable=2154
+    # shellcheck disable=2207
     for package in "${nodePackages[@]}"; do
       npmPackages+=($(echo "${package}" | cut -d'#' -f1 | _trim_))
     done
 
     # Install packages that do not already exist
+    # shellcheck disable=2207
     modules=($(_setdiff_ "${npmPackages[*]}" "${installed[*]}"))
     if ((${#modules[@]} > 0)); then
       pushd ${HOME} >/dev/null
