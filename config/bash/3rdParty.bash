@@ -21,6 +21,9 @@ if [ -e "${HOME}/.nvm" ]; then
   nvm use 8.6.0
 fi
 
+# Use Java JDK 1.8
+export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+
 # Path for Ruby (installed by Homebrew)
 #export PATH="$PATH:/usr/local/opt/ruby/bin"
 

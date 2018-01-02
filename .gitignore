@@ -3,11 +3,7 @@ dotfiles_backup/
 
 # Other ignores
 *.sublime-workspace
+.vscode
 
 # Ignore synology junk
 *@eaDir*
-
-# Don't sync the slap log. it is different for each computer.
-slap.log
-
-# Don't Commit Symlinks
