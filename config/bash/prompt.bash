@@ -5,7 +5,10 @@ if [[ "$OSTYPE" =~ linux ]]; then
     local branchName=''
 
     # Check if the current directory is in a Git repository.
-  if [ "$(git rev-parse --is-inside-work-tree &>/dev/null; echo "${?}")" == '0' ]; then
+    if [ "$(
+      git rev-parse --is-inside-work-tree &>/dev/null
+      echo "${?}"
+    )" == '0' ]; then
       # check if the current directory is in .git before running git checks
 
       if [ "$(git rev-parse --is-inside-git-dir 2>/dev/null)" == 'false' ]; then
@@ -79,8 +82,8 @@ else
     local lastExit=$?
     local reset seperator oldBG ii iii
     seperator=""
-    topPluginLocation=${HOME}/dotfiles/config/bash/prompt-plugins/top
-    bottomPluginLocation=${HOME}/dotfiles/config/bash/prompt-plugins/bottom
+    topPluginLocation="${HOME}/dotfiles/config/bash/prompt-plugins/top"
+    bottomPluginLocation="${HOME}/dotfiles/config/bash/prompt-plugins/bottom"
     PS1="" # Add a newline at the beginning of the prompt
     oldBG=""
 

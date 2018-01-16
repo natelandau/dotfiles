@@ -18,7 +18,7 @@ fi
 httpHeaders() { http -h "$@"; }
 
 # Start an HTTP server from a directory, optionally specifying the port
-function server() {
+server() {
   local port="${1:-8000}"
   sleep 1 && open "http://localhost:${port}/" &
   # Set the default Content-Type to `text/plain` instead of `application/octet-stream`
@@ -28,14 +28,14 @@ function server() {
 
 # Start a PHP server from a directory, optionally specifying the port
 # (Requires PHP 5.4.0+.)
-function phpserver() {
+phpserver() {
   local port="${1:-4000}"
   local ip=$(ipconfig getifaddr en1)
   sleep 1 && open "http://${ip}:${port}/" &
   php -S "${ip}:${port}"
 }
 
-function smartResize() {
+smartResize() {
   mogrify -path "$3" -filter Triangle -define filter:support=2 -thumbnail "$2" -unsharp 0.25x0.08+8.3+0.045 -dither None -posterize 136 -quality 82 -define jpeg:fancy-upsampling=off -define png:compression-filter=5 -define png:compression-level=9 -define png:compression-strategy=1 -define png:exclude-chunk=all -interlace none -colorspace sRGB "$1"
 }
 
@@ -47,7 +47,7 @@ if command -v apache &>/dev/null; then
   alias herr='tail /var/log/httpd/error_log'         #  herr:  Tails HTTP error logs
 fi
 
-function httpStatus() {
+httpStatus() {
   # -----------------------------------
   # Shamelessly taken from: https://gist.github.com/rsvp/1171304
   #

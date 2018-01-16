@@ -8,7 +8,6 @@ _sourceFiles_() {
   for sourceFile in "${filesToSource[@]}"; do
     [ ! -f "$sourceFile" ] \
       && { echo "error: Can not find sourcefile '$sourceFile'"; }
-
     source "$sourceFile"
   done
 

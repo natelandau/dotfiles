@@ -42,7 +42,7 @@ _alert_() {
   logName="${scriptName%.sh}.log"
 
   if [ -z "$logFile" ]; then
-    mkdir -p "${logLocation}"
+    [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
     logFile="${logLocation}/${logName}"
   fi
 
@@ -91,13 +91,11 @@ _alert_() {
   # Print to Logfile
   if "${printLog}"; then
     [[ "$alertType" =~ ^(input|dryrun|debug) ]] && return
-    [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
     [ ! -f "$logFile" ] && touch "$logFile"
     color=""
     reset="" # Don't use colors in logs
     echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${1}") ${_message}" >>"${logFile}"
   elif [[ "${logErrors}" == "true" && "$alertType" =~ ^(error|fatal) ]]; then
-    [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
     [ ! -f "$logFile" ] && touch "$logFile"
     color=""
     reset="" # Don't use colors in logs

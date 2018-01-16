@@ -2,15 +2,14 @@ alias g='git'
 
 # Adding and Committing
 alias gm="git add .; git commit -m"          # Add and Commit git changes
-ga() { git add "${@:-.}"; }                  # Add all files by default
 alias gcm="git --no-pager commit -m "        # Git Commit - Short message
 alias gc="git --no-pager commit"             # Git Commit - Long message
 alias gshit='git add . ; git commit --amend' # Appends current changes to the last commit
 alias gap='git add -p'                       # step through each change, or hunk
 alias unstage='git reset --'                 # unstage a file
-
-# Add and Commit a single specified file with a commit message
+ga() { git add "${@:-.}"; }                  # Add all files by default
 gac() {
+  # Add and Commit a single specified file with a commit message
   git add -A "$1"
   git commit -m "$2"
 }
@@ -19,13 +18,14 @@ gac() {
 alias gp='git push'
 alias gpush='git push'
 alias gu='git pull'
+alias gfu="git fetch origin"                 # Get updates from Origin
+alias gcl='git clone --recursive'            # Clone with all submodules
+gcheckout() { git checkout "${@:-master}"; } # Checkout master by default
 gpull() {
   git pull
   git submodule foreach git pull origin master
 }
-alias gfu="git fetch origin"                 # Get updates from Origin
-alias gcl='git clone --recursive'            # Clone with all submodules
-gcheckout() { git checkout "${@:-master}"; } # Checkout master by default
+
 
 # Submodules
 alias gsubs='git submodule update --recursive --remote'

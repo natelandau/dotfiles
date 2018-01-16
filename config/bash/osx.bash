@@ -1,7 +1,6 @@
 if [[ "$OSTYPE" == "darwin"* ]]; then
 
   ## ALIASES ##
-  alias top='top -R -F -s 10 -o rsize'
   alias chrome='open -a Google\ Chrome' # chrome:   Open item in Google Chrome browser
   alias f='open -a Finder ./'           # f:        Opens current directory in MacOS Finder
   alias cpwd='pwd|tr -d "\n"|pbcopy'    # cpwd:     Copy the current path to mac clipboard
@@ -11,6 +10,11 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   alias finderShowHidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
   alias finderHideHidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
   alias screensaverDesktop='/System/Library/Frameworks/ScreenSaver.framework/Resources/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine -background'
+
+  if command -v trash &>/dev/null; then
+    alias rm='trash'
+    alias rmd='trash'
+  fi
 
   # Opens any file in MacOS Quicklook Preview
   ql() { qlmanage -p "$*" >&/dev/null; }
@@ -38,8 +42,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # example '$ echo "<h1>hi mom!</h1>" | browser'
     # example '$ ron -5 man/rip.5.ron | browser'
     local f
-    f="/tmp/browser.$RANDOM.html"
-    cat /dev/stdin >$f
+    f=$(mktemp -t browser.XXXXXX.html)
+    cat /dev/stdin >|$f
     open -a safari $f
   }
 

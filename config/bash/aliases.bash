@@ -26,15 +26,13 @@ fi
 
 # Custom commands
 alias sourcea='source ${HOME}/.bash_profile'
-alias path='echo -e ${PATH//:/\\n}'
 
 mcd() {
   mkdir -p "$1"
   cd "$1" || exit
 }
 mkcd() {
-  mkdir -p "$1"
-  cd "$1" || exit
+  mcd "$1"
 }
 
 mine() { ps "$@" -u "$USER" -o pid,%cpu,%mem,start,time,bsdtime,command; }
@@ -43,17 +41,10 @@ alias cpuHogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'
 
 titlebar() { echo -n $'\e]0;'"$*"$'\a'; } # Set the terminal's title bar.
 
-# Use the commands in /bin
+# Use the scripts in /bin
 if command -v cleanFilenames &>/dev/null; then
   alias clean='cleanFilenames' # Alias to invoke my clean filenames script
   alias cf="cleanFilenames"
-fi
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  if command -v trash &>/dev/null; then
-    alias rm='trash'
-    alias rmd='trash'
-  fi
 fi
 
 # Preferred implementation of shellcheck

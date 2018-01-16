@@ -43,7 +43,7 @@ sourceOnly=false
 args=()
 
 # Set Temp Directory
-tmpDir="${TMPDIR-/tmp/}$(basename "$0").$RANDOM.$RANDOM.$$"
+tmpDir="${TMPDIR:-/tmp/}$(basename "$0").$RANDOM.$RANDOM.$$"
 (umask 077 && mkdir "${tmpDir}") || {
   fatal "Could not create temporary directory! Exiting."
 }

@@ -22,21 +22,13 @@ if [ -e "${HOME}/.nvm" ]; then
 fi
 
 # Use Java JDK 1.8
-export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+[[ "$(command -v java)" ]] && export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
 
 # Path for Ruby (installed by Homebrew)
 #export PATH="$PATH:/usr/local/opt/ruby/bin"
 
-if command -v thefuck &>/dev/null; then
-  eval "$(thefuck --alias)"
-fi
+[[ "$(command -v thefuck)" ]] && eval "$(thefuck --alias)"
 
-# Run Archey on load
-# if type -P archey &>/dev/null; then
-#   archey
-# fi
+# [[ "$(command -v archey)" ]] && archey
 
-# Docker
-# if type -P docker-machine &>/dev/null; then
-#   eval "$(docker-machine env default)"
-# fi
+[[ "$(command -v docker-machine)" ]] && eval "$(docker-machine env default)"

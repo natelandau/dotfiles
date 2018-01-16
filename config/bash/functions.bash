@@ -52,7 +52,9 @@ halp() {
   # http://brettterpstra.com/2016/05/18/shell-tricks-halp-a-universal-help-tool/
   # Edited to run 'SCRIPT.sh -h' for my own personal scripts
 
-  local apro=0 helpstring="Usage: halp COMMAND"
+  local apro=0
+  local helpstring="Usage: halp COMMAND"
+  locap opt
 
   OPTIND=1
   while getopts "kh" opt; do
@@ -130,16 +132,4 @@ explain() {
   else
     curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$*"
   fi
-}
-
-lips() {
-  local ip locip extip
-  ip=$(ifconfig en0 | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
-
-  [ "$ip" != "" ] && locip=$ip || locip="inactive"
-
-  ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
-  [ "$ip" != "" ] && extip=$ip || extip="inactive"
-
-  printf '%11s: %s\n%11s: %s\n' "Local IP" $locip "External IP" $extip
 }
