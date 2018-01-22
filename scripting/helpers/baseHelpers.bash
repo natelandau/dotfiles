@@ -235,50 +235,6 @@ _execute_() {
   fi
 }
 
-_executeStrict_() {
-  # v1.0.2
-  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
-  #           and have control over the display of the results.  In "dryrun" mode these
-  #           commands are not executed at all. In Verbose mode, the commands are executed
-  #           with results printed to stderr and stdin
-  #
-  # usage:
-  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
-  local cmd="${1:?_execute_ needs a command}"
-  local message="${2:-$1}"
-  local save="$-"
-  local resetSetAdd
-  local resetSetRemove
-
-  save="$(echo "$save" | sed -E 's/(i|s)//g')"
-
-  if [[ $save =~ e ]]; then
-    resetSetAdd="e"
-  else
-    resetSetRemove="e"
-  fi
-  if [[ $save =~ E ]]; then
-    resetSetAdd="${resetSetAdd}E"
-  else
-    resetSetRemove="${resetSetRemove}E"
-  fi
-
-  set -Ee
-  if ${dryrun}; then
-    dryrun "${message}"
-  else
-    eval "$cmd"
-    if [ $? -eq 0 ]; then
-      success "${message}"
-      set -$resetSetAdd
-      set +$resetSetRemove
-      return 0
-    else
-      fatal "${message}" "$LINENO"
-    fi
-  fi
-}
-
 _findBaseDir_() {
   #v1.0.0
   # fincBaseDir locates the real directory of the script being run. similar to GNU readlink -n

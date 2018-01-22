@@ -11,11 +11,16 @@ _sourceFiles_() {
     source "$sourceFile"
   done
 
+  # Set default usage flags
   quiet=false
   printLog=false
   logErrors=false
   verbose=false
   dryrun=false
+  force=false
+  sourceOnly=false
+  debug=false
+  strict=false
 
 }
 _sourceFiles_

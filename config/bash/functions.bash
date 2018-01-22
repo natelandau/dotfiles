@@ -54,7 +54,7 @@ halp() {
 
   local apro=0
   local helpstring="Usage: halp COMMAND"
-  locap opt
+  local opt OPTIND
 
   OPTIND=1
   while getopts "kh" opt; do

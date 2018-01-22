@@ -2,9 +2,9 @@ if command -v subl &>/dev/null; then
   q() {
     # easy access to VisualCode
     if [ $# -eq 0 ]; then
-      code .
+      code -r .
     else
-      code "$@"
+      code -r "$@"
     fi
   }
 fi
