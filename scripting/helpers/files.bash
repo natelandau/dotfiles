@@ -29,7 +29,7 @@ _backupFile_() {
     }
 
   [ ! -d "$d" ] \
-    && _execute_ "mkdir \"$d\"" "Creating backup directory"
+    && _execute_ "mkdir -p \"$d\"" "Creating backup directory"
 
   if [ -e "$s" ]; then
     n="$(basename "$s")"

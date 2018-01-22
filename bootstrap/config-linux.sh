@@ -63,18 +63,13 @@ _mainScript_() {
   _generateKey_
 
   _upgradeAptGet_() {
-    local v=$verbose
-    verbose=true
-
     if [ -f "/etc/apt/sources.list" ]; then
       header "Upgrading apt-get....(May take a while)"
-      _execute_ "sudo apt-get update"
-      _execute_ "sudo apt-get upgrade -y"
+      _execute_ -v "sudo apt-get update"
+      _execute_ -v "sudo apt-get upgrade -y"
     else
       die "Can not proceed without apt-get"
     fi
-
-    verbose=$v
   }
   _upgradeAptGet_
 
@@ -102,25 +97,20 @@ _mainScript_() {
 
     _sourceFile_ "$t"
 
-    # apt-get updates can take forever. Show the output.
-    local v=$verbose
-    verbose=true
-
     # shellcheck disable=2154
     for package in "${GeneralPackages[@]}"; do
       package=$(echo "${package}" | cut -d'#' -f1 | _trim_) # remove comments if exist
-      _execute_ "sudo apt-get install -y \"${package}\""
+      _execute_ -v "sudo apt-get install -y \"${package}\""
     done
 
     # shellcheck disable=2154
     if _seekConfirmation_ "Install packages for web development?"; then
       for package in "${WebDevelopmentPackages[@]}"; do
         package=$(echo "${package}" | cut -d'#' -f1 | _trim_) # remove comments if exist
-        _execute_ "sudo apt-get install -y \"${package}\""
+        _execute_ -v "sudo apt-get install -y \"${package}\""
       done
     fi
 
-    verbose=$v
   }
   _aptGet_ "$configAptGet"
 
@@ -151,20 +141,18 @@ _mainScript_() {
     _sourceFile_ "$t"
 
     header "Installing node"
-    local v=$verbose
-    verbose=true
 
     notice "Installing nvm, node, and packages"
-    _execute_ "sudo apt-get install -y build-essential libssl-dev checkinstall"
+    _execute_ -v "sudo apt-get install -y build-essential libssl-dev checkinstall"
 
     NODEVERSION="8.6.0"
 
     if test ! "$(which node)"; then
       pushd "${HOME}"
-      _execute_ "git clone git://github.com/creationix/nvm.git \"${HOME}/.nvm\""
+      _execute_ -v "git clone git://github.com/creationix/nvm.git \"${HOME}/.nvm\""
       source "${HOME}/.bash_profile"
       source "${HOME}/.nvm/nvm.sh"
-      _execute_ "nvm install \"${NODEVERSION}\""
+      _execute_ -v "nvm install \"${NODEVERSION}\""
       _execute_ "nvm use \"${NODEVERSION}\""
       success "Installed nvm and nodejs"
       popd
@@ -177,10 +165,6 @@ _mainScript_() {
       popd
     } &>/dev/null
 
-    #Show nodes's detailed install information
-    saveVerbose=$verbose
-    verbose=true
-
     # If comments exist in the list of npm packaged to be installed remove them
     # shellcheck disable=2207
     for package in "${nodePackages[@]}"; do
@@ -192,14 +176,11 @@ _mainScript_() {
     modules=($(_setdiff_ "${npmPackages[*]}" "${installed[*]}"))
     if ((${#modules[@]} > 0)); then
       pushd ${HOME} >/dev/null
-      _execute_ "npm install -g ${modules[*]}"
+      _execute_ -v "npm install -g ${modules[*]}"
       popd >/dev/null
     else
       info "All node packages already installed"
     fi
-
-    # Reset verbose settings
-    verbose=$saveVerbose
   }
   _node_ "$configNode"
 
@@ -233,22 +214,20 @@ _mainScript_() {
     RUBYVERSION="2.3.4" # Version of Ruby to install via RVM
 
     # Install 2 packages used to fix broken rmagick gem
-    _execute_ "sudo apt-get install -y libmagickcore-dev"
-    _execute_ "sudo apt-get install -y libmagickwand-dev"
+    _execute_ -v "sudo apt-get install -y libmagickcore-dev"
+    _execute_ -v "sudo apt-get install -y libmagickwand-dev"
 
     if ! command -v rvm &>/dev/null; then
       pushd "${HOME}"
-      _execute_ "curl -sSL https://get.rvm.io | bash -s stable"
+      _execute_ -v "curl -sSL https://get.rvm.io | bash -s stable"
       export PATH="${PATH}:${HOME}/.rvm/bin"
       _execute_ "source ${HOME}/.rvm/scripts/rvm"
       _execute_ "source ${HOME}/.bash_profile"
-      _execute_ "rvm install ${RUBYVERSION}"
-      _execute_ "rvm use ${RUBYVERSION} --default"
+      _execute_ -v "rvm install ${RUBYVERSION}"
+      _execute_ -v "rvm use ${RUBYVERSION} --default"
     fi
 
     header "Installing global ruby gems..."
-    local v=$verbose
-    verbose=true
 
     # shellcheck disable=2154
     for gem in "${rubyGems[@]}"; do
@@ -259,15 +238,13 @@ _mainScript_() {
       testInstalled=$(echo "$gem" | cut -d' ' -f1 | _trim_)
 
       if ! gem list "$testInstalled" -i >/dev/null; then
-        _execute_ "gem install ${gem}"
+        _execute_ -v "gem install ${gem}"
       else
         info "${testInstalled} already installed"
       fi
     done
 
     popd
-
-    verbose=$v
   }
   _ruby_ "$configRuby"
 
@@ -298,12 +275,8 @@ _mainScript_() {
         }
         flags="${flags} --rootDIR $rootDIR"
 
-        v=$verbose
-        verbose=true
+        _execute_ -vp "${plugin} ${flags}" "'${pluginName}' plugin"
 
-        _execute_ "${plugin} ${flags}" "'${pluginName}' plugin"
-
-        verbose=$v
         ($d) && dryrun=true
       fi
     done
@@ -415,14 +388,12 @@ _sourceHelperFiles_() {
     "${HOME}/dotfiles/scripting/helpers/arrays.bash"
     "${HOME}/dotfiles/scripting/helpers/textProcessing.bash"
   )
-
   for sourceFile in "${filesToSource[@]}"; do
     [ ! -f "$sourceFile" ] \
       && {
         echo "error: Can not find sourcefile '$sourceFile'. Exiting."
         exit 1
       }
-
     source "$sourceFile"
   done
 }
@@ -538,14 +509,14 @@ args+=("$@")
 
 # Trap bad exits with your cleanup function
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
-  EXIT INT TERM SIGINT SIGQUIT ERR
+  EXIT INT TERM SIGINT SIGQUIT
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-# set -o errexit
-# set -o errtrace
+set -o errexit
+set -o errtrace
 
 # Force pipelines to fail on the first non-zero status code.
 set -o pipefail

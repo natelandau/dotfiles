@@ -512,15 +512,15 @@ args+=("$@")
 
 # Trap bad exits with your cleanup function
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}" "${userFile}' \
-  EXIT INT TERM SIGINT SIGQUIT ERR
+  EXIT INT TERM SIGINT SIGQUIT
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
 # if using the '_execute_' function this must be disabled for warnings to be shown if tasks fail
-# set -o errexit
-# set -o errtrace
+set -o errexit
+set -o errtrace
 
 # Run in debug mode, if set
 if ${debug}; then set -x; fi

@@ -167,16 +167,44 @@ verbose() {
 ### FUNCTIONS ###
 
 _execute_() {
-  # v1.0.2
+  # v1.1.0
   # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
   #           and have control over the display of the results.  In "dryrun" mode these
   #           commands are not executed at all. In Verbose mode, the commands are executed
   #           with results printed to stderr and stdin
   #
+  #           options:
+  #             -v    Will always print verbose output from the execute function
+  #             -p    Will pass a failed command with 'return 0'.  This effecively bypasses set -e.
+  #
   # usage:
   #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
+
+  local localVerbose=false
+  local passFailures=false
+  local opt
+
+  local OPTIND=1
+  while getopts ":vVpP" opt; do
+    case $opt in
+      v | V) localVerbose=true ;;
+      p | P) passFailures=true ;;
+      *) {
+        error "Unrecognized option '$1' passed to _execute. Exiting."
+        _safeExit_
+      }
+        ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+
   local cmd="${1:?_execute_ needs a command}"
   local message="${2:-$1}"
+
+  local saveVerbose=$verbose
+  if "${localVerbose}"; then
+    verbose=true
+  fi
 
   if "${dryrun}"; then
     if [ -n "$2" ]; then
@@ -184,18 +212,25 @@ _execute_() {
     else
       dryrun "${1}"
     fi
-  else
-    if ${verbose}; then
-      eval "${cmd}"
-    else
-      eval "${cmd}" &>/dev/null
-    fi
-    if [ $? -eq 0 ]; then
+  elif ${verbose}; then
+    if eval "${cmd}"; then
       success "${message}"
+      verbose=$saveVerbose
       return 0
     else
       warning "${message}"
-      return 1
+      verbose=$saveVerbose
+      "${passFailures}" && return 0 || return 1
+    fi
+  else
+    if eval "${cmd}" &>/dev/null; then
+      success "${message}"
+      verbose=$saveVerbose
+      return 0
+    else
+      warning "${message}"
+      verbose=$saveVerbose
+      "${passFailures}" && return 0 || return 1
     fi
   fi
 }
@@ -352,6 +387,10 @@ _progressBar_() {
 
 _safeExit_() {
   # Delete temp files with option to save if error is trapped
+  # To exit the script with a non-zero exit code pass the requested code
+  # to this function as an argument
+  #
+  #   Usage:    _safeExit_ "1"
   if [[ -n "${tmpDir}" && -d "${tmpDir}" ]]; then
     if [[ $1 == 1 && -n "$(ls "${tmpDir}")" ]]; then
       if _seekConfirmation_ "Save the temp directory for debugging?"; then
@@ -393,15 +432,16 @@ _seekConfirmation_() {
 }
 
 _setPATH_() {
-  #v1.0.0
-  # setPATH() Add specified directories to $PATH so the script can find executables
-  local PATHS NEWPATH
+  # v2.0.0
+  # _setPATH_() Add specified directories to $PATH so the script can find executables
+  # Usage:  _setPATH_ "/usr/local/bin" "${HOME}/bin" "$(npm bin)"
+  local NEWPATH NEWPATHS USERPATH
 
-  PATHS=(
-    /usr/local/bin
-    "${HOME}/bin"
-  )
-  for NEWPATH in "${PATHS[@]}"; do
+  for USERPATH in "$@"; do
+    NEWPATHS+=("$USERPATH")
+  done
+
+  for NEWPATH in "${NEWPATHS[@]}"; do
     if ! echo "$PATH" | grep -Eq "(^|:)${NEWPATH}($|:)"; then
       PATH="${NEWPATH}:${PATH}"
     fi

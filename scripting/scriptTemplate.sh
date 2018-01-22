@@ -162,7 +162,7 @@ args+=("$@")
 
 # Trap bad exits with your cleanup function
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
-  EXIT INT TERM SIGINT SIGQUIT ERR
+  EXIT INT TERM SIGINT SIGQUIT
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'

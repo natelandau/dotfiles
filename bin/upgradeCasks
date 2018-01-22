@@ -21,8 +21,6 @@ _mainScript_() {
     done < <(grep -ilr --include \*.rb license $(brew --prefix)/Caskroom/*/.metadata | awk -F '/' '{print $5}' | sort -u)
 
     # Reinstall outdated casks
-    v=$verbose
-    verbose=true
     if [[ $(brew cask outdated) != "" ]]; then
       mapfile -t casks < <(brew cask list)
       for cask in "${casks[@]}"; do
@@ -31,14 +29,13 @@ _mainScript_() {
         installed=$(find "/usr/local/Caskroom/$cask" -type d -maxdepth 1 -maxdepth 1 -name "$version")
         if [[ -z $installed ]]; then
           notice "'${cask}' requires update."
-          _execute_ "brew cask uninstall \"$cask\" --force" "Uninstalled '$cask'"
-          _execute_ "brew cask install \"$cask\" --force" "Reinstalled '$cask'"
+          _execute_ -v "brew cask uninstall \"$cask\" --force" "Uninstalled '$cask'"
+          _execute_ -v "brew cask install \"$cask\" --force" "Reinstalled '$cask'"
         fi
       done
     else
       info "All casks up to date"
     fi
-    verbose=$v
   }
   _upgradeCasks_
 
@@ -51,14 +48,12 @@ _sourceHelperFiles_() {
   filesToSource=(
     "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
   )
-
   for sourceFile in "${filesToSource[@]}"; do
     [ ! -f "$sourceFile" ] \
       && {
         echo "error: Can not find sourcefile '$sourceFile'. Exiting."
         exit 1
       }
-
     source "$sourceFile"
   done
 }
@@ -178,14 +173,14 @@ args+=("$@")
 
 # Trap bad exits with your cleanup function
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
-  EXIT INT TERM SIGINT SIGQUIT ERR
+  EXIT INT TERM SIGINT SIGQUIT
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-#set -o errtrace
-#set -o errexit
+set -o errtrace
+set -o errexit
 
 # Force pipelines to fail on the first non-zero status code.
 set -o pipefail

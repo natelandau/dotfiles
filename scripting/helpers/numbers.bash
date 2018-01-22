@@ -14,6 +14,11 @@ _convertSecs_() {
   printf "%02d:%02d:%02d\n" $h $m $s
 }
 
+_toSeconds_ () {
+  IFS=: read -r h m s <<< "$1"
+  echo $(( 10#$h * 3600 + 10#$m * 60 + 10#$s ))
+}
+
 _countdown_() {
   # v1.0.0
   # Used to count down in increments of 1 from a specified number.

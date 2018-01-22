@@ -42,6 +42,8 @@ teardown() {
 
 ########### BEGIN TESTS ##########
 
+
+
 @test "debug" {
   run debug "testing"
   assert_output --partial "[  debug] testing"
@@ -81,11 +83,30 @@ teardown() {
   assert_file_exist "testfile.txt"
 }
 
+@test "_execute_ -p: Return 0 on bad command" {
+  touch "testfile.txt"
+  run _execute_ -p "rm nonexistant.txt"
+
+  assert_success
+  assert_output --partial "[warning] rm nonexistant.txt"
+  assert_file_exist "testfile.txt"
+}
+
 @test "_execute_: Good command" {
   touch "testfile.txt"
   run _execute_ "rm testfile.txt"
   assert_success
   assert_output --partial "[success] rm testfile.txt"
+  assert_file_not_exist "testfile.txt"
+}
+
+@test "_execute_ -v: Good command" {
+  touch "testfile.txt"
+  run _execute_ -v "rm -v testfile.txt"
+  
+  assert_success
+  assert_line --index 0 "removed 'testfile.txt'"
+  assert_line --index 1 --partial "[success] rm -v testfile.txt"
   assert_file_not_exist "testfile.txt"
 }
 
@@ -214,6 +235,13 @@ teardown() {
   refute_output --partial "test"
 
   quiet=false
+}
+
+@test "_setPATH_" {
+  _setPATH_ "/testing/from/bats" "/testing/again"
+  run echo "$PATH"
+  assert_output --regexp "/testing/from/bats"
+  assert_output --regexp "/testing/again"
 }
 
 @test "success" {

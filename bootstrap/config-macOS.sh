@@ -91,19 +91,17 @@ _mainScript_() {
     _sourceFile_ "$t"
 
     # Brew updates can take forever if we're not bootstrapping. Show the output
-    local v=$verbose
-    verbose=true
 
     header "Updating Homebrew"
-    _execute_ "caffeinate -ism brew update"
-    _execute_ "caffeinate -ism brew doctor"
-    _execute_ "caffeinate -ism brew upgrade"
+    _execute_ -v "caffeinate -ism brew update"
+    _execute_ -v "caffeinate -ism brew doctor"
+    _execute_ -v "caffeinate -ism brew upgrade"
 
     header "Installing Homebrew Taps"
     # shellcheck disable=2154
     for tap in "${homebrewTaps[@]}"; do
       tap=$(echo "${tap}" | cut -d'#' -f1 | _trim_) # remove comments if exist
-      _execute_ "brew tap ${tap}"
+      _execute_ -v "brew tap ${tap}"
     done
 
     header "Installing Homebrew Packages"
@@ -116,12 +114,11 @@ _mainScript_() {
       if brew ls --versions "$testInstalled" >/dev/null; then
         info "$testInstalled already installed"
       else
-        _execute_ "caffeinate -ism brew install ${package}" "Install ${testInstalled}"
+        _execute_ -v "caffeinate -ism brew install ${package}" "Install ${testInstalled}"
       fi
     done
 
-    _execute_ "brew cleanup" # cleanup after ourselves
-    verbose=$v               # Reset verbose settings
+    _execute_ -v "brew cleanup" # cleanup after ourselves
   }
   _homebrew_ "$configHomebrew"
 
@@ -153,13 +150,9 @@ _mainScript_() {
 
     _sourceFile_ "$t"
 
-    # Brew updates can take forever if we're not bootstrapping. Show the output
-    saveVerbose=$verbose
-    verbose=true
-
     header "Updating Homebrew"
-    _execute_ "caffeinate -ism brew update"
-    _execute_ "caffeinate -ism brew doctor"
+    _execute_ -v "caffeinate -ism brew update"
+    _execute_ -v "caffeinate -ism brew doctor"
 
     header "Installing Casks"
     # shellcheck disable=2154
@@ -173,12 +166,11 @@ _mainScript_() {
       if brew cask ls "${testInstalled}" &>/dev/null; then
         info "${testInstalled} already installed"
       else
-        _execute_ "brew cask install $cask" "Install ${testInstalled}"
+        _execute_ -v "brew cask install $cask" "Install ${testInstalled}"
       fi
     done
 
-    _execute_ "brew cleanup" # cleanup after ourselves
-    verbose=$saveVerbose     # Reset verbose settings
+    _execute_ -v "brew cleanup" # cleanup after ourselves
   }
   _homebrewCasks_ "$configCasks"
 
@@ -227,11 +219,7 @@ _mainScript_() {
       installed=(*)
       popd
     } >/dev/null
-
-    #Show nodes's detailed install information
-    saveVerbose=$verbose
-    verbose=true
-
+ 
     # If comments exist in the list of npm packaged to be installed remove them
     # shellcheck disable=2207
     for package in "${nodePackages[@]}"; do
@@ -243,14 +231,11 @@ _mainScript_() {
     modules=($(_setdiff_ "${npmPackages[*]}" "${installed[*]}"))
     if ((${#modules[@]} > 0)); then
       pushd ${HOME} >/dev/null
-      _execute_ "npm install -g ${modules[*]}"
+      _execute_ -v "npm install -g ${modules[*]}"
       popd >/dev/null
     else
       info "All node packages already installed"
     fi
-
-    # Reset verbose settings
-    verbose=$saveVerbose
   }
   _node_ "$configNode"
 
@@ -295,8 +280,6 @@ _mainScript_() {
     success "RVM and Ruby are installed"
 
     header "Installing global ruby gems"
-    local v=$verbose
-    verbose=true
 
     # shellcheck disable=2154
     for gem in "${rubyGems[@]}"; do
@@ -308,15 +291,13 @@ _mainScript_() {
       testInstalled=$(echo "$gem" | cut -d' ' -f1 | _trim_)
 
       if ! gem list "$testInstalled" -i >/dev/null; then
-        _execute_ "gem install ${gem}"
+        _execute_ -v "gem install ${gem}"
       else
         info "${testInstalled} already installed"
       fi
     done
 
     popd &>/dev/null
-
-    verbose=$v
   }
   _ruby_ "$configRuby"
 
@@ -347,12 +328,8 @@ _mainScript_() {
         }
         flags="${flags} --rootDIR $rootDIR"
 
-        v=$verbose
-        verbose=true
+        _execute_ -vp "${plugin} ${flags}" "'${pluginName}' plugin"
 
-        _execute_ "${plugin} ${flags}" "'${pluginName}' plugin"
-
-        verbose=$v
         ($d) && dryrun=true
       fi
     done
@@ -606,14 +583,14 @@ args+=("$@")
 
 # Trap bad exits with your cleanup function
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
-  EXIT INT TERM SIGINT SIGQUIT ERR
+  EXIT INT TERM SIGINT SIGQUIT
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-# set -o errtrace
-# set -o errexit
+set -o errtrace
+set -o errexit
 
 # Force pipelines to fail on the first non-zero status code.
 set -o pipefail
