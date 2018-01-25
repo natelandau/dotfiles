@@ -3,6 +3,7 @@ _sourceFiles_() {
     "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
     "${HOME}/dotfiles/scripting/helpers/files.bash"
     "${HOME}/dotfiles/scripting/helpers/textProcessing.bash"
+    "${HOME}/dotfiles/scripting/helpers/numbers.bash"
   )
 
   for sourceFile in "${filesToSource[@]}"; do
