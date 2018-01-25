@@ -168,7 +168,7 @@ verbose() {
 
 _execute_() {
   # v1.1.0
-  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
+  # _execute_ Wrap an external command in '_execute_' to push native output to /dev/null
   #           and have control over the display of the results.  In "dryrun" mode these
   #           commands are not executed at all. In Verbose mode, the commands are executed
   #           with results printed to stderr and stdin
@@ -273,7 +273,13 @@ _pauseScript_() {
   # v1.0.0
   # A simple function used to pause a script at any point and
   # only continue on user input
-  if _seekConfirmation_ "Ready to continue?"; then
+  #
+  # Takes an option user string for a customized message
+
+  local pauseMessage
+  pauseMessage="${1:-Paused}. Ready to continue?"
+  
+  if _seekConfirmation_ "$pauseMessage"; then
     info "Continuing..."
   else
     notice "Exiting Script"
@@ -300,7 +306,8 @@ _progressBar_() {
 
   ($quiet) && return
   ($verbose) && return
-  [ ! -t 1 ] && return # Do nothing if the output is not a terminal
+  [ ! -t 1 ] && return    # Do nothing if the output is not a terminal
+  [ $1 == 1 ] && return   # Do nothing with a single element
 
   local width bar_char perc num bar progressBarLine barTitle n
 

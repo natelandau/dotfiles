@@ -25,10 +25,6 @@ fi
 s="$HOME/bin/cleanFilenames"
 base="$(basename $s)"
 
-[ -f "$s" ] \
-  && { source "$s" --source-only ; trap - EXIT INT TERM ; } \
-  || { echo "Can not find script to test" ; exit 1 ; }
-
 setup() {
   testdir="$(temp_make)"
   curPath="$PWD"

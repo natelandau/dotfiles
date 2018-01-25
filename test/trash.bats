@@ -27,10 +27,6 @@ base="$(basename $s)"
 user=$(whoami)
 trashFolder="/Users/${user}/.Trash"
 
-[ -f "$s" ] \
-  && { source "$s" --source-only ; trap - EXIT INT TERM ; } \
-  || { echo "Can not find script to test" >&2 ; exit 1 ; }
-
 setup() {
   testdir="$(temp_make)"
   curPath="$PWD"
@@ -244,42 +240,4 @@ teardown() {
 
   assert_success
   assert_output --regexp "\[ dryrun\] rm -rf \"/Users/[a-zA-Z0-9]+/\.Trash/${file}\""
-}
-
-@test "_realpath_: true" {
-  touch testfile.txt
-  run _realpath_ "testfile.txt"
-  assert_success
-  assert_output --regexp "^/private/var/folders/.*/testfile.txt$"
-}
-
-@test "_realpath_: fail" {
-  run _realpath_ "testfile.txt"
-  assert_failure
-}
-
-@test "_execute_: Debug command" {
-  dryrun=true
-  run _execute_ "rm testfile.txt"
-  assert_success
-  assert_output --partial "[ dryrun] rm testfile.txt"
-  dryrun=false
-}
-
-@test "_execute_: Bad command" {
-  touch "testfile.txt"; logErrors=false;
-  run _execute_ "rm nonexistant.txt"
-
-  assert_failure
-  assert_output --partial "[warning] rm nonexistant.txt"
-  assert_file_exist "testfile.txt"
-  logErrors=true
-}
-
-@test "_execute_: Good command" {
-  touch "testfile.txt"
-  run _execute_ "rm testfile.txt"
-  assert_success
-  assert_output --partial "[success] rm testfile.txt"
-  assert_file_not_exist "testfile.txt"
 }

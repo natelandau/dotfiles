@@ -48,9 +48,15 @@ teardown() {
 
 @test "_convertSecs_: Seconds to human readable" {
 
-  run _convertSecs_ "9255"
+  run _fromSeconds_ "9255"
   assert_success
   assert_output "02:34:15"
+}
+
+@test "_toSeconds_: HH MM SS to Seconds" {
+  run _toSeconds_ 12 3 33
+  assert_success
+  assert_output "43413"
 }
 
 @test "_countdown_" {

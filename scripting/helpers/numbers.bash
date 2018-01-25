@@ -1,12 +1,14 @@
-_convertSecs_() {
+_fromSeconds_() {
   # v1.0.0
-  # Pass a number (seconds) into the function as this:
-  # _convertSecs_ $TOTALTIME
+  # Pass a number (seconds) into the function to convert it to HH:MM:SS
   #
-  # To compute the time it takes a script to run:
-  #   STARTTIME=$(date +"%s")
-  #   ENDTIME=$(date +"%s")
-  #   TOTALTIME=$(($ENDTIME-$STARTTIME)) # human readable time
+  #   Usage:  _convertSecs_ "SECONDS"
+  #
+  # Sample usage:
+  #   To compute the time it takes a script to run:
+  #     STARTTIME=$(date +"%s")
+  #     ENDTIME=$(date +"%s")
+  #     TOTALTIME=$(($ENDTIME-$STARTTIME)) # human readable time
 
   ((h = ${1} / 3600))
   ((m = (${1} % 3600) / 60))
@@ -14,8 +16,18 @@ _convertSecs_() {
   printf "%02d:%02d:%02d\n" $h $m $s
 }
 
-_toSeconds_ () {
-  IFS=: read -r h m s <<< "$1"
+_toSeconds_() {
+  # v1.0.0
+  #
+  # Takes an input of HOURS MINUTES SECONDS and converts it to
+  # a total number of seconds.
+  #
+  # Usage:  '_toSeconds_ 1 0 0' would return '3600'
+
+  h="$1"
+  m="$2"
+  s="$3"
+
   echo $(( 10#$h * 3600 + 10#$m * 60 + 10#$s ))
 }
 
@@ -28,7 +40,7 @@ _countdown_() {
   #   _countdown_ "starting number" "sleep time (seconds)" "message "
   #
   # Example:
-  #   $ _countdown 10 1 "Waiting for cache to invalidate"
+  #   $ _countdown_ 10 1 "Waiting for cache to invalidate"
   local i ii t
   local n=${1:-10}
   local stime=${2:-1}

@@ -15,7 +15,7 @@ base="$(basename $s)"
 # Set Flags
 quiet=false;              printLog=false;             logErrors=true;   verbose=false;
 force=false;              strict=false;               dryrun=false;
-debug=false;              sourceOnly=false;           args=();
+debug=false;              sourceOnly=false;           logErrors=false;   args=();
 
 setup() {
 
@@ -162,7 +162,7 @@ teardown() {
 }
 
 @test "logging: Errors only" {
-  printLog=false; logFile="${HOME}/tmp/bats-baseHelpers-tests.log"; quiet=true;
+  printLog=false; logErrors=true; logFile="${HOME}/tmp/bats-baseHelpers-tests.log"; quiet=true;
   header "$logFile"
   dryrun "dryrun"
   notice "testing"
@@ -177,7 +177,7 @@ teardown() {
   assert_line --index 0 --partial "[  error] test error (func: test_logging-3a_Errors_only < bats_perform_test < main)"
 
   rm "$logFile"
-  printLog=false; quiet=false; unset logFile;
+  printLog=false; logErrors=false; quiet=false; unset logFile;
 }
 
 @test "notice" {

@@ -25,7 +25,7 @@ source "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
 # Set Flags
   quiet=false;              printLog=false;             verbose=false;
   force=false;              strict=false;               dryrun=false;
-  debug=false;              sourceOnly=false;           args=();
+  debug=false;              sourceOnly=false;           logErrors=false;  args=();
 
 setup() {
 
@@ -91,11 +91,13 @@ teardown() {
   assert_file_exist "test.txt"
 }
 
-@test "_cleanFilename_: rename file" {
-  touch "test&.txt"
+@test "_cleanFilename_: User input" {
+  touch "testing_a_new_file.txt"
 
-  _cleanFilename_ "test&.txt"
-  assert_file_exist "test.txt"
+  _cleanFilename_ "testing_a_new_file.txt" "y,e,_"
+
+  assert_success
+  assert_file_exist "tstinganwfil.txt"
 }
 
 @test "_decryptFile_" {

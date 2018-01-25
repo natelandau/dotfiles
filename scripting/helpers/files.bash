@@ -12,6 +12,7 @@ _backupFile_() {
   local d="${2:-backup}" # Destination directory (optional, defaults to 'backup')
   local n                # New filename (created by _uniqueFilename_)
 
+  # Error handling
   [ ! "$(declare -f "_execute_")" ] \
     && {
       echo "need function _execute_"
@@ -34,22 +35,30 @@ _backupFile_() {
   if [ -e "$s" ]; then
     n="$(basename "$s")"
     n="$(_uniqueFileName_ "${d}/${s#.}")"
-    _execute_ "cp -R \"${s}\" \"${d}/${n##*/}\"" "Backing up: '${s}' to '${d}/${n##*/}'"
+    _execute_ "cp -R \"${s}\" \"${d}/${n##*/}\"" "Back up: '${s}' to '${d}/${n##*/}'"
   fi
 }
 
 _cleanFilename_() {
   # v1.0.0
-  # _cleanFilename_ takes an input of a file and returns a replaces it with a version
-  # that is cleaned of certain characters.
+  # _cleanFilename_ takes an input of a filename and returns a replaces it with a version
+  # of the filename that is cleaned of certain characters.
   #
-  # Update the cleanedFile variable after the pipe to customize for each script
+  # Default usage will remove all non-alphanumeric characters except - and _
+  # All spaces will be replaced with dashes
+  #
+  # Pass two options:
+  #     $1  - File to clean
+  #     $2  - Optional characters/strings to remove separated by commas
   #
   # IMPORTANT: This will overwrite the original file and echo the new filename to the script
 
-  local final cleanedFile fileToClean extension baseFileName
+  local arrayToClean
 
-  fileToClean="$1"
+  local fileToClean="$1"
+  local optionalUserInput="$2"
+  
+  IFS=',' read -r -a arrayToClean <<< "$optionalUserInput"
 
   [ ! -f "$fileToClean" ] \
     && {
@@ -57,12 +66,16 @@ _cleanFilename_() {
       return 1
     }
 
-  extension="${fileToClean##*.}"
-  baseFileName=${fileToClean%.*}
+  local extension="${fileToClean##*.}"
+  local baseFileName=${fileToClean%.*}
 
-  cleanedFile=$(echo "${baseFileName}" | tr -dc '[:alnum:]-_ ' | sed 's/ /-/g')
+  for i in "${arrayToClean[@]}"; do
+    baseFileName="$(echo "${baseFileName}" | sed "s/$i//g")"
+  done
+  
+  baseFileName="$(echo "${baseFileName}" | tr -dc '[:alnum:]-_ ' | sed 's/ /-/g')"
 
-  final="${cleanedFile}.${extension}"
+  local final="${baseFileName}.${extension}"
 
   if ! ${dryrun}; then
     if [[ "${fileToClean}" != "${final}" ]]; then
@@ -72,7 +85,7 @@ _cleanFilename_() {
       echo "${fileToClean}"
     fi
   else
-    echo "${fileToClean}"
+    echo "${final}"
   fi
 }
 
@@ -370,6 +383,7 @@ _parseYAML_() {
   # (which will reduce the risk of name-space collisions).
   #
   #     $ _parseYAML_ sample.yml "CONF_"
+
   local yamlFile="${1:?_parseYAML_ needs a file}"
   local prefix="$2"
 
@@ -526,11 +540,16 @@ _uniqueFileName_() {
   local newfile
   local n
 
-  # Find directories with _realpath_ if available
+  # Error handling
+    [ ! "$(declare -f "_realpath_")" ] \
+      && {
+        error "'_uniqueFileName_' requires function '_realpath_' "
+        return 1
+      }
+
+  # Find directories with _realpath_ if input is an actual file
   if [ -e "$fullfile" ]; then
-    if type -t _realpath_ | grep -E '^function$' &>/dev/null; then
-      fullfile="$(_realpath_ "$fullfile")"
-    fi
+    fullfile="$(_realpath_ "$fullfile")"
   fi
 
   directory="$(dirname "$fullfile")"

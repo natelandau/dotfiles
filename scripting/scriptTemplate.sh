@@ -66,8 +66,9 @@ This is a script template.  Edit this description to print help to users.
 
  ${bold}Option Flags:${reset}
 
-  -L, --noErrorLog  Print log level error and fatal to a log (default 'true')
-  -l, --log         Print log to file
+  -L, --noErrorLog  Default behavior is to print log level error and fatal to a log. Use
+                    this flag to generate no log files at all.
+  -l, --log         Print log to file with all log levels
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
   -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
