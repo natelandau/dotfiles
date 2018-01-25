@@ -7,6 +7,8 @@ _mainScript_() {
   [[ "$OSTYPE" != "darwin"* ]] \
     && fatal "We are not on macOS" "$LINENO"
 
+  if ! command -v brew &>/dev/null; then fatal "Can not continue wthout homebrew"; fi
+    
   _upgradeCasks_() {
 
     local cask casks
@@ -20,19 +22,22 @@ _mainScript_() {
       #_execute_ "brew cask reinstall $cask"
     done < <(grep -ilr --include \*.rb license $(brew --prefix)/Caskroom/*/.metadata | awk -F '/' '{print $5}' | sort -u)
 
-    # Reinstall outdated casks
-    if [[ $(brew cask outdated) != "" ]]; then
-      mapfile -t casks < <(brew cask list)
-      for cask in "${casks[@]}"; do
-        echo "$cask"
-        version=$(brew cask info $cask | sed -n "s/$cask:\ \(.*\)/\1/p")
-        installed=$(find "/usr/local/Caskroom/$cask" -type d -maxdepth 1 -maxdepth 1 -name "$version")
-        if [[ -z $installed ]]; then
-          notice "'${cask}' requires update."
-          _execute_ -v "brew cask uninstall \"$cask\" --force" "Uninstalled '$cask'"
-          _execute_ -v "brew cask install \"$cask\" --force" "Reinstalled '$cask'"
-        fi
-      done
+
+  # Now we update casks
+  if [ "$(brew cask outdated --greedy --verbose | awk '$4 != "latest" {print $1}')" ]; then
+      while read -r c; do
+        version=$(brew cask info $c | sed -n "s/$c:\ \(.*\)/\1/p")
+        installed=$(find "/usr/local/Caskroom/$c" -type d -maxdepth 1 -maxdepth 1 -name "$c")
+        # if [[ "$version" == "latest" ]]; then
+        #   # info "Cask '$c' does not report version numbers. Update individually."
+        #   continue
+        # fi
+        notice "'${c}' requires update."
+        verbose "From: $installed"
+        verbose "To: $version"
+        _execute_ -vp "brew cask uninstall \"$c\" --force" "Uninstalled '$c'"
+        _execute_ -vp "brew cask install \"$c\" --force" "Reinstalled '$c'"
+      done < <(brew cask outdated --greedy --verbose | awk '$4 != "latest" {print $1}')
     else
       info "All casks up to date"
     fi
@@ -84,7 +89,7 @@ This script upgrades  Mac OS applications managed by Homebrew Cask
 
  ${bold}Option Flags:${reset}
 
-  -L, --noErrorLog  Print log level error and fatal to a log (default 'true')
+  -L, --noErrorLog  Don't print log level error and fatal to a log (default 'false')
   -l, --log         Print log to file
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
