@@ -22,7 +22,9 @@ if [ -e "${HOME}/.nvm" ]; then
 fi
 
 # Use Java JDK 1.8
-[[ "$(command -v java)" ]] && export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+ if [[ "$(command -v java)" && -e "/usr/libexec/java_home" ]]; then
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+ fi
 
 # Path for Ruby (installed by Homebrew)
 #export PATH="$PATH:/usr/local/opt/ruby/bin"
