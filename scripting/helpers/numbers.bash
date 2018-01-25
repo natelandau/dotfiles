@@ -20,13 +20,29 @@ _toSeconds_() {
   # v1.0.0
   #
   # Takes an input of HOURS MINUTES SECONDS and converts it to
-  # a total number of seconds.
+  # a total number of seconds. Takes an input in a number of formats.
   #
-  # Usage:  '_toSeconds_ 1 0 0' would return '3600'
+  # Usage:  '_toSeconds_ 01:00:00' would return '3600'
+  #
+  # Acceptable Input Formats
+  #   24 12 09
+  #   12,12,09
+  #   12;12;09
+  #   12:12:09
+  #   12-12-09
+  #   12H12M09S
+  #   12h12m09s
+  local saveIFS
 
-  h="$1"
-  m="$2"
-  s="$3"
+  if [[ "$1" =~ [0-9]{1,2}(:|,|;|-|_|,| |[hHmMsS])[0-9]{1,2}(:|,|;|-|_|,| |[hHmMsS])[0-9]{1,2} ]]; then
+    saveIFS="$IFS"
+    IFS=":,;-_, HhMmSs" read -r h m s <<< "$1"
+    IFS="$saveIFS"
+  else
+    h="$1"
+    m="$2"
+    s="$3"
+  fi
 
   echo $(( 10#$h * 3600 + 10#$m * 60 + 10#$s ))
 }
