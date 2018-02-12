@@ -303,7 +303,7 @@ _mainScript_() {
     newFile="$(_uniqueFileName_ "${filePath}/${newFilename}")" \
       && verbose "\t newFile: $newFile"
 
-    _execute_ "mv \"${originalFileWithPath}\" \"${newFile}\"" "${userFile} --> ${newFile##*/}"
+    _execute_ -s "mv \"${originalFileWithPath}\" \"${newFile}\"" "${userFile} --> ${newFile##*/}"
   }
 
   # Run the script functions

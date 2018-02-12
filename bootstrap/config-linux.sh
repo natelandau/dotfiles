@@ -275,7 +275,7 @@ _mainScript_() {
         }
         flags="${flags} --rootDIR $rootDIR"
 
-        _execute_ -vp "${plugin} ${flags}" "'${pluginName}' plugin"
+        _execute_ -vsp "${plugin} ${flags}" "'${pluginName}' plugin"
 
         ($d) && dryrun=true
       fi

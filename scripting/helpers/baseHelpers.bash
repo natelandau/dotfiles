@@ -169,26 +169,37 @@ verbose() {
 _execute_() {
   # v1.1.0
   # _execute_ Wrap an external command in '_execute_' to push native output to /dev/null
-  #           and have control over the display of the results.  In "dryrun" mode these
-  #           commands are not executed at all. In Verbose mode, the commands are executed
-  #           with results printed to stderr and stdin
+  #           and have control over the display of the results.
+  #
+  #           If $dryrun=true no commands are executed
+  #           If $verbose=true the command's native output is printed to stderr and stdin
+  #
+  #
+  #
+  #
   #
   #           options:
-  #             -v    Will always print verbose output from the execute function
-  #             -p    Will pass a failed command with 'return 0'.  This effecively bypasses set -e.
+  #             -v    Always print verbose output from the execute function
+  #             -p    Pass a failed command with 'return 0'.  This effecively bypasses set -e.
+  #             -e    Bypass _alert_ functions and use 'echo RESULT'
+  #             -s    Use _alert_ success for successful output. (default is 'notice')
   #
   # usage:
   #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
 
   local localVerbose=false
   local passFailures=false
+  local echoResult=false
+  local successResult=false
   local opt
 
   local OPTIND=1
-  while getopts ":vVpP" opt; do
+  while getopts ":vVpPeEsS" opt; do
     case $opt in
       v | V) localVerbose=true ;;
       p | P) passFailures=true ;;
+      e | E) echoResult=true ;;
+      s | S) successResult=true ;;
       *) {
         error "Unrecognized option '$1' passed to _execute. Exiting."
         _safeExit_
@@ -214,21 +225,41 @@ _execute_() {
     fi
   elif ${verbose}; then
     if eval "${cmd}"; then
-      success "${message}"
+      if "$echoResult"; then
+        echo "${message}"
+      elif "${successResult}"; then
+        success "${message}"
+      else
+        notice "${message}"
+      fi
       verbose=$saveVerbose
       return 0
     else
-      warning "${message}"
+      if "$echoResult"; then
+        echo "error: ${message}"
+      else
+        warning "${message}"
+      fi
       verbose=$saveVerbose
       "${passFailures}" && return 0 || return 1
     fi
   else
     if eval "${cmd}" &>/dev/null; then
-      success "${message}"
+      if "$echoResult"; then
+        echo "${message}"
+      elif "${successResult}"; then
+        success "${message}"
+      else
+        notice "${message}"
+      fi
       verbose=$saveVerbose
       return 0
     else
-      warning "${message}"
+      if "$echoResult"; then
+        echo "error: ${message}"
+      else
+        warning "${message}"
+      fi
       verbose=$saveVerbose
       "${passFailures}" && return 0 || return 1
     fi

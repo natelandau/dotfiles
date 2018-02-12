@@ -83,6 +83,15 @@ teardown() {
   assert_file_exist "testfile.txt"
 }
 
+@test "_execute_ -e: Bad command" {
+  touch "testfile.txt"
+  run _execute_ -e "rm nonexistant.txt"
+
+  assert_failure
+  assert_output --partial "error: rm nonexistant.txt"
+  assert_file_exist "testfile.txt"
+}
+
 @test "_execute_ -p: Return 0 on bad command" {
   touch "testfile.txt"
   run _execute_ -p "rm nonexistant.txt"
@@ -96,9 +105,18 @@ teardown() {
   touch "testfile.txt"
   run _execute_ "rm testfile.txt"
   assert_success
+  assert_output --partial "[ notice] rm testfile.txt"
+  assert_file_not_exist "testfile.txt"
+}
+
+@test "_execute_ -s: Good command" {
+  touch "testfile.txt"
+  run _execute_ -s "rm testfile.txt"
+  assert_success
   assert_output --partial "[success] rm testfile.txt"
   assert_file_not_exist "testfile.txt"
 }
+
 
 @test "_execute_ -v: Good command" {
   touch "testfile.txt"
@@ -106,7 +124,17 @@ teardown() {
   
   assert_success
   assert_line --index 0 "removed 'testfile.txt'"
-  assert_line --index 1 --partial "[success] rm -v testfile.txt"
+  assert_line --index 1 --partial "[ notice] rm -v testfile.txt"
+  assert_file_not_exist "testfile.txt"
+}
+
+@test "_execute_ -ev: Good command" {
+  touch "testfile.txt"
+  run _execute_ -ve "rm -v testfile.txt"
+  
+  assert_success
+  assert_line --index 0 "removed 'testfile.txt'"
+  assert_line --index 1 --partial "rm -v testfile.txt"
   assert_file_not_exist "testfile.txt"
 }
 

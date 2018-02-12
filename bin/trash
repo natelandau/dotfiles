@@ -55,13 +55,13 @@ _mainScript_() {
     # Determine if we can tell Finder to empty trash via AppleScript
     if ! ${bypassFinder} && _haveScriptableFinder_; then
       notice "Telling Finder to empty trash..."
-      _execute_ "/usr/bin/osascript -e 'tell application \"Finder\" to empty trash'" "Trash emptied"
+      _execute_ -s "/usr/bin/osascript -e 'tell application \"Finder\" to empty trash'" "Trash emptied"
     else
       notice "Emptying trash..."
       # Delete the contents of user's .Trash folder
       while read -r fileToTrash; do
         [ -e "$fileToTrash" ] \
-          && _execute_ "rm -rf \"$fileToTrash\""
+          && _execute_ -s "rm -rf \"$fileToTrash\""
       done < <(find "/Users/${user}/.Trash" -depth 1 ! -depth 0)
 
       # delete the contents of the volume-specific .Trashes folders
@@ -71,7 +71,7 @@ _mainScript_() {
           if [ -d "${folder}" ]; then
             while read -r fileToTrash; do
               [ -e "$fileToTrash" ] \
-                && _execute_ "rm -rf \"$fileToTrash\""
+                && _execute_ -s "rm -rf \"$fileToTrash\""
             done < <(find "${folder}" -depth 1 ! -depth 0)
           fi
         fi
@@ -99,7 +99,7 @@ _mainScript_() {
 
       # Use system's 'rm' when specified
       if ${systemRM}; then
-        _execute_ "rm -rf \"${userFile}\"" "'${baseFile}' deleted"
+        _execute_ -s "rm -rf \"${userFile}\"" "'${baseFile}' deleted"
         continue
       fi
 
@@ -107,17 +107,17 @@ _mainScript_() {
       # support, but Finder must be running for the user and is DOES NOT work from within `screen`)
       if ! ${bypassFinder} && _haveScriptableFinder_; then
         verbose "Telling Finder to trash '${baseFile}'..."
-        _execute_ "/usr/bin/osascript -e 'tell application \"Finder\" to delete POSIX file \"${userFile}\"' &>/dev/null" "'${baseFile}' moved to trash"
+        _execute_ -s "/usr/bin/osascript -e 'tell application \"Finder\" to delete POSIX file \"${userFile}\"' &>/dev/null" "'${baseFile}' moved to trash"
       else
         verbose "Telling system to trash '${baseFile}'..."
         trash="/Users/${user}/.Trash/"
         # create the trash folder if necessary
         if [ ! -d "${trash}" ]; then
-          _execute_ "mkdir \"${trash}\""
+          _execute_ -s "mkdir \"${trash}\""
         fi
         newBase="$(basename "${userFile}")"
         new="$(_uniqueFileName_ "${trash}${newBase}")"
-        _execute_ "mv \"${userFile}\" \"${new}\"" "'${baseFile}' moved to trash"
+        _execute_ -s "mv \"${userFile}\" \"${new}\"" "'${baseFile}' moved to trash"
       fi
     done
   }
