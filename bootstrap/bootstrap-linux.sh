@@ -155,32 +155,124 @@ _mainScript_() {
   }
   _disableRootSSH_
 
-} # end _mainScript_
+} # end _mainScript
+
+_findBaseDir_() {
+  #v1.0.0
+  # fincBaseDir locates the real directory of the script being run. similar to GNU readlink -n
+  # usage :  baseDir="$(_findBaseDir_)"
+  local SOURCE
+  local DIR
+
+  # Is file sourced?
+  [[ $_ != "$0" ]] \
+    && SOURCE="${BASH_SOURCE[1]}" \
+    || SOURCE="${BASH_SOURCE[0]}"
+
+  while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+  done
+  echo "$(cd -P "$(dirname "${SOURCE}")" && pwd)"
+}
 
 _execute_() {
-  # v1.0.1
-  # _execute_ - wrap an external command in '_execute_' to push native output to /dev/null
-  #           and have control over the display of the results.  In "dryrun" mode these
-  #           commands are not executed at all. In Verbose mode, the commands are executed
-  #           with results printed to stderr and stdin
+  # v1.1.0
+  # _execute_ Wrap an external command in '_execute_' to push native output to /dev/null
+  #           and have control over the display of the results.
+  #
+  #           If $dryrun=true no commands are executed
+  #           If $verbose=true the command's native output is printed to stderr and stdin
+  #
+  #
+  #
+  #
+  #
+  #           options:
+  #             -v    Always print verbose output from the execute function
+  #             -p    Pass a failed command with 'return 0'.  This effecively bypasses set -e.
+  #             -e    Bypass _alert_ functions and use 'echo RESULT'
+  #             -s    Use _alert_ success for successful output. (default is 'notice')
   #
   # usage:
   #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
+
+  local localVerbose=false
+  local passFailures=false
+  local echoResult=false
+  local successResult=false
+  local opt
+
+  local OPTIND=1
+  while getopts ":vVpPeEsS" opt; do
+    case $opt in
+      v | V) localVerbose=true ;;
+      p | P) passFailures=true ;;
+      e | E) echoResult=true ;;
+      s | S) successResult=true ;;
+      *) {
+        error "Unrecognized option '$1' passed to _execute. Exiting."
+        _safeExit_
+      }
+        ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+
   local cmd="${1:?_execute_ needs a command}"
   local message="${2:-$1}"
-  if ${dryrun}; then
-    dryrun "${message}"
-  else
-    if $verbose; then
-      eval "$cmd"
+
+  local saveVerbose=$verbose
+  if "${localVerbose}"; then
+    verbose=true
+  fi
+
+  if "${dryrun}"; then
+    if [ -n "$2" ]; then
+      dryrun "${1} (${2})" }
     else
-      eval "$cmd" &>/dev/null
+      dryrun "${1}"
     fi
-    if [ $? -eq 0 ]; then
-      success "${message}"
+  elif ${verbose}; then
+    if eval "${cmd}"; then
+      if "$echoResult"; then
+        echo "${message}"
+      elif "${successResult}"; then
+        success "${message}"
+      else
+        notice "${message}"
+      fi
+      verbose=$saveVerbose
+      return 0
     else
-      #error "${message}"
-      die "${message}"
+      if "$echoResult"; then
+        echo "error: ${message}"
+      else
+        warning "${message}"
+      fi
+      verbose=$saveVerbose
+      "${passFailures}" && return 0 || return 1
+    fi
+  else
+    if eval "${cmd}" &>/dev/null; then
+      if "$echoResult"; then
+        echo "${message}"
+      elif "${successResult}"; then
+        success "${message}"
+      else
+        notice "${message}"
+      fi
+      verbose=$saveVerbose
+      return 0
+    else
+      if "$echoResult"; then
+        echo "error: ${message}"
+      else
+        warning "${message}"
+      fi
+      verbose=$saveVerbose
+      "${passFailures}" && return 0 || return 1
     fi
   fi
 }
@@ -209,6 +301,49 @@ _seekConfirmation_() {
   fi
 }
 
+_safeExit_() {
+  # Delete temp files with option to save if error is trapped
+  # To exit the script with a non-zero exit code pass the requested code
+  # to this function as an argument
+  #
+  #   Usage:    _safeExit_ "1"
+  if [[ -n "${tmpDir}" && -d "${tmpDir}" ]]; then
+    if [[ $1 == 1 && -n "$(ls "${tmpDir}")" ]]; then
+      if _seekConfirmation_ "Save the temp directory for debugging?"; then
+        cp -r "${tmpDir}" "${tmpDir}.save"
+        notice "'${tmpDir}.save' created"
+      fi
+      rm -r "${tmpDir}"
+    else
+      rm -r "${tmpDir}"
+    fi
+  fi
+
+  trap - INT TERM EXIT
+  exit ${1:-0}
+}
+
+_trapCleanup_() {
+  local line=$1 # LINENO
+  local linecallfunc=$2
+  local command="$3"
+  local funcstack="$4"
+  local script="$5"
+  local sourced="$6"
+  local scriptSpecific="$7"
+
+  funcstack="'$(echo "$funcstack" | sed -E 's/ / < /g')'"
+
+  #fatal "line $line - command '$command' $func"
+  if [[ "${script##*/}" == "${sourced##*/}" ]]; then
+    fatal "${7} command: '$command' (line: $line) (func: ${funcstack})"
+  else
+    fatal "${7} command: '$command' (func: ${funcstack} called at line $linecallfunc of '${script##*/}') (line: $line of '${sourced##*/}') "
+  fi
+
+  _safeExit_ "1"
+}
+
 # Set Base Variables
 # ----------------------
 scriptName=$(basename "$0")
@@ -216,6 +351,7 @@ scriptName=$(basename "$0")
 # Set Flags
 quiet=false
 printLog=false
+logErrors=false
 verbose=false
 force=false
 strict=false
@@ -224,29 +360,68 @@ debug=false
 sourceOnly=false
 args=()
 
-# Set Colors
-bold=$(tput bold)
-reset=$(tput sgr0)
-purple=$(tput setaf 171)
-red=$(tput setaf 1)
-green=$(tput setaf 76)
-tan=$(tput setaf 3)
-blue=$(tput setaf 38)
-underline=$(tput sgr 0 1)
+if tput setaf 1 &>/dev/null; then
+  bold=$(tput bold)
+  reset=$(tput sgr0)
+  purple=$(tput setaf 171)
+  red=$(tput setaf 1)
+  green=$(tput setaf 76)
+  tan=$(tput setaf 3)
+  blue=$(tput setaf 38)
+  underline=$(tput sgr 0 1)
+else
+  bold=""
+  reset="\033[m"
+  purple="\033[1;31m"
+  red="\033[0;31m"
+  green="\033[1;32m"
+  tan="\033[0;33m"
+  blue="\033[0;34m"
+  underline=""
+fi
 
-# Logging & Feedback
-logFile="${HOME}/Library/Logs/${scriptName%.sh}.log"
+### ALERTS AND LOGGING ###
 
 _alert_() {
-  # v1.0.0
-  if [ "${1}" = "error" ]; then local color="${bold}${red}"; fi
-  if [ "${1}" = "warning" ]; then local color="${red}"; fi
-  if [ "${1}" = "success" ]; then local color="${green}"; fi
-  if [ "${1}" = "debug" ]; then local color="${purple}"; fi
-  if [ "${1}" = "header" ]; then local color="${bold}${tan}"; fi
-  if [ "${1}" = "input" ]; then local color="${bold}"; fi
-  if [ "${1}" = "dryrun" ]; then local color="${blue}"; fi
-  if [ "${1}" = "info" ] || [ "${1}" = "notice" ]; then local color=""; fi
+  # v1.1.0
+
+  local scriptName logLocation logName function_name color alertType line
+  alertType="$1"
+  line="${2}"
+
+  scriptName=$(basename "$0")
+  logLocation="${HOME}/logs"
+  logName="${scriptName%.sh}.log"
+
+  if [ -z "$logFile" ]; then
+    [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
+    logFile="${logLocation}/${logName}"
+  fi
+
+  function_name="func: $(echo "$(
+    IFS="<"
+    echo "${FUNCNAME[*]:2}"
+  )" | sed -E 's/</ < /g')"
+
+  if [ -z "$line" ]; then
+    [[ "$1" =~ ^(fatal|error|debug) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
+      && _message="$_message ($function_name)"
+  else
+    [[ "$1" =~ ^(fatal|error|debug) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
+      && _message="$_message (line: $line) ($function_name)"
+  fi
+
+  [ "${alertType}" = "error" ] && color="${bold}${red}"
+  [ "${alertType}" = "fatal" ] && color="${bold}${red}"
+  [ "${alertType}" = "warning" ] && color="${red}"
+  [ "${alertType}" = "success" ] && color="${green}"
+  [ "${alertType}" = "debug" ] && color="${purple}"
+  [ "${alertType}" = "header" ] && color="${bold}${tan}"
+  [ "${alertType}" = "input" ] && color="${bold}"
+  [ "${alertType}" = "dryrun" ] && color="${blue}"
+  [ "${alertType}" = "info" ] && color=""
+  [ "${alertType}" = "notice" ] && color=""
+
   # Don't use colors on pipes or non-recognized terminals
   if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then
     color=""
@@ -254,63 +429,92 @@ _alert_() {
   fi
 
   # Print to console when script is not 'quiet'
-  if ${quiet}; then
-    tput cuu1
-    return
-  else # tput cuu1 moves cursor up one line
+  _writeToScreen_() {
+    ("$quiet") \
+      && {
+        tput cuu1
+        return
+      } # tput cuu1 moves cursor up one line
+
     echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}"
-  fi
+  }
+  _writeToScreen_ "$1"
 
   # Print to Logfile
-  if ${printLog} && [ "${1}" != "input" ]; then
+  if "${printLog}"; then
+    [[ "$alertType" =~ ^(input|dryrun|debug) ]] && return
+    [ ! -f "$logFile" ] && touch "$logFile"
     color=""
     reset="" # Don't use colors in logs
-    echo -e "$(date +"%m-%d-%Y %r") $(printf "[%7s]" "${1}") ${_message}" >>"${logFile}"
+    echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${1}") ${_message}" >>"${logFile}"
+  elif [[ "${logErrors}" == "true" && "$alertType" =~ ^(error|fatal) ]]; then
+    [ ! -f "$logFile" ] && touch "$logFile"
+    color=""
+    reset="" # Don't use colors in logs
+    echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${1}") ${_message}" >>"${logFile}"
+  else
+    return 0
   fi
 }
-
-function die() {
-  local _message="${*} Exiting."
-  echo -e "$(_alert_ error)"
+die() {
+  local _message="${1}"
+  echo -e "$(_alert_ fatal $2)"
   _safeExit_ "1"
 }
-function error() {
-  local _message="${*}"
-  echo -e "$(_alert_ error)"
+fatal() {
+  local _message="${1}"
+  echo -e "$(_alert_ fatal $2)"
+  _safeExit_ "1"
 }
-function warning() {
-  local _message="${*}"
-  echo -e "$(_alert_ warning)"
+trapped() {
+  local _message="${1}"
+  echo -e "$(_alert_ trapped $2)"
+  _safeExit_ "1"
 }
-function notice() {
-  local _message="${*}"
-  echo -e "$(_alert_ notice)"
+error() {
+  local _message="${1}"
+  echo -e "$(_alert_ error $2)"
 }
-function info() {
-  local _message="${*}"
-  echo -e "$(_alert_ info)"
+warning() {
+  local _message="${1}"
+  echo -e "$(_alert_ warning $2)"
 }
-function debug() {
-  local _message="${*}"
-  echo -e "$(_alert_ debug)"
+notice() {
+  local _message="${1}"
+  echo -e "$(_alert_ notice $2)"
 }
-function success() {
-  local _message="${*}"
-  echo -e "$(_alert_ success)"
+info() {
+  local _message="${1}"
+  echo -e "$(_alert_ info $2)"
 }
-function dryrun() {
-  local _message="${*}"
-  echo -e "$(_alert_ dryrun)"
+debug() {
+  local _message="${1}"
+  echo -e "$(_alert_ debug $2)"
 }
-function input() {
-  local _message="${*}"
-  echo -n "$(_alert_ input)"
+success() {
+  local _message="${1}"
+  echo -e "$(_alert_ success $2)"
 }
-function header() {
+dryrun() {
+  local _message="${1}"
+  echo -e "$(_alert_ dryrun $2)"
+}
+input() {
+  local _message="${1}"
+  echo -n "$(_alert_ input $2)"
+}
+header() {
   local _message="== ${*} ==  "
-  echo -e "$(_alert_ header)"
+  echo -e "$(_alert_ header $2)"
 }
-function verbose() { if ${verbose}; then debug "$@"; fi; }
+verbose() {
+  ($verbose) \
+    && {
+      local _message="${1}"
+      echo -e "$(_alert_ debug $2)"
+    } \
+    || return 0
+}
 
 # Options and Usage
 # -----------------------------------
@@ -407,14 +611,15 @@ done
 args+=("$@")
 
 # Trap bad exits with your cleanup function
-trap _trapCleanup_ EXIT INT TERM
+trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
+  EXIT INT TERM SIGINT SIGQUIT
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'
 
-# Exit on error. Append '||true' when you run the script if you expect an error.
-# if using the 'execute' function this must be disabled for warnings to be shown if tasks fail
-#set -o errexit
+# Exit on error. Append '||true' to a command when you run the script if you expect an error.
+set -o errtrace
+set -o errexit
 
 # Force pipelines to fail on the first non-zero status code.
 set -o pipefail
@@ -424,9 +629,6 @@ if ${debug}; then set -x; fi
 
 # Exit on empty variable
 if ${strict}; then set -o nounset; fi
-
-# Exit the script if a command fails
-#set -e
 
 # Run your script unless in 'source-only' mode
 if ! ${sourceOnly}; then _mainScript_; fi
