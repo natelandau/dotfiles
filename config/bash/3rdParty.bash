@@ -13,6 +13,10 @@ fi
 # RVM complains if it's not here
 [[ -s "${HOME}/.rvm/scripts/rvm" ]] && source "${HOME}/.rvm/scripts/rvm"
 
+# ASDF Package Manager
+[[ -s "$HOME/.asdf/asdf.sh" ]] && source "$HOME/.asdf/asdf.sh"
+[[ -s "$HOME/.asdf/completions/asdf.bash" ]] && source "$HOME/.asdf/completions/asdf.bash"
+
 #nvm (node version manager)
 if [ -e "${HOME}/.nvm" ]; then
   export NVM_DIR="${HOME}/.nvm"
@@ -22,9 +26,9 @@ if [ -e "${HOME}/.nvm" ]; then
 fi
 
 # Use Java JDK 1.8
- if [[ "$(command -v java)" && -e "/usr/libexec/java_home" ]]; then
+if [[ "$(command -v java)" && -e "/usr/libexec/java_home" ]]; then
   export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
- fi
+fi
 
 # Path for Ruby (installed by Homebrew)
 #export PATH="$PATH:/usr/local/opt/ruby/bin"
