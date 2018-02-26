@@ -14,7 +14,7 @@ function _mainScript_() {
     }
 
   s=$(fuser -f "$userFile")
-  PROCS=($s)
+  PROCS=("$s")
 
   if [ "${#PROCS[@]}" == 0 ]; then
     warning "File '$userFile' is not open."
@@ -47,7 +47,7 @@ _sourceHelperFiles_() {
   local sourceFile
 
   filesToSource=(
-    ${HOME}/dotfiles/scripting/helpers/baseHelpers.bash
+    "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
   )
 
   for sourceFile in "${filesToSource[@]}"; do
