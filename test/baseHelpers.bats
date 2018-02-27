@@ -42,8 +42,6 @@ teardown() {
 
 ########### BEGIN TESTS ##########
 
-
-
 @test "debug" {
   run debug "testing"
   assert_output --partial "[  debug] testing"
@@ -51,7 +49,12 @@ teardown() {
 
 @test "die" {
   run die "testing"
-  assert_line --index 0 --partial "[  fatal] testing ("
+  assert_line --index 0 --regexp ".*\[  fatal\] testing \(func: run < test_die < bats_perform_test < main\)"
+}
+
+@test "fatal: with LINE" {
+  run fatal "testing" "$LINENO"
+  assert_line --index 0 --regexp ".*\[  fatal\] testing \(line: [0-9]{1,3}\) \(func: run < test_fatal-3a_with_LINE < bats_perform_test < main\)"
 }
 
 @test "error" {
@@ -116,7 +119,6 @@ teardown() {
   assert_output --partial "[success] rm testfile.txt"
   assert_file_not_exist "testfile.txt"
 }
-
 
 @test "_execute_ -v: Good command" {
   touch "testfile.txt"
@@ -211,6 +213,11 @@ teardown() {
 @test "notice" {
   run notice "testing"
   assert_output --regexp "\[ notice\] testing"
+}
+
+@test "notice: with LINE" {
+  run notice "testing" "$LINENO"
+  assert_output --regexp ".*\[ notice\] testing \(line: [0-9]{1,3}\)"
 }
 
 @test "_progressBar_: verbose" {

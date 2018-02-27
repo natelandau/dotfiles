@@ -31,16 +31,16 @@ if command -v brew &>/dev/null; then
   alias brwe='brew' #typos
 
   bup() {
-    brew update
-    brew upgrade
-    if [ -e "${HOME}/bin/upgradeCasks" ]; then
-      ${HOME}/bin/upgradeCasks
+    local brewScript="${HOME}/bin/updateHomebrew"
+    if [ -e "${brewScript}" ]; then
+      "${brewScript}"
     else
-      brew cask update
+      brew update
+      brew upgrade
+      brew cleanup
+      brew cask cleanup
+      brew prune
     fi
-    brew cleanup
-    brew cask cleanup
-    brew prune
   }
 
 fi

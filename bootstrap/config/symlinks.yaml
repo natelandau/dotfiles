@@ -13,6 +13,9 @@ symlinks:
   - ~/.profile:       config/shell/profile
   - ~/.sed:           config/shell/sed
   - ~/.ruby-version:  config/shell/ruby-version
+  - ~/.Brewfile:      config/shell/Brewfile
+  - ~/.Gemfile:       config/shell/Gemfile
+  - ~/.asdfrc:        config/shell/asdfrc
   - ~/.config/micro/bindings.json:    config/shell/micro/bindings.json
   - ~/.config/micro/settings.json:    config/shell/micro/settings.json
   - ~/bin/cleanFilenames:             bin/cleanFilenames
@@ -25,4 +28,4 @@ symlinks:
   - ~/bin/convertVideo:               bin/convertVideo
   - ~/bin/git-churn:                  bin/git-churn
   - ~/bin/seconds:                    bin/seconds
-  - ~/bin/upgradeCasks:               bin/upgradeCasks
+  - ~/bin/updateHomebrew:             bin/updateHomebrew

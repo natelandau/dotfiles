@@ -1,3 +1,0 @@
-nodePackages:
-  - pageres-cli   # CLI for Web screenshots - https://github.com/sindresorhus/pageres-cli
-  - lessmd        # Markdown reader for terminal

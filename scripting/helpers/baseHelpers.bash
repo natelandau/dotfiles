@@ -52,11 +52,15 @@ _alert_() {
   )" | sed -E 's/</ < /g')"
 
   if [ -z "$line" ]; then
-    [[ "$1" =~ ^(fatal|error|debug) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
+    [[ "$1" =~ ^(fatal|error|debug|warning) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
       && _message="$_message ($function_name)"
   else
     [[ "$1" =~ ^(fatal|error|debug) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
       && _message="$_message (line: $line) ($function_name)"
+  fi
+  if [ -n "$line" ]; then
+    [[ "$1" =~ ^(warning|info|notice|dryrun) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
+      && _message="$_message (line: $line)"
   fi
 
   [ "${alertType}" = "error" ] && color="${bold}${red}"
@@ -236,7 +240,7 @@ _execute_() {
       return 0
     else
       if "$echoResult"; then
-        echo "error: ${message}"
+        echo "warning: ${message}"
       else
         warning "${message}"
       fi

@@ -5,20 +5,18 @@ version="1.0.0"
 _mainScript_() {
 
   [[ "$OSTYPE" != "darwin"* ]] \
-    && die "We are not on macOS" "$LINENO"
+    && fatal "We are not on macOS" "$LINENO"
 
   # Set Variables
   baseDir="$(_findBaseDir_)" && verbose "baseDir: $baseDir"
   rootDIR="$(dirname "$baseDir")" && verbose "rootDIR: $rootDIR"
   privateInstallScript="${HOME}/dotfiles-private/privateInstall.sh"
   pluginScripts="${baseDir}/plugins"
+  brewfile="${rootDIR}/config/shell/Brewfile"
+  gemfile="${rootDIR}/config/shell/Gemfile"
 
   # Config files
   configSymlinks="${baseDir}/config/symlinks.yaml"
-  configHomebrew="${baseDir}/config/homebrew.yaml"
-  configCasks="${baseDir}/config/homebrewCasks.yaml"
-  configNode="${baseDir}/config/node.yaml"
-  configRuby="${baseDir}/config/ruby.yaml"
 
   scriptFlags=()
     ($dryrun) && scriptFlags+=(--dryrun)
@@ -62,244 +60,141 @@ _mainScript_() {
   fi
 
   _homebrew_() {
-    local tap
-    local package
-    local testInstalled
-    local t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
-    local c="$1"  # Config YAML file
-
-    if ! _seekConfirmation_ "Install Homebrew Packages?"; then return; fi
+    if ! _seekConfirmation_ "Configure Homebrew and Install Packages?"; then return; fi
 
     info "Checking for Homebrew..."
     (_checkForHomebrew_)
 
-    [ ! -f "$c" ] \
-      && {
-        error "Can not find config file '$c'"
-        return 1
-      }
-
-    # Parse & source Config File
-    # shellcheck disable=2015
-    (_parseYAML_ "${c}" >"${t}") \
-      && { if $verbose; then
-        verbose "-- Config Variables"
-        _readFile_ "$t"
-      fi; } \
-      || die "Could not parse YAML config file" "$LINENO"
-
-    _sourceFile_ "$t"
-
-    # Brew updates can take forever if we're not bootstrapping. Show the output
-
-    header "Updating Homebrew"
-    _execute_ -v "caffeinate -ism brew update"
-    _execute_ -v "caffeinate -ism brew doctor"
-    _execute_ -v "caffeinate -ism brew upgrade"
-
-    header "Installing Homebrew Taps"
-    # shellcheck disable=2154
-    for tap in "${homebrewTaps[@]}"; do
-      tap=$(echo "${tap}" | cut -d'#' -f1 | _trim_) # remove comments if exist
-      _execute_ -v "brew tap ${tap}"
-    done
-
-    header "Installing Homebrew Packages"
-    # shellcheck disable=2154
-    for package in "${homebrewPackages[@]}"; do
-
-      package=$(echo "${package}" | cut -d'#' -f1 | _trim_)       # remove comments if exist
-      testInstalled=$(echo "${package}" | cut -d' ' -f1 | _trim_) # strip flags from package names
-
-      if brew ls --versions "$testInstalled" >/dev/null; then
-        info "$testInstalled already installed"
-      else
-        _execute_ -v "caffeinate -ism brew install ${package}" "Install ${testInstalled}"
-      fi
-    done
-
-    _execute_ -v "brew cleanup" # cleanup after ourselves
-  }
-  _homebrew_ "$configHomebrew"
-
-  _homebrewCasks_() {
-    local cask
-    local testInstalled
-    local t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
-    local c="$1" # Config YAML file
-
-    if ! _seekConfirmation_ "Install Homebrew Casks?"; then return; fi
-
-    info "Checking for Homebrew..."
-    _checkForHomebrew_
-
-    [ ! -f "$c" ] \
-      && {
-        error "Can not find config file '$c'"
-        return 1
-      }
-
-    # Parse & source Config File
-    # shellcheck disable=2015
-    (_parseYAML_ "${c}" >"${t}") \
-      && { if $verbose; then
-        verbose "-- Config Variables"
-        _readFile_ "$t"
-        fi; } \
-      || die "Could not parse YAML config file" "$LINENO"
-
-    _sourceFile_ "$t"
-
-    header "Updating Homebrew"
-    _execute_ -v "caffeinate -ism brew update"
-    _execute_ -v "caffeinate -ism brew doctor"
-
-    header "Installing Casks"
-    # shellcheck disable=2154
-    for cask in "${homebrewCasks[@]}"; do
-
-      cask=$(echo "${cask}" | cut -d'#' -f1 | _trim_) # remove comments if exist
-
-      # strip flags from package names
-      testInstalled=$(echo "${cask}" | cut -d' ' -f1 | _trim_)
-
-      if brew cask ls "${testInstalled}" &>/dev/null; then
-        info "${testInstalled} already installed"
-      else
-        _execute_ -v "brew cask install $cask" "Install ${testInstalled}"
-      fi
-    done
-
-    _execute_ -v "brew cleanup" # cleanup after ourselves
-  }
-  _homebrewCasks_ "$configCasks"
-
-  _node_() {
-    local package
-    local npmPackages
-    local modules
-    local t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
-    local c="$1" # Config YAML file
-
-    if ! _seekConfirmation_ "Install Node Packages?"; then return; fi
-
-    [ ! -f "$c" ] \
-      && {
-        error "Can not find config file '$c'"
-        return 1
-      }
-
-    # Parse & source Config File
-    # shellcheck disable=2015
-    (_parseYAML_ "${c}" >"${t}") \
-      && { if $verbose; then
-        verbose "-- Config Variables"
-        _readFile_ "$t"
-      fi; } \
-      || die "Could not parse YAML config file" "$LINENO"
-
-    _sourceFile_ "$t"
-
-    header "Installing global node packages"
-
-    #confirm node is installed
-    if test ! "$(which node)"; then
-      notice "Can not install npm packages without node. Installing now"
-      info "Checking for Homebrew..."
-      _checkForHomebrew_
-      if ! brew install node; then
-        warning "Can not install node. Please rerun script."
-        return 1
-      fi
+    # Uninstall old homebrew cask
+    if brew list | grep -Fq brew-cask; then
+      _execute_ -v "brew uninstall --force brew-cask" "Uninstalling old Homebrew-Cask ..."
     fi
+    
+    header "Updating Homebrew"
+    _execute_ -v "caffeinate -ism brew update"
+    _execute_ -vp "caffeinate -ism brew doctor"
+    _execute_ -vp "caffeinate -ism brew upgrade"
 
-    # Grab packages already installed
-    {
-      pushd "$(npm config get prefix)/lib/node_modules"
-      installed=(*)
-      popd
-    } >/dev/null
- 
-    # If comments exist in the list of npm packaged to be installed remove them
-    # shellcheck disable=2207
-    for package in "${nodePackages[@]}"; do
-      npmPackages+=($(echo "${package}" | cut -d'#' -f1 | _trim_))
-    done
-
-    # Install packages that do not already exist
-    # shellcheck disable=2207
-    modules=($(_setdiff_ "${npmPackages[*]}" "${installed[*]}"))
-    if ((${#modules[@]} > 0)); then
-      pushd ${HOME} >/dev/null
-      _execute_ -v "npm install -g ${modules[*]}"
-      popd >/dev/null
+    if [ -f "$brewfile" ]; then
+      info "Installing packages (this may take a while) ..."
+      _execute_ -vp "caffeinate -ism brew bundle --verbose --file=\"$brewfile\""
     else
-      info "All node packages already installed"
+      error "Could not find Brewfile. Unable to install homebrew packages." "$LINENO"
+      verbose "Expected brewfile at '$brewfile'"
+    fi
+
+    _execute_ -vp "brew cleanup"
+    _execute_ -vp "brew cask cleanup"
+    _execute_ -vp "brew prune"
+  }
+  _homebrew_
+
+  _checkASDF_() {
+    info "Confirming we have asdf package manager installed ..."
+    
+    if [ ! -d "${HOME}/.asdf" ]; then
+      _execute_ -v "git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.4.2"
+      
+      # shellcheck disable=SC2015
+      [[ -s "${HOME}/.asdf/asdf.sh" ]] \
+        && source "${HOME}/.asdf/asdf.sh" \
+        || {
+          error "Could not source 'asdf.sh'" "$LINENO"
+          return 1
+        }
+        
+      # shellcheck disable=SC2015
+      [[ -s "${HOME}/.asdf/completions/asdf.bash" ]] \
+        && source "${HOME}/.asdf/completions/asdf.bash" \
+        || {
+          error "Could not source '.asdf/completions/asdf.bash'" "$LINENO"
+          return 1
+        }
     fi
   }
-  _node_ "$configNode"
+  
+  _installASDFPlugin_() {
+    local name="$1"
+    local url="$2"
+
+    if ! asdf plugin-list | grep -Fq "$name"; then
+      _execute_ -vp "asdf plugin-add \"$name\" \"$url\""
+    fi
+  }
+
+  _installASDFLanguage_() {
+    local language="$1"
+    local version="$2"
+
+    if [ -z "$version" ]; then
+      version="$(asdf list-all "$language" | tail -1)"
+    fi
+
+    if ! asdf list "$language" | grep -Fq "$version"; then
+      _execute_ -vp "asdf install \"$language\" \"$version\""
+      _execute_ -vp "asdf global \"$language\" \"$version\""
+    fi
+  }
 
   _ruby_() {
-    local RUBYVERSION="2.3.4 " # Version of Ruby to install via RVM
-    local t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
-    local c="$1" # Config YAML file
-    local gem
-    local testInstalled
+    local RUBYVERSION="2.4.3"
+    local rubyGem
 
-    if ! _seekConfirmation_ "Install Ruby Packages?"; then return; fi
-    header "Installing RVM and Ruby packages"
+    if ! _seekConfirmation_ "Install Ruby and Gems?"; then return; fi
 
-    [ ! -f "$c" ] \
-      && {
-        error "Can not find config file '$c'"
-        return 1
-      }
+    _checkASDF_  # Confirm we can install with ASDF
 
-    # Parse & source Config File
-    # shellcheck disable=2015
-    (_parseYAML_ "${c}" >"${t}") \
-      && { if $verbose; then
-        verbose "-- Config Variables"
-        _readFile_ "$t"
-      fi; } \
-      || die "Could not parse YAML config file" "$LINENO"
+    header "Installing Ruby and Gems ..."
+    _installASDFPlugin_ "ruby" "https://github.com/asdf-vm/asdf-ruby.git"
+    _installASDFLanguage_ "ruby" "$RUBYVERSION"
 
-    _sourceFile_ "$t"
-
-    info "Checking for RVM (Ruby Version Manager)..."
-    pushd ${HOME} &>/dev/null
-    # Check for RVM
-    if ! command -v rvm &>/dev/null; then
-      _execute_ "curl -L https://get.rvm.io | bash -s stable --ruby"
-      _execute_ "source ${HOME}/.rvm/scripts/rvm"
-      _execute_ "source ${HOME}/.bash_profile"
-      #rvm get stable --autolibs=enable
-      _execute_ "rvm install ${RUBYVERSION}"
-      _execute_ "rvm use ${RUBYVERSION} --default"
+    info "Installing gems ..."
+    pushd "${HOME}" &>/dev/null
+    
+    _execute_ -v "gem update --system"
+    _execute_ -v "gem install bundler"  # Ensure we have bundler installed
+    
+    numberOfCores=$(sysctl -n hw.ncpu)
+    _execute_ -v "bundle config --global jobs $((numberOfCores - 1))"
+    
+    if [ -f "$gemfile" ]; then
+      info "Installing ruby gems (this may take a while) ..."
+      _execute_ -vp "caffeinate -ism bundle install --gemfile \"$gemfile\""
+    else
+      error "Could not find Gemfile. Unable to install ruby gems." "$LINENO"
+      verbose "Expected to find Gemfile at '$gemfile'"
     fi
-    success "RVM and Ruby are installed"
 
-    header "Installing global ruby gems"
-
-    # shellcheck disable=2154
-    for gem in "${rubyGems[@]}"; do
-
-      # Strip comments
-      gem=$(echo "$gem" | cut -d'#' -f1 | _trim_)
-
-      # strip flags from package names
-      testInstalled=$(echo "$gem" | cut -d' ' -f1 | _trim_)
-
-      if ! gem list "$testInstalled" -i >/dev/null; then
-        _execute_ -v "gem install ${gem}"
-      else
-        info "${testInstalled} already installed"
-      fi
-    done
-
+    # Ensure all these new items are in $PATH
+    _execute_ -v "asdf reshim ruby"
+    
     popd &>/dev/null
   }
-  _ruby_ "$configRuby"
+  _ruby_
+
+  _nodeJS_() {
+    if ! _seekConfirmation_ "Install node.js and packages??"; then return; fi
+    
+    header "Installing node.js ..."
+    
+    _checkASDF_  # Confirm we can install with ASDF
+
+    _installASDFPlugin_ "nodejs" "https://github.com/asdf-vm/asdf-nodejs.git"
+
+    # Install the GPG Key
+    _execute_ -v "bash ~/.asdf/plugins/nodejs/bin/import-release-team-keyring"
+
+    _installASDFLanguage_ "nodejs"
+
+    pushd "${HOME}" &>/dev/null
+    info "Installing npm packages ..."
+    
+    popd &>/dev/null
+    
+    # Ensure all these new items are in $PATH
+    _execute_ -v "asdf reshim nodejs"
+  }
+  _nodeJS_
 
   _runPlugins_() {
     local plugin pluginName flags v d
@@ -362,7 +257,7 @@ _doSymlinks_() {
   local t                                 # temp file
   local line
 
-  t="${tmpDir}/${RANDOM}.${RANDOM}.${RANDOM}.txt"
+  t="$(mktemp "${tmpDir}/XXXXXXXXXXXX")"
 
   [ ! -f "$c" ] \
     && {
@@ -377,13 +272,13 @@ _doSymlinks_() {
       verbose "-- Config Variables"
       _readFile_ "$t"
     fi; } \
-    || die "Could not parse YAML config file" "$LINENO"
+    || fatal "Could not parse YAML config file" "$LINENO"
 
   _sourceFile_ "$t"
 
   [ "${#symlinks[@]}" -eq 0 ] \
     && {
-      warning "No symlinks found in '$c'"
+      warning "No symlinks found in '$c'" "$LINENO"
       return 1
     }
 
@@ -406,13 +301,13 @@ _doSymlinks_() {
     # If we can't find a source file, skip it
     [ ! -e "${s}" ] \
       && {
-        warning "Can't find source '${s}'"
+        warning "Can't find source '${s}'" "$LINENO"
         continue
       }
 
     (_makeSymlink_ "${s}" "${d}") \
       || {
-        warning "_makeSymlink_ failed for source: '$s'"
+        warning "_makeSymlink_ failed for source: '$s'" "$LINENO"
         return 1
       }
 
@@ -420,6 +315,18 @@ _doSymlinks_() {
 }
 
 _checkForHomebrew_() {
+
+  homebrewPrefix="/usr/local"
+
+  if [ -d "$homebrewPrefix" ]; then
+    if ! [ -r "$homebrewPrefix" ]; then
+      sudo chown -R "$LOGNAME:admin" /usr/local
+    fi
+  else
+    sudo mkdir "$homebrewPrefix"
+    sudo chflags norestricted "$homebrewPrefix"
+    sudo chown -R "$LOGNAME:admin" "$homebrewPrefix"
+  fi
 
   if ! command -v brew &>/dev/null; then
     notice "Installing Homebrew..."
@@ -430,7 +337,10 @@ _checkForHomebrew_() {
 
     # Install Homebrew
     (_execute_ "ruby -e $(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" "Install Homebrew") \
-      || { return 1; }
+      || {
+        fatal "Could not install Homebrew" "$LINENO"
+      }
+      
     brew analytics off
   else
     return 0
@@ -454,7 +364,7 @@ sourceOnly=false
 args=()
 
 # Set Temp Directory
-tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
+tmpDir="${TMPDIR:-/tmp/}$(basename "$0").$RANDOM.$RANDOM.$RANDOM.$$"
 (umask 077 && mkdir "${tmpDir}") || {
   die "Could not create temporary directory! Exiting." "$LINENO"
 }
