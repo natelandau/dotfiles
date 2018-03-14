@@ -276,13 +276,12 @@ _locateSourceFile_() {
 
   TARGET_FILE="${1:?_locateSourceFile_ needs a file}"
 
-  cd "$(dirname "$TARGET_FILE")" || return 1
+  cd "$(dirname "$TARGET_FILE")" &>/dev/null || return 1
   TARGET_FILE="$(basename "$TARGET_FILE")"
-
   # Iterate down a (possible) chain of symlinks
   while [ -L "$TARGET_FILE" ]; do
     TARGET_FILE=$(readlink "$TARGET_FILE")
-    cd "$(dirname "$TARGET_FILE")" || return 1
+    cd "$(dirname "$TARGET_FILE")" &>/dev/null || return 1
     TARGET_FILE="$(basename "$TARGET_FILE")"
   done
 
@@ -353,7 +352,7 @@ _makeSymlink_() {
     o="$(_locateSourceFile_ "$d")"
     _backupFile_ "${o}" ${b:-backup}
     ($dryrun) \
-      || rm -rf "$d"
+      || command rm -rf "$d"
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -e "${d}" ]; then
     _backupFile_ "${d}" "${b:-backup}"
