@@ -1,5 +1,8 @@
 if command -v brew &>/dev/null; then
 
+  # Don't send analytics data
+  export HOMEBREW_NO_ANALYTICS=1
+
   if [[ -s $(brew --prefix)/etc/profile.d/autojump.sh ]]; then
     . "$(brew --prefix)/etc/profile.d/autojump.sh"
   fi

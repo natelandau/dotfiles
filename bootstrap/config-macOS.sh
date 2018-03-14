@@ -75,6 +75,8 @@ _mainScript_() {
     _execute_ -vp "caffeinate -ism brew doctor"
     _execute_ -vp "caffeinate -ism brew upgrade"
 
+    _execute_ -vp "brew analytics off" "Disable Homebrew analytics"
+
     if [ -f "$brewfile" ]; then
       info "Installing packages (this may take a while) ..."
       _execute_ -vp "caffeinate -ism brew bundle --verbose --file=\"$brewfile\""
