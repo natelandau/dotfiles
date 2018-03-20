@@ -1,20 +1,32 @@
 
 [alias]
-
 	# View abbreviated SHA, description, and history graph of the latest 20 commits
-	l = log --color --pretty=oneline -n 20 --graph --abbrev-commit
+	ls = log --color --pretty=oneline -n 20 --graph --abbrev-commit
+
+  # List commits showing changed files
+  ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat -n 10
+
+  # List with no colors if you need to chain the out put with Unix pipes
+  lnc = log --pretty=format:"%h\\ %s\\ [%cn]"
+
+  # list aliases
+  la = "!git config -l | grep alias | cut -c 7-"
+
+  # All the commits related to a file, with the diff of the changes
+  filelog = log -u
+  fl = log -u
 
 	# View the current working tree status using the short format
-	s = status -s
+	s = --no-pager status -s --untracked-files=all
 
 	# Show the diff between the latest commit and the current state
 	d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
 
 	# Pull in remote changes for the current repository and all its submodules
-	p = !"git pull; git submodule foreach git pull origin master"
+	#p = !"git pull; git submodule foreach git pull origin master"
 
 	# Clone a repository including all submodules
-	c = clone --recursive
+	cl = clone --recursive
 
 	# Commit all changes
 	ca = !git add -A && git commit -av
