@@ -50,7 +50,7 @@ brew "xz"
 brew "httpie"
 brew "id3tool"
 brew "libtool"
-brew "imagemagick@6"
+brew "imagemagick@6", link: true
 brew "jpegoptim"
 brew "oniguruma"
 brew "jq"
