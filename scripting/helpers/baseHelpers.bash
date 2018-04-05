@@ -94,7 +94,7 @@ _alert_() {
 
   # Print to Logfile
   if "${printLog}"; then
-    [[ "$alertType" =~ ^(input|dryrun|debug) ]] && return
+    [[ "$alertType" =~ ^(input|debug) ]] && return
     [ ! -f "$logFile" ] && touch "$logFile"
     color=""
     reset="" # Don't use colors in logs
@@ -156,7 +156,7 @@ input() {
   echo -n "$(_alert_ input $2)"
 }
 header() {
-  local _message="== ${*} ==  "
+  local _message="== ${*} =="
   echo -e "$(_alert_ header $2)"
 }
 verbose() {
@@ -223,9 +223,9 @@ _execute_() {
 
   if "${dryrun}"; then
     if [ -n "$2" ]; then
-      dryrun "${1} (${2})" }
+      dryrun "${1} (${2})" "$( caller )"
     else
-      dryrun "${1}"
+      dryrun "${1}" "$( caller )"
     fi
   elif ${verbose}; then
     if eval "${cmd}"; then

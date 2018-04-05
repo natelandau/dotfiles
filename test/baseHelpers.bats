@@ -183,9 +183,11 @@ teardown() {
   assert_file_exist "${logFile}"
 
   run cat "${logFile}"
-  assert_line --index 1 --partial "[ notice] testing"
-  assert_line --index 2 --partial "[   info] testing again"
-  assert_line --index 3 --partial "[success] last test"
+  assert_line --index 0 --partial "[ header] == /Users/nlandau/tmp/bats-baseHelpers-test.log =="
+  assert_line --index 1 --partial "[ dryrun] dryrun"
+  assert_line --index 2 --partial "[ notice] testing"
+  assert_line --index 3 --partial "[   info] testing again"
+  assert_line --index 4 --partial "[success] last test"
 
   rm "$logFile"
   printLog=false; unset logFile;
