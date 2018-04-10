@@ -10,6 +10,7 @@ gmtdate=$(LC_ALL=C date -u -R | sed 's/\+0000/GMT/')  # Returns: Wed, 13 Jan 201
 
 if tput setaf 1 &>/dev/null; then
   bold=$(tput bold)
+  white=$(tput setaf 7)
   reset=$(tput sgr0)
   purple=$(tput setaf 171)
   red=$(tput setaf 1)
@@ -18,14 +19,15 @@ if tput setaf 1 &>/dev/null; then
   blue=$(tput setaf 38)
   underline=$(tput sgr 0 1)
 else
-  bold=""
-  reset="\033[m"
-  purple="\033[1;31m"
+  bold="\033[4;37m"
+  white="\033[0;37m"
+  reset="\033[0m"
+  purple="\033[0;35m"
   red="\033[0;31m"
   green="\033[1;32m"
   tan="\033[0;33m"
   blue="\033[0;34m"
-  underline=""
+  underline="\033[4;37m"
 fi
 
 ### ALERTS AND LOGGING ###
@@ -72,7 +74,7 @@ _alert_() {
   [ "${alertType}" = "input" ] && color="${bold}"
   [ "${alertType}" = "dryrun" ] && color="${blue}"
   [ "${alertType}" = "info" ] && color=""
-  [ "${alertType}" = "notice" ] && color=""
+  [ "${alertType}" = "notice" ] && color="${bold}"
 
   # Don't use colors on pipes or non-recognized terminals
   if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then
