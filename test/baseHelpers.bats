@@ -108,7 +108,7 @@ teardown() {
   touch "testfile.txt"
   run _execute_ "rm testfile.txt"
   assert_success
-  assert_output --partial "[ notice] rm testfile.txt"
+  assert_output --partial "[   info] rm testfile.txt"
   assert_file_not_exist "testfile.txt"
 }
 
@@ -126,7 +126,7 @@ teardown() {
   
   assert_success
   assert_line --index 0 "removed 'testfile.txt'"
-  assert_line --index 1 --partial "[ notice] rm -v testfile.txt"
+  assert_line --index 1 --partial "[   info] rm -v testfile.txt"
   assert_file_not_exist "testfile.txt"
 }
 

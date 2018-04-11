@@ -188,7 +188,7 @@ _execute_() {
   #             -v    Always print verbose output from the execute function
   #             -p    Pass a failed command with 'return 0'.  This effecively bypasses set -e.
   #             -e    Bypass _alert_ functions and use 'echo RESULT'
-  #             -s    Use _alert_ success for successful output. (default is 'notice')
+  #             -s    Use _alert_ success for successful output. (default is 'info')
   #
   # usage:
   #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
@@ -236,7 +236,7 @@ _execute_() {
       elif "${successResult}"; then
         success "${message}"
       else
-        notice "${message}"
+        info "${message}"
       fi
       verbose=$saveVerbose
       return 0
@@ -256,7 +256,7 @@ _execute_() {
       elif "${successResult}"; then
         success "${message}"
       else
-        notice "${message}"
+        info "${message}"
       fi
       verbose=$saveVerbose
       return 0
