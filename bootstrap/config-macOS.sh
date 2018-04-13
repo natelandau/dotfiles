@@ -189,7 +189,7 @@ _mainScript_() {
     _installASDFLanguage_ "nodejs"
 
     pushd "${HOME}" &>/dev/null
-    info "Installing npm packages ..."
+    notice "Installing npm packages ..."
     
     popd &>/dev/null
     

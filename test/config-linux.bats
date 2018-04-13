@@ -145,7 +145,7 @@ symlinkYAML="${BATS_TEST_DIRNAME}/fixtures/symlinks.yaml"
   touch "testfile.txt"
   run _execute_ "rm testfile.txt"
   assert_success
-  assert_output --partial "[ notice] rm testfile.txt"
+  assert_output --partial "[   info] rm testfile.txt"
   assert_file_not_exist "testfile.txt"
 }
 

@@ -253,7 +253,7 @@ helper() {
   run $s -C "NAME TO TEST.txt"
 
   assert_success
-  assert_output --regexp '^[0-9]{2}[:][0-9]{2}[:][0-9]{2} (PM|AM) \[ notice\] NAME TO TEST\.txt: No change'
+  assert_output --partial '[ notice] NAME TO TEST.txt: No change'
   assert_file_exist 'NAME TO TEST.txt'
 }
 
@@ -262,7 +262,7 @@ helper() {
   run $s --clean "NAME TO TEST.txt"
 
   assert_success
-  assert_output --regexp '^[0-9]{2}[:][0-9]{2}[:][0-9]{2} (PM|AM) \[ notice\] NAME TO TEST\.txt: No change'
+  assert_output --partial '[ notice] NAME TO TEST.txt: No change'
   assert_file_exist 'NAME TO TEST.txt'
 }
 
