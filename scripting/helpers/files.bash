@@ -35,7 +35,7 @@ _backupFile_() {
   if [ -e "$s" ]; then
     n="$(basename "$s")"
     n="$(_uniqueFileName_ "${d}/${s#.}")"
-    _execute_ "cp -R \"${s}\" \"${d}/${n##*/}\"" "Back up: '${s}' to '${d}/${n##*/}'"
+    _execute_ "cp -R \"${s}\" \"${d}/${n##*/}\"" "Backing up: '${s}' to '${d}/${n##*/}'"
   fi
 }
 
@@ -48,8 +48,10 @@ _cleanFilename_() {
   # All spaces will be replaced with dashes
   #
   # Pass two options:
-  #     $1  - File to clean
-  #     $2  - Optional characters/strings to remove separated by commas
+  #   $1  - File to clean
+  #   $2  - Optional characters/strings to remove separated by commas
+  #
+  #   Usage:  _cleanFilename_ "FILENAME.TXT" "^,&,*"
   #
   # IMPORTANT: This will overwrite the original file and echo the new filename to the script
 
