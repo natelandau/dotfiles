@@ -29,3 +29,4 @@ symlinks:
   - ~/bin/git-churn:                  bin/git-churn
   - ~/bin/seconds:                    bin/seconds
   - ~/bin/updateHomebrew:             bin/updateHomebrew
+  - ~/bin/newscript:                  bin/newscript.sh
