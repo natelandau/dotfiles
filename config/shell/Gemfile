@@ -6,3 +6,4 @@ gem 'fileutils'
 gem 'ghi'       # GitHub Issues on the command line
 gem 'rake'
 gem 'yaml-lint'
+gem 'colorls'

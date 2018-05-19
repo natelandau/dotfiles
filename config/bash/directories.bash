@@ -1,7 +1,11 @@
-# Two different sets of LS aliases because Gnu LS and macOS LS use different
-# flags for colors
+# Different sets of LS aliases because Gnu LS and macOS LS use different
+# flags for colors.  Also, prefer gem colorls or exa when available.
 
-if command -v exa &>/dev/null; then
+if command -v colorls &>/dev/null; then
+  alias ll="colorls -1A --git-status"
+  alias ls="colorls -A"
+  alias lll="exa -alh --git"
+elif command -v exa &>/dev/null; then
   alias ls="ls --color=auto"
   alias ll="exa -alh --git"
 elif [[ $(which ls) =~ gnubin || "$OSTYPE" =~ linux ]]; then
