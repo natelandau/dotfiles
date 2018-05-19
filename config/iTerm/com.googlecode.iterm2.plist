@@ -695,17 +695,17 @@
 		<integer>1</integer>
 	</dict>
 	<key>NSWindow Frame NSFontPanel</key>
-	<string>401 56 674 387 0 0 1440 877 </string>
+	<string>527 64 674 253 0 0 1680 1027 </string>
 	<key>NSWindow Frame Preferences</key>
 	<string>213 414 606 456 0 0 1440 877 </string>
 	<key>NSWindow Frame SUUpdateAlert</key>
-	<string>410 364 620 392 0 0 1440 878 </string>
+	<string>970 768 620 392 0 0 2560 1417 </string>
 	<key>NSWindow Frame SessionsPreferences</key>
 	<string>269 76 618 519 0 0 1440 877 </string>
 	<key>NSWindow Frame SharedPreferences</key>
-	<string>409 570 796 473 0 0 2560 1417 </string>
+	<string>691 587 928 401 0 0 1680 1027 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>851 89 810 1287 0 0 2560 1417 </string>
+	<string>17 47 1130 927 0 0 1680 1027 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
 	<string>703 310 778 1107 0 0 2560 1417 </string>
 	<key>NeverWarnAboutShortLivedSessions_BB4B3ED4-7968-4880-B729-8A46C190F877</key>
@@ -1402,7 +1402,7 @@
 			<key>Non-ASCII Anti Aliased</key>
 			<false/>
 			<key>Normal Font</key>
-			<string>MesloLGSDZ-RegularForPowerline 14</string>
+			<string>MesloLGSDZNerdFontComplete-Regular 14</string>
 			<key>Option Key Sends</key>
 			<integer>2</integer>
 			<key>Prompt Before Closing 2</key>
@@ -2573,7 +2573,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2018-04-12T18:00:58Z</date>
+	<date>2018-05-19T02:00:25Z</date>
 	<key>SavePasteHistory</key>
 	<false/>
 	<key>Show Toolbelt</key>
@@ -2629,7 +2629,7 @@
 	<key>findRegex_iTerm</key>
 	<false/>
 	<key>iTerm Version</key>
-	<string>3.1.5</string>
+	<string>3.1.6</string>
 	<key>kCPKSelectionViewPreferredModeKey</key>
 	<integer>0</integer>
 	<key>kCPKSelectionViewShowHSBTextFieldsKey</key>
