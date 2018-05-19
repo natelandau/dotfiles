@@ -172,8 +172,8 @@ IFS=$' \n\t'
 set -o errtrace
 set -o errexit
 
-# Force pipelines to fail on the first non-zero status code.
-set -o pipefail
+# Make `for f in *.txt` work correctly when `*.txt` matches zero files
+shopt -s nullglob globstar
 
 # Run in debug mode, if set
 if ${debug}; then set -x; fi
