@@ -1,7 +1,9 @@
 segmentGit() {
-  local fground=$whi
-  local bground=$ora
+  local fground="${bold}${fore_whi}"
+  local bground="$back_ora"
+  local invertedBckgrnd="$fore_ora" # Foreground of the current background
   local enabled=true # If false, this segment will be ignored
+  local seperator=""
 
   local s=''
   local branchName=''
@@ -58,7 +60,7 @@ segmentGit() {
     local promptSegment="  ${1}${branchName}${s}"
 
     # Output to prompt
-    _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${enabled}"
+    _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${invertedBckgrnd}" "${enabled}" "${seperator}"
   fi
 }
 segmentGit "$@"

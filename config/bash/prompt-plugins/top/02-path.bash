@@ -1,19 +1,22 @@
 segmentPath() {
-  local fground=$whi
-  local bground=$blu2
+  local fground="${bold}${fore_whi}"
+  local bground="$back_blu2"
+  local invertedBckgrnd="$fore_blu2" # Foreground of the current background
   local settings_path_max_length=40
-  local segment_seperator="" # ❱/
+  local segment_seperator="" # ❱/
   local enabled=true            # If false, this segment will be ignored
-
+  local seperator=""
   local promptSegment
 
   _segmentLockedDir() {
-    local fground=$blck
-    local bground=$red
+    local fground="${bold}${fore_blck}"
+    local bground="$back_red"
+    local invertedBckgrnd="$fore_red" # Foreground of the current background
+
     local enabled=true
 
     local promptSegment=""
-    _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${enabled}"
+    _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${invertedBckgrnd}" "${enabled}" "${seperator}"
   }
 
   # if directory is locked, put a padlock in front of path
@@ -23,7 +26,12 @@ segmentPath() {
   local path_value
   local i
   local wdir="$PWD"
-  wdir="${wdir/$HOME/\~}"
+  
+  if [[ "$OSTYPE" == "darwin"* && -e "${HOME}/Library/Fonts/Meslo LG S DZ Regular Nerd Font Complete.otf" ]]; then
+    wdir="${wdir/$HOME/\ﱮ }"
+  else
+    wdir="${wdir/$HOME/\~}"
+  fi
 
   if [[ "${#wdir}" -gt "$settings_path_max_length" ]]; then
     wdir="$(dirname "${wdir}" | sed -e "s;\(/.\)[^/]*;\1;g")/$(basename "${wdir}")"
@@ -39,11 +47,12 @@ segmentPath() {
     done
     promptSegment="$path_value"
   else
-    promptSegment=" $wdir "
+    promptSegment="$wdir "
   fi
 
   # Output to prompt
-  _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${enabled}"
+  _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${invertedBckgrnd}" "${enabled}" "${seperator}"
+
 
   unset path_value
   unset wdir

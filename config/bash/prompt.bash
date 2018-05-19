@@ -1,3 +1,5 @@
+# shellcheck disable=SC2153
+
 if [[ "$OSTYPE" =~ linux ]]; then
 
   _promptGit_() {
@@ -51,7 +53,7 @@ if [[ "$OSTYPE" =~ linux ]]; then
       return
     fi
   }
-
+  
   export PS1="\[$WHITE\]________________________________________________________________________________\n| \
 \[${BOLD}${MAGENTA}\]\u \[$WHITE\]at \[$ORANGE\]\h \
 \[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\
@@ -72,53 +74,81 @@ else
   #
   # Each plugin must contain the following variables:
   #
-  #   local fground=$whi          # The foreground text color
-  #   local bground=$ora          # The background color
+  #   local fground               # The foreground text color
+  #   local bground               # The background color
+  #   local invertedBckgrnd       # Color to be used in the next plugin for the powerline fine
   #   local enabled=true          # If false, this segment will be ignored
+  #   local seperator=""         # Optional, the seperator character between prompt elements
   #
   # ####################################################
 
   _setPrompt_() {
     local lastExit=$?
     local reset seperator oldBG ii iii
-    seperator=""
+    divider=""
     topPluginLocation="${HOME}/dotfiles/config/bash/prompt-plugins/top"
     bottomPluginLocation="${HOME}/dotfiles/config/bash/prompt-plugins/bottom"
     PS1="" # Add a newline at the beginning of the prompt
     oldBG=""
 
-    reset="\[$(tput sgr0)\]"
-    local whi=231
-    local blu=27
-    local ora=208
-    local red=1
-    local grn=10
-    local pur=5
-    local yel=3
-    local blck=233
-    local mag=9
-    local gry=241
-    local blu2=38
-    local gry2=239
+    reset="\e[0m"
+    bold="\e[1m"
+    blink="\e[5m"
+    underline="\e[4m"
+    local fore_whi="\e[38;5;231m"
+    local fore_blu="\e[38;5;27m"
+    local fore_ora="\e[38;5;208m"
+    local fore_red="\e[38;5;1m"
+    local fore_grn="\e[38;5;10m"
+    local fore_pur="\e[38;5;5m"
+    local fore_yel="\e[38;5;3m"
+    local fore_blck="\e[38;5;233m"
+    local fore_mag="\e[38;5;9m"
+    local fore_gry="\e[38;5;241m"
+    local fore_blu2="\e[38;5;38m"
+    local fore_gry2="\e[38;5;239m"
+    local back_whi="\e[48;5;231m"
+    local back_blu="\e[48;5;27m"
+    local back_ora="\e[48;5;208m"
+    local back_red="\e[48;5;1m"
+    local back_grn="\e[48;5;10m"
+    local back_pur="\e[48;5;5m"
+    local back_yel="\e[48;5;3m"
+    local back_blck="\e[48;5;233m"
+    local back_mag="\e[48;5;9m"
+    local back_gry="\e[48;5;241m"
+    local back_blu2="\e[48;5;38m"
+    local back_gry2="\e[48;5;239m"
 
     _parseSegments_() {
       # This function is called by the prompt plugins to create the prompt
 
       local segment="$1"
-      local fg="${2:-231}"
-      local bg="${3:-241}"
-      local enabled="${4:-true}"
+      local fg="$2"
+      local bg="$3"
+      local invertedBckgrnd="$4"
+      local enabled="${5:-true}"
+      local passedSeperator="$6"
 
       if ! ${enabled}; then return; fi
 
+      if [ "$6" ]; then
+        local sep="$6"
+      else
+        local sep="$divider"
+      fi
+
       # if there was a previous segment, print the separator
-      [ -n "$oldBG" ] && PS1+="\[$(tput setab $bg)\]\[$(tput setaf $oldBG)\]$seperator ${reset}"
-
+      if [ $ii -gt 0 ] ; then
+        PS1+="${bg}${oldBG}${sep} ${reset}"
+      fi
+      
       # Build the prompt from the plugin
-      PS1+="\[$(tput setab $bg)\]\[$(tput setaf $fg)\]$segment ${reset}"
+      PS1+="${bg}${fg}"
+      PS1+=$" ${segment}"
+      PS1+=" ${reset}"
 
-      # remember the current background for the seperator
-      oldBG=$bg
+      oldBG="$invertedBckgrnd"
     }
 
     # ########
@@ -134,9 +164,8 @@ else
     fi
 
     # Add a seperator at the end of the line
-    [ -n "$oldBG" ] && PS1+="\[$(tput setaf $oldBG)\]$seperator ${reset}"
-    oldBG=""
-
+    PS1+="${oldBG}${divider} ${reset}"
+    
     # ########
     # Parse the bottom line
     # ########
@@ -144,21 +173,21 @@ else
     # Add a newline if any plugins were added to the top line
     [ $ii -gt 0 ] && PS1+="\n"
 
-    local iii=0
+    local ii=0
     if [ -d "${bottomPluginLocation}" ]; then
       for plugin in ${bottomPluginLocation}/*.bash; do
         [ -f "${plugin}" ] && source "${plugin}"
-        [ -f "${plugin}" ] && ((iii++))
+        [ -f "${plugin}" ] && ((ii++))
       done
     fi
 
     # If we don't have any bottom plugins, add a simple prompt
-    [ $iii -eq 0 ] && PS1+="\[$(tput setab $gry)\]\[$(tput setaf $whi)\]  ${reset}" && oldBG=$gry
+    [ $ii -eq 0 ] && PS1+="${back_gry}${fore_whi}  ${reset}" && oldBG="${back_gry}"
 
     # Add a seperator at the end of the line
-    [ -n "$oldBG" ] && PS1+="\[$(tput setaf $oldBG)\]$seperator ${reset}"
+    PS1+="${oldBG}${divider} ${reset}"
 
-    export PS2="\[$(tput setaf $whi)\]→ $reset"
+    export PS2="${fore_whi}→ ${reset}"
   }
   PROMPT_COMMAND=_setPrompt_
 fi
