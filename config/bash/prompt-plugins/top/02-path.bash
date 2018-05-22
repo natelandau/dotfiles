@@ -45,9 +45,9 @@ segmentPath() {
       [[ "$((i + 1))" -eq "${#wdir_array[@]}" ]] && unset segment_seperator
       path_value="${path_value}${segment_value}${segment_seperator}"
     done
-    promptSegment="$path_value"
+    promptSegment="${path_value}"
   else
-    promptSegment="$wdir "
+    promptSegment="${wdir}"
   fi
 
   # Output to prompt
