@@ -1,14 +1,14 @@
-tap "homebrew/core"
 tap "homebrew/bundle"
-tap "caskroom/drivers"
-tap "caskroom/cask"
+tap "homebrew/cask"
+tap "homebrew/cask-drivers"
+tap "homebrew/core"
 brew "archey"
 brew "autoconf"
 brew "autojump"
 brew "automake"
-brew "readline"
 brew "bash"
 brew "bash-completion@2"
+brew "readline"
 brew "bashdb"
 brew "bats"
 brew "boost"
@@ -22,14 +22,12 @@ brew "exa"
 brew "exiftool"
 brew "faac"
 brew "fdk-aac"
-brew "flac"
-brew "fribidi"
 brew "lame"
-brew "libogg"
-brew "little-cms2"
 brew "x264"
 brew "xvid"
 brew "ffmpeg", args: ["with-fdk-aac", "with-fontconfig", "with-libass", "with-libbluray", "with-libbs2b", "with-libcaca", "with-libgsm", "with-libmodplug", "with-libsoxr", "with-libssh", "with-libvidstab", "with-libvorbis", "with-libvpx", "with-openh264", "with-openjpeg", "with-openssl", "with-sdl2", "with-snappy", "with-speex", "with-tools", "with-two-lame", "with-wavpack", "with-webp", "with-x265", "with-xz"]
+brew "libogg"
+brew "flac"
 brew "frei0r"
 brew "gifsicle"
 brew "git"
@@ -40,7 +38,6 @@ brew "gnu-sed"
 brew "libtasn1"
 brew "libunistring"
 brew "nettle"
-brew "gnutls"
 brew "libgpg-error"
 brew "libksba"
 brew "gnupg"
@@ -69,6 +66,7 @@ brew "libvidstab"
 brew "libvpx"
 brew "libyaml"
 brew "libzip"
+brew "little-cms2"
 brew "mackup"
 brew "mas"
 brew "micro"
@@ -138,10 +136,12 @@ mas "Airmail 3", id: 918858936
 mas "Bear", id: 1091189122
 mas "Capo", id: 696977615
 mas "DaisyDisk", id: 411643860
+mas "Day One", id: 1055511498
 mas "FullContact", id: 1094748271
 mas "iMovie", id: 408981434
 mas "JPEGmini", id: 498944723
 mas "Keynote", id: 409183694
+mas "NordVPN IKE", id: 1116599239
 mas "Numbers", id: 409203825
 mas "OmniGraffle", id: 711830901
 mas "Pages", id: 409201541
