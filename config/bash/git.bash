@@ -27,32 +27,32 @@ gpull() {
   git submodule foreach git pull origin master
 }
 
-_gitAliases_() {
-  # This function creates completion-aware g<alias> bash aliases for each of your git aliases.
-  # Taken wholecloth from here:  https://gist.github.com/tyomo4ka/f76ac325ecaa3260808b98e715410067
+# _gitAliases_() {
+#   # This function creates completion-aware g<alias> bash aliases for each of your git aliases.
+#   # Taken wholecloth from here:  https://gist.github.com/tyomo4ka/f76ac325ecaa3260808b98e715410067
 
-  local al __git_aliased_command __git_aliases __git_complete complete_fnc complete_func
+#   local al __git_aliased_command __git_aliases __git_complete complete_fnc complete_func
 
-  if [ -f "$(brew --prefix)/share/bash-completion/bash_completion" ]; then
-      . "$(brew --prefix)/share/bash-completion/bash_completion"
-  else
-    echo "no completion"
-    return 0
-  fi
+#   if [ -f "$(brew --prefix)/share/bash-completion/bash_completion" ]; then
+#       . "$(brew --prefix)/share/bash-completion/bash_completion"
+#   else
+#     echo "no completions"
+#     return 0
+#   fi
 
-  function_exists() {
-      declare -f -F $1 > /dev/null
-      return $?
-  }
+#   function_exists() {
+#       declare -f -F $1 > /dev/null
+#       return $?
+#   }
 
-  for al in $(__git_aliases); do
-      # shellcheck disable=2139
-      alias g${al}="git $al"
-      complete_func=_git_$(__git_aliased_command ${al})
-      function_exists ${complete_fnc} && __git_complete g${al} ${complete_func}
-  done
-}
-_gitAliases_
+#   for al in $(__git_aliases); do
+#       # shellcheck disable=2139
+#       alias g${al}="git $al"
+#       complete_func=_git_$(__git_aliased_command ${al})
+#       function_exists ${complete_fnc} && __git_complete g${al} ${complete_func}
+#   done
+# }
+# _gitAliases_
 
 # Submodules
 alias gsubs='git submodule update --recursive --remote'
