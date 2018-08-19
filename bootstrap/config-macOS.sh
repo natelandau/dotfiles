@@ -69,7 +69,7 @@ _mainScript_() {
     if brew list | grep -Fq brew-cask; then
       _execute_ -v "brew uninstall --force brew-cask" "Uninstalling old Homebrew-Cask ..."
     fi
-    
+
     header "Updating Homebrew"
     _execute_ -v "caffeinate -ism brew update"
     _execute_ -vp "caffeinate -ism brew doctor"
@@ -93,10 +93,10 @@ _mainScript_() {
 
   _checkASDF_() {
     info "Confirming we have asdf package manager installed ..."
-    
+
     if [ ! -d "${HOME}/.asdf" ]; then
       _execute_ -v "git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.4.2"
-      
+
       # shellcheck disable=SC2015
       [[ -s "${HOME}/.asdf/asdf.sh" ]] \
         && source "${HOME}/.asdf/asdf.sh" \
@@ -104,7 +104,7 @@ _mainScript_() {
           error "Could not source 'asdf.sh'" "$LINENO"
           return 1
         }
-        
+
       # shellcheck disable=SC2015
       [[ -s "${HOME}/.asdf/completions/asdf.bash" ]] \
         && source "${HOME}/.asdf/completions/asdf.bash" \
@@ -114,7 +114,7 @@ _mainScript_() {
         }
     fi
   }
-  
+
   _installASDFPlugin_() {
     local name="$1"
     local url="$2"
@@ -152,13 +152,13 @@ _mainScript_() {
 
     info "Installing gems ..."
     pushd "${HOME}" &>/dev/null
-    
+
     _execute_ -v "gem update --system"
     _execute_ -v "gem install bundler"  # Ensure we have bundler installed
-    
+
     numberOfCores=$(sysctl -n hw.ncpu)
     _execute_ -v "bundle config --global jobs $((numberOfCores - 1))"
-    
+
     if [ -f "$gemfile" ]; then
       info "Installing ruby gems (this may take a while) ..."
       _execute_ -vp "caffeinate -ism bundle install --gemfile \"$gemfile\""
@@ -169,16 +169,16 @@ _mainScript_() {
 
     # Ensure all these new items are in $PATH
     _execute_ -v "asdf reshim ruby"
-    
+
     popd &>/dev/null
   }
   _ruby_
 
   _nodeJS_() {
     if ! _seekConfirmation_ "Install node.js and packages??"; then return; fi
-    
+
     header "Installing node.js ..."
-    
+
     _checkASDF_  # Confirm we can install with ASDF
 
     _installASDFPlugin_ "nodejs" "https://github.com/asdf-vm/asdf-nodejs.git"
@@ -190,9 +190,9 @@ _mainScript_() {
 
     pushd "${HOME}" &>/dev/null
     notice "Installing npm packages ..."
-    
+
     popd &>/dev/null
-    
+
     # Ensure all these new items are in $PATH
     _execute_ -v "asdf reshim nodejs"
   }
@@ -209,7 +209,7 @@ _mainScript_() {
     fi
 
     # Run the bootstrap scripts in numerical order
-    for plugin in ${pluginScripts}/*.sh; do
+    for plugin in "${pluginScripts}"/*.sh; do
       pluginName="$(basename ${plugin})"
       pluginName="$(echo $pluginName | sed -e 's/[0-9][0-9]-//g' | sed -e 's/-/ /g' | sed -e 's/\.sh//g')"
       if _seekConfirmation_ "Run '${pluginName}' plugin?"; then
@@ -342,7 +342,7 @@ _checkForHomebrew_() {
       || {
         fatal "Could not install Homebrew" "$LINENO"
       }
-      
+
     brew analytics off
   else
     return 0

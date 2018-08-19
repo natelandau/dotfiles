@@ -3,13 +3,17 @@ GEM
   specs:
     addressable (2.5.2)
       public_suffix (>= 2.0.2, < 4.0)
+    clocale (0.0.4)
     colorator (1.1.0)
-    colored (1.2)
+    colorls (1.1.1)
+      clocale
+      filesize
+      manpages
+      rainbow
     ffi (1.9.23)
+    filesize (0.1.1)
     fileutils (1.0.2)
     forwardable-extended (2.6.0)
-    gemrat (0.4.6)
-      colored (= 1.2)
     ghi (1.2.0)
       pygments.rb
     jekyll (3.4.5)
@@ -33,6 +37,7 @@ GEM
       rb-fsevent (~> 0.9, >= 0.9.4)
       rb-inotify (~> 0.9, >= 0.9.7)
       ruby_dep (~> 1.2)
+    manpages (0.6.1)
     mercenary (0.3.6)
     multi_json (1.13.1)
     pathutil (0.16.1)
@@ -40,6 +45,7 @@ GEM
     public_suffix (3.0.2)
     pygments.rb (1.2.1)
       multi_json (>= 1.0.0)
+    rainbow (3.0.0)
     rake (12.3.0)
     rb-fsevent (0.10.2)
     rb-inotify (0.9.10)
@@ -59,12 +65,12 @@ PLATFORMS
 
 DEPENDENCIES
   bundler
+  colorls
   fileutils
-  gemrat
   ghi
   jekyll (~> 3.4.3)
   rake
   yaml-lint
 
 BUNDLED WITH
-   1.16.1
+   1.16.3
