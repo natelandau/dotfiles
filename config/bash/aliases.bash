@@ -19,6 +19,27 @@ alias ax='chmod a+x'                # ax:     Make a file executable
 alias rm='rm -i'
 alias rmd='rm -rf'
 
+
+# Prefer `bat` over `cat`
+if command -v bat &>/dev/null; then
+  alias cat="bat"
+fi
+
+# Prefer `prettyping` over `ping`
+if command -v prettyping &>/dev/null; then
+  alias ping="prettyping --nolegend"
+fi
+
+# Prefer we like TLDR
+if command -v tldr &>/dev/null; then
+  alias help="tldr"
+fi
+
+# Prefer `htop` over `top`
+if command -v htop &>/dev/null; then
+  alias top="htop"
+fi
+
 if command -v newscript &>/dev/null; then
   alias ns="newscript"
 fi
