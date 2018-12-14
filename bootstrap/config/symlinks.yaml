@@ -30,3 +30,4 @@ symlinks:
   - ~/bin/seconds:                    bin/seconds
   - ~/bin/updateHomebrew:             bin/updateHomebrew
   - ~/bin/newscript:                  bin/newscript.sh
+  - ~/bin/hashCheck:                  bin/hashCheck.sh
