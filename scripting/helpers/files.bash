@@ -1,3 +1,54 @@
+_listFiles_() {
+  # v1.0.0
+  # Echoes the full path of all files found in a directory which match a
+  # specific glob or regex.  These searches are NOT case sensitive.
+  #
+  #   $1 - glob or regex
+  #   $2 - pattern to match
+  #   $3 - directory (optional)
+  #
+  # Usage:  _listFiles_ glob "*.txt" "some/backup/dir"
+  #         _listFiles_ regex ".*\.txt" "some/backup/dir"
+  #         array=($(_listFiles_ g "*.txt"))
+
+  local t="${1}" # Type of search. Accepts either "glob" or "regex"
+  local p="${2}" # Pattern to match against
+  local d="${3:-.}" # Directory to search
+  local fileMatch e
+
+  # Error handling
+  [ ! "$(declare -f "_realpath_")" ] \
+    && {
+      warning "need function _realpath_"
+      return 1
+    }
+  [ -z "$p" ] \
+    && {
+      warning "No pattern entered to match against"
+      return 1
+    }
+
+  case "$t" in
+    glob | Glob | g | G)
+      while read -r fileMatch; do
+        e=$(_realpath_ "${fileMatch}")
+        echo "${e}"
+      done < <(find "${d}" -iname "${p}" -type f -maxdepth 1 | sort)
+      ;;
+    regex | Regex | r | R)
+      while read -r fileMatch; do
+        e=$(_realpath_ "${fileMatch}")
+        echo "${e}"
+      done < <(find "${d}" -iregex "${p}" -type f -maxdepth 1 | sort)
+      ;;
+    *)
+      echo "Could not determine if search was glob or regex"
+      return 1
+      ;;
+  esac
+
+}
+
 _backupFile_() {
   # v1.0.0
   # Creates a copy of a specified file taking two inputs:
@@ -15,17 +66,17 @@ _backupFile_() {
   # Error handling
   [ ! "$(declare -f "_execute_")" ] \
     && {
-      echo "need function _execute_"
+      warning "need function _execute_"
       return 1
     }
   [ ! "$(declare -f "_uniqueFileName_")" ] \
     && {
-      echo "need function _uniqueFileName_"
+      warning "need function _uniqueFileName_"
       return 1
     }
   [ ! -e "$s" ] \
     && {
-      error "Source '$s' not found"
+      warning "Source '$s' not found"
       return 1
     }
 
@@ -59,8 +110,8 @@ _cleanFilename_() {
 
   local fileToClean="$1"
   local optionalUserInput="$2"
-  
-  IFS=',' read -r -a arrayToClean <<< "$optionalUserInput"
+
+  IFS=',' read -r -a arrayToClean <<<"$optionalUserInput"
 
   [ ! -f "$fileToClean" ] \
     && {
@@ -74,7 +125,7 @@ _cleanFilename_() {
   for i in "${arrayToClean[@]}"; do
     baseFileName="$(echo "${baseFileName}" | sed "s/$i//g")"
   done
-  
+
   baseFileName="$(echo "${baseFileName}" | tr -dc '[:alnum:]-_ ' | sed 's/ /-/g')"
 
   local final="${baseFileName}.${extension}"
@@ -386,9 +437,9 @@ _parseYAML_() {
   #     $ _parseYAML_ sample.yml "CONF_"
 
   local yamlFile="${1:?_parseYAML_ needs a file}"
-  local prefix="$2"
+  local prefix="${2}"
 
-  [ ! -s "$yamlFile" ] \
+  [ ! -s "${yamlFile}" ] \
     && return 1
 
   local s
@@ -398,16 +449,16 @@ _parseYAML_() {
   s='[[:space:]]*'
   w='[a-zA-Z0-9_]*'
   fs="$(echo @ | tr @ '\034')"
-  sed -ne "s|^\($s\)\($w\)$s:$s\"\(.*\)\"$s\$|\1$fs\2$fs\3|p" \
-    -e "s|^\($s\)\($w\)$s[:-]$s\(.*\)$s\$|\1$fs\2$fs\3|p" "$yamlFile" \
-    | awk -F"$fs" '{
+  sed -ne "s|^\(${s}\)\(${w}\)${s}:${s}\"\(.*\)\"${s}\$|\1${fs}\2${fs}\3|p" \
+    -e "s|^\(${s}\)\(${w}\)${s}[:-]${s}\(.*\)${s}\$|\1${fs}\2${fs}\3|p" "${yamlFile}" \
+    | awk -F"${fs}" '{
     indent = length($1)/2;
     if (length($2) == 0) { conj[indent]="+";} else {conj[indent]="";}
     vname[indent] = $2;
     for (i in vname) {if (i > indent) {delete vname[i]}}
     if (length($3) > 0) {
             vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-            printf("%s%s%s%s=(\"%s\")\n", "'"$prefix"'",vn, $2, conj[indent-1],$3);
+            printf("%s%s%s%s=(\"%s\")\n", "'"${prefix}"'",vn, $2, conj[indent-1],$3);
     }
   }' | sed 's/_=/+=/g' | sed 's/[[:space:]]*#.*"/"/g'
 }
@@ -542,11 +593,11 @@ _uniqueFileName_() {
   local n
 
   # Error handling
-    [ ! "$(declare -f "_realpath_")" ] \
-      && {
-        error "'_uniqueFileName_' requires function '_realpath_' "
-        return 1
-      }
+  [ ! "$(declare -f "_realpath_")" ] \
+    && {
+      error "'_uniqueFileName_' requires function '_realpath_' "
+      return 1
+    }
 
   # Find directories with _realpath_ if input is an actual file
   if [ -e "$fullfile" ]; then

@@ -52,6 +52,25 @@ teardown() {
 
 ########### BEGIN TESTS ##########
 
+@test "_listFiles: glob w/ 2 files" {
+  touch test1.txt test2.txt test3.json
+
+  run _listFiles_ g "*.txt"
+  assert_success
+  assert_line --index 0 --partial 'test1.txt'
+  assert_line --index 1 --partial 'test2.txt'
+  refute_output --partial 'json'
+}
+
+@test "_listFiles: regex w/ 1 file" {
+  touch test1.txt test2.txt test3.json
+
+  run _listFiles_ r ".*\.json"
+  assert_success
+  assert_line --index 0 --partial 'test3.json'
+  refute_output --partial 'txt'
+}
+
 @test "_backupFile_: no source" {
   run _backupFile_ "testfile"
 
