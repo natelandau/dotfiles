@@ -9,7 +9,7 @@ if command -v subl &>/dev/null; then
   }
 fi
 
-EDITOR=$(type micro nano pico | sed 's/ .*$//;q')
+EDITOR=$(type nano pico | sed 's/ .*$//;q')
 export EDITOR
 LESSEDIT="$EDITOR %f" && export LESSEDIT
 VISUAL="$EDITOR" && export VISUAL
