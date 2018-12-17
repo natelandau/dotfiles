@@ -19,7 +19,7 @@ dotfiles/
   │   ├── config-linux.sh
   │   ├── config-macOS.sh
   │   ├── config/
-  │   └── plugins
+  │   └── plugins/
   ├── config/
   │   ├── bash/
   │   └── shell/
