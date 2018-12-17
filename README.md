@@ -39,7 +39,7 @@ dotfiles/
 
 **IMPORTANT:** Unless you want to use my defaults, make sure you do the following:
 
-* Edit all the config YAML files in `bootstrap/config/` to reflect your preferences
+* Edit all the config YAML files in `bootstrap/config/` to reflect your preferences before running the install script.
 * Review the files in `config/` to configure your own aliases, preferences, etc.
 
 ### Private Files
