@@ -15,12 +15,11 @@ The files are organized into three subdirectories.
 dotfiles/
   ├── bin/
   ├── bootstrap/
-  │   ├── config-macOS.yaml
-  │   ├── install-macOS.sh
-  │   └── config/
-  │   └── lib/
-  │      ├── mac-plugins/
-  │      └── linux-plugins/
+  │   ├── boostrap-linux.sh
+  │   ├── config-linux.sh
+  │   ├── config-macOS.sh
+  │   ├── config/
+  │   └── plugins
   ├── config/
   │   ├── bash/
   │   └── shell/
@@ -28,11 +27,10 @@ dotfiles/
   └── test/
 ```
 
-* **bin/** - Symlinked to `~/bin` and is added to your `$PATH` allowing scripts to be executable by your user.
-* **bootstrap/** - Scripts and utilities to bootstrap a new computer
+* **bin/** - The scripts in `bin/` are symlinked into `~/bin/` to allow them to be executed by your user.  These symlinks are specified in `~/dotfiles/bootstrap/config/symlinks.yaml`
+* **bootstrap/** - Scripts and utilities to bootstrap a new computer.  There is a script for linux, a script for macOS, and an initial bootstrap script for linux servers.
 * bootstrap/**config/** - Contains YAML files which are the manifest for the list of packages to be installed or symlinks to be created.
-* bootstrap/lib/**mac-plugins** - Plugins that are run by `install-macOS.sh`
-* bootstrap/lib/**linux-plugins** - Plugins that are run by `install-linux.sh`
+* bootstrap/**plugins** - Plugin scripts that extend the usage of the install scripts for mac/linux
 * **config/** - Contains the elements needed to configure your environment and specific apps.
 * config/**bash/** - Files in this directory are *sourced* by `.bash_profile`.
 * config/**shell/** - Files here are symlinked to your local environment. Ahem, dotfiles.
@@ -64,7 +62,7 @@ This gist creates a script `~/bootstrap.sh` in your home directory which complet
 3. Opens Github to allow you to add this public key to your 'known keys'
 4. Clones this dotfiles repo to your home directory
 
-See, easy. Now you're ready to run `~/dotfiles/install.sh` and get your new computer working.
+See, easy. Now you're ready to run `~/dotfiles/bootstrap/config-macOS M.sh` and get your new computer working.
 
 ## A Note on Code Reuse
 Many of the scripts, configuration files, and other information herein were created by me over many years without ever having the intention to make them public. As a novice programmer, I have Googled, GitHubbed, and StackExchanged a path to solve my own scripting needs.  Quite often I lift a function whole-cloth from a GitHub repo don't keep track of it's original location. I have done my best within these files to recreate my footsteps and give credit to the original creators of the code when possible. Unfortunately, I fear that I missed as many as I found. My goal of making this repository public is not to take credit for the wonderful code written by others. If you recognize something that I didn't credit, please let me know.
