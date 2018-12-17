@@ -11,7 +11,7 @@ _mainScript_() {
 
       # github.com/jamiew/git-friendly
       # the `push` command which copies the github compare URL to my clipboard is heaven
-      bash < <(curl https://raw.github.com/jamiew/git-friendly/master/install.sh)
+      bash < <(sudo curl https://raw.github.com/jamiew/git-friendly/master/install.sh)
     }
     _installGitFriendly_
   else
