@@ -485,15 +485,38 @@ _realpath_() {
   # v1.0.0
   # Convert a relative path to an absolute path.
   #
+  #  Inputs
+  #   $1 - The file to to discover the path of (required)
+  #
+  #   Options:
+  #     -d  Send the directory information only, without the filename in the output
+  #
   # From http://github.com/morgant/realpath
   #
   # @param string the string to converted from a relative path to an absolute path
   # @returns Outputs the absolute path to STDOUT, returns 0 if successful or 1 if
   # an error (esp. path not found).
   local success=true
-  local path="$1"
   local file_basename
   local directory
+  local output
+  local showOnlyDir=false
+  local OPTIND=1
+  local opt
+
+  while getopts ":dD" opt; do
+    case $opt in
+      d | D) showOnlyDir=true ;;
+      *) {
+        error "Unrecognized option '$1' passed to _execute. Exiting."
+        _safeExit_
+      }
+        ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+
+  local path="${1:?_realpath_ needs an input}"
 
   # make sure the string isn't empty as that implies something in further logic
   if [ -z "$path" ]; then
@@ -537,13 +560,17 @@ _realpath_() {
 
       # Append base filename to absolute path
       if [ "${abs_path}" = "/" ]; then
-        abs_path="${abs_path}${file_basename}"
+        output="${abs_path}${file_basename}"
       else
-        abs_path="${abs_path}/${file_basename}"
+        output="${abs_path}/${file_basename}"
       fi
 
       # output the absolute path
-      echo "$abs_path"
+      if ! $showOnlyDir ; then
+        echo "${output}"
+      else
+        echo "${abs_path}"
+      fi
     fi
   fi
 

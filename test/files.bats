@@ -252,6 +252,14 @@ teardown() {
   assert_output --regexp "^/private/var/folders/.*/testfile.txt$"
 }
 
+@test "_realpath_ -d: true" {
+  touch testfile.txt
+  run _realpath_ -d "testfile.txt"
+  assert_success
+  refute_output --regexp "^/private/var/folders/.*/testfile.txt$"
+  assert_output --regexp "^/private/var/folders/.*"
+}
+
 @test "_realpath_: fail" {
   run _realpath_ "testfile.txt"
   assert_failure
