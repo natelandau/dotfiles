@@ -327,22 +327,30 @@ _locateSourceFile_() {
   local PHYS_DIR
   local RESULT
 
+  # Error handling
+  [ ! "$(declare -f "_realpath_")" ] \
+    && {
+      error "'_locateSourceFile_' requires function '_realpath_' "
+      return 1
+    }
+
   TARGET_FILE="${1:?_locateSourceFile_ needs a file}"
 
-  cd "$(dirname "$TARGET_FILE")" &>/dev/null || return 1
-  TARGET_FILE="$(basename "$TARGET_FILE")"
+  cd "$(_realpath_ -d "${TARGET_FILE}")" &>/dev/null || return 1
+  TARGET_FILE="$(basename "${TARGET_FILE}")"
   # Iterate down a (possible) chain of symlinks
-  while [ -L "$TARGET_FILE" ]; do
-    TARGET_FILE=$(readlink "$TARGET_FILE")
-    cd "$(dirname "$TARGET_FILE")" &>/dev/null || return 1
-    TARGET_FILE="$(basename "$TARGET_FILE")"
+  while [ -L "${TARGET_FILE}" ]; do
+    TARGET_FILE=$(readlink "${TARGET_FILE}")
+    cd "$(_realpath_ -d "${TARGET_FILE}")" &>/dev/null || return 1
+    TARGET_FILE="$(basename "${TARGET_FILE}")"
   done
 
   # Compute the canonicalized name by finding the physical path
   # for the directory we're in and appending the target file.
   PHYS_DIR=$(pwd -P)
   RESULT="${PHYS_DIR}/${TARGET_FILE}"
-  echo "$RESULT"
+  echo "${RESULT}"
+  return 0
 }
 
 _makeSymlink_() {
@@ -590,6 +598,7 @@ _sourceFile_() {
     }
 
   source "$c"
+  return 0
 }
 
 _uniqueFileName_() {
@@ -631,7 +640,7 @@ _uniqueFileName_() {
     fullfile="$(_realpath_ "$fullfile")"
   fi
 
-  directory="$(dirname "$fullfile")"
+  directory="$(_realpath_ -d "$fullfile")"
   filename="$(basename "$fullfile")"
 
   # Extract extensions only when they exist
@@ -651,6 +660,7 @@ _uniqueFileName_() {
   fi
 
   echo "${newfile}"
+  return 0
 }
 
 _yaml2json_() {
