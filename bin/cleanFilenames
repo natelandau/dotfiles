@@ -32,20 +32,10 @@ _mainScript_() {
       error "No such file or directory: '${userFile}'" "$LINENO"
       return 1
     fi
-    # Ignore directories
-    if [ -d "${userFile}" ]; then
-      error "${userFile}: is a directory." "$LINENO"
-      return 1
-    fi
     # Ignore dotfiles
     regex="^\..*"
     if [[ "${userFile}" =~ ${regex} ]]; then
       error "${userFile}: is a dotfile." "$LINENO"
-      return 1
-    fi
-    # Don't act on files without extensions
-    if [[ "${userFile##*.}" == "" || "${userFile##*.}" == "${userFile}" ]]; then
-      error "${userFile}: we need a file extension" "$LINENO"
       return 1
     fi
     # Ignore certain file types
@@ -68,7 +58,7 @@ _mainScript_() {
 
     verbose "originalFileWithPath: $originalFileWithPath"
 
-    filePath=$(dirname "$originalFileWithPath") \
+    filePath=$(_realpath_ -d "$originalFileWithPath") \
       && verbose "filePath: $filePath"
 
     # use the basename of the userFile going forward since the path is now in $filePath

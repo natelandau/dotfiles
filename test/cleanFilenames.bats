@@ -75,14 +75,6 @@ helper() {
   assert_output --partial 'error] No such file or directory'
 }
 
-@test "Fail on directories" {
-  mkdir "testToFail"
-  run $s -e "testToFail"
-
-  assert_success
-  assert_output --partial 'error] testToFail: is a directory'
-}
-
 @test "Fail on dotfiles" {
   touch ".testdotfile"
   run $s -e ".testdotfile"
@@ -90,15 +82,6 @@ helper() {
   assert_success
   assert_output --partial 'error'
   assert_output --partial 'is a dotfile'
-}
-
-@test "Fail without extensions" {
-  touch "testfile"
-  run $s -e "testfile"
-
-  assert_success
-  assert_output --partial 'error'
-  assert_output --partial 'we need a file extension'
 }
 
 @test "Fail with DMG files" {
