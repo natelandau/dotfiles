@@ -338,10 +338,7 @@ _checkForHomebrew_() {
     fi
 
     # Install Homebrew
-    (_execute_ "/usr/bin/ruby -e \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)\"" "Install Homebrew") \
-      || {
-        fatal "Could not install Homebrew" "$LINENO"
-      }
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
     brew analytics off
   else
