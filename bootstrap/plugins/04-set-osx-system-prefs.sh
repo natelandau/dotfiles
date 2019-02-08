@@ -92,7 +92,7 @@ _mainScript_() {
 
     _execute_ "defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false" "Disable smart dashes as they are annoying when typing code"
 
-    _execute_ "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user" "Removing duplicates in the 'Open With' menu"
+    # _execute_ "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user" "Removing duplicates in the 'Open With' menu"
 
     #_execute_ "sudo pmset -a hibernatemode 0" "Disable hibernation? (speeds up entering sleep mode)"
 
