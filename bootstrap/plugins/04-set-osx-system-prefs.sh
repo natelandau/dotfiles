@@ -120,9 +120,9 @@ _mainScript_() {
 
     _execute_ "defaults write NSGlobalDomain AppleKeyboardUIMode -int 3" "Enable full keyboard access for all controls"
 
-    _execute_ "defaults write com.apple.universalaccess closeViewScrollWheelToggle -bool true" "Use scroll gesture with the Ctrl (^) modifier key to zoom"
-    _execute_ "defaults write com.apple.universalaccess HIDScrollZoomModifierMask -int 262144" "Use scroll gesture with the Ctrl (^) modifier key to zoom"
-    _execute_ "defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool true" "Follow the keyboard focus while zoomed in"
+    # _execute_ "defaults write com.apple.universalaccess closeViewScrollWheelToggle -bool true" "Use scroll gesture with the Ctrl (^) modifier key to zoom"
+    # _execute_ "defaults write com.apple.universalaccess HIDScrollZoomModifierMask -int 262144" "Use scroll gesture with the Ctrl (^) modifier key to zoom"
+    # _execute_ "defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool true" "Follow the keyboard focus while zoomed in"
 
     _execute_ "defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false" "Disable press-and-hold for keys in favor of key repeat"
 
@@ -173,11 +173,11 @@ _mainScript_() {
     # ---------------------------
     _execute_ "defaults write com.apple.finder QuitMenuItem -bool true" "Finder: allow quitting via ⌘ + Q"
 
-    _execute_ "write com.apple.finder DisableAllAnimations -bool true" "Finder: disable window animations and Get Info animations"
+    _execute_ "defaults write com.apple.finder DisableAllAnimations -bool true" "Finder: disable window animations and Get Info animations"
 
     # For other paths, use `PfLo` and `file:///full/path/here/`
-    _execute_ "write com.apple.finder NewWindowTarget -string \"PfHm\"" "Set Home Folder as the default location for new Finder windows 1"
-    _execute_ "write com.apple.finder NewWindowTargetPath -string \"file://${HOME}/\"" "Set Home Folder as the default location for new Finder windows 2"
+    _execute_ "defaults write com.apple.finder NewWindowTarget -string \"PfHm\"" "Set Home Folder as the default location for new Finder windows 1"
+    _execute_ "defaults write com.apple.finder NewWindowTargetPath -string \"file://${HOME}/\"" "Set Home Folder as the default location for new Finder windows 2"
 
     success "Show icons for hard drives, servers, and removable media on the desktop"
     defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool true
