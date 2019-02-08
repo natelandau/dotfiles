@@ -78,8 +78,13 @@ _mainScript_() {
     _execute_ -vp "brew analytics off" "Disable Homebrew analytics"
 
     if [ -f "$brewfile" ]; then
-      info "Installing packages (this may take a while) ..."
-      _execute_ -vp "caffeinate -ism brew bundle --verbose --file=\"$brewfile\""
+      if _seekConfirmation_ "A Brewfile is used to install packages. Would you like to edit this file to comment out unneeded lines?"; then
+        notice "Please edit $brewfile and comment out lines you don't want. Exiting."
+        _safeExit_
+      else
+        info "Installing packages (this may take a while) ..."
+        _execute_ -vp "caffeinate -ism brew bundle --verbose --file=\"$brewfile\""
+      fi
     else
       error "Could not find Brewfile. Unable to install homebrew packages." "$LINENO"
       verbose "Expected brewfile at '$brewfile'"
