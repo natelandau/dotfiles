@@ -92,8 +92,8 @@ _backupFile_() {
 
 _cleanFilename_() {
   # v1.0.0
-  # _cleanFilename_ takes an input of a filename and returns a replaces it with a version
-  # of the filename that is cleaned of certain characters.
+  # _cleanFilename_ takes an input of a file and returns a replaces it with a version
+  # of the file that is cleaned of certain characters.
   #
   # Default usage will remove all non-alphanumeric characters except - and _
   # All spaces will be replaced with dashes
@@ -108,7 +108,7 @@ _cleanFilename_() {
 
   local arrayToClean
 
-  local fileToClean="$1"
+  local fileToClean="$(_realpath_ "$1")"
   local optionalUserInput="$2"
 
   IFS=',' read -r -a arrayToClean <<<"$optionalUserInput"
@@ -119,8 +119,9 @@ _cleanFilename_() {
       return 1
     }
 
+  local dir="$(_realpath_ -d "$fileToClean")"
   local extension="${fileToClean##*.}"
-  local baseFileName=${fileToClean%.*}
+  local baseFileName="$(basename "${fileToClean%.*}")"
 
   for i in "${arrayToClean[@]}"; do
     baseFileName="$(echo "${baseFileName}" | sed "s/$i//g")"
@@ -128,18 +129,16 @@ _cleanFilename_() {
 
   baseFileName="$(echo "${baseFileName}" | tr -dc '[:alnum:]-_ ' | sed 's/ /-/g')"
 
-  local final="${baseFileName}.${extension}"
+  local final="${dir}/${baseFileName}.${extension}"
 
-  if ! ${dryrun}; then
-    if [[ "${fileToClean}" != "${final}" ]]; then
-      mv "${fileToClean}" "${final}" || die "_cleanFileName_: could not create new file"
-      echo "$final"
-    else
-      echo "${fileToClean}"
-    fi
+  if [[ "${fileToClean}" != "${final}" ]]; then
+    final="$(_uniqueFileName_ "${final}")"
+    _execute_ -q "mv \"${fileToClean}\" \"${final}\""
+    echo "$final"
   else
-    echo "${final}"
+    echo "${fileToClean}"
   fi
+
 }
 
 _decryptFile_() {

@@ -110,6 +110,14 @@ teardown() {
   assert_file_exist "test.txt"
 }
 
+@test "_cleanFilename_: duplicate file" {
+  touch "test&.txt"
+  touch "test.txt"
+
+  _cleanFilename_ "test&.txt"
+  assert_file_exist "test-2.txt"
+}
+
 @test "_cleanFilename_: User input" {
   touch "testing_a_new_file.txt"
 
