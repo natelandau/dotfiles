@@ -112,6 +112,14 @@ teardown() {
   assert_file_not_exist "testfile.txt"
 }
 
+@test "_execute_: Good command - no output" {
+  touch "testfile.txt"
+  run _execute_ -q "rm testfile.txt"
+  assert_success
+  refute_output --partial "[   info] rm testfile.txt"
+  assert_file_not_exist "testfile.txt"
+}
+
 @test "_execute_ -s: Good command" {
   touch "testfile.txt"
   run _execute_ -s "rm testfile.txt"
@@ -123,7 +131,7 @@ teardown() {
 @test "_execute_ -v: Good command" {
   touch "testfile.txt"
   run _execute_ -v "rm -v testfile.txt"
-  
+
   assert_success
   assert_line --index 0 "removed 'testfile.txt'"
   assert_line --index 1 --partial "[   info] rm -v testfile.txt"
@@ -133,7 +141,7 @@ teardown() {
 @test "_execute_ -ev: Good command" {
   touch "testfile.txt"
   run _execute_ -ve "rm -v testfile.txt"
-  
+
   assert_success
   assert_line --index 0 "removed 'testfile.txt'"
   assert_line --index 1 --partial "rm -v testfile.txt"

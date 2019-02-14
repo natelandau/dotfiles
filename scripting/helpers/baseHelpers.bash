@@ -197,15 +197,17 @@ _execute_() {
   local passFailures=false
   local echoResult=false
   local successResult=false
+  local quietResult=false
   local opt
 
   local OPTIND=1
-  while getopts ":vVpPeEsS" opt; do
+  while getopts ":vVpPeEsSqQ" opt; do
     case $opt in
       v | V) localVerbose=true ;;
       p | P) passFailures=true ;;
       e | E) echoResult=true ;;
       s | S) successResult=true ;;
+      q | Q) quietResult=true ;;
       *) {
         error "Unrecognized option '$1' passed to _execute. Exiting."
         _safeExit_
@@ -251,7 +253,10 @@ _execute_() {
     fi
   else
     if eval "${cmd}" &>/dev/null; then
-      if "$echoResult"; then
+      if "$quietResult"; then
+        verbose=$saveVerbose
+        return 0
+      elif "$echoResult"; then
         echo "${message}"
       elif "${successResult}"; then
         success "${message}"
@@ -315,7 +320,7 @@ _pauseScript_() {
 
   local pauseMessage
   pauseMessage="${1:-Paused}. Ready to continue?"
-  
+
   if _seekConfirmation_ "$pauseMessage"; then
     info "Continuing..."
   else
