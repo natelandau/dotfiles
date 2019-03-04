@@ -42,9 +42,16 @@ teardown() {
 
 ########### BEGIN TESTS ##########
 
-@test "debug" {
+@test "refute debug" {
+  run debug "testing"
+  refute_output --partial "[  debug] testing"
+}
+
+@test "assert debug" {
+  verbose=true
   run debug "testing"
   assert_output --partial "[  debug] testing"
+  verbose=false
 }
 
 @test "die" {

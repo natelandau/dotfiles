@@ -96,7 +96,7 @@ _alert_() {
 
   # Print to Logfile
   if "${printLog}"; then
-    [[ "$alertType" =~ ^(input|debug) ]] && return
+    [[ "$alertType" =~ ^(input|debug) ]] && return  # Don't print input or debug to log
     [ ! -f "$logFile" ] && touch "$logFile"
     color=""
     reset="" # Don't use colors in logs
@@ -142,8 +142,12 @@ info() {
   echo -e "$(_alert_ info $2)"
 }
 debug() {
-  local _message="${1}"
-  echo -e "$(_alert_ debug $2)"
+  ($verbose) \
+    && {
+      local _message="${1}"
+      echo -e "$(_alert_ debug $2)"
+    } \
+    || return 0
 }
 success() {
   local _message="${1}"
