@@ -21,7 +21,6 @@ symlinks:
   - ~/bin/cleanFilenames:             bin/cleanFilenames
   - ~/bin/mailReIndex:                bin/mailReIndex
   - ~/bin/removeSymlink:              bin/removeSymlink
-  - ~/bin/trash:                      bin/trash
   - ~/bin/unlockFile:                 bin/unlockFile
   - ~/bin/wolcmd:                     bin/wolcmd
   - ~/bin/xld:                        bin/xld

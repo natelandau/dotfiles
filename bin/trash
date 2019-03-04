@@ -99,12 +99,12 @@ _mainScript_() {
 
       # Use system's 'rm' when specified
       if ${systemRM}; then
-        _execute_ -s "rm -rf \"${userFile}\"" "'${baseFile}' deleted"
+        _execute_ -s "command rm -rf \"${userFile}\"" "'${baseFile}' deleted"
         continue
       fi
 
       # Determine if we'll tell Finder to trash the file via AppleScript (very easy, plus free undo
-      # support, but Finder must be running for the user and is DOES NOT work from within `screen`)
+      # support, but Finder must be running for the user and DOES NOT work from within `screen`)
       if ! ${bypassFinder} && _haveScriptableFinder_; then
         verbose "Telling Finder to trash '${baseFile}'..."
         _execute_ -s "/usr/bin/osascript -e 'tell application \"Finder\" to delete POSIX file \"${userFile}\"' &>/dev/null" "'${baseFile}' moved to trash"
