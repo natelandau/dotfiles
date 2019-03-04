@@ -29,6 +29,10 @@ brew "fdk-aac"
 brew "libogg"
 brew "flac"
 brew "frei0r"
+brew "gmp"
+brew "libtasn1"
+brew "libunistring"
+brew "nettle"
 brew "lame"
 brew "little-cms2"
 brew "libsoxr"
@@ -45,11 +49,7 @@ brew "gifsicle"
 brew "git"
 brew "git-extras"
 brew "git-flow"
-brew "gmp"
 brew "gnu-sed"
-brew "libtasn1"
-brew "libunistring"
-brew "nettle"
 brew "libgpg-error"
 brew "libksba"
 brew "gnupg"
@@ -161,6 +161,7 @@ mas "Pages", id: 409201541
 mas "Pixelmator", id: 407963104
 mas "Spark", id: 1176895641
 mas "Speedtest", id: 1153157709
+mas "Tabs to Links", id: 1451408472
 mas "Things3", id: 904280696
 mas "Xcode", id: 497799835
 mas "Yoink", id: 457622435
