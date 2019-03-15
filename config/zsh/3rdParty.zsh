@@ -1,0 +1,43 @@
+# Enable GO
+if command -v go &>/dev/null; then
+  GOPATH=${HOME}/go
+  export GOPATH
+  GOBIN=${GOPATH}/bin
+  export GOBIN
+  export PATH="$PATH:${GOBIN}"
+fi
+
+# Make 'less' more with lesspipe
+[[ "$(command -v lesspipe.sh)" ]] && eval "$(lesspipe.sh)"
+
+# RVM complains if it's not here
+[[ -s "${HOME}/.rvm/scripts/rvm" ]] && source "${HOME}/.rvm/scripts/rvm"
+
+# ASDF Package Manager
+[[ -s "${HOME}/.asdf/asdf.sh" ]] && source "${HOME}/.asdf/asdf.sh"
+
+#nvm (node version manager)
+if [ -e "${HOME}/.nvm" ]; then
+  export NVM_DIR="${HOME}/.nvm"
+  [ -s "${NVM_DIR}/nvm.sh" ] && source "${NVM_DIR}/nvm.sh"
+  nvm use 8.6.0
+fi
+
+# Default to use python 2.7 with npm
+if command -v npm &>/dev/null; then
+  npm config set python python2.7
+fi
+
+# Use Java JDK 1.8
+if [[ "$(command -v java)" && -e "/usr/libexec/java_home" ]]; then
+  export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+fi
+
+# Path for Ruby (installed by Homebrew)
+#export PATH="$PATH:/usr/local/opt/ruby/bin"
+
+[[ "$(command -v thefuck)" ]] && eval "$(thefuck --alias)"
+
+# [[ "$(command -v archey)" ]] && archey
+
+[[ "$(command -v docker-machine)" ]] && eval "$(docker-machine env default)"

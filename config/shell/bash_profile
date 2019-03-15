@@ -23,7 +23,7 @@ bashFileLocations=(
 
 for bashFileLocation in "${bashFileLocations[@]}"; do
   if [ -d "${bashFileLocation}" ]; then
-    for config_file in ${bashFileLocation}/*.bash; do
+    for config_file in "${bashFileLocation}"/*.bash; do
       if [ -f "${config_file}" ]; then
         source "${config_file}"
       fi

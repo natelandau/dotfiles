@@ -53,7 +53,7 @@ if [[ "$OSTYPE" =~ linux ]]; then
       return
     fi
   }
-  
+
   export PS1="\[$WHITE\]________________________________________________________________________________\n| \
 \[${BOLD}${MAGENTA}\]\u \[$WHITE\]at \[$ORANGE\]\h \
 \[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\
@@ -142,7 +142,7 @@ else
       if [ $ii -gt 0 ] ; then
         PS1+="${bg}${oldBG}${sep} ${reset}"
       fi
-      
+
       # Build the prompt from the plugin
       PS1+="${bg}${fg}"
       PS1+=$" ${segment}"
@@ -157,7 +157,7 @@ else
 
     local ii=0
     if [ -d "${topPluginLocation}" ]; then
-      for plugin in ${topPluginLocation}/*.bash; do
+      for plugin in "${topPluginLocation}"/*.bash; do
         [ -f "${plugin}" ] && source "${plugin}"
         [ -f "${plugin}" ] && ((ii++))
       done
@@ -165,7 +165,7 @@ else
 
     # Add a seperator at the end of the line
     PS1+="${oldBG}${divider} ${reset}"
-    
+
     # ########
     # Parse the bottom line
     # ########
@@ -175,7 +175,7 @@ else
 
     local ii=0
     if [ -d "${bottomPluginLocation}" ]; then
-      for plugin in ${bottomPluginLocation}/*.bash; do
+      for plugin in "${bottomPluginLocation}"/*.bash; do
         [ -f "${plugin}" ] && source "${plugin}"
         [ -f "${plugin}" ] && ((ii++))
       done

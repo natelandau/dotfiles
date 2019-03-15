@@ -1,0 +1,20 @@
+# Plugins
+
+zsh-users/zsh-autosuggestions
+ael-code/zsh-colored-man-pages
+
+MichaelAquilina/zsh-you-should-use
+
+# Select a prompt
+denysdovhan/spaceship-prompt
+# bhilburn/powerlevel9k
+
+# Select a syntax highlighter
+zdharma/fast-syntax-highlighting
+# zsh-users/zsh-syntax-highlighting
+
+# Search History
+zsh-users/zsh-history-substring-search
+
+# Completions
+zsh-users/zsh-completions

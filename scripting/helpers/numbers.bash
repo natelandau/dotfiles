@@ -34,7 +34,7 @@ _toSeconds_() {
   #   12h12m09s
   local saveIFS
 
-  if [[ "$1" =~ [0-9]{1,2}(:|,|;|-|_|,| |[hHmMsS])[0-9]{1,2}(:|,|;|-|_|,| |[hHmMsS])[0-9]{1,2} ]]; then
+  if [[ "$1" =~ [0-9]{1,2}(:|,|-|_|,| |[hHmMsS])[0-9]{1,2}(:|,|-|_|,| |[hHmMsS])[0-9]{1,2} ]]; then
     saveIFS="$IFS"
     IFS=":,;-_, HhMmSs" read -r h m s <<< "$1"
     IFS="$saveIFS"
