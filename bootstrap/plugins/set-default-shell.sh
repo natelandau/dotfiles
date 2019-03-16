@@ -4,41 +4,46 @@ version="1.0.0"
 
 _mainScript_() {
 
-  _installGitHooks_() {
-    header "Installing git hooks"
+  if ! [[ "$OSTYPE" =~ "darwin"* ]]; then
+    notice "Can only run on macOS.  Exiting."
+    _safeExit_
+  fi
 
-    local GITROOT
-    local hook
-    GITROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+header "Let's set a default shell"
 
-    if [ "${GITROOT}" == "" ]; then
-      warning "This does not appear to be a git repo."
+shellOptions=(bash zsh quit)
+input "Which shell do you want to use?\n\n"
+select opt in "${shellOptions[@]}"; do
+  case $opt in
+    "bash")
+      shell="bash"
+      break
+      ;;
+    "zsh")
+      shell="zsh"
+      break
+      ;;
+    "quit")
       _safeExit_
-    fi
+    ;;
+    *) echo "invalid option '$option'" ;;
+  esac
+done
 
-    # Location of hooks
-    local hooksLocation="${GITROOT}/.hooks"
+if brew --prefix &>/dev/null; then
+  declare binroot="$(brew --prefix)/bin"
+else
+  binroot="/bin"
+fi
+shell="${binroot}/${shell}"
 
-    if ! [ -d "$hooksLocation" ]; then
-      warning "Can't find hooks. Exiting."
-      return
-    fi
-
-    for hook in ${hooksLocation}/*.sh; do
-      hook="$(basename ${hook})"
-
-      local sourceFile="${hooksLocation}/${hook}"
-      local destFile="${GITROOT}/.git/hooks/${hook%.sh}"
-
-      if [ -e "$destFile" ]; then
-        _execute_ "rm $destFile"
-      fi
-      _execute_ "ln -fs \"$sourceFile\" \"$destFile\"" "symlink $sourceFile → $destFile"
-
-    done
-  }
-  _installGitHooks_
-
+echo -n "
+Follow these steps:
+  1) Run 'sudo ${EDITOR} /etc/shells'
+  2) Paste '${shell}' if not already there
+  3) Run 'sudo chsh -s ${shell}'
+  4) Restart your terminal
+"
 } # end _mainScript_
 
 _sourceHelperFiles_() {
@@ -88,7 +93,8 @@ tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-This is a script template.  Edit this description to print help to users.
+  This script will set the default shell on MacOS to a version of Bash that
+  was installed by Homebrew.
 
 
  ${bold}Option Flags:${reset}
@@ -193,8 +199,8 @@ trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "
 IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-# set -o errtrace
 # set -o errexit
+# set -o errtrace
 
 # Force pipelines to fail on the first non-zero status code.
 set -o pipefail

@@ -25,7 +25,7 @@ _mainScript_() {
 
           # 1. Copy fonts
           fontLocation="${HOME}/Library/Fonts"
-          for font in ${iTermConfig}/fonts/**/*.otf; do
+          for font in "${iTermConfig}"/fonts/**/*.otf; do
             baseFontName=$(basename "$font")
             destFile="${fontLocation}/${baseFontName}"
             if [ ! -e "$destFile" ]; then
@@ -55,7 +55,7 @@ _mainScript_() {
           #3 Install preferred colorscheme
           _execute_ "open ${baseDir}/config/iTerm/themes/dotfiles.itermcolors" "Installing preferred color scheme"
         else
-          warning "Couldn't find iTerm configuration files"
+          warning "Could not find iTerm configuration files"
         fi
       fi
     }

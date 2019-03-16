@@ -4,32 +4,40 @@ version="1.0.0"
 
 _mainScript_() {
 
-  if ! [[ "$OSTYPE" =~ "darwin"* ]]; then
-    notice "Can only run on macOS.  Exiting."
-    _safeExit_
-  fi
+  _installGitHooks_() {
+    header "Installing git hooks"
 
-  header "Setting default shell"
-  # This is where brew stores its binary symlinks
-  declare binroot="$(brew --prefix)/bin"
+    local GITROOT
+    local hook
+    GITROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 
-  if command -v ${binroot}/bash >/dev/null; then
-    if [[ $SHELL != ${binroot}/bash ]]; then
-      info "Configuring Homebrew's Bash..."
-      if ! grep -q ${binroot}/bash </etc/shells; then
-        info "Making ${binroot}/bash your default shell"
-        echo "$binroot/bash" >> /etc/shells
-        sudo chsh -s "${binroot}/bash" "${USER}" >/dev/null 2>&1
-        notice "Restart your shells to use Homebrew's bash"
-      else
-        sudo chsh -s "${binroot}/bash" "${USER}" >/dev/null 2>&1
-        notice "Restart your shells to use Homebrew's bash"
-      fi
+    if [ "${GITROOT}" == "" ]; then
+      warning "This does not appear to be a git repo."
+      _safeExit_
     fi
-  else
-    warning "Could not find '${binroot}/bash'. Are you certain you installed bash via homebrew?"
-    _safeExit_
-  fi
+
+    # Location of hooks
+    local hooksLocation="${GITROOT}/.hooks"
+
+    if ! [ -d "$hooksLocation" ]; then
+      warning "Can't find hooks. Exiting."
+      return
+    fi
+
+    for hook in "${hooksLocation}"/*.sh; do
+      hook="$(basename ${hook})"
+
+      local sourceFile="${hooksLocation}/${hook}"
+      local destFile="${GITROOT}/.git/hooks/${hook%.sh}"
+
+      if [ -e "$destFile" ]; then
+        _execute_ "rm $destFile"
+      fi
+      _execute_ "ln -fs \"$sourceFile\" \"$destFile\"" "symlink $sourceFile → $destFile"
+
+    done
+  }
+  _installGitHooks_
 
 } # end _mainScript_
 
@@ -80,8 +88,7 @@ tmpDir="/tmp/${scriptName}.$RANDOM.$RANDOM.$RANDOM.$$"
 _usage_() {
   echo -n "${scriptName} [OPTION]... [FILE]...
 
-  This script will set the default shell on MacOS to a version of Bash that
-  was installed by Homebrew.
+This is a script template.  Edit this description to print help to users.
 
 
  ${bold}Option Flags:${reset}
@@ -186,8 +193,8 @@ trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "
 IFS=$' \n\t'
 
 # Exit on error. Append '||true' when you run the script if you expect an error.
-# set -o errexit
 # set -o errtrace
+# set -o errexit
 
 # Force pipelines to fail on the first non-zero status code.
 set -o pipefail
