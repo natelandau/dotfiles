@@ -1,25 +1,25 @@
 symlinks:
   # format is - destination: source (source files are relative to 'install.sh')
-  - ~/.httpie:            config/shell/httpie
-  - ~/.bashrc:            config/shell/bashrc
-  - ~/.zshrc:             config/shell/zshrc
-  - ~/.zsh_plugins.txt:   config/shell/zsh_plugins.txt
-  - ~/.bash_profile:      config/shell/bash_profile
-  - ~/.curlrc:            config/shell/curlrc
-  - ~/.gitattributes:     config/shell/gitattributes
-  - ~/.gitconfig:         config/shell/gitconfig
-  - ~/.gitignore:         config/shell/gitignore
-  - ~/.gemrc:             config/shell/gemrc
-  - ~/.hushlogin:         config/shell/hushlogin
-  - ~/.inputrc:           config/shell/inputrc
-  - ~/.profile:           config/shell/profile
-  - ~/.sed:               config/shell/sed
-  - ~/.ruby-version:      config/shell/ruby-version
-  - ~/.Brewfile:          config/shell/Brewfile
-  - ~/.Gemfile:           config/shell/Gemfile
-  - ~/.asdfrc:            config/shell/asdfrc
-  - ~/.config/micro/bindings.json:    config/shell/micro/bindings.json
-  - ~/.config/micro/settings.json:    config/shell/micro/settings.json
+  - ~/.httpie:            config/dotfiles/httpie
+  - ~/.bashrc:            config/dotfiles/bashrc
+  - ~/.zshrc:             config/dotfiles/zshrc
+  - ~/.zsh_plugins.txt:   config/dotfiles/zsh_plugins.txt
+  - ~/.bash_profile:      config/dotfiles/bash_profile
+  - ~/.curlrc:            config/dotfiles/curlrc
+  - ~/.gitattributes:     config/dotfiles/gitattributes
+  - ~/.gitconfig:         config/dotfiles/gitconfig
+  - ~/.gitignore:         config/dotfiles/gitignore
+  - ~/.gemrc:             config/dotfiles/gemrc
+  - ~/.hushlogin:         config/dotfiles/hushlogin
+  - ~/.inputrc:           config/dotfiles/inputrc
+  - ~/.profile:           config/dotfiles/profile
+  - ~/.sed:               config/dotfiles/sed
+  - ~/.ruby-version:      config/dotfiles/ruby-version
+  - ~/.Brewfile:          config/dotfiles/Brewfile
+  - ~/.Gemfile:           config/dotfiles/Gemfile
+  - ~/.asdfrc:            config/dotfiles/asdfrc
+  - ~/.config/micro/bindings.json:    config/dotfiles/micro/bindings.json
+  - ~/.config/micro/settings.json:    config/dotfiles/micro/settings.json
   - ~/bin/cleanFilenames:             bin/cleanFilenames
   - ~/bin/mailReIndex:                bin/mailReIndex
   - ~/bin/removeSymlink:              bin/removeSymlink

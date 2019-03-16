@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+# If not running interactively, don't do anything
+case $- in
+  *i*) ;;
+  *) return ;;
+esac
+[ -z "$PS1" ] && return
+
+# set default umask
+umask 002
+
+# Build PATH and put /usr/local/bin before existing PATH
+export PATH="/usr/local/bin:$PATH:$HOME/bin"
+
+### SOURCE BASH PLUGINS ###
+
+## SOURCE ZSH CONFIGS ###
+# Locations containing files *.bash to be sourced to your environment
+configFileLocations=(
+  "${HOME}/dotfiles/config/shell"
+  "${HOME}/dotfiles-private/config/shell"
+)
+
+# Set a shell variable so we can customize the config files
+currentShell="$(ps -p $$ | tail -n 1 | awk -F' ' '{print $4}' | sed 's/-//g')"
+
+for configFileLocation in "${configFileLocations[@]}"; do
+  if [ -d "${configFileLocation}" ]; then
+    while read -r configFile; do
+      source "$configFile"
+    done < <(find "${configFileLocation}" \
+      -type f \
+      -name '*.bash' \
+      -o -name '*.config' \
+      -maxdepth 1 | sort)
+  fi
+done
+
+unset currentShell
+
+# Always list directory contents upon 'cd'.
+# (Somehow this always failed when I put it in a sourced file)
+cd() {
+  builtin cd "$@"
+  ll
+}
