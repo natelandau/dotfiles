@@ -53,7 +53,7 @@ _mainScript_() {
   _updateBrewfile_() {
     local t="$(mktemp "${tmpDir}/XXXXXXXXXXXXX")"
     local i=0
-    local brewfile="${HOME}/dotfiles/config/shell/Brewfile"
+    local brewfile="${HOME}/dotfiles/config/dotfiles/Brewfile"
 
     [ -f "$brewfile" ] \
       || {
