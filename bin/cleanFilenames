@@ -45,6 +45,13 @@ _mainScript_() {
       return 1
     fi
 
+    # Respect the Files Only flag
+    if ${fileOnly}; then
+      if [ ! -f "${userFile}" ]; then
+        return 1
+      fi
+    fi
+
     # If all is good we...
     return 0
   }
@@ -341,6 +348,7 @@ strict=false
 dryrun=false
 debug=false
 sourceOnly=false
+fileOnly=false
 args=()
 
 cleanOnly=false
@@ -388,6 +396,7 @@ _usage_() {
                       exists
     -R, --removeDate  Removes dates from filenames
     -L, --lower       Transforms the filename to all lower case characters
+    -F, --fileOnly    Ignore directories and only clean the names of files
 
     --nonInteractive  Assumes the script is being called from another script. The only
                       output in this mode is an exit code and the cleaned name of the file
@@ -466,6 +475,7 @@ while [[ $1 == -?* ]]; do
     -L | --lower) lowerCase=true ;;
     -e | --noErrorLog) logErrors=false ;;
     -n | --dryrun) dryrun=true ;;
+    -F | --fileOnly) fileOnly=true ;;
     --nonInteractive)
       nonInteractive=true
       quiet=true
