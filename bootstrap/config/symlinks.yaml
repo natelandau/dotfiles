@@ -21,6 +21,7 @@ symlinks:
   - ~/.config/micro/bindings.json:    config/dotfiles/micro/bindings.json
   - ~/.config/micro/settings.json:    config/dotfiles/micro/settings.json
   - ~/bin/cleanFilenames:             bin/cleanFilenames
+  - ~/bin/lessfilter.sh:              bin/lessfilter.sh
   - ~/bin/mailReIndex:                bin/mailReIndex
   - ~/bin/removeSymlink:              bin/removeSymlink
   - ~/bin/unlockFile:                 bin/unlockFile
