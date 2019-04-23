@@ -6,6 +6,7 @@ symlinks:
   - ~/.zsh_plugins.txt:   config/dotfiles/zsh_plugins.txt
   - ~/.bash_profile:      config/dotfiles/bash_profile
   - ~/.curlrc:            config/dotfiles/curlrc
+  - ~/.lynxrc:            config/dotfiles/lynxrc
   - ~/.gitattributes:     config/dotfiles/gitattributes
   - ~/.gitconfig:         config/dotfiles/gitconfig
   - ~/.gitignore:         config/dotfiles/gitignore

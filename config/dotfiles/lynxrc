@@ -1,0 +1,343 @@
+# Lynx User Defaults File
+#
+# This file contains options saved from the Lynx Options Screen (normally
+# with the 'o' key).  To save options with that screen, you must select the
+# checkbox:
+#	Save options to disk
+#
+# You must then save the settings using the link on the line above the
+# checkbox:
+#	Accept Changes
+#
+# You may also use the command-line option "-forms_options", which displays
+# the simpler Options Menu instead.  Save options with that using the '>' key.
+#
+# There is normally no need to edit this file manually, since the defaults
+# here can be controlled from the Options Screen, and the next time options
+# are saved from the Options Screen this file will be completely rewritten.
+# You have been warned...
+#
+# If you are looking for the general configuration file - it is normally
+# called "lynx.cfg".  It has different content and a different format.
+# It is not this file.
+
+# accept_all_cookies allows the user to tell Lynx to automatically
+# accept all cookies if desired.  The default is "FALSE" which will
+# prompt for each cookie.  Set accept_all_cookies to "TRUE" to accept
+# all cookies.
+accept_all_cookies=off
+
+# anonftp_password allows the user to tell Lynx to use the personal
+# email address as the password for anonymous ftp.  If no value is given,
+# Lynx will use the personal email address.  Set anonftp_password
+# to a different value if you choose.
+anonftp_password=
+
+# bookmark_file specifies the name and location of the default bookmark
+# file into which the user can paste links for easy access at a later
+# date.
+bookmark_file=lynx_bookmarks.html
+
+# If case_sensitive_searching is "on" then when the user invokes a search
+# using the 's' or '/' keys, the search performed will be case sensitive
+# instead of case INsensitive.  The default is usually "off".
+case_sensitive_searching=off
+
+# The character_set definition controls the representation of 8 bit
+# characters for your terminal.  If 8 bit characters do not show up
+# correctly on your screen you may try changing to a different 8 bit
+# set or using the 7 bit character approximations.
+# Current valid characters sets are:
+#    Western (ISO-8859-1)
+#    7 bit approximations (US-ASCII)
+#    Western (ISO-8859-15)
+#    Western (cp850)
+#    Western (windows-1252)
+#    IBM PC US codepage (cp437)
+#    DEC Multinational
+#    Macintosh (8 bit)
+#    NeXT character set
+#    HP Roman8
+#    Chinese
+#    Japanese (EUC-JP)
+#    Japanese (Shift_JIS)
+#    Korean
+#    Taipei (Big5)
+#    Vietnamese (VISCII)
+#    Transparent
+#    Eastern European (ISO-8859-2)
+#    Eastern European (cp852)
+#    Eastern European (windows-1250)
+#    Latin 3 (ISO-8859-3)
+#    Latin 4 (ISO-8859-4)
+#    Baltic Rim (ISO-8859-13)
+#    Baltic Rim (cp775)
+#    Baltic Rim (windows-1257)
+#    Cyrillic (ISO-8859-5)
+#    Cyrillic (cp866)
+#    Cyrillic (windows-1251)
+#    Cyrillic (KOI8-R)
+#    Arabic (ISO-8859-6)
+#    Arabic (cp864)
+#    Arabic (windows-1256)
+#    Celtic (ISO-8859-14)
+#    Greek (ISO-8859-7)
+#    Greek (cp737)
+#    Greek2 (cp869)
+#    Greek (windows-1253)
+#    Hebrew (ISO-8859-8)
+#    Hebrew (cp862)
+#    Hebrew (windows-1255)
+#    Turkish (ISO-8859-9)
+#    Turkish (cp857)
+#    North European (ISO-8859-10)
+#    UNICODE (UTF-8)
+#    RFC 1345 w/o Intro
+#    RFC 1345 Mnemonic
+#    Ukrainian Cyrillic (cp866u)
+#    Ukrainian Cyrillic (KOI8-U)
+#    Cyrillic-Asian (PT154)
+character_set=Western (ISO-8859-1)
+
+# cookie_accept_domains and cookie_reject_domains are comma-delimited
+# lists of domains from which Lynx should automatically accept or reject
+# all cookies.  If a domain is specified in both options, rejection will
+# take precedence.  The accept_all_cookies parameter will override any
+# settings made here.
+cookie_accept_domains=nytimes.com
+
+# cookie_file specifies the file from which to read persistent cookies.
+# The default is ~/.lynx_cookies.
+cookie_file=
+
+# cookie_loose_invalid_domains, cookie_strict_invalid_domains, and
+# cookie_query_invalid_domains are comma-delimited lists of which domains
+# should be subjected to varying degrees of validity checking.  If a
+# domain is set to strict checking, strict conformance to RFC2109 will
+# be applied.  A domain with loose checking will be allowed to set cookies
+# with an invalid path or domain attribute.  All domains will default to
+# querying the user for an invalid path or domain.
+cookie_loose_invalid_domains=
+
+cookie_query_invalid_domains=
+
+cookie_reject_domains=
+
+cookie_strict_invalid_domains=
+
+# dir_list_order specifies the directory list order under DIRED_SUPPORT
+# (if implemented).  The default is "ORDER_BY_NAME"
+dir_list_order=ORDER_BY_NAME
+
+# dir_list_styles specifies the directory list style under DIRED_SUPPORT
+# (if implemented).  The default is "MIXED_STYLE", which sorts both
+# files and directories together.  "FILES_FIRST" lists files first and
+# "DIRECTORIES_FIRST" lists directories first.
+dir_list_style=MIXED_STYLE
+
+# If emacs_keys is to "on" then the normal EMACS movement keys:
+#   ^N = down    ^P = up
+#   ^B = left    ^F = right
+# will be enabled.
+emacs_keys=off
+
+# file_editor specifies the editor to be invoked when editing local files
+# or sending mail.  If no editor is specified, then file editing is disabled
+# unless it is activated from the command line, and the built-in line editor
+# will be used for sending mail.
+file_editor=
+
+# The file_sorting_method specifies which value to sort on when viewing
+# file lists such as FTP directories.  The options are:
+#    BY_FILENAME -- sorts on the name of the file
+#    BY_TYPE     -- sorts on the type of the file
+#    BY_SIZE     -- sorts on the size of the file
+#    BY_DATE     -- sorts on the date of the file
+file_sorting_method=BY_FILENAME
+
+# If keypad_mode is set to "NUMBERS_AS_ARROWS", then the numbers on
+# your keypad when the numlock is on will act as arrow keys:
+#             8 = Up Arrow
+#   4 = Left Arrow    6 = Right Arrow
+#             2 = Down Arrow
+# and the corresponding keyboard numbers will act as arrow keys,
+# regardless of whether numlock is on.
+# If keypad_mode is set to "LINKS_ARE_NUMBERED", then numbers will
+# appear next to each link and numbers are used to select links.
+# If keypad_mode is set to "LINKS_AND_FORM_FIELDS_ARE_NUMBERED", then
+# numbers will appear next to each link and visible form input field.
+# Numbers are used to select links, or to move the "current link" to a
+# form input field or button.  In addition, options in popup menus are
+# indexed so that the user may type an option number to select an option in
+# a popup menu, even if the option isn't visible on the screen.  Reference
+# lists and output from the list command also enumerate form inputs.
+# NOTE: Some fixed format documents may look disfigured when
+# "LINKS_ARE_NUMBERED" or "LINKS_AND_FORM_FIELDS_ARE_NUMBERED" are
+# enabled.
+keypad_mode=LINKS_ARE_NOT_NUMBERED
+
+# lineedit_mode specifies the key binding used for inputting strings in
+# prompts and forms.  If lineedit_mode is set to "Default Binding" then
+# the following control characters are used for moving and deleting:
+#
+#              Prev  Next       Enter = Accept input
+#    Move char: <-    ->        ^G    = Cancel input
+#    Move word: ^P    ^N        ^U    = Erase line
+#  Delete char: ^H    ^R        ^A    = Beginning of line
+#  Delete word: ^B    ^F        ^E    = End of line
+#
+# Current lineedit modes are:
+#    Default Binding
+#    Alternate Bindings
+#    Bash-like Bindings
+lineedit_mode=Default Binding
+
+# The following allow you to define sub-bookmark files and descriptions.
+# The format is multi_bookmark<capital_letter>=<filename>,<description>
+# Up to 26 bookmark files (for the English capital letters) are allowed.
+# We start with "multi_bookmarkB" since 'A' is the default (see above).
+multi_bookmarkB=
+multi_bookmarkC=
+multi_bookmarkD=
+multi_bookmarkE=
+multi_bookmarkF=
+multi_bookmarkG=
+multi_bookmarkH=
+multi_bookmarkI=
+multi_bookmarkJ=
+multi_bookmarkK=
+multi_bookmarkL=
+multi_bookmarkM=
+multi_bookmarkN=
+multi_bookmarkO=
+multi_bookmarkP=
+multi_bookmarkQ=
+multi_bookmarkR=
+multi_bookmarkS=
+multi_bookmarkT=
+multi_bookmarkU=
+multi_bookmarkV=
+multi_bookmarkW=
+multi_bookmarkX=
+multi_bookmarkY=
+multi_bookmarkZ=
+
+# personal_mail_address specifies your personal mail address.  The
+# address will be sent during HTTP file transfers for authorization and
+# logging purposes, and for mailed comments.
+# If you do not want this information given out, set the NO_FROM_HEADER
+# to TRUE in lynx.cfg, or use the -nofrom command line switch.  You also
+# could leave this field blank, but then you won't have it included in
+# your mailed comments.
+personal_mail_address=
+
+# personal_mail_name specifies your personal name, for mail.  The
+# name is sent for mailed comments.  Lynx will prompt for this,
+# showing the configured value as a default when sending mail.
+# This is not necessarily the same as a name provided as part of the
+# personal_mail_address.
+# Lynx does not save your changes to that default value as a side-effect
+# of sending email.  To update the default value, you must use the options
+# menu, or modify this file directly.
+personal_mail_name=
+
+# preferred_charset specifies the character set in MIME notation (e.g.,
+# ISO-8859-2, ISO-8859-5) which Lynx will indicate you prefer in requests
+# to http servers using an Accept-Charset header.  The value should NOT
+# include ISO-8859-1 or US-ASCII, since those values are always assumed
+# by default.  May be a comma-separated list.
+# If a file in that character set is available, the server will send it.
+# If no Accept-Charset header is present, the default is that any
+# character set is acceptable.  If an Accept-Charset header is present,
+# and if the server cannot send a response which is acceptable
+# according to the Accept-Charset header, then the server SHOULD send
+# an error response, though the sending of an unacceptable response
+# is also allowed.
+preferred_charset=
+
+# preferred_language specifies the language in MIME notation (e.g., en,
+# fr, may be a comma-separated list in decreasing preference)
+# which Lynx will indicate you prefer in requests to http servers.
+# If a file in that language is available, the server will send it.
+# Otherwise, the server will send the file in its default language.
+preferred_language=en
+
+# select_popups specifies whether the OPTIONs in a SELECT block which
+# lacks a MULTIPLE attribute are presented as a vertical list of radio
+# buttons or via a popup menu.  Note that if the MULTIPLE attribute is
+# present in the SELECT start tag, Lynx always will create a vertical list
+# of checkboxes for the OPTIONs.  A value of "on" will set popup menus
+# as the default while a value of "off" will set use of radio boxes.
+# The default can be overridden via the -popup command line toggle.
+select_popups=on
+
+# show_color specifies how to set the color mode at startup.  A value of
+# "never" will force color mode off (treat the terminal as monochrome)
+# at startup even if the terminal appears to be color capable.  A value of
+# "always" will force color mode on even if the terminal appears to be
+# monochrome, if this is supported by the library used to build lynx.
+# A value of "default" will yield the behavior of assuming
+# a monochrome terminal unless color capability is inferred at startup
+# based on the terminal type, or the -color command line switch is used, or
+# the COLORTERM environment variable is set.  The default behavior always is
+# used in anonymous accounts or if the "option_save" restriction is set.
+# The effect of the saved value can be overridden via
+# the -color and -nocolor command line switches.
+# The mode set at startup can be changed via the "show color" option in
+# the 'o'ptions menu.  If the option settings are saved, the "on" and
+# "off" "show color" settings will be treated as "default".
+show_color=default
+
+# show_cursor specifies whether to 'hide' the cursor to the right (and
+# bottom, if possible) of the screen, or to place it to the left of the
+# current link in documents, or current option in select popup windows.
+# Positioning the cursor to the left of the current link or option is
+# helpful for speech or braille interfaces, and when the terminal is
+# one which does not distinguish the current link based on highlighting
+# or color.  A value of "on" will set positioning to the left as the
+# default while a value of "off" will set 'hiding' of the cursor.
+# The default can be overridden via the -show_cursor command line toggle.
+show_cursor=off
+
+# show_dotfiles specifies that the directory listing should include
+# "hidden" (dot) files/directories.  If set "on", this will be
+# honored only if enabled via userdefs.h and/or lynx.cfg, and not
+# restricted via a command line switch.  If display of hidden files
+# is disabled, creation of such files via Lynx also is disabled.
+show_dotfiles=off
+
+# If sub_bookmarks is not turned "off", and multiple bookmarks have
+# been defined (see below), then all bookmark operations will first
+# prompt the user to select an active sub-bookmark file.  If the default
+# Lynx bookmark_file is defined (see above), it will be used as the
+# default selection.  When this option is set to "advanced", and the
+# user mode is advanced, the 'v'iew bookmark command will invoke a
+# statusline prompt instead of the menu seen in novice and intermediate
+# user modes.  When this option is set to "standard", the menu will be
+# presented regardless of user mode.
+sub_bookmarks=OFF
+
+# user_mode specifies the users level of knowledge with Lynx.  The
+# default is "NOVICE" which displays two extra lines of help at the
+# bottom of the screen to aid the user in learning the basic Lynx
+# commands.  Set user_mode to "INTERMEDIATE" to turn off the extra info.
+# Use "ADVANCED" to see the URL of the currently selected link at the
+# bottom of the screen.
+user_mode=NOVICE
+
+# If verbose_images is "on", lynx will print the name of the image
+# source file in place of [INLINE], [LINK] or [IMAGE]
+# See also VERBOSE_IMAGES in lynx.cfg
+verbose_images=on
+
+# If vi_keys is set to "on", then the normal VI movement keys:
+#   j = down    k = up
+#   h = left    l = right
+# will be enabled.  These keys are only lower case.
+# Capital 'H', 'J' and 'K will still activate help, jump shortcuts,
+# and the keymap display, respectively.
+vi_keys=off
+
+# The visited_links setting controls how Lynx organizes the information
+# in the Visited Links Page.
+visited_links=LAST_REVERSED
