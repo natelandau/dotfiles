@@ -184,15 +184,11 @@ _execute_() {
   #           If $dryrun=true no commands are executed
   #           If $verbose=true the command's native output is printed to stderr and stdin
   #
-  #
-  #
-  #
-  #
   #           options:
   #             -v    Always print verbose output from the execute function
   #             -p    Pass a failed command with 'return 0'.  This effecively bypasses set -e.
   #             -e    Bypass _alert_ functions and use 'echo RESULT'
-  #             -s    Use _alert_ success for successful output. (default is 'info')
+  #             -s    Use '_alert_ success' for successful output. (default is 'info')
   #
   # usage:
   #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"

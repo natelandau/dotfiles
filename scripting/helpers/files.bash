@@ -610,7 +610,6 @@ _uniqueFileName_() {
   # Inputs:
   #
   #   $1  The name of the file (may include a directory)
-  #
   #   $2  Option separation character. Defaults to a space
   #
   # Usage:
@@ -639,11 +638,11 @@ _uniqueFileName_() {
     fullfile="$(_realpath_ "$fullfile")"
   fi
 
-  directory="$(_realpath_ -d "$fullfile")"
+  directory="$(dirname "$fullfile")"
   filename="$(basename "$fullfile")"
 
   # Extract extensions only when they exist
-  if [[ "$filename" =~ \.[a-zA-Z]{2,3}$ ]]; then
+  if [[ "$filename" =~ \.[a-zA-Z]{2,4}$ ]]; then
     extension=".${filename##*.}"
     filename="${filename%.*}"
   fi
