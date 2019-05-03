@@ -2,9 +2,26 @@
 
 _mainScript_() {
 
+  _actOnFile_() {
+
+    [[ ${#args[@]} == 0 ]] && { return 1; }
+    [[ ${#args[@]} -gt 1 ]] && { return 1; }
+
+    if [[ ${#args[@]} == 1 ]]; then
+      fileName="${args[0]}"
+      if [ -e "$fileName" ]; then
+        return 0
+      else
+        return 1
+      fi
+    fi
+
+  }
+
   _automateHashCheck_() {
     local l h f n
 
+    # shellcheck disable=SC2207
     local array=($(_listFiles_ r ".*\.[sha256|md5|txt]*"))
 
     for l in "${array[@]}"; do
@@ -65,7 +82,12 @@ _mainScript_() {
     esac
 
     read -r -p "Paste the $hashType hash: " h
-    read -r -p "Paste the filename to check: " f
+
+    if _actOnFile_; then
+      f="$fileName"
+    else
+      read -r -p "Paste the filename to check: " f
+    fi
 
     notice "Comparing the $hashType hash of '$f'"
 
@@ -139,6 +161,16 @@ found within that file.
 
 It will also take user input of a hash and a filename to compare the two.  This
 script requires no options and is fully interactive.
+
+${bold}Usage:${reset}
+
+  To run in an automated fashion simply invoke the script
+
+    $ hascheck
+
+  To specify the file on which you'd like to run the script
+
+    $ hascheck [filename]
 
 ${bold}Option Flags:${reset}
 
