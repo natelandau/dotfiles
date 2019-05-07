@@ -371,6 +371,11 @@ _makeSymlink_() {
   local b="$3" # Backup directory for originals (optional)
   local o      # Original file
 
+  # Fix files where $HOME is written as '~'
+  d="${d/\~/$HOME}"
+  s="${s/\~/$HOME}"
+  b="${b/\~/$HOME}"
+
   [ ! -e "$s" ] \
     && {
       error "'$s' not found"
@@ -396,11 +401,6 @@ _makeSymlink_() {
       echo "need function _locateSourceFile_"
       return 1
     }
-
-  # Fix files where $HOME is written as '~'
-  d="${d/\~/$HOME}"
-  s="${s/\~/$HOME}"
-  b="${b/\~/$HOME}"
 
   # Create destination directory if needed
   [ ! -d "${d%/*}" ] \
