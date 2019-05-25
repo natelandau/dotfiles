@@ -7,6 +7,7 @@ _mainScript_() {
 } # end _mainScript_
 
 _sourceHelperFiles_() {
+	# DESC: Soources script helper files
   local filesToSource
   local sourceFile
   filesToSource=(
@@ -48,8 +49,6 @@ tmpDir="${TMPDIR:-/tmp/}$(basename "$0").$RANDOM.$RANDOM.$$"
   fatal "Could not create temporary directory! Exiting."
 }
 
-# Options and Usage
-# -----------------------------------
 _usage_() {
   echo -n "$(basename "$0") [OPTION]... [FILE]...
 

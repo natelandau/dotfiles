@@ -1,19 +1,17 @@
 _listFiles_() {
-  # v1.0.0
-  # Echoes the full path of all files found in a directory which match a
-  # specific glob or regex.  These searches are NOT case sensitive.
-  #
-  #   $1 - glob or regex
-  #   $2 - pattern to match
-  #   $3 - directory (optional)
-  #
-  # Usage:  _listFiles_ glob "*.txt" "some/backup/dir"
-  #         _listFiles_ regex ".*\.txt" "some/backup/dir"
-  #         array=($(_listFiles_ g "*.txt"))
+  # DESC:  Find files in a directory.  Use either glob or regex
+  # ARGS:  $1 (Required) - 'g|glob' or 'r|regex'
+  #        $2 (Required) - pattern to match
+  #        $3 (Optional) - directory
+  # OUTS:  None
+  # NOTE:  Searches are NOT case sensitive
+  # USAGE: _listFiles_ glob "*.txt" "some/backup/dir"
+  #        _listFiles_ regex ".*\.txt" "some/backup/dir"
+  #        array=($(_listFiles_ g "*.txt"))
 
-  local t="${1}" # Type of search. Accepts either "glob" or "regex"
-  local p="${2}" # Pattern to match against
-  local d="${3:-.}" # Directory to search
+  local t="${1}"
+  local p="${2}"
+  local d="${3:-.}"
   local fileMatch e
 
   # Error handling
@@ -50,18 +48,16 @@ _listFiles_() {
 }
 
 _backupFile_() {
-  # v1.0.0
-  # Creates a copy of a specified file taking two inputs:
-  #   $1 - File to be backed up
-  #   $2 - Destination
-  #
-  # NOTE: dotfiles have their leading '.' removed in their backup
-  #
-  # Usage:  _backupFile_ "sourcefile.txt" "some/backup/dir"
+  # DESC:   Creates a copy of a specified file
+  # ARGS:   $1 (Required) - Source file
+  #         $2 (Optional) - Destination dir (defaults to ./backup)
+  # OUTS:   None
+  # USAGE:  _backupFile_ "sourcefile.txt" "some/backup/dir"
+  # NOTE:   dotfiles have their leading '.' removed in their backup
 
-  local s="$1"           # Source file
-  local d="${2:-backup}" # Destination directory (optional, defaults to 'backup')
-  local n                # New filename (created by _uniqueFilename_)
+  local s="$1"
+  local d="${2:-backup}"
+  local n # New filename (created by _uniqueFilename_)
 
   # Error handling
   [ ! "$(declare -f "_execute_")" ] \
@@ -91,20 +87,12 @@ _backupFile_() {
 }
 
 _cleanFilename_() {
-  # v1.0.0
-  # _cleanFilename_ takes an input of a file and returns a replaces it with a version
-  # of the file that is cleaned of certain characters.
-  #
-  # Default usage will remove all non-alphanumeric characters except - and _
-  # All spaces will be replaced with dashes
-  #
-  # Pass two options:
-  #   $1  - File to clean
-  #   $2  - Optional characters/strings to remove separated by commas
-  #
-  #   Usage:  _cleanFilename_ "FILENAME.TXT" "^,&,*"
-  #
-  # IMPORTANT: This will overwrite the original file and echo the new filename to the script
+  # DESC:   Cleans a filename of all non alphanumeric characters
+  # ARGS:   $1 (Required) - File to be cleaned
+  #         $2 (optional) - Additional characters to be cleaned separated by commas
+  # OUTS:   Overwrites file with new new and prints name of new file
+  # USAGE:  _cleanFilename_ "FILENAME.TXT" "^,&,*"
+  # NOTE:   IMPORTANT - This will overwrite the original file
 
   local arrayToClean
 
@@ -142,15 +130,13 @@ _cleanFilename_() {
 }
 
 _decryptFile_() {
-  # v1.0.0
-  # Takes a file as argument $1 and decrypts it using openSSL.
-  # Argument $2 is the output name. If $2 is not specified, the
-  # output will be '$1.decrypt'
-  #
-  # If a variable '$PASS' has a value, we will use that as the password
-  # to decrypt the file. Otherwise we will ask
-  #
-  # usage:  _decryptFile_ "somefile.txt.enc" "decrypted_somefile.txt"
+  # DESC:   Decrypts a file with openSSL
+  # ARGS:   $1 (Required) - File to be decrypted
+  #         $2 (Optional) - Name of output file (defaults to $1.decrypt)
+  # OUTS:   None
+  # USAGE:  _decryptFile_ "somefile.txt.enc" "decrypted_somefile.txt"
+  # NOTE:   If a variable '$PASS' has a value, we will use that as the password
+  #         to decrypt the file. Otherwise we will ask
 
   local fileToDecrypt decryptedFile defaultName
   fileToDecrypt="${1:?_decryptFile_ needs a file}"
@@ -173,15 +159,13 @@ _decryptFile_() {
 }
 
 _encryptFile_() {
-  # v1.0.0
-  # Takes a file as argument $1 and encodes it using openSSL
-  # Argument $2 is the output name. if $2 is not specified, the
-  # output will be '$1.enc'
-  #
-  # If a variable '$PASS' has a value, we will use that as the password
-  # for the encrypted file. Otherwise we will ask.
-  #
-  # usage:  _encryptFile_ "somefile.txt" "encrypted_somefile.txt"
+  # DESC:   Encrypts a file using openSSL
+  # ARGS:   $1 (Required) - Input file
+  #         $2 (Optional) - Name of output file (defaults to $1.enc)
+  # OUTS:   None
+  # USAGE:  _encryptFile_ "somefile.txt" "encrypted_somefile.txt"
+  # NOTE:   If a variable '$PASS' has a value, we will use that as the password
+  #         for the encrypted file. Otherwise we will ask.
 
   local fileToEncrypt encryptedFile defaultName
 
@@ -205,12 +189,11 @@ _encryptFile_() {
 }
 
 _ext_() {
-  # v1.0.0
-  # Get the extension of the given filename.
-  #
-  # Usage: _ext_ [-n LEVELS] FILENAME
-  #
-  # Usage examples:
+  # DESC:   Extract the extension from a filename
+  # ARGS:   $1 (Required) - Input file
+  # OPTS:   -n            - optional flag for number of extension levels (Ex: -n2)
+  # OUTS:   Print extension
+  # USAGE:
   #   _ext_     foo.txt     #==> .txt
   #   _ext_ -n2 foo.tar.gz  #==> .tar.gz
   #   _ext_     foo.tar.gz  #==> .tar.gz
@@ -258,8 +241,10 @@ _ext_() {
 }
 
 _extract_() {
-  # Takes a file as input ($1) and attempts to extract a compressed file
-  # pass 'v' as a second variable to show verbose output
+  # DESC:   Extract a compressed file
+  # ARGS:   $1 (Required) - Input file
+  #         $2 (optional) - Input 'v' to show verbose output
+  # OUTS:   None
 
   local filename
   local foldername
@@ -311,16 +296,17 @@ _extract_() {
 }
 
 _json2yaml_() {
-  # v1.0.0
-  # convert json files to yaml using python and PyYAML
-  # usage: _json2yaml_ "dir/somefile.json"
+  # DESC:   Convert JSON to YAML
+  # ARGS:   $1 (Required) - JSON file
+  # OUTS:   None
+
   python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' <"${1:?_json2yaml_ needs a file}"
 }
 
 _locateSourceFile_() {
-  # v1.0.1
-  # locateSourceFile is fed a symlink and returns the originating file
-  # usage: _locateSourceFile_ 'some/symlink'
+  # DESC:   Find original file of a symlink
+  # ARGS:   $1 (Required) - Input symlink
+  # OUTS:   Print location of original file
 
   local TARGET_FILE
   local PHYS_DIR
@@ -353,23 +339,18 @@ _locateSourceFile_() {
 }
 
 _makeSymlink_() {
-  #v1.1.0
-  # Given two arguments $1 & $2, creates a symlink from $1 (source) to $2 (destination) and
-  # create a backup of an original file before overwriting
-  #
-  # Script arguments:
-  #
-  #   $1 - Source file
-  #   $2 - Destination for symlink
-  #   $3 - backup directory for files to be overwritten (defaults to 'backup')
-  #
-  # NOTE: This function makes use of the _execute_ function
-  #
-  # usage: _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
-  local s="$1" # Source file
-  local d="$2" # Destination file
-  local b="$3" # Backup directory for originals (optional)
-  local o      # Original file
+  # DESC:   Creates a symlink and backs up a file which may be overwritten by the new symlink
+  # ARGS:   $1 (Required) - Source file
+  #         $2 (Required) - Destination
+  #         $3 (Optional) - Backup directory for files which may be overwritten (defaults to 'backup')
+  # OUTS:   None
+  # USAGE:  _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
+  # NOTE:   This function makes use of the _execute_ function
+
+  local s="$1"
+  local d="$2"
+  local b="$3"
+  local o
 
   # Fix files where $HOME is written as '~'
   d="${d/\~/$HOME}"
@@ -427,21 +408,17 @@ _makeSymlink_() {
 }
 
 _parseYAML_() {
-  # v1.1.0
-  # Function to parse YAML files and add values to variables. Send it to a temp file and source it
-  # https://gist.github.com/DinoChiesa/3e3c3866b51290f31243 which is derived from
-  # https://gist.github.com/epiloque/8cf512c6d64641bde388
+  # DESC:   Convert YANML file into BASH variables for use in a shell script
+  # ARGS:   $1 (Required) - Source YAML file
+  #         $2 (Required) - Prefix for the variables to avoid namespace collisions
+  # OUTS:   Prints variables and arrays derived from YAML File
+  # USAGE:  To source into a script
+  #         _parseYAML_ "sample.yml" "CONF_" > tmp/variables.txt
+  #         source "tmp/variables.txt"
   #
-  # Note that portions of strings containing a '#' are removed to allow for comments.
-  #
-  # Usage:
-  #     $ _parseYAML_ sample.yml > /some/tempfile
-  #     $ source /some/tempfile
-  #
-  # _parseYAML_ accepts a prefix argument so that imported settings all have a common prefix
-  # (which will reduce the risk of name-space collisions).
-  #
-  #     $ _parseYAML_ sample.yml "CONF_"
+  # NOTE:   https://gist.github.com/DinoChiesa/3e3c3866b51290f31243
+  #         https://gist.github.com/epiloque/8cf512c6d64641bde388
+
 
   local yamlFile="${1:?_parseYAML_ needs a file}"
   local prefix="${2}"
@@ -471,9 +448,10 @@ _parseYAML_() {
 }
 
 _readFile_() {
-  # v1.0.1
-  # Function to reads a file and prints each line.
-  # Usage: _readFile_ "some/filename"
+  # DESC:   Prints each line of a file
+  # ARGS:   $1 (Required) - Input file
+  # OUTS:   Prints contents of file
+
   local result
   local c="$1"
 
@@ -489,20 +467,12 @@ _readFile_() {
 }
 
 _realpath_() {
-  # v1.0.0
-  # Convert a relative path to an absolute path.
-  #
-  #  Inputs
-  #   $1 - The file to to discover the path of (required)
-  #
-  #   Options:
-  #     -d  Send the directory information only, without the filename in the output
-  #
-  # From http://github.com/morgant/realpath
-  #
-  # @param string the string to converted from a relative path to an absolute path
-  # @returns Outputs the absolute path to STDOUT, returns 0 if successful or 1 if
-  # an error (esp. path not found).
+  # DESC:   Convert a file with relative path to an absolute path
+  # ARGS:   $1 (Required) - Input file
+  # OPTS:   -d            - Print the directory information only, without the filename in the output
+  # OUTS:   Prints absolute path of file. Returns 0 if successful or 1 if an error
+  # NOTE:   http://github.com/morgant/realpath
+
   local success=true
   local file_basename
   local directory
@@ -585,9 +555,10 @@ _realpath_() {
 }
 
 _sourceFile_() {
-  # v1.0.0
-  # Takes a file as an argument $1 and sources it into the current script
-  # usage: _sourceFile_ "SomeFile.txt"
+  # DESC:   Source a file into a script
+  # ARGS:   $1 (Required) - File to be sourced
+  # OUTS:   None
+
   local c="$1"
 
   [ ! -f "$c" ] \
@@ -601,22 +572,11 @@ _sourceFile_() {
 }
 
 _uniqueFileName_() {
-  # v2.0.0
-  # _uniqueFileName_ takes an input of a file and returns a unique filename.
-  # The use-case here is trying to write a file to a directory which may already
-  # have a file with the same name. To ensure unique filenames, we append a digit
-  # to files when necessary
-  #
-  # Inputs:
-  #
-  #   $1  The name of the file (may include a directory)
-  #   $2  Option separation character. Defaults to a space
-  #
-  # Usage:
-  #
-  #   _uniqueFileName_ "/some/dir/file.txt" "-"
-  #
-  #   Would return "/some/dir/file-2.txt"
+  # DESC:   Ensure a file to be created has a unique filename to avoid overwriting other files
+  # ARGS:   $1 (Required) - Name of file to be created
+  #         $2 (Optional) - Separation characted (Defaults to space to mimic Mac Finder)
+  # OUTS:   Prints unique filename to STDOUT
+  # USAGE:  _uniqueFileName_ "/some/dir/file.txt" "-"
 
   local fullfile="${1:?_uniqueFileName_ needs a file}"
   local spacer="${2:--}"
@@ -662,8 +622,9 @@ _uniqueFileName_() {
 }
 
 _yaml2json_() {
-  # v1.0.0
-  # convert yaml files to json using python and PyYAML
-  # usage: _yaml2json_ "dir/somefile.yaml"
+  # DESC:   Convert a YAML file to JSON
+  # ARGS:   $1 (Required) - Input YAML file
+  # OUTS:   None
+
   python -c 'import sys, yaml, json; json.dump(yaml.load(sys.stdin), sys.stdout, indent=4)' <"${1:?_yaml2json_ needs a file}"
 }
