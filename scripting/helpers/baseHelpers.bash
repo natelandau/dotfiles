@@ -177,21 +177,19 @@ verbose() {
 ### FUNCTIONS ###
 
 _execute_() {
-  # v1.1.0
-  # _execute_ Wrap an external command in '_execute_' to push native output to /dev/null
-  #           and have control over the display of the results.
-  #
-  #           If $dryrun=true no commands are executed
-  #           If $verbose=true the command's native output is printed to stderr and stdin
-  #
-  #           options:
-  #             -v    Always print verbose output from the execute function
-  #             -p    Pass a failed command with 'return 0'.  This effecively bypasses set -e.
-  #             -e    Bypass _alert_ functions and use 'echo RESULT'
-  #             -s    Use '_alert_ success' for successful output. (default is 'info')
-  #
-  # usage:
-  #   _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message to print to user"
+  # DESC: Executes commands with safety and logging options
+  # ARGS:  $1 (Required) - The command to be executed.  Quotation marks MUST be escaped.
+  #        $2 (Optional) - String to display after command is executed
+  # OUTS:  None
+  # OPTS:  -v    Always print verbose output from the execute function
+  #        -p    Pass a failed command with 'return 0'.  This effecively bypasses set -e.
+  #        -e    Bypass _alert_ functions and use 'echo RESULT'
+  #        -s    Use '_alert_ success' for successful output. (default is 'info')
+  # USE :  _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message"
+  # NOTE:
+  #        If $dryrun=true no commands are executed
+  #        If $verbose=true the command's native output is printed to stderr and stdin
+
 
   local localVerbose=false
   local passFailures=false
@@ -278,9 +276,11 @@ _execute_() {
 }
 
 _findBaseDir_() {
-  #v1.0.0
-  # fincBaseDir locates the real directory of the script being run. similar to GNU readlink -n
-  # usage :  baseDir="$(_findBaseDir_)"
+  # DESC: Locates the real directory of the script being run. similar to GNU readlink -n
+  # ARGS:  None
+  # OUTS:  Echo result
+  # USE :  baseDir="$(_findBaseDir_)"
+
   local SOURCE
   local DIR
 
@@ -297,10 +297,28 @@ _findBaseDir_() {
   echo "$(cd -P "$(dirname "${SOURCE}")" && pwd)"
 }
 
+_checkBinary_() {
+  # DESC:  Check if a binary exists in the search path
+  # ARGS:   $1 (Required) - Name of the binary to check for existence
+  # OUTS:   true/fals
+  if [[ $# -lt 1 ]]; then
+    warning 'Missing required argument to _checkBinary_()!'
+    _safeExit_ 1
+  fi
+
+  if ! command -v "$1" > /dev/null 2>&1; then
+    verbose "Missing dependency: $1"
+    return 1
+  fi
+
+  verbose "Found dependency: $1"
+  return 0
+}
+
 _haveFunction_() {
-  # v1.0.0
-  # Tests if a function exists.  Returns 0 if yes, 1 if no
-  # usage: _haveFunction "_someFunction_"
+  # DESC: Tests if a function exists.  Returns 0 if yes, 1 if no
+  # ARGS:  $1 (Required) - Function name
+  # OUTS:  true/false
   local f
   f="$1"
 
@@ -312,11 +330,9 @@ _haveFunction_() {
 }
 
 _pauseScript_() {
-  # v1.0.0
-  # A simple function used to pause a script at any point and
-  # only continue on user input
-  #
-  # Takes an option user string for a customized message
+  # DESC:  Pause a script at any point and continue after user input
+  # ARGS:  $1 (Optional) - String for customized message
+  # OUTS:  None
 
   local pauseMessage
   pauseMessage="${1:-Paused}. Ready to continue?"
@@ -330,21 +346,15 @@ _pauseScript_() {
 }
 
 _progressBar_() {
-  # v1.0.0
-  # Prints a progress bar within a for/while loop.
-  # To use this function you must pass the total number of
-  # times the loop will run to the function.
-  #
-  # Takes two inputs:
-  #   $1 - The total number of items counted
-  #   $2 - The optional title of the progress bar
-  #
-  # usage:
+  # DESC:  Prints a progress bar within a for/while loop.
+  # ARGS:  $1 (Required) - The total number of items counted
+  #        $2 (Optional) - The optional title of the progress bar
+  # OUTS:  None
+  # USAGE:
   #   for number in $(seq 0 100); do
   #     sleep 1
   #     _progressBar_ "100" "Counting numbers"
   #   done
-  # -----------------------------------
 
   ($quiet) && return
   ($verbose) && return
@@ -391,11 +401,10 @@ _progressBar_() {
 }
 
 _safeExit_() {
-  # Delete temp files with option to save if error is trapped
-  # To exit the script with a non-zero exit code pass the requested code
-  # to this function as an argument
-  #
-  #   Usage:    _safeExit_ "1"
+  # DESC: Cleanup and exit from a script
+  # ARGS: $1 (optional) - Exit code (defaults to 0)
+  # OUTS: None
+
   if [[ -n "${tmpDir}" && -d "${tmpDir}" ]]; then
     if [[ $1 == 1 && -n "$(ls "${tmpDir}")" ]]; then
       if _seekConfirmation_ "Save the temp directory for debugging?"; then
@@ -413,13 +422,15 @@ _safeExit_() {
 }
 
 _seekConfirmation_() {
-  # v1.0.1
-  # Seeks a Yes or No answer to a question.  Usage:
+  # DESC:  Seek user input for yes/no question
+  # ARGS:   $1 (Optional) - Question being asked
+  # OUTS:   true/false
+  # USAGE:
   #   if _seekConfirmation_ "Answer this question"; then
   #     something
   #   fi
 
-  input "$@"
+  input "$1"
   if "${force}"; then
     verbose "Forcing confirmation with '--force' flag set"
     echo -e ""
@@ -437,9 +448,10 @@ _seekConfirmation_() {
 }
 
 _setPATH_() {
-  # v2.0.0
-  # _setPATH_() Add specified directories to $PATH so the script can find executables
-  # Usage:  _setPATH_ "/usr/local/bin" "${HOME}/bin" "$(npm bin)"
+  # DESC:   Add directories to $PATH so script can find executables
+  # ARGS:   $@ - One or more paths
+  # OUTS:   $PATH
+  # USAGE:  _setPATH_ "/usr/local/bin" "${HOME}/bin" "$(npm bin)"
   local NEWPATH NEWPATHS USERPATH
 
   for USERPATH in "$@"; do
@@ -454,13 +466,21 @@ _setPATH_() {
 }
 
 _trapCleanup_() {
+  # DESC:  Log errors and cleanup from script when an error is trapped
+  # ARGS:   $1 - Line number where error was trapped
+  #         $2 - Line number in function
+  #         $3 - Command executing at the time of the trap
+  #         $4 - Names of all shell functions currently in the execution call stack
+  #         $5 - Scriptname
+  #         $6 - $BASH_SOURCE
+  # OUTS:   None
+
   local line=$1 # LINENO
   local linecallfunc=$2
   local command="$3"
   local funcstack="$4"
   local script="$5"
   local sourced="$6"
-  local scriptSpecific="$7"
 
   funcstack="'$(echo "$funcstack" | sed -E 's/ / < /g')'"
 

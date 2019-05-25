@@ -289,6 +289,16 @@ teardown() {
   quiet=false
 }
 
+@test "_checkBinary_: true" {
+  run _checkBinary_ "vi"
+  assert_success
+}
+
+@test "_checkBinary_: false" {
+  run _checkBinary_ "someNonexistantBinary"
+  assert_failure
+}
+
 @test "_setPATH_" {
   _setPATH_ "/testing/from/bats" "/testing/again"
   run echo "$PATH"
