@@ -86,6 +86,9 @@ brew "optipng"
 brew "p7zip"
 brew "pam_yubico"
 brew "pandoc"
+brew "qrencode"
+brew "tree"
+brew "pass"
 brew "pngcrush"
 brew "prettyping"
 brew "schroedinger"
@@ -99,7 +102,6 @@ brew "texi2html"
 brew "texinfo"
 brew "thefuck"
 brew "tldr"
-brew "tree"
 brew "two-lame"
 brew "unison"
 brew "wavpack"
@@ -148,26 +150,26 @@ cask "vlc"
 cask "xld"
 cask "yubico-authenticator"
 cask "yubico-yubikey-manager"
-mas "at.EternalStorms.Yoink", id: 457622435
-mas "com.agiletortoise.Drafts-OSX", id: 1435957248
-mas "com.anthonymayo.TabsToLinks", id: 1451408472
-mas "com.apple.dt.Xcode", id: 497799835
-mas "com.apple.garageband10", id: 682658836
-mas "com.apple.iMovieApp", id: 408981434
-mas "com.apple.iWork.Keynote", id: 409183694
-mas "com.apple.iWork.Numbers", id: 409203825
-mas "com.apple.iWork.Pages", id: 409201541
-mas "com.bloombuilt.dayone-mac", id: 1055511498
-mas "com.culturedcode.ThingsMac", id: 904280696
-mas "com.daisydiskapp.DaisyDisk", id: 411643860
-mas "com.fullcontact.ab.osx", id: 1094748271
-mas "com.icvt.JPEGmini", id: 498944723
-mas "com.khanov.BlockerMac", id: 1107421413
-mas "com.nordvpn.osx-apple", id: 1116599239
-mas "com.omnigroup.OmniGraffle6.MacAppStore", id: 711830901
-mas "com.ookla.speedtest-macos", id: 1153157709
-mas "com.pixelmatorteam.pixelmator", id: 407963104
-mas "com.readdle.smartemail-Mac", id: 1176895641
-mas "com.supermegaultragroovy.capo3.mac", id: 696977615
-mas "it.bloop.airmail2", id: 918858936
-mas "net.shinyfrog.bear", id: 1091189122
+mas "1Blocker", id: 1107421413
+mas "Airmail", id: 918858936
+mas "Bear", id: 1091189122
+mas "Capo", id: 696977615
+mas "Contacts+", id: 1094748271
+mas "DaisyDisk", id: 411643860
+mas "Day One", id: 1055511498
+mas "Drafts", id: 1435957248
+mas "GarageBand", id: 682658836
+mas "iMovie", id: 408981434
+mas "JPEGmini", id: 498944723
+mas "Keynote", id: 409183694
+mas "NordVPN IKE", id: 1116599239
+mas "Numbers", id: 409203825
+mas "OmniGraffle 6", id: 711830901
+mas "Pages", id: 409201541
+mas "Pixelmator", id: 407963104
+mas "Spark", id: 1176895641
+mas "Speedtest", id: 1153157709
+mas "Tabs to Links", id: 1451408472
+mas "Things", id: 904280696
+mas "Xcode", id: 497799835
+mas "Yoink", id: 457622435
