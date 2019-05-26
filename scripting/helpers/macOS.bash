@@ -1,9 +1,10 @@
-# Functions for use on computers running  MacOS
+# Functions for use on computers running MacOS
 
 _haveScriptableFinder_() {
-  # Determine whether we can script the Finder or not
-  # We must have a valid PID for Finder, plus we cannot be in
-  # `screen` (another thing that's broken)
+  # DESC:   Determine whether we can script the Finder or not
+  # ARGS:   None
+  # OUTS:   true/false
+
   local finder_pid
   finder_pid="$(pgrep -f /System/Library/CoreServices/Finder.app)"
 
@@ -15,10 +16,10 @@ _haveScriptableFinder_() {
 }
 
 _guiInput_() {
-  # Ask for user input using a Mac dialog box.
-  # Defaults to use the prompt: "Password". Pass an option to change that text.
-  #
-  # Credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md
+  # DESC:   Ask for user input using a Mac dialog box
+  # ARGS:   $1 (Optional) - Text in dialogue box (Default: Password)
+  # OUTS:   None
+  # NOTE:   https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md
   if _haveScriptableFinder_; then
     guiPrompt="${1:-Password:}"
     guiInput=$(

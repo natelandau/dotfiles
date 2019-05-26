@@ -1,14 +1,13 @@
 _fromSeconds_() {
-  # v1.0.0
-  # Pass a number (seconds) into the function to convert it to HH:MM:SS
-  #
-  #   Usage:  _convertSecs_ "SECONDS"
-  #
-  # Sample usage:
-  #   To compute the time it takes a script to run:
-  #     STARTTIME=$(date +"%s")
-  #     ENDTIME=$(date +"%s")
-  #     TOTALTIME=$(($ENDTIME-$STARTTIME)) # human readable time
+  # DESC:   Convert seconds to HH:MM:SS
+  # ARGS:   $1 (Required) - Time in seconds
+  # OUTS:   Print HH:MM:SS to STDOUT
+  # USAGE:  _convertSecs_ "SECONDS"
+  #     To compute the time it takes a script to run:
+  #       STARTTIME=$(date +"%s")
+  #       ENDTIME=$(date +"%s")
+  #       TOTALTIME=$(($ENDTIME-$STARTTIME)) # human readable time
+  #       _convertSecs_ "$TOTALTIME"
 
   ((h = ${1} / 3600))
   ((m = (${1} % 3600) / 60))
@@ -17,21 +16,19 @@ _fromSeconds_() {
 }
 
 _toSeconds_() {
-  # v1.0.0
-  #
-  # Takes an input of HOURS MINUTES SECONDS and converts it to
-  # a total number of seconds. Takes an input in a number of formats.
-  #
-  # Usage:  '_toSeconds_ 01:00:00' would return '3600'
-  #
-  # Acceptable Input Formats
-  #   24 12 09
-  #   12,12,09
-  #   12;12;09
-  #   12:12:09
-  #   12-12-09
-  #   12H12M09S
-  #   12h12m09s
+  # DESC:   Converts HH:MM:SS to seconds
+  # ARGS:   $1 (Required) - Time in HH:MM:SS
+  # OUTS:   Print seconds to STDOUT
+  # USAGE:  _toSeconds_ "01:00:00"
+  # NOTE:   Acceptable Input Formats
+  #           24 12 09
+  #           12,12,09
+  #           12;12;09
+  #           12:12:09
+  #           12-12-09
+  #           12H12M09S
+  #           12h12m09s
+
   local saveIFS
 
   if [[ "$1" =~ [0-9]{1,2}(:|,|-|_|,| |[hHmMsS])[0-9]{1,2}(:|,|-|_|,| |[hHmMsS])[0-9]{1,2} ]]; then
@@ -48,15 +45,13 @@ _toSeconds_() {
 }
 
 _countdown_() {
-  # v1.0.0
-  # Used to count down in increments of 1 from a specified number.
-  # Default is counting down from 10 in 1 second increments
-  # Usage:
-  #
-  #   _countdown_ "starting number" "sleep time (seconds)" "message "
-  #
-  # Example:
-  #   $ _countdown_ 10 1 "Waiting for cache to invalidate"
+  # DESC:   Sleep for a specified amount of time
+  # ARGS:   $1 (Optional) - Total seconds to sleep for(Default is 10)
+  #         $2 (Optional) - Increment to count down
+  #         $3 (Optional) - Message to print at each increment (default is ...)
+  # OUTS:   None
+  # USAGE:  _countdown_ 10 1 "Waiting for cache to invalidate"
+
   local i ii t
   local n=${1:-10}
   local stime=${2:-1}

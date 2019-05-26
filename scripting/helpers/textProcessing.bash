@@ -1,19 +1,22 @@
-# Transform text using these functions.
+# Transform text using these functions
 # Some were adapted from https://github.com/jmcantrell/bashful
 
 _escape_() {
-  # v1.0.0
-  # Escapes a string by adding \ before special chars
-  # usage: _escape_ "Some text here"
+  # DESC:   Escapes a string by adding \ before special chars
+  # ARGS:   $@ (Required) - String to be escaped
+  # OUTS:   Prints output to STDOUD
+  # USAGE:  _escape_ "Some text here"
 
   # shellcheck disable=2001
   echo "${@}" | sed 's/[]\.|$[ (){}?+*^]/\\&/g'
 }
 
 _htmlDecode_() {
-  # v1.0.0
-  # Decode HTML characters with sed
-  # Usage: _htmlDecode_ <string>
+  # DESC:   Decode HTML characters with sed
+  # ARGS:   $1 (Required) - String to be decoded
+  # OUTS:   Prints output to STDOUT
+  # USAGE:  _htmlDecode_ <string>
+  # NOTE:   Must have a sed file containing replacements
 
   local sedFile
   sedFile="${HOME}/.sed/htmlDecode.sed"
@@ -24,9 +27,11 @@ _htmlDecode_() {
 }
 
 _htmlEncode_() {
-  # v1.0.0
-  # Encode HTML characters with sed
-  # Usage: _htmlEncode_ <string>
+  # DESC:   Encode HTML characters with sed
+  # ARGS:   $1 (Required) - String to be encoded
+  # OUTS:   Prints output to STDOUT
+  # USAGE:  _htmlEncode_ <string>
+  # NOTE:   Must have a sed file containing replacements
 
   local sedFile
   sedFile="${HOME}/.sed/htmlEncode.sed"
@@ -37,42 +42,58 @@ _htmlEncode_() {
 }
 
 _lower_() {
-  # Convert stdin to lowercase.
-  # usage:  text=$(lower <<<"$1")
-  #         echo "MAKETHISLOWERCASE" | _lower_
+  # DESC:   Convert stdin to lowercase
+  # ARGS:   None
+  # OUTS:   None
+  # USAGE:  text=$(_lower_ <<<"$1")
+  #         echo "STRING" | _lower_
   tr '[:upper:]' '[:lower:]'
 }
 
+_upper_() {
+  # DESC:   Convert stdin to uppercase
+  # ARGS:   None
+  # OUTS:   None
+  # USAGE:  text=$(_upper_ <<<"$1")
+  #         echo "STRING" | _upper_
+  tr '[:lower:]' '[:upper:]'
+}
+
 _ltrim_() {
-  # Removes all leading whitespace (from the left).
+  # DESC:   Removes all leading whitespace (from the left)
+  # ARGS:   None
+  # OUTS:   None
+  # USAGE:  text=$(_ltrim_ <<<"$1")
+  #         echo "STRING" | _ltrim_
   local char=${1:-[:space:]}
   sed "s%^[${char//%/\\%}]*%%"
 }
 
 _rtrim_() {
-  # Removes all trailing whitespace (from the right).
+  # DESC:   Removes all leading whitespace (from the right)
+  # ARGS:   None
+  # OUTS:   None
+  # USAGE:  text=$(_rtrim_ <<<"$1")
+  #         echo "STRING" | _rtrim_
   local char=${1:-[:space:]}
   sed "s%[${char//%/\\%}]*$%%"
 }
 
 _trim_() {
-  # Removes all leading/trailing whitespace
-  # Usage examples:
-  #     echo "  foo  bar baz " | _trim_  #==> "foo  bar baz"
+  # DESC:   Removes all leading/trailing whitespace
+  # ARGS:   None
+  # OUTS:   None
+  # USAGE:  text=$(_trim_ <<<"$1")
+  #         echo "STRING" | _trim_
   _ltrim_ "$1" | _rtrim_ "$1"
 }
 
-_upper_() {
-  # Convert stdin to uppercase.
-  # usage:  text=$(upper <<<"$1")
-  #         echo "make this" | _upper_
-  tr '[:lower:]' '[:upper:]'
-}
-
 _urlEncode_() {
-  # v1.0.0
-  # URL encoding/decoding from: https://gist.github.com/cdown/1163649
-  # Usage: _urlEncode_ <string>
+  # DESC:   URL encode a string
+  # ARGS:   $1 (Required) - String to be encoded
+  # OUTS:   Prints output to STDOUT
+  # USAGE:  _urlEncode_ <string>
+  # NOTE:   https://gist.github.com/cdown/1163649
 
   local LANG=C
   local i
@@ -87,8 +108,11 @@ _urlEncode_() {
 }
 
 _urlDecode_() {
-  # v1.0.0
-  # Usage: _urlDecode_ <string>
+  # DESC:   Decode a URL encoded string
+  # ARGS:   $1 (Required) - String to be decoded
+  # OUTS:   Prints output to STDOUT
+  # USAGE:  _urlDecode_ <string>
+
   local url_encoded="${1//+/ }"
   printf '%b' "${url_encoded//%/\\x}"
 }

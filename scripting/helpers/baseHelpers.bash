@@ -180,16 +180,15 @@ _execute_() {
   # DESC: Executes commands with safety and logging options
   # ARGS:  $1 (Required) - The command to be executed.  Quotation marks MUST be escaped.
   #        $2 (Optional) - String to display after command is executed
-  # OUTS:  None
   # OPTS:  -v    Always print verbose output from the execute function
   #        -p    Pass a failed command with 'return 0'.  This effecively bypasses set -e.
   #        -e    Bypass _alert_ functions and use 'echo RESULT'
   #        -s    Use '_alert_ success' for successful output. (default is 'info')
+  # OUTS:  None
   # USE :  _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message"
   # NOTE:
   #        If $dryrun=true no commands are executed
   #        If $verbose=true the command's native output is printed to stderr and stdin
-
 
   local localVerbose=false
   local passFailures=false
