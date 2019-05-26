@@ -37,13 +37,13 @@ _alert_() {
 
   local scriptName logLocation logName function_name color alertType line
   alertType="$1"
-  line="${2}"
+  line="${2-}"
 
   scriptName=$(basename "$0")
-  logLocation="${HOME}/logs"
-  logName="${scriptName%.sh}.log"
+  readonly logLocation="${HOME}/logs"
+  readonly logName="${scriptName%.sh}.log"
 
-  if [ -z "$logFile" ]; then
+  if [ -z "${logFile-}" ]; then
     [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
     logFile="${logLocation}/${logName}"
   fi
@@ -109,72 +109,115 @@ _alert_() {
   else
     return 0
   fi
-}
+} # /_alert_
+
 die() {
   local _message="${1}"
-  echo -e "$(_alert_ fatal $2)"
+  echo -e "$(_alert_ fatal ${2-})"
   _safeExit_ "1"
 }
 fatal() {
   local _message="${1}"
-  echo -e "$(_alert_ fatal $2)"
+  echo -e "$(_alert_ fatal ${2-})"
   _safeExit_ "1"
 }
 trapped() {
   local _message="${1}"
-  echo -e "$(_alert_ trapped $2)"
+  echo -e "$(_alert_ trapped ${2-})"
   _safeExit_ "1"
 }
 error() {
   local _message="${1}"
-  echo -e "$(_alert_ error $2)"
+  echo -e "$(_alert_ error ${2-})"
 }
 warning() {
   local _message="${1}"
-  echo -e "$(_alert_ warning $2)"
+  echo -e "$(_alert_ warning ${2-})"
 }
 notice() {
   local _message="${1}"
-  echo -e "$(_alert_ notice $2)"
+  echo -e "$(_alert_ notice ${2-})"
 }
 info() {
   local _message="${1}"
-  echo -e "$(_alert_ info $2)"
+  echo -e "$(_alert_ info ${2-})"
 }
 debug() {
   ($verbose) \
     && {
       local _message="${1}"
-      echo -e "$(_alert_ debug $2)"
+      echo -e "$(_alert_ debug ${2-})"
     } \
     || return 0
 }
 success() {
   local _message="${1}"
-  echo -e "$(_alert_ success $2)"
+  echo -e "$(_alert_ success ${2-})"
 }
 dryrun() {
   local _message="${1}"
-  echo -e "$(_alert_ dryrun $2)"
+  echo -e "$(_alert_ dryrun ${2-})"
 }
 input() {
   local _message="${1}"
-  echo -n "$(_alert_ input $2)"
+  echo -n "$(_alert_ input ${2-})"
 }
 header() {
   local _message="== ${*} =="
-  echo -e "$(_alert_ header $2)"
+  echo -e "$(_alert_ header ${2-})"
 }
 verbose() {
   ($verbose) \
     && {
       local _message="${1}"
-      echo -e "$(_alert_ debug $2)"
+      echo -e "$(_alert_ debug ${2-})"
     } \
     || return 0
 }
 
 ### FUNCTIONS ###
+
+_makeTempDir_() {
+  # DESC:   Creates a temp direcrtory to house temporary files
+  # ARGS:   $1 (Optional) - First characters/word of directory name
+  # OUTS:   $temp         - Temporary directory
+  # USAGE:  _makeTempDir_ "$(basename "$0")"
+
+  if [ -n "${1-}" ]; then
+    tmpDir="${TMPDIR:-/tmp/}${1}.$RANDOM.$RANDOM.$$"
+  else
+    tmpDir="${TMPDIR:-/tmp/}$(basename "$0").$RANDOM.$RANDOM.$RANDOM.$$"
+  fi
+  (umask 077 && mkdir "${tmpDir}") || {
+    fatal "Could not create temporary directory! Exiting."
+  }
+  verbose "Temp dir created: $tmpDir"
+}
+
+_acquireScriptLock_() {
+  # DESC: Acquire script lock
+  # ARGS: $1 (optional) - Scope of script execution lock (system or user)
+  # OUTS: $script_lock - Path to the directory indicating we have the script lock
+  # NOTE: This lock implementation is extremely simple but should be reliable
+  #       across all platforms. It does *not* support locking a script with
+  #       symlinks or multiple hardlinks as there's no portable way of doing so.
+  #       If the lock was acquired it's automatically released in _safeExit_()
+
+    ($sourceOnly) && return 0
+    local lock_dir
+    if [[ ${1-} = 'system' ]]; then
+      lock_dir="${TMPDIR:-/tmp/}$(basename "$0").lock"
+    else
+      lock_dir="${TMPDIR:-/tmp/}$(basename "$0").$UID.lock"
+    fi
+
+    if command mkdir "$lock_dir" 2> /dev/null; then
+        readonly script_lock="$lock_dir"
+        verbose "Acquired script lock: $script_lock"
+    else
+        die "Unable to acquire script lock: $lock_dir"
+    fi
+}
 
 _execute_() {
   # DESC: Executes commands with safety and logging options
@@ -404,8 +447,12 @@ _safeExit_() {
   # ARGS: $1 (optional) - Exit code (defaults to 0)
   # OUTS: None
 
-  if [[ -n "${tmpDir}" && -d "${tmpDir}" ]]; then
-    if [[ $1 == 1 && -n "$(ls "${tmpDir}")" ]]; then
+  if [[ -d ${script_lock-} ]]; then
+    rmdir "$script_lock"
+  fi
+
+  if [[ -n "${tmpDir-}" && -d "${tmpDir-}" ]]; then
+    if [[ ${1-} == 1 && -n "$(ls "${tmpDir}")" ]]; then
       if _seekConfirmation_ "Save the temp directory for debugging?"; then
         cp -r "${tmpDir}" "${tmpDir}.save"
         notice "'${tmpDir}.save' created"
@@ -429,7 +476,7 @@ _seekConfirmation_() {
   #     something
   #   fi
 
-  input "$1"
+  input "${1-}"
   if "${force}"; then
     verbose "Forcing confirmation with '--force' flag set"
     echo -e ""
@@ -474,20 +521,20 @@ _trapCleanup_() {
   #         $6 - $BASH_SOURCE
   # OUTS:   None
 
-  local line=$1 # LINENO
-  local linecallfunc=$2
-  local command="$3"
-  local funcstack="$4"
-  local script="$5"
-  local sourced="$6"
+  local line=${1-} # LINENO
+  local linecallfunc=${2-}
+  local command="${3-}"
+  local funcstack="${4-}"
+  local script="${5-}"
+  local sourced="${6-}"
 
   funcstack="'$(echo "$funcstack" | sed -E 's/ / < /g')'"
 
   #fatal "line $line - command '$command' $func"
   if [[ "${script##*/}" == "${sourced##*/}" ]]; then
-    fatal "${7} command: '$command' (line: $line) (func: ${funcstack})"
+    fatal "${7-} command: '$command' (line: $line) (func: ${funcstack})"
   else
-    fatal "${7} command: '$command' (func: ${funcstack} called at line $linecallfunc of '${script##*/}') (line: $line of '${sourced##*/}') "
+    fatal "${7-} command: '$command' (func: ${funcstack} called at line $linecallfunc of '${script##*/}') (line: $line of '${sourced##*/}') "
   fi
 
   _safeExit_ "1"

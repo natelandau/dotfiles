@@ -18,6 +18,8 @@ _htmlDecode_() {
   # USAGE:  _htmlDecode_ <string>
   # NOTE:   Must have a sed file containing replacements
 
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _htmlDecode_()!'
+
   local sedFile
   sedFile="${HOME}/.sed/htmlDecode.sed"
 
@@ -32,6 +34,8 @@ _htmlEncode_() {
   # OUTS:   Prints output to STDOUT
   # USAGE:  _htmlEncode_ <string>
   # NOTE:   Must have a sed file containing replacements
+
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _htmlEncode_()!'
 
   local sedFile
   sedFile="${HOME}/.sed/htmlEncode.sed"
@@ -95,6 +99,8 @@ _urlEncode_() {
   # USAGE:  _urlEncode_ <string>
   # NOTE:   https://gist.github.com/cdown/1163649
 
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _urlEncode_()!'
+
   local LANG=C
   local i
 
@@ -112,6 +118,8 @@ _urlDecode_() {
   # ARGS:   $1 (Required) - String to be decoded
   # OUTS:   Prints output to STDOUT
   # USAGE:  _urlDecode_ <string>
+
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _urlDecode_()!'
 
   local url_encoded="${1//+/ }"
   printf '%b' "${url_encoded//%/\\x}"

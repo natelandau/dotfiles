@@ -4,6 +4,9 @@ _inArray_() {
   #         $2 (Required) - Array written as ${ARRAY[@]}
   # OUTS:   true/false
   # USAGE:  if _inArray_ "VALUE" "${ARRAY[@]}"; then ...
+
+  [[ $# -lt 2 ]] && fatal 'Missing required argument to _inArray_()!'
+
   local value="$1"
   shift
   for arrayItem in "$@"; do
@@ -23,6 +26,8 @@ _join_() {
   #   _join_ , "${foo[@]}" #a,b,c
   # NOTE:  http://stackoverflow.com/questions/1527049/bash-join-elements-of-an-array
 
+  [[ $# -lt 2 ]] && fatal 'Missing required argument to _join_()!'
+
   local IFS="${1}"
   shift
   echo "${*}"
@@ -35,6 +40,9 @@ _setdiff_() {
   # OUTS:  Prints unique terms
   # USAGE: _setdiff_ "${array1[*]}" "${array2[*]}"
   # NOTE:  http://stackoverflow.com/a/1617303/142339
+
+  [[ $# -lt 2 ]] && fatal 'Missing required argument to _setdiff_()!'
+
   local debug skip a b
   if [[ "$1" == 1 ]]; then
     debug=1

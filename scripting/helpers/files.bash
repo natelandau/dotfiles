@@ -9,6 +9,8 @@ _listFiles_() {
   #        _listFiles_ regex ".*\.txt" "some/backup/dir"
   #        array=($(_listFiles_ g "*.txt"))
 
+  [[ $# -lt 2 ]] && fatal 'Missing required argument to _listFiles_()!'
+
   local t="${1}"
   local p="${2}"
   local d="${3:-.}"
@@ -55,7 +57,9 @@ _backupFile_() {
   # USAGE:  _backupFile_ "sourcefile.txt" "some/backup/dir"
   # NOTE:   dotfiles have their leading '.' removed in their backup
 
-  local s="$1"
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _backupFile_()!'
+
+  local s="${1}"
   local d="${2:-backup}"
   local n # New filename (created by _uniqueFilename_)
 
@@ -94,10 +98,11 @@ _cleanFilename_() {
   # USAGE:  _cleanFilename_ "FILENAME.TXT" "^,&,*"
   # NOTE:   IMPORTANT - This will overwrite the original file
 
-  local arrayToClean
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _cleanFilename_()!'
 
+  local arrayToClean
   local fileToClean="$(_realpath_ "$1")"
-  local optionalUserInput="$2"
+  local optionalUserInput="${2-}"
 
   IFS=',' read -r -a arrayToClean <<<"$optionalUserInput"
 
@@ -137,6 +142,8 @@ _decryptFile_() {
   # USAGE:  _decryptFile_ "somefile.txt.enc" "decrypted_somefile.txt"
   # NOTE:   If a variable '$PASS' has a value, we will use that as the password
   #         to decrypt the file. Otherwise we will ask
+
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _decryptFile_()!'
 
   local fileToDecrypt decryptedFile defaultName
   fileToDecrypt="${1:?_decryptFile_ needs a file}"
@@ -199,6 +206,8 @@ _ext_() {
   #   _ext_     foo.tar.gz  #==> .tar.gz
   #   _ext_ -n1 foo.tar.gz  #==> .gz
 
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _ext_()!'
+
   local levels
   local option
   local filename
@@ -252,7 +261,9 @@ _extract_() {
   local didfolderexist
   local vv
 
-  [[ "$2" == "v" ]] && vv="v"
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _extract_()!'
+
+  [[ "${2-}" == "v" ]] && vv="v"
 
   if [ -f "$1" ]; then
     case "$1" in
@@ -347,9 +358,11 @@ _makeSymlink_() {
   # USAGE:  _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
   # NOTE:   This function makes use of the _execute_ function
 
+  [[ $# -lt 2 ]] && fatal 'Missing required argument to _makeSymlink_()!'
+
   local s="$1"
   local d="$2"
-  local b="$3"
+  local b="${3-}"
   local o
 
   # Fix files where $HOME is written as '~'
@@ -421,7 +434,7 @@ _parseYAML_() {
 
 
   local yamlFile="${1:?_parseYAML_ needs a file}"
-  local prefix="${2}"
+  local prefix="${2-}"
 
   [ ! -s "${yamlFile}" ] \
     && return 1
@@ -451,6 +464,8 @@ _readFile_() {
   # DESC:   Prints each line of a file
   # ARGS:   $1 (Required) - Input file
   # OUTS:   Prints contents of file
+
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _readFile_()!'
 
   local result
   local c="$1"
@@ -559,6 +574,8 @@ _sourceFile_() {
   # ARGS:   $1 (Required) - File to be sourced
   # OUTS:   None
 
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _sourceFile_()!'
+
   local c="$1"
 
   [ ! -f "$c" ] \
@@ -607,14 +624,14 @@ _uniqueFileName_() {
     filename="${filename%.*}"
   fi
 
-  newfile="${directory}/${filename}${extension}"
+  newfile="${directory}/${filename}${extension-}"
 
   if [ -e "${newfile}" ]; then
     n=2
-    while [[ -e "${directory}/${filename}${spacer}${n}${extension}" ]]; do
+    while [[ -e "${directory}/${filename}${spacer}${n}${extension-}" ]]; do
       ((n++))
     done
-    newfile="${directory}/${filename}${spacer}${n}${extension}"
+    newfile="${directory}/${filename}${spacer}${n}${extension-}"
   fi
 
   echo "${newfile}"

@@ -1,16 +1,12 @@
 _httpStatus_() {
-  # v1.0.0
-  # Shamelessly taken from: https://gist.github.com/rsvp/1171304
-  #
-  # Usage:  _httpStatus_ URL [timeout] [--code or --status] [see 4.]
-  #                                             ^message with code (default)
-  #                                     ^code (numeric only)
-  #                           ^in secs (default: 3)
-  #                   ^URL without "http://" prefix works fine.
-  #
-  #  4. curl options: e.g. use -L to follow redirects.
-  #
-  #  Dependencies: curl
+  # DESC:   Report the HTTP status of a specified URL
+  # ARGS:   $1 (Required) - URL (will work fine without https:// prefix)
+  #         $2 (Optional) - Seconds to wait until timeout (Default is 3)
+  #         $3 (Optional) - either '--code'  or '--status' (default)
+  #         $4 (optional) - CURL opts separated by spaces(Use -L to follow redirects)
+  # OUTS:   Prints output to STDOUT
+  # USAGE:  _httpStatus_ URL [timeout] [--code or --status] [curl opts]
+  # NOTE:   https://gist.github.com/rsvp/1171304
   #
   #         Example:  $ _httpStatus_ bit.ly
   #                   301 Redirection: Moved Permanently
@@ -23,9 +19,8 @@ _httpStatus_() {
   IFS=$' \n\t'
 
   local url=${1:?_httpStatus_ needs an url}
-  local timeout=${2:-'3'} # in seconds
+  local timeout=${2:-'3'}
   local flag=${3:-'--status'}
-  #    curl options, e.g. -L to follow redirects
   local arg4=${4:-''}
   local arg5=${5:-''}
   local arg6=${6:-''}
@@ -95,14 +90,13 @@ _httpStatus_() {
 }
 
 _pushover_() {
-  # v1.0.0
-  # Sends notifications view Pushover
-  # IMPORTANT: The API Keys must be filled in
-  #
-  # Usage: _pushover_ "Title Goes Here" "Message Goes Here"
-  #
-  # Credit: http://ryonsherman.blogspot.com/2012/10/shell-script-to-send-pushover.html
-  # ------------------------------------------------------
+  # DESC:   Sends a notification via Pushover
+  # ARGS:   $1 (Required) - Title of notification
+  #         $2 (Required) - Body of notification
+  # OUTS:   None
+  # USAGE:  _pushover_ "Title Goes Here" "Message Goes Here"
+  # NOTE:   The variables for the two API Keys must have valid values
+  #         Credit: http://ryonsherman.blogspot.com/2012/10/shell-script-to-send-pushover.html
 
   local PUSHOVERURL
   local API_KEY
