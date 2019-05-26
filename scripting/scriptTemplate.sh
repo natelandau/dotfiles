@@ -7,7 +7,7 @@ _mainScript_() {
 } # end _mainScript_
 
 _sourceHelperFiles_() {
-	# DESC: Soources script helper files
+	# DESC: Sources script helper files
   local filesToSource
   local sourceFile
   filesToSource=(
@@ -31,28 +31,20 @@ _sourceHelperFiles_() {
 }
 _sourceHelperFiles_
 
-# Set Flags
+# Set initial flags
 quiet=false
 printLog=false
 logErrors=true
 verbose=false
 force=false
-strict=false
 dryrun=false
-debug=false
 sourceOnly=false
 args=()
-
-# Set Temp Directory
-tmpDir="${TMPDIR:-/tmp/}$(basename "$0").$RANDOM.$RANDOM.$$"
-(umask 077 && mkdir "${tmpDir}") || {
-  fatal "Could not create temporary directory! Exiting."
-}
 
 _usage_() {
   echo -n "$(basename "$0") [OPTION]... [FILE]...
 
-This is a script template.  Edit this description to print help to users.
+  This is a script template.  Edit this description to print help to users.
 
  ${bold}Options:${reset}
   -u, --username    Username for script
@@ -70,118 +62,97 @@ This is a script template.  Edit this description to print help to users.
   -l, --log         Print log to file with all log levels
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
-  -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
   -v, --verbose     Output more information. (Items echoed to 'verbose')
-  -d, --debug       Runs script in BASH debug mode (set -x)
   -h, --help        Display this help and exit
       --source-only Bypasses main script functionality to allow unit tests of functions
       --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
 }
 
-# Iterate over options breaking -ab into -a -b when needed and --foo=bar into
-# --foo bar
-optstring=h
-unset options
-while (($#)); do
-  case $1 in
-    # If option is of type -ab
-    -[!-]?*)
-      # Loop over each character starting with the second
-      for ((i = 1; i < ${#1}; i++)); do
-        c=${1:i:1}
+_parseOptions_() {
+  # Iterate over options
+  # breaking -ab into -a -b when needed and --foo=bar into --foo bar
+  optstring=h
+  unset options
+  while (($#)); do
+    case $1 in
+      # If option is of type -ab
+      -[!-]?*)
+        # Loop over each character starting with the second
+        for ((i = 1; i < ${#1}; i++)); do
+          c=${1:i:1}
+          options+=("-$c")  # Add current char to options
+          # If option takes a required argument, and it's not the last char make
+          # the rest of the string its argument
+          if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
+            options+=("${1:i+1}")
+            break
+          fi
+        done
+        ;;
 
-        # Add current char to options
-        options+=("-$c")
+      # If option is of type --foo=bar
+      --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
+      # add --endopts for --
+      --) options+=(--endopts) ;;
+      # Otherwise, nothing special
+      *) options+=("$1") ;;
+    esac
+    shift
+  done
+  set -- "${options[@]}"
+  unset options
 
-        # If option takes a required argument, and it's not the last char make
-        # the rest of the string its argument
-        if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
-          options+=("${1:i+1}")
-          break
-        fi
-      done
-      ;;
+  # Read the options and set stuff
+  while [[ $1 == -?* ]]; do
+    case $1 in
+      -h | --help)
+        _usage_ >&2
+        _safeExit_
+        ;;
+      -u | --username)
+        shift
+        username=${1}
+        ;;
+      -p | --password)
+        shift
+        echo "Enter Pass: "
+        stty -echo
+        read -r PASS
+        stty echo
+        echo
+        ;;
+      -L | --noErrorLog) logErrors=false ;;
+      -n | --dryrun) dryrun=true ;;
+      -v | --verbose) verbose=true ;;
+      -l | --log) printLog=true ;;
+      -q | --quiet) quiet=true ;;
+      --source-only) sourceOnly=true ;;
+      --force) force=true ;;
+      --endopts)
+        shift
+        break
+        ;;
+      *) die "invalid option: '$1'." ;;
+    esac
+    shift
+  done
+  args+=("$@")  # Store the remaining user input as arguments.
+}
+_parseOptions_ "$@"
 
-    # If option is of type --foo=bar
-    --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
-    # add --endopts for --
-    --) options+=(--endopts) ;;
-    # Otherwise, nothing special
-    *) options+=("$1") ;;
-  esac
-  shift
-done
-set -- "${options[@]}"
-unset options
-
-# Print help if no arguments were passed.
-# Uncomment to force arguments when invoking the script
-# -------------------------------------
-# [[ $# -eq 0 ]] && set -- "--help"
-
-# Read the options and set stuff
-while [[ $1 == -?* ]]; do
-  case $1 in
-    -h | --help)
-      _usage_ >&2
-      _safeExit_
-      ;;
-    -u | --username)
-      shift
-      username=${1}
-      ;;
-    -p | --password)
-      shift
-      echo "Enter Pass: "
-      stty -echo
-      read -r PASS
-      stty echo
-      echo
-      ;;
-    -L | --noErrorLog) logErrors=false ;;
-    -n | --dryrun) dryrun=true ;;
-    -v | --verbose) verbose=true ;;
-    -l | --log) printLog=true ;;
-    -q | --quiet) quiet=true ;;
-    -s | --strict) strict=true ;;
-    -d | --debug) debug=true ;;
-    --source-only) sourceOnly=true ;;
-    --force) force=true ;;
-    --endopts)
-      shift
-      break
-      ;;
-    *) die "invalid option: '$1'." ;;
-  esac
-  shift
-done
-
-# Store the remaining part as arguments.
-args+=("$@")
-
-# Trap bad exits with your cleanup function
+# Initialize and run the script
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
   EXIT INT TERM SIGINT SIGQUIT
-
-# Set IFS to preferred implementation
-IFS=$' \n\t'
-
-# Exit on error. Append '||true' to a command when you run the script if you expect an error.
-set -o errtrace
-set -o errexit
-
-# Make `for f in *.txt` work correctly when `*.txt` matches zero files
-shopt -s nullglob globstar
-
-# Run in debug mode, if set
-if ${debug}; then set -x; fi
-
-# Exit on empty variable
-if ${strict}; then set -o nounset; fi
-
-# Run script unless in 'source-only' mode
-if ! ${sourceOnly}; then _mainScript_; fi
-
-# Exit cleanly
-if ! ${sourceOnly}; then _safeExit_; fi
+#set -o errtrace                     # Trap errors in subshells and functions
+#set -o errexit                      # Exit on error. Append '||true' if you expect an error
+set -o pipefail                     # Use last non-zero exit code in a pipeline
+shopt -s nullglob globstar          # Make `for f in *.txt` work when `*.txt` matches zero files
+IFS=$' \n\t'                        # Set IFS to preferred implementation
+# set -o xtrace                     # Uncomment to run in debug mode
+# set -o nounset                    # Disallow expansion of unset variables
+# [[ $# -eq 0 ]] && set -- "--h"    # Uncomment to force arguments when invoking the script
+# _makeTempDir_ "$(basename "$0")"  # Uncomment to create a temp directory '$tmpDir'
+# _acquireScriptLock_               # Uncomment to acquire script lock
+if ! ${sourceOnly}; then _mainScript_; fi  # Run script unless in 'source-only' mode
+if ! ${sourceOnly}; then _safeExit_; fi    # Exit cleanly
