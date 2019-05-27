@@ -8,7 +8,7 @@ _haveScriptableFinder_() {
   local finder_pid
   finder_pid="$(pgrep -f /System/Library/CoreServices/Finder.app)"
 
-  if [[ (${finder_pid} -gt 1) && ("$STY" == "") ]]; then
+  if [[ (${finder_pid} -gt 1) && ("${STY-}" == "") ]]; then
     return 0
   else
     return 1

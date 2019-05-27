@@ -34,3 +34,4 @@ symlinks:
   - ~/bin/updateHomebrew:             bin/updateHomebrew
   - ~/bin/newscript:                  bin/newscript.sh
   - ~/bin/hashCheck:                  bin/hashCheck.sh
+  - ~/bin/trash:                      bin/trash

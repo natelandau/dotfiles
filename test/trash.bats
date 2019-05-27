@@ -68,21 +68,21 @@ teardown() {
   run $s
 
   assert_success
-  assert_line --index 0 "trash [OPTION]... [FILE]..."
+  assert_line --index 0 "  trash [OPTION]... [FILE]..."
 }
 
 @test "usage (-h)" {
   run $s -h
 
   assert_success
-  assert_line --index 0 "trash [OPTION]... [FILE]..."
+  assert_line --index 0 "  trash [OPTION]... [FILE]..."
 }
 
 @test "usage (--help)" {
   run $s --help
 
   assert_success
-  assert_line --index 0 "trash [OPTION]... [FILE]..."
+  assert_line --index 0 "  trash [OPTION]... [FILE]..."
 }
 
 @test "Fail when can't find file" {
