@@ -22,9 +22,6 @@ _mainScript_() {
 
   _isGoodFile_() {
 
-    #Bypass file check when testing input
-    ($testOutput) && return 0
-
     # Ensure file exists
     if [ ! -e "${userFile}" ]; then
       error "No such file or directory: '${userFile}'" "$LINENO"
@@ -308,6 +305,16 @@ _mainScript_() {
   # Run the script functions
   for userFile in "${args[@]}"; do
     verbose "file: ${bold}${userFile}${reset}"
+
+    if ${testOutput}; then
+      verbose "Running in test mode"
+      if [ ! -e "${userFile}" ]; then
+        _makeTempDir_ "$(basename "$0")"
+        userFile="${tmpDir}/${userFile}"
+        touch "${userFile}"
+        verbose "Created empty file: ${userFile}"
+      fi
+    fi
 
     if _isGoodFile_; then
       _parseFilename_ "$userFile"
