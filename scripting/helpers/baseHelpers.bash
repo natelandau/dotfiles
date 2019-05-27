@@ -227,6 +227,7 @@ _execute_() {
   #        -p    Pass a failed command with 'return 0'.  This effecively bypasses set -e.
   #        -e    Bypass _alert_ functions and use 'echo RESULT'
   #        -s    Use '_alert_ success' for successful output. (default is 'info')
+  #        -q    Do not print output (quiet mode)
   # OUTS:  None
   # USE :  _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message"
   # NOTE:
@@ -266,7 +267,11 @@ _execute_() {
   fi
 
   if "${dryrun}"; then
-    if [ -n "$2" ]; then
+    if "$quietResult"; then
+        verbose=$saveVerbose
+        return 0
+    fi
+    if [ -n "${2-}" ]; then
       dryrun "${1} (${2})" "$( caller )"
     else
       dryrun "${1}" "$( caller )"
@@ -349,11 +354,10 @@ _checkBinary_() {
   fi
 
   if ! command -v "$1" > /dev/null 2>&1; then
-    verbose "Missing dependency: $1"
-    return 1
+    fatal "Missing dependency: '$1'"
   fi
 
-  verbose "Found dependency: $1"
+  verbose "Found dependency: '$1'"
   return 0
 }
 

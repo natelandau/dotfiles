@@ -99,14 +99,16 @@ teardown() {
 @test "_cleanFilename_: no rename file" {
   touch "test.txt"
 
-  _cleanFilename_ "test.txt"
+  run _cleanFilename_ "test.txt"
+  assert_output --partial "test.txt"
   assert_file_exist "test.txt"
 }
 
 @test "_cleanFilename_: rename file" {
   touch "test&.txt"
 
-  _cleanFilename_ "test&.txt"
+  run _cleanFilename_ "test&.txt"
+  assert_output --partial "test.txt"
   assert_file_exist "test.txt"
 }
 
@@ -114,16 +116,18 @@ teardown() {
   touch "test&.txt"
   touch "test.txt"
 
-  _cleanFilename_ "test&.txt"
+  run _cleanFilename_ "test&.txt"
+  assert_output --partial "test-2.txt"
   assert_file_exist "test-2.txt"
 }
 
 @test "_cleanFilename_: User input" {
   touch "testing_a_new_file.txt"
 
-  _cleanFilename_ "testing_a_new_file.txt" "y,e,_"
+  run _cleanFilename_ "testing_a_new_file.txt" "y,e,_"
 
   assert_success
+  assert_output --partial "tstinganwfil.txt"
   assert_file_exist "tstinganwfil.txt"
 }
 

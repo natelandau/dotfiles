@@ -97,6 +97,7 @@ _cleanFilename_() {
   # OUTS:   Overwrites file with new new and prints name of new file
   # USAGE:  _cleanFilename_ "FILENAME.TXT" "^,&,*"
   # NOTE:   IMPORTANT - This will overwrite the original file
+  #         IMPORTANT - All spaces and underscores will be replaced by dashes (-)
 
   [[ $# -lt 1 ]] && fatal 'Missing required argument to _cleanFilename_()!'
 
@@ -124,7 +125,7 @@ _cleanFilename_() {
 
   local final="${dir}/${baseFileName}.${extension}"
 
-  if [[ "${fileToClean}" != "${final}" ]]; then
+  if [ "${fileToClean}" != "${final}" ]; then
     final="$(_uniqueFileName_ "${final}")"
     _execute_ -q "mv \"${fileToClean}\" \"${final}\""
     echo "$final"
@@ -231,7 +232,7 @@ _ext_() {
   fn=$filename
 
   # Detect some common multi-extensions
-  if [[ ! $levels ]]; then
+  if [[ ! ${levels-} ]]; then
     case $(tr '[:upper:]' '[:lower:]' <<<$filename) in
       *.tar.gz | *.tar.bz2) levels=2 ;;
     esac
@@ -241,7 +242,7 @@ _ext_() {
 
   for ((i = 0; i < levels; i++)); do
     ext=.${fn##*.}
-    exts=$ext$exts
+    exts=$ext${exts-}
     fn=${fn%$ext}
     [[ "$exts" == "$filename" ]] && return
   done
@@ -488,7 +489,6 @@ _realpath_() {
   # OUTS:   Prints absolute path of file. Returns 0 if successful or 1 if an error
   # NOTE:   http://github.com/morgant/realpath
 
-  local success=true
   local file_basename
   local directory
   local output
@@ -512,7 +512,7 @@ _realpath_() {
 
   # make sure the string isn't empty as that implies something in further logic
   if [ -z "$path" ]; then
-    success=false
+    return 1
   else
     # start with the file name (sans the trailing slash)
     path="${path%/}"
@@ -536,37 +536,33 @@ _realpath_() {
 
     # attempt to change to the directory
     if ! cd "$directory" &>/dev/null; then
-      success=false
+      return 1
     fi
 
-    if $success; then
-      # does the filename exist?
-      if [[ (-n "$file_basename") && (! -e "$file_basename") ]]; then
-        success=false
-      fi
+    # does the filename exist?
+    if [[ (-n "$file_basename") && (! -e "$file_basename") ]]; then
+      return 1
+    fi
 
-      # get the absolute path of the current directory & change back to previous directory
-      local abs_path
-      abs_path="$(pwd -P)"
-      cd "-" &>/dev/null || return
+    # get the absolute path of the current directory & change back to previous directory
+    local abs_path
+    abs_path="$(pwd -P)"
+    cd "-" &>/dev/null || return
 
-      # Append base filename to absolute path
-      if [ "${abs_path}" = "/" ]; then
-        output="${abs_path}${file_basename}"
-      else
-        output="${abs_path}/${file_basename}"
-      fi
+    # Append base filename to absolute path
+    if [ "${abs_path}" = "/" ]; then
+      output="${abs_path}${file_basename}"
+    else
+      output="${abs_path}/${file_basename}"
+    fi
 
-      # output the absolute path
-      if ! $showOnlyDir ; then
-        echo "${output}"
-      else
-        echo "${abs_path}"
-      fi
+    # output the absolute path
+    if ! $showOnlyDir ; then
+      echo "${output}"
+    else
+      echo "${abs_path}"
     fi
   fi
-
-  $success
 }
 
 _sourceFile_() {
