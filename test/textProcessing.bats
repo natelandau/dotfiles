@@ -53,6 +53,18 @@ teardown() {
   assert_output "Here\ is\ some\ /\ text\ to\ &\ be\ -\ escape'd"
 }
 
+@test "_stopWords_: success" {
+  run _stopWords_ "A string to be parsed"
+  assert_success
+  assert_output "string parsed"
+}
+
+@test "_stopWords_: success w/ user terms" {
+  run _stopWords_ "A string to be parsed to help pass this test being performed by bats" "bats,string"
+  assert_success
+  assert_output "parsed pass performed"
+}
+
 @test "_htmlEncode_" {
   run _htmlEncode_ "Here's some text& to > be h?t/M(l• en™codeç£§¶d"
   assert_success

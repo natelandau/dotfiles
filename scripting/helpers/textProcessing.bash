@@ -1,6 +1,48 @@
 # Transform text using these functions
 # Some were adapted from https://github.com/jmcantrell/bashful
 
+_stopWords_() {
+  # DESC:   Removes common stopwords from a string
+  # ARGS:   $1 (Required) - String to parse
+  #         $2 (Optional) - Additional stopwords (comma separated)
+  # OUTS:   Prints cleaned string to STDOUT
+  # USAGE:  cleanName="$(_stopWords_ "[STRING]" "[MORE,STOP,WORDS]")"
+  # NOTE:   Requires a stopwords file in sed format (expected at: ~/.sed/stopwords.sed)
+
+    [[ $# -lt 1 ]] && {
+      warning 'Missing required argument to _stripCommonWords_!'
+      _safeExit_ 1
+    }
+
+    [ "$(command -v gsed)" ] || {
+      error "Can not continue without gsed.  Use '${YELLOW}brew install gnu-sed${reset}'"
+      _safeExit_ 1
+    }
+
+    local string="${1}"
+
+    local sedFile="${HOME}/.sed/stopwords.sed"
+    if [ -f "${sedFile}" ]; then
+      string="$(echo "${string}" | gsed -f "${sedFile}")"
+    else
+      verbose "Missing sedfile in _stopWords_()"
+    fi
+
+    declare -a localStopWords=()
+    IFS=',' read -r -a localStopWords <<<"${2-}"
+
+    if [[ ${#localStopWords[@]} -gt 0 ]]; then
+      for w in "${localStopWords[@]}"; do
+        string="$(echo "$string" | gsed -E "s/$w//gI")"
+      done
+    fi
+
+    # Remove double spaces and trim left/right
+    string="$(echo "$string" | sed -E 's/[ ]{2,}/ /g' | _ltrim_ | _rtrim_)"
+
+    echo "${string}"
+
+}
 _escape_() {
   # DESC:   Escapes a string by adding \ before special chars
   # ARGS:   $@ (Required) - String to be escaped
