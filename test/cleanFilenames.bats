@@ -268,6 +268,7 @@ helper() {
 }
 
 @test "Test functionality (-T)" {
+  touch "someTestFile 02-19-2007.txt"
   run $s -T "someTestFile 02-19-2007.txt"
 
   assert_success
@@ -275,6 +276,7 @@ helper() {
 }
 
 @test "Test functionality (--test)" {
+  touch "someTestFile 02-19-2007.txt"
   run $s --test "someTestFile 02-19-2007.txt"
 
   assert_success

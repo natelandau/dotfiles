@@ -4,7 +4,7 @@ _mainScript_() {
   local user
   local uid
 
-  user=$(whoami)
+  user="$(whoami)"
   uid=$(id -u "$user")
 
   _listTrash_() {
@@ -155,7 +155,7 @@ logErrors=true
 verbose=false
 dryrun=false
 sourceOnly=false
-args=()
+declare -a args=()
 
 list=false
 emptyTrash=false
@@ -166,6 +166,7 @@ systemRM=false
 # -----------------------------------
 _usage_() {
   cat <<EOF
+
   $(basename "$0") [OPTION]... [FILE]...
 
   ${bold}Trash${reset} allows MacOS trashing of files instead of tempting fate with ${bold}rm${reset}.
@@ -233,10 +234,10 @@ _parseOptions_() {
         _usage_ >&2
         _safeExit_
         ;;
---bypassFinder) bypassFinder=true ;;
-    -s | --system) systemRM=true ;;
-    -l | --list) list=true ;;
-    -e | --empty) emptyTrash=true ;;
+      --bypassFinder) bypassFinder=true ;;
+      -s | --system) systemRM=true ;;
+      -l | --list) list=true ;;
+      -e | --empty) emptyTrash=true ;;
       -L | --noErrorLog) logErrors=false ;;
       -n | --dryrun) dryrun=true ;;
       -v | --verbose) verbose=true ;;

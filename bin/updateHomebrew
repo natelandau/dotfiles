@@ -102,10 +102,6 @@ _sourceHelperFiles_() {
 }
 _sourceHelperFiles_
 
-# Set Base Variables
-# ----------------------
-scriptName=$(basename "$0")
-
 # Set Flags
 quiet=false
 printLog=false
@@ -114,7 +110,7 @@ verbose=false
 force=false
 dryrun=false
 sourceOnly=false
-args=()
+declare -a args=()
 
 # Options and Usage
 # -----------------------------------
@@ -209,7 +205,7 @@ IFS=$' \n\t'                              # Set IFS to preferred implementation
 # set -o xtrace                           # Uncomment to run in debug mode
 set -o nounset                            # Disallow expansion of unset variables
 # [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Uncomment to force arguments when invoking the script
- _makeTempDir_ "$(basename "$0")"         # Uncomment to create a temp directory '$tmpDir'
+_makeTempDir_ "$(basename "$0")"          # Uncomment to create a temp directory '$tmpDir'
 _acquireScriptLock_                       # Uncomment to acquire script lock
 if ! ${sourceOnly}; then _mainScript_; fi # Run script unless in 'source-only' mode
 if ! ${sourceOnly}; then _safeExit_; fi   # Exit cleanly

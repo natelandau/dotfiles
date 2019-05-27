@@ -345,7 +345,7 @@ force=false
 dryrun=false
 sourceOnly=false
 fileOnly=false
-args=()
+declare -a args=()
 
 cleanOnly=false
 nonInteractive=false
