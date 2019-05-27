@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-version="1.1.0"
-
 _mainScript_() {
 
   _errorHandling_() {
@@ -61,9 +59,9 @@ _mainScript_() {
     local fileToParse="${1:?No file provided to _parseFilename_}"
 
     # Grab the directory
-    if ! ${testOutput}; then originalFileWithPath="$(_realpath_ "${fileToParse}")"; fi
+    originalFileWithPath="$(_realpath_ "${fileToParse}")"
 
-    verbose "originalFileWithPath: $originalFileWithPath"
+    verbose "originalFileWithPath: ${originalFileWithPath-}"
 
     filePath=$(_realpath_ -d "$originalFileWithPath") \
       && verbose "filePath: $filePath"
@@ -273,7 +271,7 @@ _mainScript_() {
 
     # Add the date back to the filename if we're not removing dates
     if ! ${removeDates}; then
-      baseFilename="${newDate} ${baseFilename}"
+      baseFilename="${newDate-} ${baseFilename}"
     fi
 
     # Clean the name again
@@ -300,7 +298,11 @@ _mainScript_() {
     newFile="$(_uniqueFileName_ "${filePath}/${newFilename}")" \
       && verbose "\t newFile: $newFile"
 
-    _execute_ -s "mv \"${originalFileWithPath}\" \"${newFile}\"" "${userFile} --> ${newFile##*/}"
+    if ! ${testOutput}; then
+      _execute_ -s "mv \"${originalFileWithPath}\" \"${newFile}\"" "${userFile} --> ${newFile##*/}"
+    else
+      notice "${userFile} --> ${newFile##*/}"
+    fi
   }
 
   # Run the script functions
@@ -313,7 +315,7 @@ _mainScript_() {
       _findDate_
       _rebuildFileName_
       _renameFiles_
-      if ${nonInteractive}; then echo "${newFile}"; fi
+      if ${nonInteractive}; then echo "${newFile-}"; fi
     fi
   done
 
@@ -334,19 +336,13 @@ for sourceFile in "${filesToSource[@]}"; do
   source "$sourceFile"
 done
 
-# Set Base Variables
-# ----------------------
-scriptName=$(basename "$0")
-
 # Set Flags
 quiet=false
 printLog=false
 logErrors=true
 verbose=false
 force=false
-strict=false
 dryrun=false
-debug=false
 sourceOnly=false
 fileOnly=false
 args=()
@@ -358,13 +354,12 @@ ignoreFile=false
 removeDates=false
 testOutput=false
 
-# Options and Usage
-# -----------------------------------
 _usage_() {
-  echo -n "${scriptName} [OPTION]... [FILE]...
+  cat <<EOF
 
-  '${scriptName}' performs various filename operations on the selected files.
-  It performs the following operations on the filename:
+  $(basename "$0") [OPTION]... [FILE]...
+
+  Performs the following operations on the filename:
 
       * Prepends a date in the format YYYY-MM-DD
       * Cleans up special characters
@@ -409,12 +404,9 @@ _usage_() {
                       been made.
     -q, --quiet       Quiet (no output to terminal)
     -l, --log         Print log to file
-    -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
     -v, --verbose     Output more information.
-    -d, --debug       Runs script in BASH debug mode (set -x)
     -h, --help        Display this help and exit
         --source-only Bypasses main script functionality to allow unit tests of functions
-        --version     Output version information and exit
 
   ${bold}Examples:${reset}
 
@@ -423,113 +415,92 @@ _usage_() {
 
     Original Filename: 'filename.txt'
     Cleaned Filename : '2016-03-31 filename.txt'
-"
+EOF
 }
 
-# Iterate over options breaking -ab into -a -b when needed and --foo=bar into
-# --foo bar
-optstring=h
-unset options
-while (($#)); do
-  case $1 in
-    # If option is of type -ab
-    -[!-]?*)
-      # Loop over each character starting with the second
-      for ((i = 1; i < ${#1}; i++)); do
-        c=${1:i:1}
+_parseOptions_() {
+  # Iterate over options
+  # breaking -ab into -a -b when needed and --foo=bar into --foo bar
+  optstring=h
+  unset options
+  while (($#)); do
+    case $1 in
+      # If option is of type -ab
+      -[!-]?*)
+        # Loop over each character starting with the second
+        for ((i = 1; i < ${#1}; i++)); do
+          c=${1:i:1}
+          options+=("-$c") # Add current char to options
+          # If option takes a required argument, and it's not the last char make
+          # the rest of the string its argument
+          if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
+            options+=("${1:i+1}")
+            break
+          fi
+        done
+        ;;
+      # If option is of type --foo=bar
+      --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
+      # add --endopts for --
+      --) options+=(--endopts) ;;
+      # Otherwise, nothing special
+      *) options+=("$1") ;;
+    esac
+    shift
+  done
+  set -- "${options[@]}"
+  unset options
 
-        # Add current char to options
-        options+=("-$c")
+  # Read the options and set stuff
+  while [[ $1 == -?* ]]; do
+    case $1 in
+      -h | --help)
+        _usage_ >&2
+        _safeExit_
+        ;;
+      -T | --test)
+        testOutput=true
+        dryrun=true
+        ;;
+      -C | --clean) cleanOnly=true ;;
+      -R | --removeDate) removeDates=true ;;
+      -L | --lower) lowerCase=true ;;
+      -e | --noErrorLog) logErrors=false ;;
+      -F | --fileOnly) fileOnly=true ;;
+      -n | --dryrun) dryrun=true ;;
+      -v | --verbose) verbose=true ;;
+      -l | --log) printLog=true ;;
+      -q | --quiet) quiet=true ;;
+      --nonInteractive)
+        nonInteractive=true
+        quiet=true
+        ;;
+      --source-only) sourceOnly=true ;;
+      --force) force=true ;;
+      --endopts)
+        shift
+        break
+        ;;
+      *) die "invalid option: '$1'." ;;
+    esac
+    shift
+  done
+  args+=("$@") # Store the remaining user input as arguments.
+}
+_parseOptions_ "$@"
 
-        # If option takes a required argument, and it's not the last char make
-        # the rest of the string its argument
-        if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
-          options+=("${1:i+1}")
-          break
-        fi
-      done
-      ;;
-
-    # If option is of type --foo=bar
-    --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
-    # add --endopts for --
-    --) options+=(--endopts) ;;
-    # Otherwise, nothing special
-    *) options+=("$1") ;;
-  esac
-  shift
-done
-set -- "${options[@]}"
-unset options
-
-# Print help if no arguments were passed.
-# Uncomment to force arguments when invoking the script
-# -------------------------------------
-[[ $# -eq 0 ]] && set -- "--help"
-
-# Read the options and set stuff
-while [[ $1 == -?* ]]; do
-  case $1 in
-    -C | --clean) cleanOnly=true ;;
-    -R | --removeDate) removeDates=true ;;
-    -L | --lower) lowerCase=true ;;
-    -e | --noErrorLog) logErrors=false ;;
-    -n | --dryrun) dryrun=true ;;
-    -F | --fileOnly) fileOnly=true ;;
-    --nonInteractive)
-      nonInteractive=true
-      quiet=true
-      ;;
-    -h | --help)
-      _usage_ >&2
-      _safeExit_
-      ;;
-    -T | --test)
-      testOutput=true
-      dryrun=true
-      ;;
-    --version)
-      echo "$(basename $0) ${version}"
-      _safeExit_
-      ;;
-    -v | --verbose) verbose=true ;;
-    -l | --log) printLog=true ;;
-    -q | --quiet) quiet=true ;;
-    -s | --strict) strict=true ;;
-    -d | --debug) debug=true ;;
-    --source-only) sourceOnly=true ;;
-    --endopts)
-      shift
-      break
-      ;;
-    *) die "invalid option: '$1'." ;;
-  esac
-  shift
-done
-
-# Store the remaining part as arguments.
-args+=("$@")
-
-# Trap bad exits with your cleanup function
-trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}" "${userFile}' \
+# Initialize and run the script
+trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
   EXIT INT TERM SIGINT SIGQUIT
-
-# Set IFS to preferred implementation
-IFS=$' \n\t'
-
-# Exit on error. Append '||true' when you run the script if you expect an error.
-# if using the '_execute_' function this must be disabled for warnings to be shown if tasks fail
-set -o errexit
-set -o errtrace
-
-# Run in debug mode, if set
-if ${debug}; then set -x; fi
-
-# Exit on empty variable
-if ${strict}; then set -o nounset; fi
-
-# Run your script unless in source only mode
-if ! ${sourceOnly}; then _mainScript_; fi
-
-# Exit cleanly
-if ! ${sourceOnly}; then _safeExit_; fi
+set -o errtrace                           # Trap errors in subshells and functions
+set -o errexit                            # Exit on error. Append '||true' if you expect an error
+set -o pipefail                           # Use last non-zero exit code in a pipeline
+shopt -s nullglob globstar                # Make `for f in *.txt` work when `*.txt` matches zero files
+IFS=$' \n\t'                              # Set IFS to preferred implementation
+# set -o xtrace                           # Uncomment to run in debug mode
+set -o nounset                            # Disallow expansion of unset variables
+[[ $# -eq 0 ]] && _parseOptions_ "-h"     # Uncomment to force arguments when invoking the script
+# _makeTempDir_ "$(basename "$0")"        # Uncomment to create a temp directory '$tmpDir'
+# _acquireScriptLock_                     # Uncomment to acquire script lock
+if ! ${sourceOnly}; then _mainScript_; fi # Run script unless in 'source-only' mode
+if ! ${sourceOnly}; then _safeExit_; fi   # Exit cleanly

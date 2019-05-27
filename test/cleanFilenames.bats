@@ -271,15 +271,14 @@ helper() {
   run $s -T "someTestFile 02-19-2007.txt"
 
   assert_success
-  assert_output --partial "[ dryrun]"
   assert_output --partial "someTestFile 02-19-2007.txt --> 2007-02-19 someTestFile.txt"
 }
 
 @test "Test functionality (--test)" {
-  run $s --test "someTestFile.txt"
+  run $s --test "someTestFile 02-19-2007.txt"
 
   assert_success
-  assert_output --partial "[ dryrun]"
+  assert_output --partial "someTestFile 02-19-2007.txt --> 2007-02-19 someTestFile.txt"
 }
 
 @test "Dryrun (-n)" {
@@ -306,21 +305,21 @@ helper() {
   run $s
 
   assert_success
-  assert_line --index 0 "cleanFilenames [OPTION]... [FILE]..."
+  assert_line --index 0 "  cleanFilenames [OPTION]... [FILE]..."
 }
 
 @test "usage (-h)" {
   run $s -h
 
   assert_success
-  assert_line --index 0 "cleanFilenames [OPTION]... [FILE]..."
+  assert_line --index 0 "  cleanFilenames [OPTION]... [FILE]..."
 }
 
 @test "usage (--help)" {
   run $s --help
 
   assert_success
-  assert_line --index 0 "cleanFilenames [OPTION]... [FILE]..."
+  assert_line --index 0 "  cleanFilenames [OPTION]... [FILE]..."
 }
 
 @test "Verbose (-v)" {

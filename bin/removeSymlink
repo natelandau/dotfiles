@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-version="1.2.0"
-
 _mainScript_() {
 
   _errorHandling_() {
@@ -16,18 +14,19 @@ _mainScript_() {
   }
   _errorHandling_
 
-  links=("${args[@]}")
-
-  [[ ${#links[@]} == 0 ]] && {
-    notice "No link specified"
+  [[ ${#args[@]} == 0 ]] && {
+    notice "No link(s) specified"
     _safeExit_
   }
 
   # Work through the links
-  for link in "${links[@]}"; do
+  for link in "${args[@]}"; do
 
     # Confirm link is actually a symlink
-    [ -h "${link}" ] || die "'${link}': either does not exist or is not a symlink."
+    [ -h "${link}" ] || {
+      warning "'${link}': either does not exist or is not a symlink."
+      continue
+    }
 
     dir=$(dirname "${link}")
     reltarget=$(readlink "${link}")
@@ -54,22 +53,15 @@ _mainScript_() {
 
 }
 
-# Set Base Variables
-# ----------------------
-scriptName=$(basename "$0")
-
 # Set Flags
 quiet=false
 printLog=false
 logErrors=true
 verbose=false
 force=false
-strict=false
 dryrun=false
-debug=false
 sourceOnly=false
-args=()
-
+declare -a args=()
 replaceSymlink=false
 
 _sourceHelperFiles_() {
@@ -94,123 +86,99 @@ _sourceHelperFiles_
 
 # Options and Usage
 # -----------------------------------
-usage() {
-  echo -n "${scriptName} [OPTION]... [FILE]...
+_usage_() {
+  echo -n "$(basename "$0") [OPTION]... [SYMLINK]...
 
 This script will replace symbolic links with their original file.  By default it will COPY
 a version of the original file over the symlink's location.  Specifying the flag '-r' will
 delete the source file of the symlink after copying itself to the symlink's location.
 
- ${bold}Options:${reset}
+${bold}Options:${reset}
   -r, --replace     Replaces the symlink with the original file AND removes the
                     original after copying
-
   -L, --noErrorLog  Print log level error and fatal to a log (default 'true')
   -l, --log         Print log to file
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
-  -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
   -v, --verbose     Output more information. (Items echoed to 'verbose')
-  -d, --debug       Runs script in BASH debug mode (set -x)
   -h, --help        Display this help and exit
-      --version     Output version information and exit
-      --source-only Bypasses main script functionality to allow unit tests of functions
-      --force       Skip all user interaction.  Implied 'Yes' to all actions.
+  --source-only     Bypasses main script functionality to allow unit tests of functions
+  --force           Skip all user interaction.  Implied 'Yes' to all actions.
 "
 }
 
-# Iterate over options breaking -ab into -a -b when needed and --foo=bar into
-# --foo bar
-optstring=h
-unset options
-while (($#)); do
-  case $1 in
-    # If option is of type -ab
-    -[!-]?*)
-      # Loop over each character starting with the second
-      for ((i = 1; i < ${#1}; i++)); do
-        c=${1:i:1}
+_parseOptions_() {
+  # Iterate over options
+  # breaking -ab into -a -b when needed and --foo=bar into --foo bar
+  optstring=h
+  unset options
+  while (($#)); do
+    case $1 in
+      # If option is of type -ab
+      -[!-]?*)
+        # Loop over each character starting with the second
+        for ((i = 1; i < ${#1}; i++)); do
+          c=${1:i:1}
+          options+=("-$c") # Add current char to options
+          # If option takes a required argument, and it's not the last char make
+          # the rest of the string its argument
+          if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
+            options+=("${1:i+1}")
+            break
+          fi
+        done
+        ;;
+      # If option is of type --foo=bar
+      --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
+      # add --endopts for --
+      --) options+=(--endopts) ;;
+      # Otherwise, nothing special
+      *) options+=("$1") ;;
+    esac
+    shift
+  done
+  set -- "${options[@]}"
+  unset options
 
-        # Add current char to options
-        options+=("-$c")
+  # Read the options and set stuff
+  while [[ $1 == -?* ]]; do
+    case $1 in
+      -h | --help)
+        _usage_ >&2
+        _safeExit_
+        ;;
+      -r | --replace) replaceSymlink=true ;;
+      -L | --noErrorLog) logErrors=false ;;
+      -n | --dryrun) dryrun=true ;;
+      -v | --verbose) verbose=true ;;
+      -l | --log) printLog=true ;;
+      -q | --quiet) quiet=true ;;
+      --source-only) sourceOnly=true ;;
+      --force) force=true ;;
+      --endopts)
+        shift
+        break
+        ;;
+      *) die "invalid option: '$1'." ;;
+    esac
+    shift
+  done
+  args+=("$@") # Store the remaining user input as arguments.
+}
+_parseOptions_ "$@"
 
-        # If option takes a required argument, and it's not the last char make
-        # the rest of the string its argument
-        if [[ $optstring == *"$c:"* && ${1:i+1} ]]; then
-          options+=("${1:i+1}")
-          break
-        fi
-      done
-      ;;
-
-    # If option is of type --foo=bar
-    --?*=*) options+=("${1%%=*}" "${1#*=}") ;;
-    # add --endopts for --
-    --) options+=(--endopts) ;;
-    # Otherwise, nothing special
-    *) options+=("$1") ;;
-  esac
-  shift
-done
-set -- "${options[@]}"
-unset options
-
-# Print help if no arguments were passed.
-# Uncomment to force arguments when invoking the script
-# -------------------------------------
-[[ $# -eq 0 ]] && set -- "--help"
-
-# Read the options and set stuff
-while [[ $1 == -?* ]]; do
-  case $1 in
-    -r | --replace) replaceSymlink=true ;;
-    -L | --noErrorLog) logErrors=false ;;
-    -h | --help)
-      usage >&2
-      _safeExit_
-      ;;
-    --version)
-      echo "$(basename $0) ${version}"
-      _safeExit_
-      ;;
-    -n | --dryrun) dryrun=true ;;
-    -v | --verbose) verbose=true ;;
-    -q | --quiet) quiet=true ;;
-    -s | --strict) strict=true ;;
-    -d | --debug) debug=true ;;
-    --source-only) sourceOnly=true ;;
-    --force) force=true ;;
-    --endopts)
-      shift
-      break
-      ;;
-    *) die "invalid option: '$1'." ;;
-  esac
-  shift
-done
-
-# Store the remaining part as arguments.
-args+=("$@")
-
-# Trap bad exits with your cleanup function
+# Initialize and run the script
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
-  EXIT INT TERM SIGINT SIGQUIT ERR
-
-# Set IFS to preferred implementation
-IFS=$' \n\t'
-
-# Exit on error. Append '||true' when you run the script if you expect an error.
-# if using the 'execute' function this must be disabled for warnings to be shown if tasks fail
-#set -o errexit
-
-# Run in debug mode, if set
-if ${debug}; then set -x; fi
-
-# Exit on empty variable
-if ${strict}; then set -o nounset; fi
-
-# Run your script unless in 'source-only' mode
-if ! ${sourceOnly}; then _mainScript_; fi
-
-# Exit cleanly
-if ! ${sourceOnly}; then _safeExit_; fi
+  EXIT INT TERM SIGINT SIGQUIT
+set -o errtrace                           # Trap errors in subshells and functions
+set -o errexit                            # Exit on error. Append '||true' if you expect an error
+set -o pipefail                           # Use last non-zero exit code in a pipeline
+shopt -s nullglob globstar                # Make `for f in *.txt` work when `*.txt` matches zero files
+IFS=$' \n\t'                              # Set IFS to preferred implementation
+# set -o xtrace                             # Uncomment to run in debug mode
+set -o nounset                            # Disallow expansion of unset variables
+[[ $# -eq 0 ]] && _parseOptions_ "-h"     # Uncomment to force arguments when invoking the script
+# _makeTempDir_ "$(basename "$0")"          # Uncomment to create a temp directory '$tmpDir'
+# _acquireScriptLock_                       # Uncomment to acquire script lock
+if ! ${sourceOnly}; then _mainScript_; fi # Run script unless in 'source-only' mode
+if ! ${sourceOnly}; then _safeExit_; fi   # Exit cleanly
