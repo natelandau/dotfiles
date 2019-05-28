@@ -103,7 +103,7 @@ _parseOptions_() {
   unset options
 
   # Read the options and set stuff
-  while [[ $1 == -?* ]]; do
+  while [[ ${1-} == -?* ]]; do
     case $1 in
       -h | --help)
         _usage_ >&2
@@ -138,7 +138,6 @@ _parseOptions_() {
   done
   args+=("$@") # Store the remaining user input as arguments.
 }
-_parseOptions_ "$@"
 
 # Initialize and run the script
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
@@ -153,5 +152,6 @@ set -o nounset                            # Disallow expansion of unset variable
 # [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Uncomment to force arguments when invoking the script
 # _makeTempDir_ "$(basename "$0")"        # Uncomment to create a temp directory '$tmpDir'
 # _acquireScriptLock_                     # Uncomment to acquire script lock
+_parseOptions_ "$@"                       # Parse arguments passed to script
 if ! ${sourceOnly}; then _mainScript_; fi # Run script unless in 'source-only' mode
 if ! ${sourceOnly}; then _safeExit_; fi   # Exit cleanly
