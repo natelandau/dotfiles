@@ -21,7 +21,7 @@ _mainScript_() {
 
   # Work through the links
   for link in "${args[@]}"; do
-
+    verbose "Working on ${tan}${link}${purple}" "$LINENO"
     # Confirm link is actually a symlink
     [ -h "${link}" ] || {
       warning "'${link}': either does not exist or is not a symlink."
@@ -36,9 +36,9 @@ _mainScript_() {
     esac
     if [ -e "${abstarget}" ]; then
       _execute_ "rm -f \"${link}\""
-      _execute_ -s "cp -rf \"${abstarget}\" \"${link}\"" "Original file copied and symlink removed"
+      _execute_ -s "cp -rf \"${abstarget}\" \"${link}\"" "'${link}': Original file copied and symlink removed"
     else
-      if _seekConfirmation_ "Can't find original, delete this link anyway?"; then
+      if _seekConfirmation_ "Can't find original, delete '${link}' anyway?"; then
         _execute_ -s "rm -f \"${link}\"" "Symlink removed"
       fi
     fi
