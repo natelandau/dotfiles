@@ -106,10 +106,10 @@ _mainScript_() {
       # Determine if we'll tell Finder to trash the file via AppleScript (very easy, plus free undo
       # support, but Finder must be running for the user and DOES NOT work from within `screen`)
       if ! ${bypassFinder} && _haveScriptableFinder_; then
-        verbose "Telling Finder to trash '${baseFile}'..."
+        verbose "Telling Finder to trash '${baseFile}'..." "$LINENO"
         _execute_ -s "/usr/bin/osascript -e 'tell application \"Finder\" to delete POSIX file \"${userFile}\"' &>/dev/null" "'${baseFile}' moved to trash"
       else
-        verbose "Telling system to trash '${baseFile}'..."
+        verbose "Telling system to trash '${baseFile}'..." "$LINENO"
         trash="/Users/${user}/.Trash/"
         # create the trash folder if necessary
         if [ ! -d "${trash}" ]; then
