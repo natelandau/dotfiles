@@ -587,7 +587,7 @@ _sourceFile_() {
 _uniqueFileName_() {
   # DESC:   Ensure a file to be created has a unique filename to avoid overwriting other files
   # ARGS:   $1 (Required) - Name of file to be created
-  #         $2 (Optional) - Separation characted (Defaults to space to mimic Mac Finder)
+  #         $2 (Optional) - Separation characted (Defaults to a dash '-')
   # OUTS:   Prints unique filename to STDOUT
   # USAGE:  _uniqueFileName_ "/some/dir/file.txt" "-"
 
