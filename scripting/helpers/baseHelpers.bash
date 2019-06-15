@@ -32,20 +32,30 @@ else
   underline="\033[4;37m"
 fi
 
-### ALERTS AND LOGGING ###
-
 _alert_() {
-  # v1.1.0
+  # DESC:   Controls all printing of messages to log files and stdout.
+  # ARGS:   $1 (required) - The type of alert to print
+  #                         (success, header, notice, dryrun, verbose, debug, warning, error,
+  #                         fatal, info, die, input)
+  #         $2 (required) - The message to be printed to stdout and/or a log file
+  #         $3 (optional) - Pass '$LINENO' to print the line number where the _alert_ was triggered
+  # OUTS:   $logFile      - Path and filename of the logfile
+  # USAGE:  [ALERTTYPE] "[MESSAGE]" "$LINENO"
+  # NOTES:  If '$logFile' is not set, a new log file will be created
+  #         The colors of each alert type are set in this function
+  #         If 'die' or 'fatal' is passed to $1, the script will exit after printing the message
+  #         For specified alert types, the funcstac will be printed
 
-  local scriptName logLocation logName function_name color alertType line
-  alertType="$1"
-  line="${2-}"
+  local scriptName logLocation logName function_name color
+  local alertType="${1}"
+  local message="${2}"
+  local line="${3-}"
 
-  scriptName=$(basename "$0")
-  readonly logLocation="${HOME}/logs"
-  readonly logName="${scriptName%.sh}.log"
+  [ -z ${scriptName-} ] && scriptName="$(basename "$0")"
 
   if [ -z "${logFile-}" ]; then
+    readonly logLocation="${HOME}/logs"
+    readonly logName="${scriptName%.sh}.log"
     [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
     logFile="${logLocation}/${logName}"
   fi
@@ -57,127 +67,94 @@ _alert_() {
 
   if [ -z "$line" ]; then
     [[ "$1" =~ ^(fatal|error|debug|warning) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
-      && _message="$_message ($function_name)"
+      && message="$message ($function_name)"
   else
     [[ "$1" =~ ^(fatal|error|debug) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
-      && _message="$_message (line: $line) ($function_name)"
+      && message="$message (line: $line) ($function_name)"
   fi
+
   if [ -n "$line" ]; then
     [[ "$1" =~ ^(warning|info|notice|dryrun) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
-      && _message="$_message (line: $line)"
+      && message="$message (line: $line)"
   fi
 
-  [ "${alertType}" = "error" ] && color="${bold}${red}"
-  [ "${alertType}" = "fatal" ] && color="${bold}${red}"
-  [ "${alertType}" = "warning" ] && color="${red}"
-  [ "${alertType}" = "success" ] && color="${green}"
-  [ "${alertType}" = "debug" ] && color="${purple}"
-  [ "${alertType}" = "header" ] && color="${bold}${tan}"
-  [ "${alertType}" = "input" ] && color="${bold}"
-  [ "${alertType}" = "dryrun" ] && color="${blue}"
-  [ "${alertType}" = "info" ] && color=""
-  [ "${alertType}" = "notice" ] && color="${bold}"
-
-  # Don't use colors on pipes or non-recognized terminals
   if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then
+    # Don't use colors on pipes or non-recognized terminals regardles of alert type
     color=""
     reset=""
+  elif [[ "${alertType}" =~ ^(error|fatal) ]]; then
+    color="${bold}${red}"
+  elif [ "${alertType}" = "warning" ]; then
+    color="${red}"
+  elif [ "${alertType}" = "success" ]; then
+    color="${green}"
+  elif [ "${alertType}" = "debug" ]; then
+    color="${purple}"
+  elif [ "${alertType}" = "header" ]; then
+    color="${bold}${tan}"
+  elif [[ "${alertType}" =~ ^(input|notice) ]]; then
+    color="${bold}"
+  elif [ "${alertType}" = "dryrun" ]; then
+    color="${blue}"
+  else
+    color=""
   fi
 
-  # Print to console when script is not 'quiet'
   _writeToScreen_() {
+    # Print to console when script is not 'quiet'
     ("$quiet") \
       && {
         tput cuu1
-        return
+        return 0
       } # tput cuu1 moves cursor up one line
 
-    echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${1}") ${_message}${reset}"
+    echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${alertType}") ${message}${reset}"
   }
-  _writeToScreen_ "$1"
+  _writeToScreen_
 
-  # Print to Logfile
-  if "${printLog}"; then
-    [[ "$alertType" =~ ^(input|debug) ]] && return  # Don't print input or debug to log
-    [ ! -f "$logFile" ] && touch "$logFile"
-    color=""
-    reset="" # Don't use colors in logs
-    echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${1}") ${_message}" >>"${logFile}"
-  elif [[ "${logErrors}" == "true" && "$alertType" =~ ^(error|fatal) ]]; then
-    [ ! -f "$logFile" ] && touch "$logFile"
-    color=""
-    reset="" # Don't use colors in logs
-    echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${1}") ${_message}" >>"${logFile}"
-  else
-    return 0
-  fi
+  _writeToLog_() {
+    [[ "$alertType" =~ ^(input|debug) ]] && return 0
+
+    if [[ "${printLog}" == true ]] || [[ "${logErrors}" == "true" && "$alertType" =~ ^(error|fatal) ]]; then
+      [[ ! -f "$logFile" ]] && touch "$logFile"
+      # Don't use colors in logs
+      color=""
+      reset=""
+      echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${alertType}") ${message}" >>"${logFile}"
+    fi
+  }
+  _writeToLog_
+
+  # Quit the script when fatal alerts are passed
+  [[ "$alertType" =~ ^(fatal|die) ]] && _safeExit_
+
 } # /_alert_
 
-die() {
-  local _message="${1}"
-  echo -e "$(_alert_ fatal ${2-})"
-  _safeExit_ "1"
-}
-fatal() {
-  local _message="${1}"
-  echo -e "$(_alert_ fatal ${2-})"
-  _safeExit_ "1"
-}
-trapped() {
-  local _message="${1}"
-  echo -e "$(_alert_ trapped ${2-})"
-  _safeExit_ "1"
-}
-error() {
-  local _message="${1}"
-  echo -e "$(_alert_ error ${2-})"
-}
-warning() {
-  local _message="${1}"
-  echo -e "$(_alert_ warning ${2-})"
-}
-notice() {
-  local _message="${1}"
-  echo -e "$(_alert_ notice ${2-})"
-}
-info() {
-  local _message="${1}"
-  echo -e "$(_alert_ info ${2-})"
-}
+error()   { echo -e "$(_alert_ error "${1}" "${2-}")"; }
+warning() { echo -e "$(_alert_ warning "${1}" "${2-}")"; }
+notice()  { echo -e "$(_alert_ notice "${1}" "${2-}")"; }
+info()    { echo -e "$(_alert_ info "${1}" "${2-}")"; }
+success() { echo -e "$(_alert_ success "${1}" "${2-}")"; }
+dryrun()  { echo -e "$(_alert_ dryrun "${1}" "${2-}")"; }
+input()   { echo -n "$(_alert_ input "${1}" ${2-})"; }
+header()  { echo -e "$(_alert_ header "== ${1} ==" ${2-})"; }
+die()     { echo -e "$(_alert_ fatal "${1}" ${2-})"; }
+fatal()   { echo -e "$(_alert_ fatal "${1}" ${2-})"; }
 debug() {
   ($verbose) \
     && {
-      local _message="${1}"
-      echo -e "$(_alert_ debug ${2-})"
-    } \
-    || return 0
-}
-success() {
-  local _message="${1}"
-  echo -e "$(_alert_ success ${2-})"
-}
-dryrun() {
-  local _message="${1}"
-  echo -e "$(_alert_ dryrun ${2-})"
-}
-input() {
-  local _message="${1}"
-  echo -n "$(_alert_ input ${2-})"
-}
-header() {
-  local _message="== ${*} =="
-  echo -e "$(_alert_ header ${2-})"
-}
-verbose() {
-  ($verbose) \
-    && {
-      local _message="${1}"
-      echo -e "$(_alert_ debug ${2-})"
+      echo -e "$(_alert_ debug "${1}" "${2-}")"
     } \
     || return 0
 }
 
-### FUNCTIONS ###
+verbose() {
+  ($verbose) \
+    && {
+      echo -e "$(_alert_ debug "${1}" ${2-})"
+    } \
+    || return 0
+}
 
 _makeTempDir_() {
   # DESC:   Creates a temp direcrtory to house temporary files
@@ -205,20 +182,20 @@ _acquireScriptLock_() {
   #       symlinks or multiple hardlinks as there's no portable way of doing so.
   #       If the lock was acquired it's automatically released in _safeExit_()
 
-    ($sourceOnly) && return 0
-    local lock_dir
-    if [[ ${1-} = 'system' ]]; then
-      lock_dir="${TMPDIR:-/tmp/}$(basename "$0").lock"
-    else
-      lock_dir="${TMPDIR:-/tmp/}$(basename "$0").$UID.lock"
-    fi
+  ($sourceOnly) && return 0
+  local lock_dir
+  if [[ ${1-} == 'system' ]]; then
+    lock_dir="${TMPDIR:-/tmp/}$(basename "$0").lock"
+  else
+    lock_dir="${TMPDIR:-/tmp/}$(basename "$0").$UID.lock"
+  fi
 
-    if command mkdir "$lock_dir" 2> /dev/null; then
-        readonly script_lock="$lock_dir"
-        verbose "Acquired script lock: $script_lock"
-    else
-        die "Unable to acquire script lock: $lock_dir"
-    fi
+  if command mkdir "$lock_dir" 2>/dev/null; then
+    readonly script_lock="$lock_dir"
+    verbose "Acquired script lock: $script_lock"
+  else
+    die "Unable to acquire script lock: $lock_dir"
+  fi
 }
 
 _execute_() {
@@ -251,10 +228,11 @@ _execute_() {
       e | E) echoResult=true ;;
       s | S) successResult=true ;;
       q | Q) quietResult=true ;;
-      *) {
-        error "Unrecognized option '$1' passed to _execute. Exiting."
-        _safeExit_
-      }
+      *)
+        {
+          error "Unrecognized option '$1' passed to _execute. Exiting."
+          _safeExit_
+        }
         ;;
     esac
   done
@@ -270,13 +248,13 @@ _execute_() {
 
   if "${dryrun}"; then
     if "$quietResult"; then
-        verbose=$saveVerbose
-        return 0
+      verbose=$saveVerbose
+      return 0
     fi
     if [ -n "${2-}" ]; then
-      dryrun "${1} (${2})" "$( caller )"
+      dryrun "${1} (${2})" "$(caller)"
     else
-      dryrun "${1}" "$( caller )"
+      dryrun "${1}" "$(caller)"
     fi
   elif ${verbose}; then
     if eval "${cmd}"; then
@@ -349,14 +327,15 @@ _findBaseDir_() {
 _checkBinary_() {
   # DESC:  Check if a binary exists in the search path
   # ARGS:   $1 (Required) - Name of the binary to check for existence
-  # OUTS:   true/fals
+  # OUTS:   true/false
+  # USAGE:  (_checkBinary_ ffsmpeg ) && [SUCCESS] || [FAILURE]
   if [[ $# -lt 1 ]]; then
-    warning 'Missing required argument to _checkBinary_()!'
-    _safeExit_ 1
+    fatal 'Missing required argument to _checkBinary_()!'
   fi
 
-  if ! command -v "$1" > /dev/null 2>&1; then
-    fatal "Missing dependency: '$1'"
+  if ! command -v "$1" >/dev/null 2>&1; then
+    verbose "Did not find dependency: '$1'"
+    return 1
   fi
 
   verbose "Found dependency: '$1'"
@@ -406,8 +385,8 @@ _progressBar_() {
 
   ($quiet) && return
   ($verbose) && return
-  [ ! -t 1 ] && return    # Do nothing if the output is not a terminal
-  [ $1 == 1 ] && return   # Do nothing with a single element
+  [ ! -t 1 ] && return  # Do nothing if the output is not a terminal
+  [ $1 == 1 ] && return # Do nothing with a single element
 
   local width bar_char perc num bar progressBarLine barTitle n
 
@@ -454,7 +433,7 @@ _safeExit_() {
   # OUTS: None
 
   if [[ -d ${script_lock-} ]]; then
-    rmdir "$script_lock"
+    rm -rf "$script_lock"
   fi
 
   if [[ -n "${tmpDir-}" && -d "${tmpDir-}" ]]; then
