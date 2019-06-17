@@ -32,6 +32,23 @@ else
   underline="\033[4;37m"
 fi
 
+_functionStack_() {
+  # DESC:   Prints the function stack in use
+  # ARGS:   None
+  # OUTS:   Prints [function]:[file]:[line]
+  # NOTE:   Does not print functions from the alert class
+  local _i
+  funcStackResponse=()
+  for ((_i = 1; _i < ${#BASH_SOURCE[@]}; _i++)); do
+    case "${FUNCNAME[$_i]}" in "_alert_" | "_trapCleanup_" | fatal | error | warning | verbose | debug | die) continue ;; esac
+    funcStackResponse+=("${FUNCNAME[$_i]}:$(basename ${BASH_SOURCE[$_i]}):${BASH_LINENO[$_i - 1]}")
+  done
+  printf "( "
+  printf %s "${funcStackResponse[0]}"
+  printf ' < %s' "${funcStackResponse[@]:1}"
+  printf ' )\n'
+}
+
 _alert_() {
   # DESC:   Controls all printing of messages to log files and stdout.
   # ARGS:   $1 (required) - The type of alert to print
@@ -43,7 +60,6 @@ _alert_() {
   # USAGE:  [ALERTTYPE] "[MESSAGE]" "$LINENO"
   # NOTES:  If '$logFile' is not set, a new log file will be created
   #         The colors of each alert type are set in this function
-  #         If 'die' or 'fatal' is passed to $1, the script will exit after printing the message
   #         For specified alert types, the funcstac will be printed
 
   local scriptName logLocation logName function_name color
@@ -60,17 +76,12 @@ _alert_() {
     logFile="${logLocation}/${logName}"
   fi
 
-  function_name="func: $(echo "$(
-    IFS="<"
-    echo "${FUNCNAME[*]:2}"
-  )" | sed -E 's/</ < /g')"
-
   if [ -z "$line" ]; then
     [[ "$1" =~ ^(fatal|error|debug|warning) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
-      && message="$message ($function_name)"
+      && message="$message $(_functionStack_)"
   else
     [[ "$1" =~ ^(fatal|error|debug) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
-      && message="$message (line: $line) ($function_name)"
+      && message="$message (line: $line) $(_functionStack_)"
   fi
 
   if [ -n "$line" ]; then
@@ -125,21 +136,18 @@ _alert_() {
   }
   _writeToLog_
 
-  # Quit the script when fatal alerts are passed
-  [[ "$alertType" =~ ^(fatal|die) ]] && _safeExit_
-
 } # /_alert_
 
-error()   { echo -e "$(_alert_ error "${1}" "${2-}")"; }
+error() { echo -e "$(_alert_ error "${1}" "${2-}")"; }
 warning() { echo -e "$(_alert_ warning "${1}" "${2-}")"; }
-notice()  { echo -e "$(_alert_ notice "${1}" "${2-}")"; }
-info()    { echo -e "$(_alert_ info "${1}" "${2-}")"; }
+notice() { echo -e "$(_alert_ notice "${1}" "${2-}")"; }
+info() { echo -e "$(_alert_ info "${1}" "${2-}")"; }
 success() { echo -e "$(_alert_ success "${1}" "${2-}")"; }
-dryrun()  { echo -e "$(_alert_ dryrun "${1}" "${2-}")"; }
-input()   { echo -n "$(_alert_ input "${1}" ${2-})"; }
-header()  { echo -e "$(_alert_ header "== ${1} ==" ${2-})"; }
-die()     { echo -e "$(_alert_ fatal "${1}" ${2-})"; }
-fatal()   { echo -e "$(_alert_ fatal "${1}" ${2-})"; }
+dryrun() { echo -e "$(_alert_ dryrun "${1}" "${2-}")"; }
+input() { echo -n "$(_alert_ input "${1}" ${2-})"; }
+header() { echo -e "$(_alert_ header "== ${1} ==" ${2-})"; }
+die() { echo -e "$(_alert_ fatal "${1}" ${2-})"; _safeExit_ "1" ; }
+fatal() { echo -e "$(_alert_ fatal "${1}" ${2-})"; _safeExit_ "1" ; }
 debug() {
   ($verbose) \
     && {
@@ -515,9 +523,8 @@ _trapCleanup_() {
 
   funcstack="'$(echo "$funcstack" | sed -E 's/ / < /g')'"
 
-  #fatal "line $line - command '$command' $func"
   if [[ "${script##*/}" == "${sourced##*/}" ]]; then
-    fatal "${7-} command: '$command' (line: $line) (func: ${funcstack})"
+    fatal "${7-} command: '$command' (line: $line) [func: $(_functionStack_)]"
   else
     fatal "${7-} command: '$command' (func: ${funcstack} called at line $linecallfunc of '${script##*/}') (line: $line of '${sourced##*/}') "
   fi

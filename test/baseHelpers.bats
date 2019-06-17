@@ -56,17 +56,17 @@ teardown() {
 
 @test "die" {
   run die "testing"
-  assert_line --index 0 --regexp ".*\[  fatal\] testing \(func: run < test_die < bats_perform_test < main\)"
+  assert_line --index 0 --regexp ".*\[  fatal\] testing \( run:.*\)"
 }
 
 @test "fatal: with LINE" {
   run fatal "testing" "$LINENO"
-  assert_line --index 0 --regexp ".*\[  fatal\] testing \(line: [0-9]{1,3}\) \(func: run < test_fatal-3a_with_LINE < bats_perform_test < main\)"
+  assert_line --index 0 --regexp ".*\[  fatal\] testing \(line: [0-9]{1,3}\) \( run:.*\)"
 }
 
 @test "error" {
   run error "testing"
-  assert_output --partial "[  error] testing (func: run < test_error < bats_perform_test < main)"
+  assert_output --regexp  ".*\[  error\] testing \( run:.*\)"
 }
 
 @test "_execute_: Debug command" {
@@ -221,7 +221,7 @@ teardown() {
   assert_file_exist "${logFile}"
 
   run cat "${logFile}"
-  assert_line --index 0 --partial "[  error] test error (func: test_logging-3a_Errors_only < bats_perform_test < main)"
+  assert_line --index 0 --regexp  ".*\[  error\] test error \( test_logging.*:.*\)"
 
   rm "$logFile"
   printLog=false; logErrors=false; quiet=false; unset logFile;
