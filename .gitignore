@@ -1,5 +1,7 @@
 # Ignore the backup directory if one is created
 dotfiles_backup/
+tmp/
+scratch/
 
 # Other ignores
 *.sublime-workspace
