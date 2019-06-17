@@ -147,11 +147,11 @@ set -o errexit                            # Exit on error. Append '||true' if yo
 set -o pipefail                           # Use last non-zero exit code in a pipeline
 shopt -s nullglob globstar                # Make `for f in *.txt` work when `*.txt` matches zero files
 IFS=$' \n\t'                              # Set IFS to preferred implementation
-# set -o xtrace                           # Uncomment to run in debug mode
+# set -o xtrace                           # Run in debug mode
 set -o nounset                            # Disallow expansion of unset variables
-# [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Uncomment to force arguments when invoking the script
-# _makeTempDir_ "$(basename "$0")"        # Uncomment to create a temp directory '$tmpDir'
-# _acquireScriptLock_                     # Uncomment to acquire script lock
+# [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Force arguments when invoking the script
+# _makeTempDir_ "$(basename "$0")"        # Create a temp directory '$tmpDir'
+# _acquireScriptLock_                     # Acquire script lock
 _parseOptions_ "$@"                       # Parse arguments passed to script
 if ! ${sourceOnly}; then _mainScript_; fi # Run script unless in 'source-only' mode
 if ! ${sourceOnly}; then _safeExit_; fi   # Exit cleanly
