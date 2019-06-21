@@ -131,6 +131,16 @@ _alert_() {
       # Don't use colors in logs
       color=""
       reset=""
+      bold=""
+      white=""
+      reset=""
+      purple=""
+      red=""
+      green=""
+      tan=""
+      yellow=""
+      blue=""
+      underline=""
       echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${alertType}") ${message}" >>"${logFile}"
     fi
   }
@@ -167,7 +177,7 @@ verbose() {
 _makeTempDir_() {
   # DESC:   Creates a temp direcrtory to house temporary files
   # ARGS:   $1 (Optional) - First characters/word of directory name
-  # OUTS:   $temp         - Temporary directory
+  # OUTS:   $tmpDir       - Temporary directory
   # USAGE:  _makeTempDir_ "$(basename "$0")"
 
   if [ -n "${1-}" ]; then
@@ -178,7 +188,7 @@ _makeTempDir_() {
   (umask 077 && mkdir "${tmpDir}") || {
     fatal "Could not create temporary directory! Exiting."
   }
-  verbose "Temp dir created: $tmpDir"
+  verbose "\$tmpDir=$tmpDir"
 }
 
 _acquireScriptLock_() {
@@ -200,7 +210,7 @@ _acquireScriptLock_() {
 
   if command mkdir "$lock_dir" 2>/dev/null; then
     readonly script_lock="$lock_dir"
-    verbose "Acquired script lock: $script_lock"
+    verbose "Acquired script lock: ${tan}${script_lock}${purple}"
   else
     die "Unable to acquire script lock: $lock_dir"
   fi
@@ -313,7 +323,7 @@ _execute_() {
 _findBaseDir_() {
   # DESC: Locates the real directory of the script being run. similar to GNU readlink -n
   # ARGS:  None
-  # OUTS:  Echo result
+  # OUTS:  Echo result to STDOUT
   # USE :  baseDir="$(_findBaseDir_)"
 
   local SOURCE
@@ -338,7 +348,8 @@ _checkBinary_() {
   # OUTS:   true/false
   # USAGE:  (_checkBinary_ ffsmpeg ) && [SUCCESS] || [FAILURE]
   if [[ $# -lt 1 ]]; then
-    fatal 'Missing required argument to _checkBinary_()!'
+    error 'Missing required argument to _checkBinary_()!'
+    return 1
   fi
 
   if ! command -v "$1" >/dev/null 2>&1; then

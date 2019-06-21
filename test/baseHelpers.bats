@@ -42,31 +42,136 @@ teardown() {
 
 ########### BEGIN TESTS ##########
 
-@test "refute debug" {
+@test "_alert_: success" {
+  run success "testing"
+  assert_output --regexp "\[success\] testing"
+}
+
+@test "_alert_: quiet" {
+  quiet=true
+  run notice "testing"
+  assert_success
+  refute_output --partial "testing"
+  quiet=false
+}
+
+@test "_alert_: verbose" {
+  run verbose "testing"
+  refute_output --regexp "\[  debug\] testing"
+
+  verbose=true
+  run verbose "testing"
+  assert_output --regexp "\[  debug\] testing"
+  verbose=false
+}
+
+@test "_alert_: warning" {
+  run warning "testing"
+  assert_output --regexp "\[warning\] testing"
+}
+
+@test "_alert_: header" {
+  run header "testing"
+  assert_output --regexp "\[ header\] == testing =="
+}
+
+@test "_alert_: info" {
+  run info "testing"
+  assert_output --regexp "[0-9]+:[0-9]+:[0-9]+ (AM|PM) \[   info\] testing"
+}
+
+@test "_alert_: input" {
+  run input "testing"
+  assert_output --partial "[  input] testing"
+}
+
+@test "_alert_: logging" {
+  printLog=true; logFile="${HOME}/tmp/bats-baseHelpers-test.log";
+  [ -e "${logFile}" ] && rm "$logFile"
+  header "$logFile"
+  dryrun "dryrun"
+  notice "testing"
+  info "testing again"
+  success "last test"
+
+  assert_file_exist "${logFile}"
+
+  run cat "${logFile}"
+  assert_line --index 0 --partial "[ header] == /Users/nlandau/tmp/bats-baseHelpers-test.log =="
+  assert_line --index 1 --partial "[ dryrun] dryrun"
+  assert_line --index 2 --partial "[ notice] testing"
+  assert_line --index 3 --partial "[   info] testing again"
+  assert_line --index 4 --partial "[success] last test"
+
+  rm "$logFile"
+  printLog=false; unset logFile;
+}
+
+@test "_alert_: logging: Errors only" {
+  printLog=false; logErrors=true; logFile="${HOME}/tmp/bats-baseHelpers-tests.log"; quiet=true;
+  [ -e "${logFile}" ] && rm "$logFile"
+  header "$logFile"
+  dryrun "dryrun"
+  notice "testing"
+  info "testing again"
+  success "last test"
+  error "test error"
+  warning "test warning"
+
+  assert_file_exist "${logFile}"
+
+  run cat "${logFile}"
+  assert_line --index 0 --regexp  ".*\[  error\] test error \( test_.*<.*<.* \)"
+
+  rm "$logFile"
+  printLog=false; logErrors=false; quiet=false; unset logFile;
+}
+
+@test "_alert_: notice" {
+  run notice "testing"
+  assert_output --regexp "\[ notice\] testing"
+}
+
+@test "_alert_: notice: with LINE" {
+  run notice "testing" "$LINENO"
+  assert_output --regexp ".*\[ notice\] testing \(line: [0-9]{1,3}\)"
+}
+
+@test "_alert_: refute debug" {
   run debug "testing"
   refute_output --partial "[  debug] testing"
 }
 
-@test "assert debug" {
+@test "_alert_: assert debug" {
   verbose=true
   run debug "testing"
   assert_output --partial "[  debug] testing"
   verbose=false
 }
 
-@test "die" {
+@test "_alert_: die" {
   run die "testing"
   assert_line --index 0 --regexp ".*\[  fatal\] testing \( run:.*\)"
 }
 
-@test "fatal: with LINE" {
+@test "_alert_: fatal: with LINE" {
   run fatal "testing" "$LINENO"
   assert_line --index 0 --regexp ".*\[  fatal\] testing \(line: [0-9]{1,3}\) \( run:.*\)"
 }
 
-@test "error" {
+@test "_alert_: error" {
   run error "testing"
   assert_output --regexp  ".*\[  error\] testing \( run:.*\)"
+}
+
+@test "_checkBinary_: true" {
+  run _checkBinary_ "vi"
+  assert_success
+}
+
+@test "_checkBinary_: false" {
+  run _checkBinary_ "someNonexistantBinary"
+  assert_failure
 }
 
 @test "_execute_: Debug command" {
@@ -172,69 +277,13 @@ teardown() {
   assert_failure
 }
 
-@test "header" {
-  run header "testing"
-  assert_output --regexp "\[ header\] == testing =="
-}
+@test "_makeTempDir_" {
+  verbose="true"
+  run _makeTempDir_
+  assert_success
+  assert_output --regexp '\$tmpDir=\/.*\/bats-exec-test\.[0-9]{3,6}\.[0-9]{3,6}\.[0-9]{3,6}\.[0-9]{3,6}'
 
-@test "info" {
-  run info "testing"
-  assert_output --regexp "[0-9]+:[0-9]+:[0-9]+ (AM|PM) \[   info\] testing"
-}
-
-@test "input" {
-  run input "testing"
-  assert_output --partial "[  input] testing"
-}
-
-@test "logging" {
-  printLog=true; logFile="${HOME}/tmp/bats-baseHelpers-test.log";
-  header "$logFile"
-  dryrun "dryrun"
-  notice "testing"
-  info "testing again"
-  success "last test"
-
-  assert_file_exist "${logFile}"
-
-  run cat "${logFile}"
-  assert_line --index 0 --partial "[ header] == /Users/nlandau/tmp/bats-baseHelpers-test.log =="
-  assert_line --index 1 --partial "[ dryrun] dryrun"
-  assert_line --index 2 --partial "[ notice] testing"
-  assert_line --index 3 --partial "[   info] testing again"
-  assert_line --index 4 --partial "[success] last test"
-
-  rm "$logFile"
-  printLog=false; unset logFile;
-}
-
-@test "logging: Errors only" {
-  printLog=false; logErrors=true; logFile="${HOME}/tmp/bats-baseHelpers-tests.log"; quiet=true;
-  header "$logFile"
-  dryrun "dryrun"
-  notice "testing"
-  info "testing again"
-  success "last test"
-  error "test error"
-  warning "test warning"
-
-  assert_file_exist "${logFile}"
-
-  run cat "${logFile}"
-  assert_line --index 0 --regexp  ".*\[  error\] test error \( test_logging.*:.*\)"
-
-  rm "$logFile"
-  printLog=false; logErrors=false; quiet=false; unset logFile;
-}
-
-@test "notice" {
-  run notice "testing"
-  assert_output --regexp "\[ notice\] testing"
-}
-
-@test "notice: with LINE" {
-  run notice "testing" "$LINENO"
-  assert_output --regexp ".*\[ notice\] testing \(line: [0-9]{1,3}\)"
+  verbose="false"
 }
 
 @test "_progressBar_: verbose" {
@@ -289,47 +338,9 @@ teardown() {
   quiet=false
 }
 
-@test "_checkBinary_: true" {
-  run _checkBinary_ "vi"
-  assert_success
-}
-
-@test "_checkBinary_: false" {
-  run _checkBinary_ "someNonexistantBinary"
-  assert_failure
-}
-
 @test "_setPATH_" {
   _setPATH_ "/testing/from/bats" "/testing/again"
   run echo "$PATH"
   assert_output --regexp "/testing/from/bats"
   assert_output --regexp "/testing/again"
-}
-
-@test "success" {
-  run success "testing"
-  assert_output --regexp "\[success\] testing"
-}
-
-@test "quiet" {
-  quiet=true
-  run notice "testing"
-  assert_success
-  refute_output --partial "testing"
-  quiet=false
-}
-
-@test "verbose" {
-  run verbose "testing"
-  refute_output --regexp "\[  debug\] testing"
-
-  verbose=true
-  run verbose "testing"
-  assert_output --regexp "\[  debug\] testing"
-  verbose=false
-}
-
-@test "warning" {
-  run warning "testing"
-  assert_output --regexp "\[warning\] testing"
 }
