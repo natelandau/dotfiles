@@ -1,6 +1,90 @@
 # Transform text using these functions
 # Some were adapted from https://github.com/jmcantrell/bashful
 
+_cleanString_() {
+  # DESC:   Cleans a string of text
+  # ARGS:   $1 (Required) - String to be cleaned
+  #         $2 (optional) - Specific characters to be cleaned (separated by commas,
+  #                         escape regex special chars)
+  # OPTS:   -l  Forces all text to lowercase
+  #         -u  Forces all text to uppercase
+  #         -a  Removes all non-alphanumeric characters except for spaces and dashes
+  #         -p  Replace one character with another (separated by commas)
+  # OUTS:   Prints result to STDOUT
+  # USAGE:  _cleanString_ [OPT] [STRING] [CHARS TO REPLACE]
+  #         _cleanString_ -p " ,-" [OPT] [STRING] [CHARS TO REPLACE]
+  # NOTES:  Always cleaned:
+  #           - leading white space
+  #           - trailing white space
+  #           - multiple spaces become a single space
+
+  local opt
+  local lc=false
+  local uc=false
+  local alphanumeric=false
+  local replace=false
+
+  local OPTIND=1
+  while getopts ":lLuUaAsSpP" opt; do
+    case $opt in
+      l | L) lc=true ;;
+      u | U) uc=true ;;
+      a | A) alphanumeric=true ;;
+      p | P)
+        shift
+        local pairs=()
+        IFS=',' read -r -a pairs <<<"$1"
+        replace=true ;;
+      *)
+        {
+          error "Unrecognized option '$1' passed to _execute. Exiting."
+          return 1
+        }
+        ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _cleanString_()!'
+
+  local string="${1}"
+  local userChars="${2:-}"
+
+  local arrayToClean=()
+  IFS=',' read -r -a arrayToClean <<<"$userChars"
+
+  # trim trailing/leading white space and duplicate spaces/tabs
+  string="$(echo "$string" | awk '{$1=$1};1')"
+
+  local i
+  for i in "${arrayToClean[@]}"; do
+    verbose "cleaning: $i"
+    string="$(echo "${string}" | sed "s/$i//g")"
+  done
+
+  if "${replace}"; then
+    string="$(echo "${string}" | sed "s/${pairs[0]}/${pairs[1]}/g")"
+  fi
+
+  ("${lc}") \
+    && string="$(echo "${string}" | tr '[:upper:]' '[:lower:]')"
+
+  ("${uc}") \
+    && string="$(echo "${string}" | tr '[:lower:]' '[:upper:]')"
+
+  ("${alphanumeric}") \
+    && string="$(echo "${string}" | tr -c '[:alnum:] -' ' ')"
+
+
+  # trim trailing/leading white space and duplicate dashes
+  string="$(echo "$string" | tr -s '-')"
+  string="$(echo "$string" | awk '{$1=$1};1')"
+
+
+  printf "%s\n" "${string}"
+
+}
+
 _stopWords_() {
   # DESC:   Removes common stopwords from a string
   # ARGS:   $1 (Required) - String to parse
@@ -11,12 +95,12 @@ _stopWords_() {
 
     [[ $# -lt 1 ]] && {
       warning 'Missing required argument to _stripCommonWords_!'
-      _safeExit_ 1
+      return 1
     }
 
     [ "$(command -v gsed)" ] || {
       error "Can not continue without gsed.  Use '${YELLOW}brew install gnu-sed${reset}'"
-      _safeExit_ 1
+      return 1
     }
 
     local string="${1}"
@@ -43,10 +127,11 @@ _stopWords_() {
     echo "${string}"
 
 }
+
 _escape_() {
   # DESC:   Escapes a string by adding \ before special chars
   # ARGS:   $@ (Required) - String to be escaped
-  # OUTS:   Prints output to STDOUD
+  # OUTS:   Prints output to STDOUT
   # USAGE:  _escape_ "Some text here"
 
   # shellcheck disable=2001
@@ -60,7 +145,10 @@ _htmlDecode_() {
   # USAGE:  _htmlDecode_ <string>
   # NOTE:   Must have a sed file containing replacements
 
-  [[ $# -lt 1 ]] && fatal 'Missing required argument to _htmlDecode_()!'
+  [[ $# -lt 1 ]] && {
+    error 'Missing required argument to _htmlDecode_()!'
+    return 1
+  }
 
   local sedFile
   sedFile="${HOME}/.sed/htmlDecode.sed"
@@ -77,7 +165,10 @@ _htmlEncode_() {
   # USAGE:  _htmlEncode_ <string>
   # NOTE:   Must have a sed file containing replacements
 
-  [[ $# -lt 1 ]] && fatal 'Missing required argument to _htmlEncode_()!'
+    [[ $# -lt 1 ]] && {
+    error 'Missing required argument to _htmlEncode_()!'
+    return 1
+    }
 
   local sedFile
   sedFile="${HOME}/.sed/htmlEncode.sed"
@@ -141,7 +232,10 @@ _urlEncode_() {
   # USAGE:  _urlEncode_ <string>
   # NOTE:   https://gist.github.com/cdown/1163649
 
-  [[ $# -lt 1 ]] && fatal 'Missing required argument to _urlEncode_()!'
+  [[ $# -lt 1 ]] && {
+    error 'Missing required argument to _urlEncode_()!'
+    return 1
+  }
 
   local LANG=C
   local i
@@ -161,7 +255,10 @@ _urlDecode_() {
   # OUTS:   Prints output to STDOUT
   # USAGE:  _urlDecode_ <string>
 
-  [[ $# -lt 1 ]] && fatal 'Missing required argument to _urlDecode_()!'
+  [[ $# -lt 1 ]] && {
+    error 'Missing required argument to _urlDecode_()!'
+    return 1
+  }
 
   local url_encoded="${1//+/ }"
   printf '%b' "${url_encoded//%/\\x}"

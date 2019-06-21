@@ -5,9 +5,12 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-s="${HOME}/dotfiles/scripting/helpers/textProcessing.bash"
-base="$(basename $s)"
+helpers="${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
+[ -f "$helpers" ] \
+  && { source "$helpers"; trap - EXIT INT TERM ; } \
+  || { echo "Can not find helper script" ; exit 1 ; }
 
+s="${HOME}/dotfiles/scripting/helpers/textProcessing.bash"
 [ -f "$s" ] \
   && { source "$s"; trap - EXIT INT TERM ; } \
   || { echo "Can not find script to test" ; exit 1 ; }
@@ -46,6 +49,52 @@ teardown() {
 
 ########### BEGIN TESTS ##########
 
+@test "_cleanString_: fail" {
+  run _cleanString_
+  assert_failure
+}
+
+@test "_cleanString_: lowercase" {
+  run _cleanString_ -l "I AM IN CAPS"
+  assert_success
+  assert_output "i am in caps"
+}
+
+@test "_cleanString_: uppercase" {
+  run _cleanString_ -u "i am in caps"
+  assert_success
+  assert_output "I AM IN CAPS"
+}
+
+@test "_cleanString_: remove white space" {
+  run _cleanString_ -u "   i am     in caps   "
+  assert_success
+  assert_output "I AM IN CAPS"
+}
+
+@test "_cleanString_: alnum" {
+  run _cleanString_ -a "  !@#$%^%& i am     in caps 12345 == "
+  assert_success
+  assert_output "i am in caps 12345"
+}
+
+@test "_cleanString_: user replacement" {
+  run _cleanString_ -p "e,g" "there should be a lot of e's in this sentence"
+  assert_success
+  assert_output "thgrg should bg a lot of g's in this sgntgncg"
+}
+
+@test "_cleanString_: remove specified characters" {
+  run _cleanString_ "there should be a lot of e's in this sentence" "e"
+  assert_success
+  assert_output "thr should b a lot of 's in this sntnc"
+}
+
+@test "_cleanString_: compound test 1" {
+  run _cleanString_ -p "2,4" -au "  @#$%[]{} clean   a compound command ==23---- " "e"
+  assert_success
+  assert_output "CLAN A COMPOUND COMMAND 43-"
+}
 
 @test "_escape_" {
   run _escape_ "Here is some / text to & be - escape'd"
@@ -63,6 +112,17 @@ teardown() {
   run _stopWords_ "A string to be parsed to help pass this test being performed by bats" "bats,string"
   assert_success
   assert_output "parsed pass performed"
+}
+
+@test "_stopWords_: No changes" {
+  run _stopWords_ "string parsed pass performed"
+  assert_success
+  assert_output "string parsed pass performed"
+}
+
+@test "_stopWords_: fail" {
+  run _stopWords_
+  assert_failure
 }
 
 @test "_htmlEncode_" {
