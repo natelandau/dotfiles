@@ -18,6 +18,7 @@ _sourceHelperFiles_() {
     "${HOME}/dotfiles/scripting/helpers/numbers.bash"
     "${HOME}/dotfiles/scripting/helpers/services.bash"
     "${HOME}/dotfiles/scripting/helpers/textProcessing.bash"
+    "${HOME}/dotfiles/scripting/helpers/dates.bash"
   )
   for sourceFile in "${filesToSource[@]}"; do
     [ ! -f "$sourceFile" ] \
