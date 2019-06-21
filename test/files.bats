@@ -52,25 +52,6 @@ teardown() {
 
 ########### BEGIN TESTS ##########
 
-@test "_listFiles: glob w/ 2 files" {
-  touch test1.txt test2.txt test3.json
-
-  run _listFiles_ g "*.txt"
-  assert_success
-  assert_line --index 0 --partial 'test1.txt'
-  assert_line --index 1 --partial 'test2.txt'
-  refute_output --partial 'json'
-}
-
-@test "_listFiles: regex w/ 1 file" {
-  touch test1.txt test2.txt test3.json
-
-  run _listFiles_ r ".*\.json"
-  assert_success
-  assert_line --index 0 --partial 'test3.json'
-  refute_output --partial 'txt'
-}
-
 @test "_backupFile_: no source" {
   run _backupFile_ "testfile"
 
@@ -189,6 +170,35 @@ teardown() {
   assert_output "$( cat "$YAML2")"
 }
 
+@test "_listFiles: glob w/ 2 files" {
+  touch test1.txt test2.txt test3.json
+
+  run _listFiles_ g "*.txt"
+  assert_success
+  assert_line --index 0 --partial 'test1.txt'
+  assert_line --index 1 --partial 'test2.txt'
+  refute_output --partial 'json'
+}
+
+@test "_listFiles: regex w/ 1 file" {
+  touch test1.txt test2.txt test3.json
+
+  run _listFiles_ r ".*\.json"
+  assert_success
+  assert_line --index 0 --partial 'test3.json'
+  refute_output --partial 'txt'
+}
+
+@test "_listFiles: fail no args" {
+  run _listFiles_
+  assert_failure
+}
+
+@test "_listFiles: fail one arg" {
+  run _listFiles_ "g"
+  assert_failure
+}
+
 @test "_locateSourceFile_: Resolve symlinks" {
   ln -s "$YAML1" "testSymlink"
 
@@ -225,6 +235,30 @@ teardown() {
   assert_success
   assert [ -h "test2.txt" ]
   assert [ -f "backup/test2.txt" ]
+}
+
+@test "_parseFilename_: success" {
+  verbose=true
+  touch "${testdir}/testfile.txt"
+  run _parseFilename_ "${testdir}/testfile.txt"
+  assert_success
+  assert_line --index 0 --regexp '\$_parsedFileFull: /private/.*/testfile\.txt'
+  assert_line --index 1 --regexp '\$_parseFilePath: /private/.*files.bash:163'
+  assert_line --index 2 --partial '$_parseFileName: testfile.txt'
+  assert_line --index 3 --partial '$_parseFileBase: testfile'
+  assert_line --index 4 --partial '$_parseFileExt: .txt'
+
+  verbose=false
+}
+
+@test "_parseFilename_: fail - no arguments" {
+  run _parseFilename_
+  assert_failure
+}
+
+@test "_parseFilename_: fail - can't find file" {
+  run _parseFilename_ "a-new-file-to-test.txt"
+  assert_failure
 }
 
 @test "_parseYAML_: success" {

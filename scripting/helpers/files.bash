@@ -1,15 +1,19 @@
+
 _listFiles_() {
   # DESC:  Find files in a directory.  Use either glob or regex
   # ARGS:  $1 (Required) - 'g|glob' or 'r|regex'
   #        $2 (Required) - pattern to match
   #        $3 (Optional) - directory
-  # OUTS:  None
+  # OUTS:  Prints files to STDOUT
   # NOTE:  Searches are NOT case sensitive
   # USAGE: _listFiles_ glob "*.txt" "some/backup/dir"
   #        _listFiles_ regex ".*\.txt" "some/backup/dir"
   #        array=($(_listFiles_ g "*.txt"))
 
-  [[ $# -lt 2 ]] && fatal 'Missing required argument to _listFiles_()!'
+  [[ $# -lt 2 ]] && {
+    error 'Missing required argument to _listFiles_()!'
+    return 1
+  }
 
   local t="${1}"
   local p="${2}"
@@ -135,6 +139,42 @@ _cleanFilename_() {
 
 }
 
+_parseFilename_() {
+  # DESC:   Break a filename into its component parts
+  # ARGS:   $1 (Required) - A file
+  # OUTS:   $_parsedFileFull    - File and its real path (from _realPath_())
+  #         $_parseFilePath     - Path to the file
+  #         $_parseFileName     - Full name of the file, with extension
+  #         $_parseFileBase     - Name of file WITHOUT extension
+  #         $_parseFileExt      - The extension of the file (from _ext_())
+
+  local fileToParse="${1:?No file provided to _parseFilename_}"
+
+  [[ -f "${fileToParse}" ]] || {
+    error "Can't locate good file to parse at: ${fileToParse}"
+    return 1
+  }
+
+  # Grab the directory
+  _parsedFileFull="$(_realpath_ "${fileToParse}")" \
+    && verbose "${tan}\$_parsedFileFull: ${_parsedFileFull-}${purple}"
+
+  _parseFilePath=$(_realpath_ -d "$_parsedFileFull") \
+    && verbose "${tan}\$_parseFilePath: ${_parseFilePath}${purple}"
+
+  # use the basename of the userFile going forward since the path is now in $filePath
+  _parseFileName=$(basename "${fileToParse}") \
+    && verbose "${tan}\$_parseFileName: ${_parseFileName}${purple}"
+
+  # Grab the filename without the extension
+  _parseFileBase="${_parseFileName%.*}" \
+    && verbose "${tan}\$_parseFileBase: ${_parseFileBase}${purple}"
+
+  # Grab the extension
+  _parseFileExt="$(_ext_ "${_parseFileName}")" \
+    && verbose "${tan}\$_parseFileExt: ${_parseFileExt}${purple}"
+}
+
 _decryptFile_() {
   # DESC:   Decrypts a file with openSSL
   # ARGS:   $1 (Required) - File to be decrypted
@@ -200,7 +240,7 @@ _ext_() {
   # DESC:   Extract the extension from a filename
   # ARGS:   $1 (Required) - Input file
   # OPTS:   -n            - optional flag for number of extension levels (Ex: -n2)
-  # OUTS:   Print extension
+  # OUTS:   Print extension to STDOUT
   # USAGE:
   #   _ext_     foo.txt     #==> .txt
   #   _ext_ -n2 foo.tar.gz  #==> .tar.gz
