@@ -180,6 +180,8 @@ _makeTempDir_() {
   # OUTS:   $tmpDir       - Temporary directory
   # USAGE:  _makeTempDir_ "$(basename "$0")"
 
+  [ -d "${tmpDir:-}" ] && return 0
+
   if [ -n "${1-}" ]; then
     tmpDir="${TMPDIR:-/tmp/}${1}.$RANDOM.$RANDOM.$$"
   else
