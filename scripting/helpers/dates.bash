@@ -78,7 +78,7 @@ _parseDate_() {
   verbose "_parseDate_() input ${tan}$date${purple}"
 
   # YYYY MM DD or YYYY-MM-DD
-  if [[ "$date" =~ (.*[^0-9]|^)((20[0-2][0-9])[-\.\/_ ]+([ 0-9]{1,2})[-\.\/_ ]+([ 0-9]{1,2}))(.*[^0-9]|$) ]]; then
+  if [[ "$date" =~ (.*[^0-9]|^)((20[0-2][0-9])[-\.\/_ ]+([ 0-9]{1,2})[-\.\/_ ]+([ 0-9]{1,2}))([^0-9].*|$) ]]; then
       verbose "regex match: ${tan}YYYY-MM-DD${purple}"
       _parseDate_found="${BASH_REMATCH[2]}"
       _parseDate_year=$(( 10#${BASH_REMATCH[3]} ))
@@ -105,7 +105,7 @@ _parseDate_() {
       _parseDate_year="20$(( 10#${BASH_REMATCH[5]} ))"
 
   #  DD Month YYYY
-  elif [[ "$date" =~ (.*[^0-9]|^)(([0-9]{2})[-\./_ ]+(january|jan|ja|february|feb|fe|march|mar|ma|april|apr|ap|may|june|jun|july|jul|ju|august|aug|september|sep|october|oct|november|nov|december|dec),?[-\./_ ]+(20[0-2][0-9]))(.*[^0-9]|$) ]]; then
+  elif [[ "$date" =~ (.*[^0-9]|^)(([0-9]{2})[-\./_ ]+(january|jan|ja|february|feb|fe|march|mar|ma|april|apr|ap|may|june|jun|july|jul|ju|august|aug|september|sep|october|oct|november|nov|december|dec),?[-\./_ ]+(20[0-2][0-9]))([^0-9].*|$) ]]; then
       verbose "regex match: ${tan}DD Month, YYYY${purple}"
       _parseDate_found="${BASH_REMATCH[2]}"
       _parseDate_day=$(( 10#"${BASH_REMATCH[3]}" ))
@@ -115,7 +115,7 @@ _parseDate_() {
 
   # MM-DD-YYYY  or  DD-MM-YYYY
   #                     1      2        3                   4                         5
-  elif [[ "$date" =~ (.*[^0-9]|^)(([ 0-9]{1,2})[-\.\/_ ]+([ 0-9]{1,2})[-\.\/_ ]+(20[0-2][0-9]))(.*[^0-9]|$) ]]; then
+  elif [[ "$date" =~ (.*[^0-9]|^)(([ 0-9]{1,2})[-\.\/_ ]+([ 0-9]{1,2})[-\.\/_ ]+(20[0-2][0-9]))([^0-9].*|$) ]]; then
 
       if [[ $(( 10#${BASH_REMATCH[3]} )) -lt 13 && \
             $(( 10#${BASH_REMATCH[4]} )) -gt 12 && \
@@ -152,7 +152,7 @@ _parseDate_() {
       fi
 
   # Month, YYYY
-  elif [[ "$date" =~ ((january|jan|ja|february|feb|fe|march|mar|ma|april|apr|ap|may|june|jun|july|jul|ju|august|aug|september|sep|october|oct|november|nov|december|dec),?[-\./_ ]+(20[0-2][0-9]))(.*[^0-9]|$) ]]; then
+  elif [[ "$date" =~ ((january|jan|ja|february|feb|fe|march|mar|ma|april|apr|ap|may|june|jun|july|jul|ju|august|aug|september|sep|october|oct|november|nov|december|dec),?[-\./_ ]+(20[0-2][0-9]))([^0-9].*|$) ]]; then
       verbose "regex match: ${tan}Month, YYYY${purple}"
       _parseDate_found="${BASH_REMATCH[1]}"
       _parseDate_day="1"
@@ -161,7 +161,7 @@ _parseDate_() {
       _parseDate_year="$(( 10#${BASH_REMATCH[3]} ))"
 
   # YYYYMMDDHHMM
-  elif [[ "$date" =~ (.*[^0-9]|^)((20[0-2][0-9])([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2}))(.*[^0-9]|$) ]]; then
+  elif [[ "$date" =~ (.*[^0-9]|^)((20[0-2][0-9])([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2}))([^0-9].*|$) ]]; then
       verbose "regex match: ${tan}YYYYMMDDHHMM${purple}"
       _parseDate_found="${BASH_REMATCH[2]}"
       _parseDate_day="$(( 10#${BASH_REMATCH[5]} ))"
@@ -172,7 +172,7 @@ _parseDate_() {
       _parseDate_minute="$(( 10#${BASH_REMATCH[7]} ))"
 
   # YYYYMMDDHH            1      2        3         4         5         6
-  elif [[ "$date" =~ (.*[^0-9]|^)((20[0-2][0-9])([0-9]{2})([0-9]{2})([0-9]{2}))(.*[^0-9]|$) ]]; then
+  elif [[ "$date" =~ (.*[^0-9]|^)((20[0-2][0-9])([0-9]{2})([0-9]{2})([0-9]{2}))([^0-9].*|$) ]]; then
       verbose "regex match: ${tan}YYYYMMDDHHMM${purple}"
       _parseDate_found="${BASH_REMATCH[2]}"
       _parseDate_day="$(( 10#${BASH_REMATCH[5]} ))"
@@ -184,7 +184,7 @@ _parseDate_() {
 
   # MMDDYYYY or YYYYMMDD or DDMMYYYY
   #                        1     2    3         4         5         6
-  elif [[ "$date" =~ (.*[^0-9]|^)(([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2}))(.*[^0-9]|$) ]]; then
+  elif [[ "$date" =~ (.*[^0-9]|^)(([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2}))([^0-9].*|$) ]]; then
 
         # MMDDYYYY
         if [[ $(( 10#${BASH_REMATCH[5]} )) -eq 20 && \
