@@ -55,21 +55,19 @@ _parseDate_() {
   # USAGE:  if _parseDate_ "[STRING]"; then ...
   # NOTE:   This function only recognizes dates from the year 2000 to 2029
   # NOTE:   Will recognize dates in the following formats separated by '-_ ./'
-  #           YYYY-MM-DD
-  #           Month DD, YYYY
-  #           DD Month, YYYY
-  #           month, YYYY
-  #           MM-DD-YYYY  or  DD-MM-YYYY
-  #           YYYYMMDDHHMM
-  #           YYYYMMDDHH
-  #           MMDDYYYY or YYYYMMDD or DDMMYYYY
+  #               * YYYY-MM-DD      * Month DD, YYYY    * DD Month, YYYY
+  #               * Month, YYYY     * Month, DD YY      * MM-DD-YYYY
+  #               * MMDDYYYY        * YYYYMMDD          * DDMMYYYY
+  #               * YYYYMMDDHHMM    * YYYYMMDDHH        * DD-MM-YYYY
+  # TODO:   Impelemt the following date formats
+  #               * MMDDYY          * YYMMDD          * MM-DD-YY
+  #               * YY-MM-DD        * M-DD-YY         * M-D-YY
+  #               * mon-DD-YY
 
   [[ $# -eq 0 ]] && {
     error 'Missing required argument to _parseDate_()!'
     return 1
   }
-
-  shopt -s nocasematch
 
   local date="${1:-$(date +%F)}"
   _parseDate_found=""  _parseDate_year=""   _parseDate_month=""  _parseDate_monthName=""
@@ -89,13 +87,22 @@ _parseDate_() {
       _parseDate_day=$(( 10#${BASH_REMATCH[5]} ))
 
   # Month DD, YYYY
-  elif [[ "$date" =~ ((january|jan|ja|february|feb|fe|march|mar|ma|april|apr|ap|may|june|jun|july|jul|ju|august|aug|september|sep|october|oct|november|nov|december|dec)[-\./_ ]+([0-9]{1,2})(nd|rd|th|st)?,?[-\./_ ]+(20[0-2][0-9]))(.*[^0-9]|$) ]]; then
-      verbose "regex match: ${tan}Month DD, YYY${purple}"
+  elif [[ "$date" =~ ((january|jan|ja|february|feb|fe|march|mar|ma|april|apr|ap|may|june|jun|july|jul|ju|august|aug|september|sep|october|oct|november|nov|december|dec)[-\./_ ]+([0-9]{1,2})(nd|rd|th|st)?,?[-\./_ ]+(20[0-2][0-9]))([^0-9].*|$) ]]; then
+      verbose "regex match: ${tan}Month DD, YYYY${purple}"
       _parseDate_found="${BASH_REMATCH[1]}"
       _parseDate_month=$(_monthToNumber_ ${BASH_REMATCH[2]})
       _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
       _parseDate_day=$(( 10#${BASH_REMATCH[3]} ))
       _parseDate_year=$(( 10#${BASH_REMATCH[5]} ))
+
+  # Month DD, YY
+  elif [[ "$date" =~ ((january|jan|ja|february|feb|fe|march|mar|ma|april|apr|ap|may|june|jun|july|jul|ju|august|aug|september|sep|october|oct|november|nov|december|dec)[-\./_ ]+([0-9]{1,2})(nd|rd|th|st)?,?[-\./_ ]+([0-9]{2}))([^0-9].*|$) ]]; then
+      verbose "regex match: ${tan}Month DD, YY${purple}"
+      _parseDate_found="${BASH_REMATCH[1]}"
+      _parseDate_month=$(_monthToNumber_ ${BASH_REMATCH[2]})
+      _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+      _parseDate_day=$(( 10#${BASH_REMATCH[3]} ))
+      _parseDate_year="20$(( 10#${BASH_REMATCH[5]} ))"
 
   #  DD Month YYYY
   elif [[ "$date" =~ (.*[^0-9]|^)(([0-9]{2})[-\./_ ]+(january|jan|ja|february|feb|fe|march|mar|ma|april|apr|ap|may|june|jun|july|jul|ju|august|aug|september|sep|october|oct|november|nov|december|dec),?[-\./_ ]+(20[0-2][0-9]))(.*[^0-9]|$) ]]; then
@@ -140,6 +147,7 @@ _parseDate_() {
           _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
           _parseDate_day=$(( 10#${BASH_REMATCH[4]} ))
       else
+        shopt -u nocasematch
         return 1
       fi
 
@@ -237,6 +245,7 @@ _parseDate_() {
               _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
               _parseDate_year="${BASH_REMATCH[3]}${BASH_REMATCH[4]}"
         else
+          shopt -u nocasematch
           return 1
         fi
 
@@ -262,16 +271,18 @@ _parseDate_() {
   #             _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
   #             _parseDate_year="$(date +%Y )"
   #     else
+  #       shopt -u nocasematch
   #       return 1
   #     fi
   else
+    shopt -u nocasematch
     return 1
 
   fi
 
-  [[ -z ${_parseDate_year:-} ]]                           && return 1
-  (( _parseDate_month >= 1 && _parseDate_month <= 12 ))   || return 1
-  (( _parseDate_day >= 1 && _parseDate_day <= 31 ))       || return 1
+  [[ -z ${_parseDate_year:-} ]]                           && { shopt -u nocasematch;  return 1 ; }
+  (( _parseDate_month >= 1 && _parseDate_month <= 12 ))   || { shopt -u nocasematch;  return 1 ; }
+  (( _parseDate_day >= 1 && _parseDate_day <= 31 ))       || { shopt -u nocasematch;  return 1 ; }
 
   verbose "${tan}\$_parseDate_found:     ${_parseDate_found}${purple}"
   verbose "${tan}\$_parseDate_year:      ${_parseDate_year}${purple}"
@@ -280,6 +291,8 @@ _parseDate_() {
   verbose "${tan}\$_parseDate_day:       ${_parseDate_day}${purple}"
   [[ -z ${_parseDate_hour:-} ]]    || verbose "${tan}\$_parseDate_hour:     ${_parseDate_hour}${purple}"
   [[ -z ${_parseDate_inute:-} ]]   || verbose "${tan}\$_parseDate_minute:   ${_parseDate_minute}${purple}"
+
+  shopt -u nocasematch
 
   # Output results for BATS tests
   if [ "${automated_test_in_progress:-}" ]; then

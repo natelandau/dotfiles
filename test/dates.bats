@@ -130,6 +130,26 @@ teardown() {
   assert_output --partial "_parseDate_day: 22"
 }
 
+@test "_parseDate_: Month DD, YY" {
+  run _parseDate_ "this is text Oct 22, 19 and more text"
+  assert_success
+  assert_output --partial "_parseDate_found: Oct 22, 19"
+  assert_output --partial "_parseDate_year: 2019"
+  assert_output --partial "_parseDate_monthName: October"
+  assert_output --partial "_parseDate_month: 10"
+  assert_output --partial "_parseDate_day: 22"
+}
+
+@test "_parseDate_: Month DD YY" {
+  run _parseDate_ "Oct 22 19"
+  assert_success
+  assert_output --partial "_parseDate_found: Oct 22 19"
+  assert_output --partial "_parseDate_year: 2019"
+  assert_output --partial "_parseDate_monthName: October"
+  assert_output --partial "_parseDate_month: 10"
+  assert_output --partial "_parseDate_day: 22"
+}
+
 @test "_parseDate_: DD Month, YYYY" {
   run _parseDate_ "22 June, 2019 and more text"
   assert_success
