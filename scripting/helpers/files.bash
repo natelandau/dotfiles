@@ -171,8 +171,13 @@ _parseFilename_() {
     && verbose "${tan}\$_parseFileBase: ${_parseFileBase}${purple}"
 
   # Grab the extension
-  _parseFileExt="$(_ext_ "${_parseFileName}")" \
-    && verbose "${tan}\$_parseFileExt: ${_parseFileExt}${purple}"
+  if [[ "${fileToParse}" =~ .*\.[a-zA-Z]{3,4}$ ]]; then
+    _parseFileExt="$(_ext_ "${_parseFileName}")"
+  else
+    _parseFileExt=""
+  fi
+  verbose "${tan}\$_parseFileExt: ${_parseFileExt}${purple}"
+
 }
 
 _decryptFile_() {
