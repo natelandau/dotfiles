@@ -215,6 +215,51 @@ teardown() {
   assert_failure
 }
 
+@test "_parseDate_: DD MM YY" {
+  run _parseDate_ "a-test-22-12-19-is here"
+  assert_success
+  assert_output --partial "_parseDate_found: 22-12-19"
+  assert_output --partial "_parseDate_year: 2019"
+  assert_output --partial "_parseDate_monthName: December"
+  assert_output --partial "_parseDate_month: 12"
+  assert_output --partial "_parseDate_day: 22"
+}
+
+@test "_parseDate_: MM DD YY 1 " {
+  run _parseDate_ "a-test-12/22/19-is here"
+  assert_success
+  assert_output --partial "_parseDate_found: 12/22/19"
+  assert_output --partial "_parseDate_year: 2019"
+  assert_output --partial "_parseDate_monthName: December"
+  assert_output --partial "_parseDate_month: 12"
+  assert_output --partial "_parseDate_day: 22"
+}
+
+@test "_parseDate_: MM DD YY 2 " {
+  run _parseDate_ "6 8 19"
+  assert_success
+  assert_output --partial "_parseDate_found: 6 8 19"
+  assert_output --partial "_parseDate_year: 2019"
+  assert_output --partial "_parseDate_monthName: June"
+  assert_output --partial "_parseDate_month: 6"
+  assert_output --partial "_parseDate_day: 8"
+}
+
+@test "_parseDate_: MM DD YY 3 " {
+  run _parseDate_ "6 8 191"
+  assert_failure
+}
+
+@test "_parseDate_: MM DD YY 4 " {
+  run _parseDate_ "6 34 19"
+  assert_failure
+}
+
+@test "_parseDate_: MM DD YY 4 " {
+  run _parseDate_ "34 12 19"
+  assert_failure
+}
+
 @test "_parseDate_: Month, YYYY 1 " {
   run _parseDate_ "a-test-January, 2019-is here"
   assert_success

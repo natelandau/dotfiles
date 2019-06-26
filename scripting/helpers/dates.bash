@@ -59,10 +59,9 @@ _parseDate_() {
   #               * Month, YYYY     * Month, DD YY      * MM-DD-YYYY
   #               * MMDDYYYY        * YYYYMMDD          * DDMMYYYY
   #               * YYYYMMDDHHMM    * YYYYMMDDHH        * DD-MM-YYYY
+  #               * DD MM YY        * MM DD YY
   # TODO:   Impelemt the following date formats
-  #               * MMDDYY          * YYMMDD          * MM-DD-YY
-  #               * YY-MM-DD        * M-DD-YY         * M-D-YY
-  #               * mon-DD-YY
+  #               * MMDDYY          * YYMMDD            * mon-DD-YY
 
   [[ $# -eq 0 ]] && {
     error 'Missing required argument to _parseDate_()!'
@@ -114,7 +113,6 @@ _parseDate_() {
       _parseDate_year=$(( 10#"${BASH_REMATCH[5]}" ))
 
   # MM-DD-YYYY  or  DD-MM-YYYY
-  #                     1      2        3                   4                         5
   elif [[ "$date" =~ (.*[^0-9]|^)(([ 0-9]{1,2})[-\.\/_ ]+([ 0-9]{1,2})[-\.\/_ ]+(20[0-2][0-9]))([^0-9].*|$) ]]; then
 
       if [[ $(( 10#${BASH_REMATCH[3]} )) -lt 13 && \
@@ -143,6 +141,51 @@ _parseDate_() {
           verbose "regex match: ${tan}MM-DD-YYYY${purple}"
           _parseDate_found="${BASH_REMATCH[2]}"
           _parseDate_year=$(( 10#${BASH_REMATCH[5]} ))
+          _parseDate_month=$(( 10#${BASH_REMATCH[3]} ))
+          _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+          _parseDate_day=$(( 10#${BASH_REMATCH[4]} ))
+      else
+        shopt -u nocasematch
+        return 1
+      fi
+
+  elif [[ "$date" =~ (.*[^0-9]|^)(([0-9]{1,2})[-\.\/_ ]+([0-9]{1,2})[-\.\/_ ]+([0-9]{2}))([^0-9].*|$) ]]; then
+
+      info "1: ${BASH_REMATCH[1]}"
+      info "2: ${BASH_REMATCH[2]}"
+      info "3: ${BASH_REMATCH[3]}"
+      info "4: ${BASH_REMATCH[4]}"
+      info "5: ${BASH_REMATCH[5]}"
+      info "6: ${BASH_REMATCH[6]}"
+      info "7: ${BASH_REMATCH[7]}"
+
+
+      if [[ $(( 10#${BASH_REMATCH[3]} )) -lt 13 && \
+            $(( 10#${BASH_REMATCH[4]} )) -gt 12 && \
+            $(( 10#${BASH_REMATCH[4]} )) -lt 32
+        ]]; then
+            verbose "regex match: ${tan}MM-DD-YYYY${purple}"
+            _parseDate_found="${BASH_REMATCH[2]}"
+            _parseDate_year="20$(( 10#${BASH_REMATCH[5]} ))"
+            _parseDate_month=$(( 10#${BASH_REMATCH[3]} ))
+            _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+            _parseDate_day=$(( 10#${BASH_REMATCH[4]} ))
+      elif [[ $(( 10#${BASH_REMATCH[3]} )) -gt 12 && \
+              $(( 10#${BASH_REMATCH[3]} )) -lt 32 && \
+              $(( 10#${BASH_REMATCH[4]} )) -lt 13
+          ]]; then
+            verbose "regex match: ${tan}DD-MM-YYYY${purple}"
+            _parseDate_found="${BASH_REMATCH[2]}"
+            _parseDate_year="20$(( 10#${BASH_REMATCH[5]} ))"
+            _parseDate_month=$(( 10#${BASH_REMATCH[4]} ))
+            _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+            _parseDate_day=$(( 10#${BASH_REMATCH[3]} ))
+      elif [[ $(( 10#${BASH_REMATCH[3]} )) -lt 32 && \
+            $(( 10#${BASH_REMATCH[4]} )) -lt 13
+        ]]; then
+          verbose "regex match: ${tan}MM-DD-YYYY${purple}"
+          _parseDate_found="${BASH_REMATCH[2]}"
+          _parseDate_year="20$(( 10#${BASH_REMATCH[5]} ))"
           _parseDate_month=$(( 10#${BASH_REMATCH[3]} ))
           _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
           _parseDate_day=$(( 10#${BASH_REMATCH[4]} ))
