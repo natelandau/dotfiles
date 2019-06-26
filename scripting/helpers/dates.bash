@@ -151,15 +151,6 @@ _parseDate_() {
 
   elif [[ "$date" =~ (.*[^0-9]|^)(([0-9]{1,2})[-\.\/_ ]+([0-9]{1,2})[-\.\/_ ]+([0-9]{2}))([^0-9].*|$) ]]; then
 
-      info "1: ${BASH_REMATCH[1]}"
-      info "2: ${BASH_REMATCH[2]}"
-      info "3: ${BASH_REMATCH[3]}"
-      info "4: ${BASH_REMATCH[4]}"
-      info "5: ${BASH_REMATCH[5]}"
-      info "6: ${BASH_REMATCH[6]}"
-      info "7: ${BASH_REMATCH[7]}"
-
-
       if [[ $(( 10#${BASH_REMATCH[3]} )) -lt 13 && \
             $(( 10#${BASH_REMATCH[4]} )) -gt 12 && \
             $(( 10#${BASH_REMATCH[4]} )) -lt 32
