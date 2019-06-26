@@ -3,347 +3,174 @@
 _mainScript_() {
 
   _errorHandling_() {
+    [[ "${#args[@]}" -eq 0 ]] && {
+        error "No file specified"
+        _safeExit_ 1
+      }
+
     # This script requires the Linux gdate (as opposed to native 'date' in OSX)
     # Here we see if it's installed. If not, we install it with homebrew.
     if [[ "$OSTYPE" =~ darwin* ]]; then
-      if ! command -v gdate &>/dev/null; then
-        if command -v brew &>/dev/null; then
-          warning "Need 'gdate' to continue. Installing via homebrew."
-          brew install coreutils
-          notice "'coreutils' package installed. Exiting."
-          _safeExit_ "1"
-        else
-          fatal "'gdate' not insalled. Install 'coreutils' with homebrew."
-        fi
-      fi
+      (_checkBinary_ gdate) || fatal "Need 'coreutils' to continue. Please install via homebrew."
     fi
   }
   _errorHandling_
 
   _isGoodFile_() {
-
-    # Ensure file exists
     if [ ! -e "${userFile}" ]; then
-      error "No such file or directory: '${userFile}'" "$LINENO"
+      error "No such file: '${userFile}'" "$LINENO"
       return 1
-    fi
-    # Ignore dotfiles
-    regex="^\..*"
-    if [[ "${userFile}" =~ ${regex} ]]; then
-      error "${userFile}: is a dotfile." "$LINENO"
+    elif [ ! -f "${userFile}" ]; then
+      error "'${userFile}' is not a file" "$LINENO"
       return 1
-    fi
-    # Ignore certain file types
-    regex="dmg"
-    if [[ "${userFile##*.}" =~ ${regex} ]]; then
+    elif [[ "$(basename "$userFile")" =~ ^\. ]]; then
+      error "$(basename "$userFile"): is a dotfile" "$LINENO"
+      return 1
+    elif [[ "${userFile##*.}" =~ dmg ]]; then
       error "'.${userFile##*.}' is not a supported extension" "$LINENO"
       return 1
-    fi
-
-    # Respect the Files Only flag
-    if ${fileOnly}; then
-      if [ ! -f "${userFile}" ]; then
-        return 1
-      fi
-    fi
-
-    # If all is good we...
-    return 0
-  }
-
-  _parseFilename_() {
-    # Here we parse the user's file into it's directory, basename, and extension.
-    local fileToParse="${1:?No file provided to _parseFilename_}"
-
-    # Grab the directory
-    originalFileWithPath="$(_realpath_ "${fileToParse}")"
-
-    verbose "originalFileWithPath: ${originalFileWithPath-}"
-
-    filePath=$(_realpath_ -d "$originalFileWithPath") \
-      && verbose "filePath: $filePath"
-
-    # use the basename of the userFile going forward since the path is now in $filePath
-    userFile=$(basename "${fileToParse}") \
-      && verbose "userfile: $userFile"
-
-    # Grab the filename without the extension
-    baseFilename="${userFile%.*}" \
-      && verbose "baseFilename: $baseFilename"
-
-    # Grab the extension
-    extension="$(_ext_ "${userFile}")" \
-      && verbose "extension: $extension"
-
-    # Keep track of the original file for future comparison
-    originalFile="${baseFilename}${extension}" \
-      && verbose "originalFile: $originalFile"
-  }
-
-  _clean_() {
-    # This function attempts to clean common (or less common) Filename issues.
-    local string="$1"
-
-    # Clean special characters
-    string=$(echo "${string}" | sed -E 's/[_|\.|:]/-/g' | tr -cd 'A-Za-z0-9 &-' | sed -E 's/[-]{2,}/-/g')
-
-    # Trim unneeded whitespace
-    string=$(echo "${string}" | tr -s " " | sed -E 's/ _ | - /-/g')
-
-    # Trim unneeded characters from beginning and end
-    string=$(echo "${string}" | sed -E 's/[^A-Za-z0-9]$//g' | sed -E 's/^[^A-Za-z0-9]//g' | sed -E 's/ -/ /g')
-
-    # If $lowerCase is set, transform the file to all lower-case characters
-    if ${lowerCase}; then
-      string=$(echo "${string}" | tr '[:upper:]' '[:lower:]')
-    fi
-
-    echo "$string"
-  }
-
-  _findDate_() {
-    # This function parses file names looking for a date in a recognizable format.
-    # When a date is found we normalize it into YYYY-MM-DD format. If no date is found,
-    # we add one.
-
-    # Exit before adding a date when "clean only" flag is set
-    if "${cleanOnly}"; then return; fi
-
-    #Match "YYYY-MM-DD in Filename"
-    regex="[0-9]{4}[_ -][0-9]{2}[_ -][0-9]{2}"
-    if [[ "${baseFilename}" =~ ${regex} ]]; then
-      verbose "\t match: YYYY-MM-DD"
-      dateCommand="awk -v FS=- -v OFS=- '{print \$1,\$2,\$3}'"
-      _changeFilename_ "$regex" "$dateCommand"
-      return
-    fi
-
-    #Match "MM-DD-YYYY in Filename"
-    regex="[0-9]{2}[_ -][0-9]{2}[_ -][0-9]{4}"
-    if [[ "${baseFilename}" =~ ${regex} ]]; then
-      verbose "\t match: MM-DD-YYYY"
-      dateCommand="awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-      _changeFilename_ "$regex" "$dateCommand"
-      return
-    fi
-
-    # Match "MMDDYYYY or YYYYMMDD in Filename"
-    regex='(^|[[:space:]]|-)[0-9]{8}($|[[:space:]]|-)'
-    if [[ "${baseFilename}" =~ $regex ]]; then
-      yearRegex="(^|[[:space:]]|-)20[0-9][0-9][0-9][0-9][0-9][0-9]"
-      regex="[0-9]{8}"
-      if [[ "${baseFilename}" =~ ${yearRegex} ]]; then
-        verbose "\t match: YYYYMMDD"
-        dateCommand="sed -E 's/([0-9]{4})([0-9]{2})([0-9]{2})/\1-\2-\3/g' | awk -v FS=- -v OFS=- '{print \$1,\$2,\$3}'"
-      else
-        verbose "\t match: MMDDYYYY"
-        dateCommand="sed -E 's/([0-9]{2})([0-9]{2})([0-9]{4})/\1-\2-\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-      fi
-      _changeFilename_ "$regex" "$dateCommand"
-      return
-    fi
-
-    # Match "MMDDYY or YYMMDD in Filename"
-    regex="(^|[[:space:]]|-)[0-9]{6}($|[[:space:]]|-)"
-    if [[ "${baseFilename}" =~ ${regex} ]]; then
-      yearRegex="1[3-9][0-9]{4}"
-      regex="[0-9]{6}"
-      if [[ "${baseFilename}" =~ ${yearRegex} ]]; then
-        verbose "\t match: YYMMDD"
-        dateCommand="sed -E 's/([0-9]{2})([0-9]{2})([0-9]{2})/20\1-\2-\3/g' | awk -v FS=- -v OFS=- '{print \$1,\$2,\$3}'"
-      else
-        verbose "\t match: MMDDYY"
-        dateCommand="sed -E 's/([0-9]{2})([0-9]{2})([0-9]{2})/\1-\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-      fi
-      _changeFilename_ "$regex" "$dateCommand"
-      return
-    fi
-
-    # Match "MM-DD-YY or YY-MM-DD  in Filename"
-    regex="[0-9]{2}[_ -][0-9]{2}[_ -][0-9]{2}"
-    if [[ "${baseFilename}" =~ ${regex} ]]; then
-      yearRegex="1[3-9][_ -][0-9][0-9][_ -][0-9][0-9]"
-      if [[ "${baseFilename}" =~ ${yearRegex} ]]; then
-        verbose "\t match: YY-MM-DD"
-        dateCommand="awk -v FS=- -v OFS=- '{print 20\$1,\$2,\$3}'"
-      else
-        verbose "\t match: MM-DD-YY"
-        dateCommand="awk -v FS=- -v OFS=- '{print 20\$3,\$1,\$2}'"
-      fi
-      _changeFilename_ "$regex" "$dateCommand"
-      return
-    fi
-
-    # Match "M DD YY in Filename"
-    regex="[0-9]{1}[_ -][0-9]{2}[_ -][0-9]{2}"
-    if [[ "${baseFilename}" =~ ${regex} ]]; then
-      verbose "\t match: M DD YY "
-      dateCommand="sed -E 's/([0-9])[_ -]([0-9]{2})[_ -]([0-9]{2})/0\1-\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-      _changeFilename_ "$regex" "$dateCommand"
-      return
-    fi
-
-    # Match "M D YY in Filename"
-    regex="[0-9][_ -][0-9][_ -][0-9][0-9]"
-    if [[ "${baseFilename}" =~ ${regex} ]]; then
-      verbose "\t match: M D YY "
-      dateCommand="sed -E 's/([0-9])[_ -]([0-9])[_ -]([0-9]{2})/0\1-0\2-20\3/g' | awk -v FS=- -v OFS=- '{print \$3,\$1,\$2}'"
-      _changeFilename_ "$regex" "$dateCommand"
-      return
-    fi
-
-    # Match month-DD-YYYY
-    regex="([Jj](an|anuary)|[Ff](eb|ebruary)|[Mm](ar|arch)|[Aa](pr|pril)|[Mm]ay|[Jj](un|une)|[Jj](ul|uly)|[Aa](ug|ugust)|[Ss](ep|ept|eptember)|[Oo](ct|ctober)|[Nn](ov|ovember)|[Dd](ec|ecember))[_ -][0-9]{2}[_ -][0-9]{4}"
-    if [[ "${baseFilename}" =~ ${regex} ]]; then
-      verbose "\t match: Month-DD-YYYY"
-      dateCommand='{ read ddate ; gdate -d "$ddate" +%Y-%m-%d ; }'
-      _changeFilename_ "$regex" "$dateCommand"
-      return
-    fi
-
-    # Match month-DD-YY
-    regex="([Jj](an|anuary)|[Ff](eb|ebruary)|[Mm](ar|arch)|[Aa](pr|pril)|[Mm]ay|[Jj](un|une)|[Jj](ul|uly)|[Aa](ug|ugust)|[Ss](ep|ept|eptember)|[Oo](ct|ctober)|[Nn](ov|ovember)|[Dd](ec|ecember))[_ -][0-9]{2}[_ -][0-9]{2}"
-    if [[ "${baseFilename}" =~ ${regex} ]]; then
-      verbose "\t match: Month-DD-YY"
-      dateCommand='awk -v FS=- -v OFS=- "{print \$1,\$2,20\$3}" | { read ddate ; gdate -d "$ddate" +%Y-%m-%d ; }'
-      _changeFilename_ "$regex" "$dateCommand"
-      return
-    fi
-
-    # Match month-YYYY
-    regex="([Jj](an|anuary)|[Ff](eb|ebruary)|[Mm](ar|arch)|[Aa](pr|pril)|[Mm]ay|[Jj](un|une)|[Jj](ul|uly)|[Aa](ug|ugust)|[Ss](ep|ept|eptember)|[Oo](ct|ctober)|[Nn](ov|ovember)|[Dd](ec|ecember))[_ -][0-9]{4}"
-    if [[ "${baseFilename}" =~ ${regex} ]]; then
-      verbose "\t match: Month-YYYY"
-      dateCommand='echo "01 $origDate" | { read ddate ; gdate -d "$ddate" +%Y-%m-%d ; }'
-      _changeFilename_ "$regex" "$dateCommand"
-      return
-    fi
-
-    # Act on files which don't match known patterns
-    verbose "\t No recognized date in filename. Using creation date or today"
-
-    # Add a date to files which don't already have one.
-    # use mdls to find the creation date of the file. if it exists, use that. if not, use today
-    if ${removeDates}; then return; fi # don't do this step if we are trying to remove dates
-    if mdls -raw -name kMDItemContentCreationDate "${originalFileWithPath}" &>/dev/null; then
-      creationDate=$(mdls -raw -name kMDItemContentCreationDate "${originalFileWithPath}")
-      if [[ "$creationDate" =~ null ]]; then
-        newDate="$(date +%Y-%m-%d)"
-      else
-        newDate=$(echo "$creationDate" | awk 'BEGIN { FS="[ ]" } ; { print $1 }')
-      fi
     else
-      newDate="$(date +%Y-%m-%d)"
-    fi
-  }
-
-  _changeFilename_() {
-    local regex="$1"
-    local dateCommand="$2"
-
-    # Grab existing date based on the regex from the Filename
-    origDate=$(echo "${baseFilename}" | grep -Eo "${regex}")
-    # Clean trailing characters from date (if any)
-    origDate="${origDate/%[- _]/}"
-
-    # Strip the existing date out of the Filename
-    sedCommand="echo ${baseFilename} | sed 's/${origDate}//g'"
-    baseFilename=$(eval "${sedCommand}") # no longer has a date in it
-
-    # format the existing date with '-' separators
-    origDate="${origDate//[. _]/-}"
-
-    # Format the existing date into the new date based on the dateCommand variable passed
-    # from each RegEx below
-    getNewDate="echo ${origDate} | ${dateCommand}"
-    newDate=$(eval "${getNewDate}")
-    verbose "\t origdate: $origDate newDate: $newDate"
-  }
-
-  _rebuildFileName_() {
-    # piece the filename back together
-
-    # Ensure file extensions are lowercase
-    extension=$(echo "${extension}" | tr '[:upper:]' '[:lower:]')
-
-    # Add the date back to the filename if we're not removing dates
-    if ! ${removeDates}; then
-      baseFilename="${newDate-} ${baseFilename}"
-    fi
-
-    # Clean the name again
-    baseFilename="$(_clean_ "$baseFilename")"
-
-    # Add the extension back to the filename
-    newFilename="${baseFilename}${extension}"
-  }
-
-  _renameFiles_() {
-    # Renames the files. If the new Filename exists, we keep incrementing
-    # a number to append to the Filename to mimic Finder
-
-    # If the filename has not changed then do nothing
-    if [[ "${newFilename}" == "${originalFile}" ]]; then
-      if ${nonInteractive}; then
-        echo "${originalFileWithPath}"
-      else
-        notice "${userFile}: No change"
-      fi
-      return
-    fi
-
-    newFile="$(_uniqueFileName_ "${filePath}/${newFilename}")" \
-      && verbose "\t newFile: $newFile"
-
-    if ! ${testOutput}; then
-      _execute_ -s "mv \"${originalFileWithPath}\" \"${newFile}\"" "${userFile} --> ${newFile##*/}"
-    else
-      notice "${userFile} --> ${newFile##*/}"
+      return 0
     fi
   }
 
   # Run the script functions
   for userFile in "${args[@]}"; do
-    verbose "file: ${bold}${userFile}${reset}"
+
+    verbose "Working on file: ${tan}${userFile}${purple}"
 
     if ${testOutput}; then
-      verbose "Running in test mode"
-      if [ ! -e "${userFile}" ]; then
-        _makeTempDir_ "$(basename "$0")"
-        userFile="${tmpDir}/${userFile}"
-        touch "${userFile}"
-        verbose "Created empty file: ${userFile}"
-      fi
+      notice "Running in test mode. No files will be altered."
+      _makeTempDir_
+      userFile="${tmpDir}/${userFile}"
+      touch "${userFile}"
+      verbose "Created test file: ${tan}${userFile}${purple}"
     fi
 
-    if _isGoodFile_; then
-      _parseFilename_ "$userFile"
-      baseFilename="$(_clean_ "$baseFilename")" # Clean the filename
-      _findDate_
-      _rebuildFileName_
-      _renameFiles_
-      if ${nonInteractive}; then echo "${newFile-}"; fi
+    if ! _isGoodFile_; then
+      if [[ "$userFile" == "${args[-1]}" ]]; then
+        _safeExit_ 1
+      else
+        continue
+      fi
+    else
+      # Remove special characters that can cause problems before we do anything else
+        testFilename="${userFile//[\[\]]/}"
+        verbose "testFilename: $testFilename"
+
+        if [[ "${testFilename}" != "${userFile}" ]]; then
+          notice "Filename contains restricted special characters. Removing them to continue..."
+          _execute_ "mv \"${userFile}\" \"${testFilename}\""
+          userFile="${testFilename}"
+        fi
+
+        verbose "Working on file: ${tan}${userFile}${purple}"
+
+      # Parse the filename into its component parts
+        _parseFilename_ "$userFile"
+        savedFileName="${_parseFileName}" # Save the original filename for future comparison
+        verbose "${tan}\$savedFileName: ${savedFileName}${purple}"
+
+      # Clean the filename
+        _parseFileBase="$(_cleanString_ -a "${_parseFileBase}")"
+        ("$stopwords") && _parseFileBase="$(_stopWords_ "${_parseFileBase}")"
+        ("$lowerCase") && _parseFileBase="$(_cleanString_ -l "${_parseFileBase}")"
+        ("$useDashes") && _parseFileBase="$(_cleanString_ -p " ,-"  "${_parseFileBase}")"
+        verbose "Cleaned String: $_parseFileBase"
+
+      # Find a date for the file or use today's date and format as YYYY-MM-DD
+        if ! "${cleanOnly}"; then
+          if _parseDate_ "${_parseFileBase}"; then
+            fileDate="$(_formatDate_ "${_parseDate_monthName} ${_parseDate_day}, ${_parseDate_year}")"
+          else
+            if command -v mdls &>/dev/null; then
+              inferredDate="$(mdls -raw -name kMDItemContentCreationDate "${_parsedFileFull}" | awk 'BEGIN { FS="[ ]" } ; { print $1 }')"
+              [[ "$inferredDate" =~ null ]] && inferredDate="$(date +%Y-%m-%d)"
+            else
+              inferredDate="$(date +%Y-%m-%d)"
+            fi
+            fileDate="$(_formatDate_ "${inferredDate}")"
+          fi
+          fileDate="$(echo "$fileDate" | awk '{$1=$1};1')" # Clean trailing/leading whitespace
+          verbose "${tan}\$fileDate: $fileDate${purple}"
+      fi
+
+        # Strip found date from file
+        [ -n "${_parseDate_found:-}" ] && _parseFileBase="${_parseFileBase//${_parseDate_found}/}"
+
+        # Trim special characters from beginning and end
+          _parseFileBase="$(echo "$_parseFileBase" | sed -E 's/[^A-Za-z0-9]$//g' | sed -E 's/^[^A-Za-z0-9]//g')"
+
+        # Add the formatted date back to the filename
+          if ! "${removeDates}" && ! "${cleanOnly}"; then
+            _parseFileBase="${fileDate} ${_parseFileBase}"
+          fi
+
+      # Replace the old file with the new file
+        _parseFileBase="$(_cleanString_ -a "${_parseFileBase}")"
+        ("$useDashes") && _parseFileBase="$(_cleanString_ -p " ,-"  "${_parseFileBase}")"
+
+        newFilename="${_parseFileBase}${_parseFileExt}"
+        verbose "${tan}\$newFilename: ${newFilename}${purple}"
+
+        # If the filename has not changed then do nothing
+        if [[ "${newFilename}" == "${savedFileName}" ]]; then
+          if ${nonInteractive}; then
+            echo "${_parsedFileFull}"
+          else
+            notice "${savedFileName}: No change"
+          fi
+          continue
+        fi
+
+        # If the only change was upper/lower replace the file
+          shopt -s nocasematch
+          if [[ "${newFilename}" == "${savedFileName}" ]]; then
+            _makeTempDir_
+            _execute_ -q "mv \"${_parsedFileFull}\" \"${tmpDir}/${savedFileName}\""
+            [ -f "${tmpDir}/${savedFileName}" ] \
+              && _parsedFileFull="${tmpDir}/${savedFileName}"
+          fi
+          shopt -u nocasematch
+
+        newFile="$(_uniqueFileName_ "${_parseFilePath}/${newFilename}")"
+        verbose "newFile: ${tan}${newFile}{$purple}"
+
+        _execute_ -s "command mv \"${_parsedFileFull}\" \"${newFile}\"" "${savedFileName} --> ${newFilename##*/}"
+
+        if ${nonInteractive}; then echo "${newFile}"; fi
     fi
+
   done
+
+
+
 
 } # end _mainScript_
 
-filesToSource=(
-  "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
-  "${HOME}/dotfiles/scripting/helpers/files.bash"
-)
+_sourceHelperFiles_() {
+  # DESC: Sources script helper files
+  local filesToSource
+  local sourceFile
+  filesToSource=(
+    "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
+    "${HOME}/dotfiles/scripting/helpers/files.bash"
+    "${HOME}/dotfiles/scripting/helpers/textProcessing.bash"
+    "${HOME}/dotfiles/scripting/helpers/dates.bash"
+  )
+  for sourceFile in "${filesToSource[@]}"; do
+    [ ! -f "$sourceFile" ] \
+      && {
+        echo "error: Can not find sourcefile '$sourceFile'."
+        echo "exiting..."
+        exit 1
+      }
+    source "$sourceFile"
+  done
+}
+_sourceHelperFiles_
 
-for sourceFile in "${filesToSource[@]}"; do
-  [ ! -f "$sourceFile" ] \
-    && {
-      echo "error: Can not find sourcefile '$sourceFile'. Exiting."
-      exit 1
-    }
-
-  source "$sourceFile"
-done
-
-# Set Flags
+# Set initial flags
 quiet=false
 printLog=false
 logErrors=true
@@ -351,7 +178,6 @@ verbose=false
 force=false
 dryrun=false
 sourceOnly=false
-fileOnly=false
 declare -a args=()
 
 cleanOnly=false
@@ -360,6 +186,8 @@ lowerCase=false
 ignoreFile=false
 removeDates=false
 testOutput=false
+useDashes=false
+stopwords=false
 
 _usage_() {
   cat <<EOF
@@ -382,14 +210,14 @@ _usage_() {
         In this scenario, the existing date is removed from the filename and is added
         to the front in the form YYYY-MM-DD. The known patterns are:
 
-          * MMDDYYYY          * YYYYMMDD          * MMDDYY
-          * YYMMDD            * MM-DD-YYYY        * MM-DD-YY
-          * YY-MM-DD          * M-DD-YY           * M-D-YY
-          * YYYY-MM-DD        * mon-DD-YYYY       * mon-DD-YY
-          * month-DD-YYYY     * month-DD-YY
+                 * YYYY-MM-DD      * Month DD, YYYY    * DD Month, YYYY
+                 * Month, YYYY     * Month, DD YY      * MM-DD-YYYY
+                 * MMDDYYYY        * YYYYMMDD          * DDMMYYYY
+                 * YYYYMMDDHHMM    * YYYYMMDDHH        * DD-MM-YYYY
+                 * MM DD YY        * DD MM YY
 
-      2) The date the file was created.
-      3) Today's date.
+      2) The date the file was created
+      3) Today's date
 
   ${bold}Options:${reset}
 
@@ -398,13 +226,14 @@ _usage_() {
                       exists
     -R, --removeDate  Removes dates from filenames
     -L, --lower       Transforms the filename to all lower case characters
-    -F, --fileOnly    Ignore directories and only clean the names of files
+    -D, --useDashes   Convert spaces to dashes
+    -S, --stopwords   Remove common stop words
 
     --nonInteractive  Assumes the script is being called from another script. The only
                       output in this mode is an exit code and the cleaned name of the file
                       passed to the script
 
-    -e, --noErrorLog  Print log level error and fatal to a log (default 'true')
+    -e, --noErrorLog  Do not print log level error and fatal to a log (default 'true')
     -T, --test        Takes a string of input and shows the result that the script would produce
 
     -n, --dryrun      Non-destructive run. Will report on changes that would have
@@ -415,13 +244,19 @@ _usage_() {
     -h, --help        Display this help and exit
         --source-only Bypasses main script functionality to allow unit tests of functions
 
-  ${bold}Examples:${reset}
+  ${bold}Usage:${reset}
 
-    Original Filename: 'filename (with special chars & and date) 08312016.txt'
-    Cleaned Filename : '2016-08-31 filename with special chars-and date.txt'
+    $ $(basename "$0") "filename (with special chars & and date) 08312016.txt"
 
-    Original Filename: 'filename.txt'
-    Cleaned Filename : '2016-03-31 filename.txt'
+          --> 2016-08-31 filename with special chars and date.txt
+
+    $ $(basename "$0") --useDashes "2019-06-01 this is a test file.txt"
+
+          --> 2019-06-01-this-is-a-test-file.txt
+
+    $ $(basename "$0") --stopWords "2019-06-01 this is a test file.txt"
+
+          --> 2019-06-01 file.txt
 EOF
 }
 
@@ -459,7 +294,7 @@ _parseOptions_() {
   unset options
 
   # Read the options and set stuff
-  while [[ $1 == -?* ]]; do
+  while [[ ${1:-} == -?* ]]; do
     case $1 in
       -h | --help)
         _usage_ >&2
@@ -467,13 +302,13 @@ _parseOptions_() {
         ;;
       -T | --test)
         testOutput=true
-        dryrun=true
         ;;
       -C | --clean) cleanOnly=true ;;
       -R | --removeDate) removeDates=true ;;
+      -S | --stopwords) stopwords=true ;;
       -L | --lower) lowerCase=true ;;
       -e | --noErrorLog) logErrors=false ;;
-      -F | --fileOnly) fileOnly=true ;;
+      -D | --useDashes) useDashes=true ;;
       -n | --dryrun) dryrun=true ;;
       -v | --verbose) verbose=true ;;
       -l | --log) printLog=true ;;
@@ -494,7 +329,6 @@ _parseOptions_() {
   done
   args+=("$@") # Store the remaining user input as arguments.
 }
-_parseOptions_ "$@"
 
 # Initialize and run the script
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
@@ -504,10 +338,11 @@ set -o errexit                            # Exit on error. Append '||true' if yo
 set -o pipefail                           # Use last non-zero exit code in a pipeline
 shopt -s nullglob globstar                # Make `for f in *.txt` work when `*.txt` matches zero files
 IFS=$' \n\t'                              # Set IFS to preferred implementation
-# set -o xtrace                           # Uncomment to run in debug mode
+# set -o xtrace                           # Run in debug mode
 set -o nounset                            # Disallow expansion of unset variables
-[[ $# -eq 0 ]] && _parseOptions_ "-h"     # Uncomment to force arguments when invoking the script
-# _makeTempDir_ "$(basename "$0")"        # Uncomment to create a temp directory '$tmpDir'
-# _acquireScriptLock_                     # Uncomment to acquire script lock
+[[ $# -eq 0 ]] && _parseOptions_ "-h"   # Force arguments when invoking the script
+# _makeTempDir_ "$(basename "$0")"        # Create a temp directory '$tmpDir'
+# _acquireScriptLock_                     # Acquire script lock
+_parseOptions_ "$@"                       # Parse arguments passed to script
 if ! ${sourceOnly}; then _mainScript_; fi # Run script unless in 'source-only' mode
 if ! ${sourceOnly}; then _safeExit_; fi   # Exit cleanly
