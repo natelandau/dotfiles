@@ -8,7 +8,7 @@ _listFiles_() {
   # NOTE:  Searches are NOT case sensitive
   # USAGE: _listFiles_ glob "*.txt" "some/backup/dir"
   #        _listFiles_ regex ".*\.txt" "some/backup/dir"
-  #        array=($(_listFiles_ g "*.txt"))
+  #        readarry -t array < <(_listFiles_ g "*.txt"))
 
   [[ $# -lt 2 ]] && {
     error 'Missing required argument to _listFiles_()!'
@@ -35,13 +35,13 @@ _listFiles_() {
   case "$t" in
     glob | Glob | g | G)
       while read -r fileMatch; do
-        e=$(_realpath_ "${fileMatch}")
+        e="$(_realpath_ "${fileMatch}")"
         echo "${e}"
       done < <(find "${d}" -iname "${p}" -type f -maxdepth 1 | sort)
       ;;
     regex | Regex | r | R)
       while read -r fileMatch; do
-        e=$(_realpath_ "${fileMatch}")
+        e="$(_realpath_ "${fileMatch}")"
         echo "${e}"
       done < <(find "${d}" -iregex "${p}" -type f -maxdepth 1 | sort)
       ;;
