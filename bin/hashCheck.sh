@@ -4,9 +4,6 @@ _mainScript_() {
 
   _actOnFile_() {
 
-    [[ ${#args[@]} == 0 ]] && { return 1; }
-    [[ ${#args[@]} -gt 1 ]] && { return 1; }
-
     if [[ ${#args[@]} == 1 ]]; then
       fileName="${args[0]}"
       if [ -e "$fileName" ]; then
@@ -14,6 +11,8 @@ _mainScript_() {
       else
         return 1
       fi
+    else
+      return 1
     fi
 
   }
@@ -22,9 +21,11 @@ _mainScript_() {
     local l h f n
 
     # shellcheck disable=SC2207
-    local array=($(_listFiles_ r ".*\.[sha256|md5|txt]*"))
+    #local array=("$(_listFiles_ r ".*\.[sha256|md5|txt]*")")
+    readarray -t array < <(_listFiles_ r ".*\.[sha256|md5|txt]*")
 
     for l in "${array[@]}"; do
+
       if [[ "$l" =~ sha256 ]]; then
         if _seekConfirmation_ "We found a ''.sha256' file. Do you want to automatically check the validity?"; then
           notice "Parsing $l"
@@ -97,9 +98,9 @@ _mainScript_() {
         _safeExit_ 1
       }
 
-      ff=$(_realpath_ "$f")
+      ff="$(_realpath_ "$f")"
 
-      hh=$(eval "${command}" "$ff" | cut -d' ' -f2)
+      hh="$(eval "${command}" "$ff" | cut -d' ' -f2)"
 
               if [[ "$h" == "$hh" ]]; then
             success "The two $hashType hashes match"
@@ -132,7 +133,7 @@ _sourceHelperFiles_() {
 }
 _sourceHelperFiles_
 
-# Set Flags
+# Set initial flags
 quiet=false
 printLog=false
 logErrors=true
@@ -212,7 +213,7 @@ _parseOptions_() {
   unset options
 
   # Read the options and set stuff
-  while [[ $1 == -?* ]]; do
+  while [[ ${1-} == -?* ]]; do
     case $1 in
       -h | --help)
         _usage_ >&2
@@ -235,7 +236,6 @@ _parseOptions_() {
   done
   args+=("$@") # Store the remaining user input as arguments.
 }
-_parseOptions_ "$@"
 
 # Initialize and run the script
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
@@ -245,10 +245,11 @@ set -o errexit                            # Exit on error. Append '||true' if yo
 set -o pipefail                           # Use last non-zero exit code in a pipeline
 shopt -s nullglob globstar                # Make `for f in *.txt` work when `*.txt` matches zero files
 IFS=$' \n\t'                              # Set IFS to preferred implementation
-# set -o xtrace                           # Uncomment to run in debug mode
+# set -o xtrace                           # Run in debug mode
 set -o nounset                            # Disallow expansion of unset variables
-# [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Uncomment to force arguments when invoking the script
-# _makeTempDir_ "$(basename "$0")"        # Uncomment to create a temp directory '$tmpDir'
-# _acquireScriptLock_                     # Uncomment to acquire script lock
+# [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Force arguments when invoking the script
+# _makeTempDir_ "$(basename "$0")"        # Create a temp directory '$tmpDir'
+# _acquireScriptLock_                     # Acquire script lock
+_parseOptions_ "$@"                       # Parse arguments passed to script
 if ! ${sourceOnly}; then _mainScript_; fi # Run script unless in 'source-only' mode
 if ! ${sourceOnly}; then _safeExit_; fi   # Exit cleanly
