@@ -62,10 +62,6 @@ _cleanString_() {
     string="$(echo "${string}" | sed "s/$i//g")"
   done
 
-  if "${replace}"; then
-    string="$(echo "${string}" | sed "s/${pairs[0]}/${pairs[1]}/g")"
-  fi
-
   ("${lc}") \
     && string="$(echo "${string}" | tr '[:upper:]' '[:lower:]')"
 
@@ -73,8 +69,12 @@ _cleanString_() {
     && string="$(echo "${string}" | tr '[:lower:]' '[:upper:]')"
 
   ("${alphanumeric}") \
-    && string="$(echo "${string}" | tr -c '[:alnum:] -' ' ')"
+    && string="$(echo "${string}" | sed "s/[^a-zA-Z0-9 -]//g")"
+    #&& string="$(echo "${string}" | tr -c '[:alnum:] -' ' ')"
 
+  if "${replace}"; then
+    string="$(echo "${string}" | sed "s/${pairs[0]}/${pairs[1]}/g")"
+  fi
 
   # trim trailing/leading white space and duplicate dashes
   string="$(echo "$string" | tr -s '-')"

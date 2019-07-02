@@ -243,7 +243,7 @@ teardown() {
   run _parseFilename_ "${testdir}/testfile.txt"
   assert_success
   assert_line --index 0 --regexp '\$_parsedFileFull: /private/.*/testfile\.txt'
-  assert_line --index 1 --regexp '\$_parseFilePath: /private/.*files.bash:163'
+  assert_line --index 1 --regexp '\$_parseFilePath: /private/.*files.bash:[0-9]{2,3}'
   assert_line --index 2 --partial '$_parseFileName: testfile.txt'
   assert_line --index 3 --partial '$_parseFileBase: testfile'
   assert_line --index 4 --partial '$_parseFileExt: .txt'
