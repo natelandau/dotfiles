@@ -131,7 +131,11 @@ _cleanFilename_() {
 
   if [ "${fileToClean}" != "${final}" ]; then
     final="$(_uniqueFileName_ "${final}")"
-    _execute_ -q "mv \"${fileToClean}\" \"${final}\""
+    if $verbose; then
+      _execute_ "mv \"${fileToClean}\" \"${final}\""
+    else
+      _execute_ -q "mv \"${fileToClean}\" \"${final}\""
+    fi
     echo "$final"
   else
     echo "${fileToClean}"
