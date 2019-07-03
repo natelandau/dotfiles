@@ -78,6 +78,18 @@ teardown() {
   assert_output "i am in caps 12345"
 }
 
+@test "_cleanString_: alnum w/ spaces" {
+  run _cleanString_ -as "this(is)a[string]"
+  assert_success
+  assert_output "this is a string"
+}
+
+@test "_cleanString_: alnum w/ spaces and dashes" {
+  run _cleanString_ -as "this(is)a-string"
+  assert_success
+  assert_output "this is a-string"
+}
+
 @test "_cleanString_: user replacement" {
   run _cleanString_ -p "e,g" "there should be a lot of e's in this sentence"
   assert_success

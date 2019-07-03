@@ -10,6 +10,7 @@ _cleanString_() {
   #         -u  Forces all text to uppercase
   #         -a  Removes all non-alphanumeric characters except for spaces and dashes
   #         -p  Replace one character with another (separated by commas)
+  #         -s  Incombination with -a, replaces characters with a space
   # OUTS:   Prints result to STDOUT
   # USAGE:  _cleanString_ [OPT] [STRING] [CHARS TO REPLACE]
   #         _cleanString_ -p " ,-" [OPT] [STRING] [CHARS TO REPLACE]
@@ -23,6 +24,7 @@ _cleanString_() {
   local uc=false
   local alphanumeric=false
   local replace=false
+  local us=false
 
   local OPTIND=1
   while getopts ":lLuUaAsSpP" opt; do
@@ -30,6 +32,7 @@ _cleanString_() {
       l | L) lc=true ;;
       u | U) uc=true ;;
       a | A) alphanumeric=true ;;
+      s | S) us=true ;;
       p | P)
         shift
         local pairs=()
@@ -68,9 +71,11 @@ _cleanString_() {
   ("${uc}") \
     && string="$(echo "${string}" | tr '[:lower:]' '[:upper:]')"
 
-  ("${alphanumeric}") \
-    && string="$(echo "${string}" | sed "s/[^a-zA-Z0-9 -]//g")"
-    #&& string="$(echo "${string}" | tr -c '[:alnum:] -' ' ')"
+  if "${alphanumeric}" && "${us}"; then
+    string="$(echo "${string}" | tr -c '[:alnum:] -' ' ')"
+  elif "${alphanumeric}"; then
+    string="$(echo "${string}" | sed "s/[^a-zA-Z0-9 -]//g")"
+  fi
 
   if "${replace}"; then
     string="$(echo "${string}" | sed "s/${pairs[0]}/${pairs[1]}/g")"
