@@ -71,14 +71,14 @@ _ignoreSymlinks_
 # git show ":$file" | <command>
 
 # Lint YAML files
-if which yaml-lint >/dev/null; then
+if command -v yaml-lint >/dev/null; then
   for file in $(git diff --cached --name-only | grep -E '\.(yaml|yml)$'); do
     _execute_ "yaml-lint $file"
   done
 fi
 
 # Lint shell scripts
-if which shellcheck >/dev/null; then
+if command -v shellcheck >/dev/null; then
   for file in $(git diff --cached --name-only | grep -E '\.(sh|bash)$'); do
     if [ -f "$file" ]; then
       _execute_ "shellcheck --exclude=2016,2059,2001,2002,2148,1090,2162,2005,2034,2154,2086,2155,2181,2164,2120,2119,1083,1117,2207 $file"
@@ -114,18 +114,23 @@ _BATS_() {
     unset filename
   done
 
-  # Test files scripting functions
+  # Test shared scripting functions
   for file in $(git diff --cached --name-only | grep -E 'scripting/helpers/.*\.bash$'); do
     filename="$(basename $file)"
     filename="${filename%.*}"
-    [ -f "${GITROOT}/test/${filename}.bats" ] \
-      && {
-        echo -e "\n## Running: ${filename}.bats ##"
-        _execute_ "${GITROOT}/test/${filename}.bats -t"
-      }
+    if [ -f "${HOME}/dotfiles-private/test/runtests.sh" ]; then
+        echo -e "\n## Running all bats tests ##"
+        _execute_ "${HOME}/dotfiles-private/test/runtests.sh"
+    else
+        echo -e "\n## Running all bats tests ##"
+        for test in "${GITROOT}"/test/*.bats; do
+            echo -e "\n####### Running: $test #######"
+            _execute_ "${test} -t"
+        done
+    fi
     unset filename
   done
-
+  exit 1
 }
 if command -v bats &>/dev/null; then _BATS_; fi
 
