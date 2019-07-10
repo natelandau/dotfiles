@@ -120,7 +120,10 @@ _BATS_() {
     filename="${filename%.*}"
     if [ -f "${HOME}/dotfiles-private/test/runtests.sh" ]; then
         echo -e "\n## Running all bats tests ##"
-        _execute_ "${HOME}/dotfiles-private/test/runtests.sh"
+        if ! _execute_ "${HOME}/dotfiles-private/test/runtests.sh"; then
+          echo "Error encountered running automated testing. Exiting."
+          exit 1
+        fi
     else
         echo -e "\n## Running all bats tests ##"
         for test in "${GITROOT}"/test/*.bats; do
