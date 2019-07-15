@@ -148,7 +148,7 @@ _parseFilename_() {
   # ARGS:   $1 (Required) - A file
   # OUTS:   $_parsedFileFull    - File and its real path (from _realPath_())
   #         $_parseFilePath     - Path to the file
-  #         $_parseFileName     - Full name of the file, with extension
+  #         $_parseFileName     - Name of the file WITH extension
   #         $_parseFileBase     - Name of file WITHOUT extension
   #         $_parseFileExt      - The extension of the file (from _ext_())
 
@@ -486,16 +486,11 @@ _parseYAML_() {
   local yamlFile="${1:?_parseYAML_ needs a file}"
   local prefix="${2-}"
 
-  [ ! -s "${yamlFile}" ] \
-    && return 1
+  [ ! -s "${yamlFile}" ] && return 1
 
-  local s
-  local w
-  local fs
-
-  s='[[:space:]]*'
-  w='[a-zA-Z0-9_]*'
-  fs="$(echo @ | tr @ '\034')"
+  local s='[[:space:]]*'
+  local w='[a-zA-Z0-9_]*'
+  local fs="$(echo @ | tr @ '\034')"
   sed -ne "s|^\(${s}\)\(${w}\)${s}:${s}\"\(.*\)\"${s}\$|\1${fs}\2${fs}\3|p" \
     -e "s|^\(${s}\)\(${w}\)${s}[:-]${s}\(.*\)${s}\$|\1${fs}\2${fs}\3|p" "${yamlFile}" \
     | awk -F"${fs}" '{

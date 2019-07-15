@@ -348,7 +348,7 @@ _checkBinary_() {
   # DESC:  Check if a binary exists in the search path
   # ARGS:   $1 (Required) - Name of the binary to check for existence
   # OUTS:   true/false
-  # USAGE:  (_checkBinary_ ffsmpeg ) && [SUCCESS] || [FAILURE]
+  # USAGE:  (_checkBinary_ ffmpeg ) && [SUCCESS] || [FAILURE]
   if [[ $# -lt 1 ]]; then
     error 'Missing required argument to _checkBinary_()!'
     return 1
@@ -513,6 +513,7 @@ _setPATH_() {
   for NEWPATH in "${NEWPATHS[@]}"; do
     if ! echo "$PATH" | grep -Eq "(^|:)${NEWPATH}($|:)"; then
       PATH="${NEWPATH}:${PATH}"
+      verbose "Added '${tan}${NEWPATH}${purple}' to PATH"
     fi
   done
 }

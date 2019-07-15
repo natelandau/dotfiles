@@ -45,7 +45,7 @@ _parseDate_() {
   #         the months, days, year
   # ARGS:   $1 (required) - A string
   # OUTS:   Returns 1 if no date found
-  #         $_parseDate_found  - The date found in the string
+  #         $_parseDate_found      - The date found in the string
   #         $_parseDate_year       - The year
   #         $_parseDate_month      - The number month
   #         $_parseDate_monthName  - The name of the month
