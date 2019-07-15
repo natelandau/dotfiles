@@ -93,9 +93,14 @@ helper() {
 
 @test "Fail - user specified file extensions" {
   touch "file.dmg"
+  touch "file.download"
   run "$s" "file.dmg"
   assert_failure
   assert_output --partial "'.dmg' is not a supported extension"
+  run "$s" "file.download"
+  assert_failure
+  assert_output --partial "'.download' is not a supported extension"
+
 }
 
 @test "Fail - continue parsing files if one fails" {

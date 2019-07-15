@@ -26,7 +26,7 @@ _mainScript_() {
     elif [[ "$(basename "$userFile")" =~ ^\. ]]; then
       error "$(basename "$userFile"): is a dotfile" "$LINENO"
       return 1
-    elif [[ "${userFile##*.}" =~ dmg ]]; then
+    elif [[ "${userFile##*.}" =~ dmg$|download$ ]]; then
       error "'.${userFile##*.}' is not a supported extension" "$LINENO"
       return 1
     else
