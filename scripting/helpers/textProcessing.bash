@@ -227,7 +227,7 @@ _trim_() {
   # OUTS:   None
   # USAGE:  text=$(_trim_ <<<"$1")
   #         echo "STRING" | _trim_
-  _ltrim_ "$1" | _rtrim_ "$1"
+  awk '{$1=$1;print}'
 }
 
 _urlEncode_() {
