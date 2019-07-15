@@ -1,12 +1,12 @@
 #!/usr/bin/env bats
 #shellcheck disable
-#
+
 load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
 s="${HOME}/dotfiles/bootstrap/config-macOS.sh"
-base="$(basename $s)"
+base="$(basename "$s")"
 
 [ -f "$s" ] \
   && { source "$s" --source-only ; trap - EXIT INT TERM ; } \
@@ -30,7 +30,7 @@ setup() {
 }
 
 teardown() {
-  cd $curPath
+  cd "$curPath"
   temp_del "${testdir}"
 }
 
@@ -49,14 +49,25 @@ symlinkYAML="${BATS_TEST_DIRNAME}/fixtures/symlinks.yaml"
 
 ########### UNIQUE FUNCTION TESTS ##########
 
-@test "_doSymlinks_" {
-  mkdir "links"
-  touch "testfile.txt" ".dotfile" "links/dotfile-link"
+@test "check variables" {
+  _setVariables_
 
+  assert [ -x "$privateInstallScript" ]
+  assert [ -d "$baseDir" ]
+  assert [ -d "$rootDIR" ]
+  assert [ -d "$pluginScripts" ]
+  assert [ -f "$brewfile" ]
+  assert [ -f "$gemfile" ]
+  assert [ -f "$configSymlinks" ]
+}
+
+@test "_doSymlinks_" {
+  mkdir -p "links"
+  touch "testfile.txt" ".dotfile" "links/dotfile-link"
   local p="$(_realpath_ "testfile.txt")"
   local p="${p%/*}"
 
-  _doSymlinks_ "$symlinkYAML"
+  _doSymlinks_ "${symlinkYAML}"
 
   assert_success
   assert [ -L "${p}/links/testfile-link.txt" ]
@@ -64,36 +75,26 @@ symlinkYAML="${BATS_TEST_DIRNAME}/fixtures/symlinks.yaml"
   assert [ -f "backup/dotfile-link" ]
 }
 
-########### TAKING ARGUMENTS ###############
 @test "Fail on unknown argument" {
-  run $s -LK
+  run "$s" -LK
 
   assert_failure
   assert_output --partial "[  fatal] invalid option: '-K'."
 }
 
-@test "Print version (--version)" {
-  run $s --version
-
-  assert_success
-  assert_output --regexp "$base [v|V]?[0-9]+\.[0-9]+\.[0-9]+"
-}
-
 @test "usage (-h)" {
-  run $s -h
+  run "$s" -h
 
   assert_success
-  assert_line --index 0 "$base [OPTION]... [FILE]..."
+  assert_output --partial "This script runs a series of installation scripts to configure a new computer running Mac OSX."
 }
 
 @test "usage (--help)" {
-  run $s --help
+  run "$s" --help
 
   assert_success
-  assert_line --index 0 "$base [OPTION]... [FILE]..."
+  assert_output --partial "This script runs a series of installation scripts to configure a new computer running Mac OSX."
 }
-
-########### SHARED FUNCTION TESTS ##########
 
 @test "_backupFile_: no source" {
   run _backupFile_ "testfile"
@@ -162,10 +163,11 @@ symlinkYAML="${BATS_TEST_DIRNAME}/fixtures/symlinks.yaml"
 }
 
 @test "_locateSourceFile_: Resolve symlinks" {
-  ln -s "$sourceDIR" "testSymlink"
 
-  run _locateSourceFile_ "testSymlink"
-  assert_output "$sourceDIR"
+  ln -s "${YAML1}" "./testSymlink"
+  assert [ -L "./testSymlink" ]
+  run _locateSourceFile_ "./testSymlink"
+  assert_output "${YAML1}"
 }
 
 @test "_ltrim_" {
@@ -339,87 +341,4 @@ symlinkYAML="${BATS_TEST_DIRNAME}/fixtures/symlinks.yaml"
   run _uniqueFileName_
 
   assert_failure
-}
-
-### Logging ####
-
-@test "info" {
-  run info "testing"
-  assert_output --regexp "[0-9]+:[0-9]+:[0-9]+ (AM|PM) \[   info\] testing"
-}
-
-@test "error" {
-  run error "testing"
-  assert_output --regexp "\[  error\] testing"
-}
-
-@test "warning" {
-  run warning "testing"
-  assert_output --regexp "\[warning\] testing"
-}
-
-@test "success" {
-  run success "testing"
-  assert_output --regexp "\[success\] testing"
-}
-
-@test "notice" {
-  run notice "testing"
-  assert_output --regexp "\[ notice\] testing"
-}
-
-@test "header" {
-  run header "testing"
-  assert_output --regexp "\[ header\] == testing =="
-}
-
-@test "input" {
-  run input "testing"
-  assert_output --partial "[  input] testing"
-}
-
-@test "debug" {
-  run debug "testing"
-  assert_output --partial "[  debug] testing"
-}
-
-@test "die" {
-  run die "testing"
-
-  assert_failure
-  assert_line --index 0 --partial "[  fatal] testing"
-}
-
-@test "quiet" {
-  quiet=true
-  run notice "testing"
-  assert_success
-  refute_output --partial "testing"
-  quiet=false
-}
-
-@test "verbose" {
-  run verbose "testing"
-  refute_output --regexp "\[  debug\] testing"
-
-  verbose=true
-  run verbose "testing"
-  assert_output --regexp "\[  debug\] testing"
-  verbose=false
-}
-
-@test "logging" {
-  printLog=true ; logFile="testlog"
-  notice "testing"
-  info "testing again"
-  success "last test"
-
-  assert_file_exist "${logFile}"
-
-  run cat "${logFile}"
-  assert_line --index 0 --partial "[ notice] testing"
-  assert_line --index 1 --partial "[   info] testing again"
-  assert_line --index 2 --partial "[success] last test"
-
-  printLog=false
 }
