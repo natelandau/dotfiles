@@ -115,15 +115,13 @@ _BATS_() {
   done
 
   # Test shared scripting functions
-  for file in $(git diff --cached --name-only | grep -E 'scripting/helpers/.*\.bash$'); do
-    filename="$(basename $file)"
-    filename="${filename%.*}"
+  if git diff --cached --name-only | grep -E 'scripting/helpers/.*\.bash$'; then
     if [ -f "${HOME}/dotfiles-private/test/runtests.sh" ]; then
-        echo -e "\n## Running all bats tests ##"
-        if ! _execute_ "${HOME}/dotfiles-private/test/runtests.sh"; then
-          echo "Error encountered running automated testing. Exiting."
-          exit 1
-        fi
+      echo -e "\n## Running all bats tests ##"
+      if ! _execute_ "${HOME}/dotfiles-private/test/runtests.sh"; then
+        echo "Error encountered running automated testing. Exiting."
+        exit 1
+      fi
     else
         echo -e "\n## Running all bats tests ##"
         for test in "${GITROOT}"/test/*.bats; do
@@ -131,9 +129,7 @@ _BATS_() {
             _execute_ "${test} -t"
         done
     fi
-    unset filename
-  done
-  exit 1
+  fi
 }
 if command -v bats &>/dev/null; then _BATS_; fi
 
