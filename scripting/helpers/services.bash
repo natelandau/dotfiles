@@ -2,7 +2,7 @@ _haveInternet_() {
   # DESC:   Tests to see if there is an active Internet connection
   # ARGS:   None
   # OUTS:   None
-  # USAGE:  if _haveInternet_ && [SOMETHING]
+  # USAGE:  _haveInternet_ && [SOMETHING]
   # NOTE:   https://stackoverflow.com/questions/929368/
 
   if command -v fping &>/dev/null; then
