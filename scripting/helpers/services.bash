@@ -1,9 +1,37 @@
+_haveInternet_() {
+  # DESC:   Tests to see if there is an active Internet connection
+  # ARGS:   None
+  # OUTS:   None
+  # USAGE:  if _haveInternet_ && [SOMETHING]
+  # NOTE:   https://stackoverflow.com/questions/929368/
+
+  if command -v fping &>/dev/null; then
+    fping 1.1.1.1 &>/dev/null \
+      && return 0 \
+      || return 1
+  elif ping -t 2 -c 1 1 1.1.1.1 &>/dev/null; then
+    return 0
+  elif command -v route &>/dev/null; then
+    local GATEWAY="$(route -n get default | grep gateway)"
+    ping -t 2 -c 1 "$(echo $GATEWAY | cut -d ':' -f 2)" &>/dev/null \
+      && return 0 \
+      || return 1
+  elif command -v ip &>/dev/null; then
+    ping -t 2 -c 1 "$(ip r | grep default | cut -d ' ' -f 3)" &>/dev/null \
+      && return 0 \
+      || return 1
+  else
+    return 1
+  fi
+}
+
+
 _httpStatus_() {
   # DESC:   Report the HTTP status of a specified URL
   # ARGS:   $1 (Required) - URL (will work fine without https:// prefix)
   #         $2 (Optional) - Seconds to wait until timeout (Default is 3)
   #         $3 (Optional) - either '--code'  or '--status' (default)
-  #         $4 (optional) - CURL opts separated by spaces(Use -L to follow redirects)
+  #         $4 (optional) - CURL opts separated by spaces (Use -L to follow redirects)
   # OUTS:   Prints output to STDOUT
   # USAGE:  _httpStatus_ URL [timeout] [--code or --status] [curl opts]
   # NOTE:   https://gist.github.com/rsvp/1171304
@@ -11,7 +39,7 @@ _httpStatus_() {
   #         Example:  $ _httpStatus_ bit.ly
   #                   301 Redirection: Moved Permanently
   #
-  #         Example: $ _httpStatus_ www.google.com 100 -c 200
+  #         Example: $ _httpStatus_ www.google.com 100 --code
   local code
   local status
 
@@ -75,7 +103,7 @@ _httpStatus_() {
     503) status="Server Error: Service Unavailable" ;;
     504) status="Server Error: Gateway Timeout within ${timeout} seconds" ;;
     505) status="Server Error: HTTP Version Not Supported" ;;
-    *) die " !!  httpstatus: status not defined." ;;
+    *) die "httpstatus: status not defined." ;;
   esac
 
   case ${flag} in
@@ -83,7 +111,7 @@ _httpStatus_() {
     -s) echo "${code} ${status}" ;;
     --code) echo "${code}" ;;
     -c) echo "${code}" ;;
-    *) echo " !!  httpstatus: bad flag" && _safeExit_ ;;
+    *) echo " httpstatus: bad flag" && _safeExit_ ;;
   esac
 
   IFS="${saveIFS}"
