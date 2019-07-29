@@ -400,13 +400,32 @@ _locateSourceFile_() {
 }
 
 _makeSymlink_() {
-  # DESC:   Creates a symlink and backs up a file which may be overwritten by the new symlink
+  # DESC:   Creates a symlink and backs up a file which may be overwritten by the new symlink. Default
+  #         behavior will create a backup of a file to be overwritten
   # ARGS:   $1 (Required) - Source file
   #         $2 (Required) - Destination
   #         $3 (Optional) - Backup directory for files which may be overwritten (defaults to 'backup')
+  # OPTS:  -n             - Do not create a backup if target already exists
   # OUTS:   None
   # USAGE:  _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
   # NOTE:   This function makes use of the _execute_ function
+
+  local opt
+  local OPTIND=1
+  local noBackup=false
+
+  while getopts ":nN" opt; do
+    case $opt in
+      n | N) noBackup=true ;;
+      *)
+        {
+          error "Unrecognized option '$1' passed to _makeSymlink_" "$LINENO"
+          return 1
+        }
+        ;;
+    esac
+  done
+  shift $((OPTIND - 1))
 
   [[ $# -lt 2 ]] && fatal 'Missing required argument to _makeSymlink_()!'
 
@@ -453,13 +472,15 @@ _makeSymlink_() {
   if [ ! -e "${d}" ]; then
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -h "${d}" ]; then
-    o="$(_locateSourceFile_ "$d")"
-    _backupFile_ "${o}" ${b:-backup}
+    o="$(_locateSourceFile_ "${d}")"
+    ($noBackup) \
+      || _backupFile_ "${o}" ${b:-backup}
     ($dryrun) \
-      || command rm -rf "$d"
+      || command rm -rf "${d}"
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -e "${d}" ]; then
-    _backupFile_ "${d}" "${b:-backup}"
+    ($noBackup) \
+      || _backupFile_ "${d}" "${b:-backup}"
     ($dryrun) \
       || rm -rf "$d"
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"

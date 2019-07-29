@@ -237,6 +237,26 @@ teardown() {
   assert [ -f "backup/test2.txt" ]
 }
 
+@test "_makeSymlink_: do not backup original file 1" {
+  touch "test.txt"
+  touch "test2.txt"
+  run _makeSymlink_ -n "test.txt" "test2.txt"
+
+  assert_success
+  assert [ -h "test2.txt" ]
+  refute [ -f "backup/test2.txt" ]
+}
+
+@test "_makeSymlink_: do not backup original file 2" {
+  touch "test.txt"
+  touch "test2.txt"
+  run _makeSymlink_ -N "test.txt" "test2.txt"
+
+  assert_success
+  assert [ -h "test2.txt" ]
+  refute [ -f "backup/test2.txt" ]
+}
+
 @test "_parseFilename_: success" {
   verbose=true
   touch "${testdir}/testfile.txt"
