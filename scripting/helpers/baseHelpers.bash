@@ -210,11 +210,11 @@ _acquireScriptLock_() {
     lock_dir="${TMPDIR:-/tmp/}$(basename "$0").$UID.lock"
   fi
 
-  if command mkdir "$lock_dir" 2>/dev/null; then
-    readonly script_lock="$lock_dir"
+  if command mkdir "${lock_dir}" 2>/dev/null; then
+    readonly script_lock="${lock_dir}"
     verbose "Acquired script lock: ${tan}${script_lock}${purple}"
   else
-    die "Unable to acquire script lock: $lock_dir"
+    die "Unable to acquire script lock: ${lock_dir}"
   fi
 }
 
@@ -250,7 +250,7 @@ _execute_() {
       q | Q) quietResult=true ;;
       *)
         {
-          error "Unrecognized option '$1' passed to _execute. Exiting."
+          error "Unrecognized option '$1' passed to _execute_. Exiting."
           _safeExit_
         }
         ;;
@@ -385,7 +385,7 @@ _pauseScript_() {
   local pauseMessage
   pauseMessage="${1:-Paused}. Ready to continue?"
 
-  if _seekConfirmation_ "$pauseMessage"; then
+  if _seekConfirmation_ "${pauseMessage}"; then
     info "Continuing..."
   else
     notice "Exiting Script"
@@ -454,7 +454,7 @@ _safeExit_() {
   # OUTS: None
 
   if [[ -d ${script_lock-} ]]; then
-    rm -rf "$script_lock"
+    command rm -rf "${script_lock}" && verbose "Removing script lock."
   fi
 
   if [[ -n "${tmpDir-}" && -d "${tmpDir-}" ]]; then
