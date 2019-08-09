@@ -132,7 +132,7 @@ _mainScript_() {
   }
 
   _ruby_() {
-    local RUBYVERSION="2.4.3"
+    local RUBYVERSION="2.6.3"
     local rubyGem
 
     if ! _seekConfirmation_ "Install Ruby and Gems?"; then return; fi
@@ -465,7 +465,6 @@ _parseOptions_() {
   done
   args+=("$@") # Store the remaining user input as arguments.
 }
-
 
 # Initialize and run the script
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
