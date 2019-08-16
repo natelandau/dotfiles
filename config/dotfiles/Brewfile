@@ -19,6 +19,8 @@ brew "icu4c"
 brew "boost"
 brew "gettext"
 brew "readline"
+brew "sqlite"
+brew "xz"
 brew "pixman"
 brew "colordiff"
 brew "coreutils"
@@ -112,6 +114,7 @@ brew "wget"
 brew "yarn"
 brew "yasm"
 brew "youtube-dl"
+brew "zlib"
 brew "zsh"
 brew "cloudflare/cloudflare/cloudflared"
 brew "getantibody/tap/antibody"
@@ -128,7 +131,6 @@ cask "imagealpha"
 cask "imageoptim"
 cask "istat-menus"
 cask "iterm2"
-cask "java"
 cask "java8"
 cask "joinme"
 cask "kaleidoscope"
@@ -156,14 +158,12 @@ cask "xld"
 cask "yubico-authenticator"
 cask "yubico-yubikey-manager"
 mas "1Blocker", id: 1107421413
-mas "Airmail", id: 918858936
 mas "Bear", id: 1091189122
 mas "Capo", id: 696977615
 mas "Contacts+", id: 1094748271
 mas "DaisyDisk", id: 411643860
 mas "Day One", id: 1055511498
 mas "Drafts", id: 1435957248
-mas "GarageBand", id: 682658836
 mas "iMovie", id: 408981434
 mas "JPEGmini", id: 498944723
 mas "Keynote", id: 409183694
