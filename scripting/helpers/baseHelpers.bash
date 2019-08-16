@@ -214,7 +214,7 @@ _acquireScriptLock_() {
     readonly script_lock="${lock_dir}"
     verbose "Acquired script lock: ${tan}${script_lock}${purple}"
   else
-    die "Unable to acquire script lock: ${lock_dir}"
+    die "Unable to acquire script lock: ${tan}${lock_dir}${red}"
   fi
 }
 
@@ -358,8 +358,6 @@ _checkBinary_() {
     verbose "Did not find dependency: '$1'"
     return 1
   fi
-
-  verbose "Found dependency: '$1'"
   return 0
 }
 
@@ -466,6 +464,7 @@ _safeExit_() {
       rm -r "${tmpDir}"
     else
       rm -r "${tmpDir}"
+      verbose "Removing temp directory"
     fi
   fi
 

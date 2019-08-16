@@ -143,9 +143,9 @@ helper() {
 @test "Test mode (--test)" { # if this test dails, it is likely the line index numbers
   run "$s" -v --test "newfile.txt"
   assert_success
-  assert_line --index 2 --partial "[ notice] Running in test mode."
-  assert_line --index 4 --partial "Created test file"
-  assert_line --index 18 --regexp "newfile\.txt --> [0-9]{4}-[0-9]{2}-[0-9]{2} newfile\.txt"
+  assert_line --index 1 --partial "[ notice] Running in test mode."
+  assert_line --index 3 --partial "Created test file"
+  assert_line --index 17 --regexp "newfile\.txt --> [0-9]{4}-[0-9]{2}-[0-9]{2} newfile\.txt"
 }
 
 @test "Remove brackets" {
