@@ -11,7 +11,7 @@ esac
 umask 002
 
 # Build PATH and put /usr/local/bin before existing PATH
-export PATH="/usr/local/bin:$PATH:$HOME/bin"
+export PATH="/usr/local/bin:${PATH}:/usr/local/sbin:${HOME}/bin"
 
 ### SOURCE BASH PLUGINS ###
 

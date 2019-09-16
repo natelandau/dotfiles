@@ -7,8 +7,8 @@ case $- in
 esac
 [ -z "$PS1" ] && return
 
-# Build PATH and put /usr/local/bin before existing PATH
-export PATH="/usr/local/bin:${PATH}:${HOME}/bin"
+# Build PATH
+export PATH="/usr/local/bin:${PATH}:/usr/local/sbin:${HOME}/bin"
 
 # Encoding
 export LANG='en_US.UTF-8'
