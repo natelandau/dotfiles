@@ -69,3 +69,30 @@ _setdiff_() {
   done
   [[ "$1" ]] && echo "${setdiffC[@]}"
 }
+
+_removeDups_() {
+  # DESC:   Removesduplicate array elements.
+  # ARGS:   $1 (Required) - Input array
+  # OUTS:   Prints de-duped elements to standard out
+  # USAGE:  _removeDups_ "${array@]}"
+  # NOTE:   List order may not stay the same.
+  #         https://github.com/dylanaraps/pure-bash-bible
+    declare -A tmp_array
+
+    for i in "$@"; do
+        [[ $i ]] && IFS=" " tmp_array["${i:- }"]=1
+    done
+
+    printf '%s\n' "${!tmp_array[@]}"
+}
+
+_randomArrayElement_() {
+  # DESC:   Selects a random item from an array
+  # ARGS:   $1 (Required) - Input array
+  # OUTS:   Prints result
+  # USAGE:  _randomArrayElement_ "${array[@]}"
+  # NOTE:   https://github.com/dylanaraps/pure-bash-bible
+    # Usage: random_array_element "array"
+    local arr=("$@")
+    printf '%s\n' "${arr[RANDOM % $#]}"
+}
