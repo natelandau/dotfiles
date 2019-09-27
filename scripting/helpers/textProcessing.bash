@@ -211,6 +211,24 @@ _ltrim_() {
   sed "s%^[${char//%/\\%}]*%%"
 }
 
+_regex_() {
+  # DESC:   Use regex to validate and parse strings
+  # ARGS:   $1 (Required) - Input String
+  #         $2 (Required) - Regex pattern
+  # OUTS:   Prints string matching regex
+  #         Returns error if no part of string did not match regex
+  # USAGE:  regex "#FFFFFF" '^(#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3}))$' || echo "no match found"
+  # NOTE:   This example only prints the first matching group. When using multiple capture
+  #         groups some modification is needed.
+  #         https://github.com/dylanaraps/pure-bash-bible
+  if [[ $1 =~ $2 ]]; then
+    printf '%s\n' "${BASH_REMATCH[1]}"
+    return 0
+  else
+    return 1
+  fi
+}
+
 _rtrim_() {
   # DESC:   Removes all leading whitespace (from the right)
   # ARGS:   None
