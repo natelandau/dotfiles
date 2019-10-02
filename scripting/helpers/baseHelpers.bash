@@ -202,7 +202,6 @@ _acquireScriptLock_() {
   #       symlinks or multiple hardlinks as there's no portable way of doing so.
   #       If the lock was acquired it's automatically released in _safeExit_()
 
-  ($sourceOnly) && return 0
   local lock_dir
   if [[ ${1-} == 'system' ]]; then
     lock_dir="${TMPDIR:-/tmp/}$(basename "$0").lock"
