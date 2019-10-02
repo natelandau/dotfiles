@@ -69,7 +69,6 @@ logErrors=false
 verbose=false
 force=false
 dryrun=false
-sourceOnly=false
 args=()
 
 # Options and Usage
@@ -91,8 +90,6 @@ _usage_() {
   -q, --quiet       Quiet (no output)
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -h, --help        Display this help and exit
-      --source-only Bypasses main script functionality to allow unit tests of functions
-      --force       Skip all user interaction.  Implied 'Yes' to all actions.
 EOF
 }
 
@@ -136,25 +133,11 @@ _parseOptions_() {
         _usage_ >&2
         _safeExit_
         ;;
-      -u | --username)
-        shift
-        username=${1}
-        ;;
-      -p | --password)
-        shift
-        echo "Enter Pass: "
-        stty -echo
-        read -r PASS
-        stty echo
-        echo
-        ;;
       -L | --noErrorLog) logErrors=false ;;
       -n | --dryrun) dryrun=true ;;
       -v | --verbose) verbose=true ;;
       -l | --log) printLog=true ;;
       -q | --quiet) quiet=true ;;
-      --source-only) sourceOnly=true ;;
-      --force) force=true ;;
       --endopts)
         shift
         break
@@ -180,5 +163,5 @@ set -o nounset                              # Disallow expansion of unset variab
 [[ $# -eq 0 ]] && _parseOptions_ "-h"       # Uncomment to force arguments when invoking the script
 # _makeTempDir_ "$(basename "$0")"          # Uncomment to create a temp directory '$tmpDir'
 # _acquireScriptLock_                       # Uncomment to acquire script lock
-if ! ${sourceOnly}; then _mainScript_; fi   # Run script unless in 'source-only' mode
-if ! ${sourceOnly}; then _safeExit_; fi     # Exit cleanly
+_mainScript_                              # Run script unless in 'source-only' mode
+_safeExit_                                # Exit cleanly

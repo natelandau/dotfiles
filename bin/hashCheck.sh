@@ -140,7 +140,6 @@ logErrors=true
 verbose=false
 force=false
 dryrun=false
-sourceOnly=false
 declare -a args=()
 
 _usage_() {
@@ -174,7 +173,6 @@ _usage_() {
   -q, --quiet       Quiet (no output)
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -h, --help        Display this help and exit
-  --source-only Bypasses main script functionality to allow unit tests of functions
   --force       Skip all user interaction.  Implied 'Yes' to all actions.
 EOF
 }
@@ -224,7 +222,6 @@ _parseOptions_() {
       -v | --verbose) verbose=true ;;
       -l | --log) printLog=true ;;
       -q | --quiet) quiet=true ;;
-      --source-only) sourceOnly=true ;;
       --force) force=true ;;
       --endopts)
         shift
@@ -251,5 +248,5 @@ set -o nounset                            # Disallow expansion of unset variable
 # _makeTempDir_ "$(basename "$0")"        # Create a temp directory '$tmpDir'
 # _acquireScriptLock_                     # Acquire script lock
 _parseOptions_ "$@"                       # Parse arguments passed to script
-if ! ${sourceOnly}; then _mainScript_; fi # Run script unless in 'source-only' mode
-if ! ${sourceOnly}; then _safeExit_; fi   # Exit cleanly
+_mainScript_                              # Run script unless in 'source-only' mode
+_safeExit_                                # Exit cleanly

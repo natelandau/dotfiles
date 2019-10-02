@@ -103,7 +103,6 @@ Adapted from: http://applehelpwriter.com/2016/08/20/how-to-fix-file-in-use-probl
   -d, --debug       Runs script in BASH debug mode (set -x)
   -h, --help        Display this help and exit
       --version     Output version information and exit
-      --source-only Bypasses main script functionality to allow unit tests of functions
       --force       Skip all user interaction.  Implied 'Yes' to all actions.
 "
 }
@@ -167,7 +166,6 @@ while [[ $1 == -?* ]]; do
       echo "$(basename $0) ${version}"
       _safeExit_
       ;;
-    --source-only) sourceOnly=true ;;
     --force) force=true ;;
     --endopts)
       shift
