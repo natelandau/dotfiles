@@ -5,7 +5,7 @@ _mainScript_() {
   [[ "$OSTYPE" != "darwin"* ]] \
     && fatal "We are not on macOS" "$LINENO"
 
-  if ! command -v brew &>/dev/null; then fatal "Can not continue wthout homebrew" "$LINENO"; fi
+  if ! command -v brew &>/dev/null; then fatal "Can not continue wthout homebrew" "${LINENO}"; fi
 
   notice "Updating Homebrew..."
   _execute_ -vp "brew update"
@@ -19,7 +19,7 @@ _mainScript_() {
     # identify the culprits
     # shellcheck disable=2046,2063
     while read -r cask; do
-      info "If 'brew cask list' throws license errors attempt to reinstall '$cask'"
+      info "Possible license error detected. If 'brew cask list' throws license errors attempt to reinstall '$cask'"
     done < <(grep -ilr --include \*.rb license $(brew --prefix)/Caskroom/*/.metadata | awk -F '/' '{print $5}' | sort -u)
 
     # Now we update casks
@@ -75,6 +75,7 @@ printLog=false
 logErrors=true
 verbose=false
 force=false
+dryrun=false
 declare -a args=()
 
 # Options and Usage
@@ -84,7 +85,7 @@ _usage_() {
 
   $(basename "$0") [OPTION]...
 
-  This script upgrades Mac OS applications managed by Homewbrew and Homebrew Cask
+  This script upgrades Mac OS applications managed by Homewbrew, Homebrew Cask, and Mas.
 
  ${bold}Option Flags:${reset}
 
@@ -95,7 +96,6 @@ _usage_() {
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -h, --help        Display this help and exit
       --version     Output version information and exit
-      --force       Skip all user interaction.  Implied 'Yes' to all actions.
 EOF
 }
 
@@ -144,7 +144,6 @@ _parseOptions_() {
       -v | --verbose) verbose=true ;;
       -l | --log) printLog=true ;;
       -q | --quiet) quiet=true ;;
-      --force) force=true ;;
       --endopts)
         shift
         break
