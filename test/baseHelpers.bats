@@ -90,12 +90,12 @@ teardown() {
   [ -e "${logFile}" ] && rm "$logFile"
   header "$logFile"
   dryrun "dryrun"
-  notice "testing"
-  info "testing again"
+  notice "tes${purple}ting"
+  info "testing ${tan}again"
   success "last test"
 
   assert_file_exist "${logFile}"
-
+  cp "${logFile}" "/Users/nlandau/Desktop/LogLOGLOGLOGLOGLOGLOG.txt"
   run cat "${logFile}"
   assert_line --index 0 --partial "[ header] == /Users/nlandau/tmp/bats-baseHelpers-test.log =="
   assert_line --index 1 --partial "[ dryrun] dryrun"

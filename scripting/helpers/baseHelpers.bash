@@ -129,19 +129,12 @@ _alert_() {
     if [[ "${printLog}" == true ]] || [[ "${logErrors}" == "true" && "$alertType" =~ ^(error|fatal) ]]; then
       [[ ! -f "$logFile" ]] && touch "$logFile"
       # Don't use colors in logs
-      color=""
-      reset=""
-      bold=""
-      white=""
-      reset=""
-      purple=""
-      red=""
-      green=""
-      tan=""
-      yellow=""
-      blue=""
-      underline=""
-      echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${alertType}") ${message}" >>"${logFile}"
+      if command -v gsed &>/dev/null; then
+        local cleanmessage="$(echo "$message" | gsed -E 's/\x1b\[(([0-9]{1,2})(;[0-9]{1,3}){0,2})?[mGK]//g')"
+      else
+        local cleanmessage="$(echo "$message" | sed -E 's/\x1b\[(([0-9]{1,2})(;[0-9]{1,3}){0,2})?[mGK]//g')"
+      fi
+      echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${alertType}") ${cleanmessage}" >>"${logFile}"
     fi
   }
   _writeToLog_
@@ -451,7 +444,11 @@ _safeExit_() {
   # OUTS: None
 
   if [[ -d ${script_lock-} ]]; then
-    command rm -rf "${script_lock}" && verbose "Removing script lock."
+    if command rm -rf "${script_lock}"; then
+      verbose "Removing script lock"
+    else
+      warning "Script lock could not be removed. Try manually deleting ${tan}${lock_dir}${red}"
+    fi
   fi
 
   if [[ -n "${tmpDir-}" && -d "${tmpDir-}" ]]; then

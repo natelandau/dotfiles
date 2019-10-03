@@ -148,6 +148,32 @@ helper() {
   assert_line --index 17 --regexp "newfile\.txt --> [0-9]{4}-[0-9]{2}-[0-9]{2} newfile\.txt"
 }
 
+@test "always print filename (-P)" {
+  run "$s" -P --test "newfile.txt"
+  assert_success
+  assert_line --index 0 --partial "[   info] Working on file"
+  assert_line --index 1 --partial "[ notice] Running in test mode."
+}
+
+@test "always print filename (--printFile)" {
+  run "$s" --printFile --test "newfile.txt"
+  assert_success
+  assert_line --index 0 --partial "[   info] Working on file"
+}
+
+@test "See filename in verbose mode" {
+  run "$s" -v --test "newfile.txt"
+  assert_success
+  assert_line --index 0 --partial "[  debug] Working on file:"
+}
+
+@test "Don't see filename unless requested" {
+  run "$s" --test "newfile.txt"
+  assert_success
+  refute_line --index 0 --partial "[  debug] Working on file:"
+  refute_line --index 0 --partial "[   info] Working on file"
+}
+
 @test "Remove brackets" {
   touch "new[file].txt"
   run "$s" "new[file].txt"
