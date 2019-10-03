@@ -130,9 +130,9 @@ _alert_() {
       [[ ! -f "$logFile" ]] && touch "$logFile"
       # Don't use colors in logs
       if command -v gsed &>/dev/null; then
-        local cleanmessage="$(echo "$message" | gsed -E 's/\x1b\[(([0-9]{1,2})(;[0-9]{1,3}){0,2})?[mGK]//g')"
+        local cleanmessage="$(echo "$message" | gsed -E 's/(\x1b)?\[(([0-9]{1,2})(;[0-9]{1,3}){0,2})?[mGK]//g')"
       else
-        local cleanmessage="$(echo "$message" | sed -E 's/\x1b\[(([0-9]{1,2})(;[0-9]{1,3}){0,2})?[mGK]//g')"
+        local cleanmessage="$(echo "$message" | sed -E 's/(\x1b)?\[(([0-9]{1,2})(;[0-9]{1,3}){0,2})?[mGK]//g')"
       fi
       echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${alertType}") ${cleanmessage}" >>"${logFile}"
     fi
