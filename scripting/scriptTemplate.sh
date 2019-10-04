@@ -7,7 +7,7 @@ _mainScript_() {
 } # end _mainScript_
 
 _sourceHelperFiles_() {
-  # DESC: Sources script helper files
+  # DESC: Sources script helper files.
   local filesToSource
   local sourceFile
   filesToSource=(
@@ -21,13 +21,13 @@ _sourceHelperFiles_() {
     "${HOME}/dotfiles/scripting/helpers/dates.bash"
   )
   for sourceFile in "${filesToSource[@]}"; do
-    [ ! -f "$sourceFile" ] \
+    [ ! -f "${sourceFile}" ] \
       && {
         echo "error: Can not find sourcefile '$sourceFile'."
         echo "exiting..."
         exit 1
       }
-    source "$sourceFile"
+    source "${sourceFile}"
   done
 }
 _sourceHelperFiles_
@@ -39,7 +39,6 @@ logErrors=true
 verbose=false
 force=false
 dryrun=false
-sourceOnly=false
 declare -a args=()
 
 _usage_() {
@@ -65,7 +64,6 @@ _usage_() {
     -q, --quiet       Quiet (no output)
     -v, --verbose     Output more information. (Items echoed to 'verbose')
     -h, --help        Display this help and exit
-    --source-only     Bypass main script functionality to allow unit tests of functions
     --force           Skip all user interaction.  Implied 'Yes' to all actions.
 EOF
 }
@@ -127,7 +125,6 @@ _parseOptions_() {
       -v | --verbose) verbose=true ;;
       -l | --log) printLog=true ;;
       -q | --quiet) quiet=true ;;
-      --source-only) sourceOnly=true ;;
       --force) force=true ;;
       --endopts)
         shift
@@ -146,7 +143,7 @@ trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "
 set -o errtrace                           # Trap errors in subshells and functions
 set -o errexit                            # Exit on error. Append '||true' if you expect an error
 set -o pipefail                           # Use last non-zero exit code in a pipeline
-shopt -s nullglob globstar                # Make `for f in *.txt` work when `*.txt` matches zero files
+# shopt -s nullglob globstar              # Make `for f in *.txt` work when `*.txt` matches zero files
 IFS=$' \n\t'                              # Set IFS to preferred implementation
 # set -o xtrace                           # Run in debug mode
 set -o nounset                            # Disallow expansion of unset variables
@@ -154,5 +151,5 @@ set -o nounset                            # Disallow expansion of unset variable
 _parseOptions_ "$@"                       # Parse arguments passed to script
 # _makeTempDir_ "$(basename "$0")"        # Create a temp directory '$tmpDir'
 # _acquireScriptLock_                     # Acquire script lock
-if ! ${sourceOnly}; then _mainScript_; fi # Run script unless in 'source-only' mode
-if ! ${sourceOnly}; then _safeExit_; fi   # Exit cleanly
+_mainScript_                              # Run script unless in 'source-only' mode
+_safeExit_                                # Exit cleanly
