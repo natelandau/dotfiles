@@ -4,9 +4,9 @@ _mainScript_() {
 
   _errorHandling_() {
     [[ "${#args[@]}" -eq 0 ]] && {
-        error "No file specified"
-        _safeExit_ 1
-      }
+      error "No file specified"
+      _safeExit_ 1
+    }
 
     # This script requires the Linux gdate (as opposed to native 'date' in OSX)
     # Here we see if it's installed. If not, we install it with homebrew.
@@ -18,16 +18,16 @@ _mainScript_() {
 
   _isGoodFile_() {
     if [ ! -e "${userFile}" ]; then
-      ( ${suppressFileTypeErrors} ) || error "No such file: '${userFile}'" "${LINENO}"
+      (${suppressFileTypeErrors}) || error "No such file: '${userFile}'" "${LINENO}"
       return 1
     elif [ ! -f "${userFile}" ]; then
-      ( ${suppressFileTypeErrors} ) || error "'${userFile}' is not a file" "${LINENO}"
+      (${suppressFileTypeErrors}) || error "'${userFile}' is not a file" "${LINENO}"
       return 1
     elif [[ "$(basename "$userFile")" =~ ^\. ]]; then
-      ( ${suppressFileTypeErrors} ) || error "$(basename "$userFile"): is a dotfile" "${LINENO}"
+      (${suppressFileTypeErrors}) || error "$(basename "$userFile"): is a dotfile" "${LINENO}"
       return 1
     elif [[ "${userFile##*.}" =~ dmg$|download$ ]]; then
-      ( ${suppressFileTypeErrors} ) || error "'.${userFile##*.}' files are not supported" "${LINENO}"
+      (${suppressFileTypeErrors}) || error "'.${userFile##*.}' files are not supported" "${LINENO}"
       return 1
     else
       return 0
@@ -54,88 +54,88 @@ _mainScript_() {
       fi
     else
       # Remove special characters that can cause problems before we do anything else
-        testFilename="${userFile//[\[\]]/}"
-        verbose "testFilename: $testFilename"
+      testFilename="${userFile//[\[\]]/}"
+      verbose "testFilename: $testFilename"
 
-        if [[ "${testFilename}" != "${userFile}" ]]; then
-          notice "Filename contains restricted special characters. Removing them to continue..."
-          _execute_ "mv \"${userFile}\" \"${testFilename}\""
-          userFile="${testFilename}"
-        fi
-
-      # Parse the filename into its component parts
-        _parseFilename_ "${userFile}"
-        savedFileName="${_parseFileName}" # Save the original filename for future comparison
-        verbose "${tan}\$savedFileName: ${savedFileName}${purple}"
-
-      # Clean the filename
-        _parseFileBase="$(_cleanString_ -a "${_parseFileBase}")"
-        ("$stopwords") && _parseFileBase="$(_stopWords_ "${_parseFileBase}")"
-        ("$lowerCase") && _parseFileBase="$(_cleanString_ -l "${_parseFileBase}")"
-        ("$useDashes") && _parseFileBase="$(_cleanString_ -p " ,-"  "${_parseFileBase}")"
-        verbose "Cleaned String: $_parseFileBase"
-
-      # Find a date for the file or use today's date and format as YYYY-MM-DD
-        if ! "${cleanOnly}"; then
-          if _parseDate_ "${_parseFileBase}"; then
-            fileDate="$(_formatDate_ "${_parseDate_monthName} ${_parseDate_day}, ${_parseDate_year}")"
-          else
-            if command -v mdls &>/dev/null; then
-              inferredDate="$(mdls -raw -name kMDItemContentCreationDate "${_parsedFileFull}" | awk 'BEGIN { FS="[ ]" } ; { print $1 }')"
-              [[ "${inferredDate}" =~ null || "${inferredDate}" == "" || -z "${inferredDate}" ]] && inferredDate="$(date +%Y-%m-%d)"
-            else
-              inferredDate="$(date +%Y-%m-%d)"
-            fi
-            fileDate="$(_formatDate_ "${inferredDate}")"
-          fi
-          fileDate="$(echo "${fileDate}" | awk '{$1=$1};1')" # Clean trailing/leading whitespace
-          verbose "${tan}\$fileDate: ${fileDate}${purple}"
+      if [[ "${testFilename}" != "${userFile}" ]]; then
+        notice "Filename contains restricted special characters. Removing them to continue..."
+        _execute_ "mv \"${userFile}\" \"${testFilename}\""
+        userFile="${testFilename}"
       fi
 
-        # Strip found date from file
-        [ -n "${_parseDate_found:-}" ] && _parseFileBase="${_parseFileBase//${_parseDate_found}/}"
+      # Parse the filename into its component parts
+      _parseFilename_ "${userFile}"
+      savedFileName="${_parseFileName}" # Save the original filename for future comparison
+      verbose "${tan}\$savedFileName: ${savedFileName}${purple}"
 
-        # Trim special characters from beginning and end
-          _parseFileBase="$(echo "$_parseFileBase" | sed -E 's/[^A-Za-z0-9]$//g' | sed -E 's/^[^A-Za-z0-9]//g')"
+      # Clean the filename
+      _parseFileBase="$(_cleanString_ -a "${_parseFileBase}")"
+      ("$stopwords") && _parseFileBase="$(_stopWords_ "${_parseFileBase}")"
+      ("$lowerCase") && _parseFileBase="$(_cleanString_ -l "${_parseFileBase}")"
+      ("$useDashes") && _parseFileBase="$(_cleanString_ -p " ,-" "${_parseFileBase}")"
+      verbose "Cleaned String: $_parseFileBase"
 
-        # Add the formatted date back to the filename
-          if ! "${removeDates}" && ! "${cleanOnly}"; then
-            _parseFileBase="${fileDate} ${_parseFileBase}"
+      # Find a date for the file or use today's date and format as YYYY-MM-DD
+      if ! "${cleanOnly}"; then
+        if _parseDate_ "${_parseFileBase}"; then
+          fileDate="$(_formatDate_ "${_parseDate_monthName} ${_parseDate_day}, ${_parseDate_year}")"
+        else
+          if command -v mdls &>/dev/null; then
+            inferredDate="$(mdls -raw -name kMDItemContentCreationDate "${_parsedFileFull}" | awk 'BEGIN { FS="[ ]" } ; { print $1 }')"
+            [[ "${inferredDate}" =~ null || "${inferredDate}" == "" || -z "${inferredDate}" ]] && inferredDate="$(date +%Y-%m-%d)"
+          else
+            inferredDate="$(date +%Y-%m-%d)"
           fi
+          fileDate="$(_formatDate_ "${inferredDate}")"
+        fi
+        fileDate="$(echo "${fileDate}" | awk '{$1=$1};1')" # Clean trailing/leading whitespace
+        verbose "${tan}\$fileDate: ${fileDate}${purple}"
+      fi
+
+      # Strip found date from file
+      [ -n "${_parseDate_found:-}" ] && _parseFileBase="${_parseFileBase//${_parseDate_found}/}"
+
+      # Trim special characters from beginning and end
+      _parseFileBase="$(echo "$_parseFileBase" | sed -E 's/[^A-Za-z0-9]$//g' | sed -E 's/^[^A-Za-z0-9]//g')"
+
+      # Add the formatted date back to the filename
+      if ! "${removeDates}" && ! "${cleanOnly}"; then
+        _parseFileBase="${fileDate} ${_parseFileBase}"
+      fi
 
       # Replace the old file with the new file
-        _parseFileBase="$(_cleanString_ -a "${_parseFileBase}")"
-        ("$useDashes") && _parseFileBase="$(_cleanString_ -p " ,-"  "${_parseFileBase}")"
+      _parseFileBase="$(_cleanString_ -a "${_parseFileBase}")"
+      ("$useDashes") && _parseFileBase="$(_cleanString_ -p " ,-" "${_parseFileBase}")"
 
-        newFilename="${_parseFileBase}${_parseFileExt}"
-        verbose "${tan}\$newFilename: ${newFilename}${purple}"
+      newFilename="${_parseFileBase}${_parseFileExt}"
+      verbose "${tan}\$newFilename: ${newFilename}${purple}"
 
-        # If the filename has not changed then do nothing
-        if [[ "${newFilename}" == "${savedFileName}" ]]; then
-          if ${nonInteractive}; then
-            echo "${_parsedFileFull}"
-          else
-            notice "${savedFileName}: No change"
-          fi
-          continue
+      # If the filename has not changed then do nothing
+      if [[ "${newFilename}" == "${savedFileName}" ]]; then
+        if ${nonInteractive}; then
+          echo "${_parsedFileFull}"
+        else
+          notice "${savedFileName}: No change"
         fi
+        continue
+      fi
 
-        # If the only change was upper/lower replace the file
-          shopt -s nocasematch
-          if [[ "${newFilename}" == "${savedFileName}" ]]; then
-            _makeTempDir_
-            _execute_ -q "mv \"${_parsedFileFull}\" \"${tmpDir}/${savedFileName}\""
-            [ -f "${tmpDir}/${savedFileName}" ] \
-              && _parsedFileFull="${tmpDir}/${savedFileName}"
-          fi
-          shopt -u nocasematch
+      # If the only change was upper/lower replace the file
+      shopt -s nocasematch
+      if [[ "${newFilename}" == "${savedFileName}" ]]; then
+        _makeTempDir_
+        _execute_ -q "mv \"${_parsedFileFull}\" \"${tmpDir}/${savedFileName}\""
+        [ -f "${tmpDir}/${savedFileName}" ] \
+          && _parsedFileFull="${tmpDir}/${savedFileName}"
+      fi
+      shopt -u nocasematch
 
-        newFile="$(_uniqueFileName_ "${_parseFilePath}/${newFilename}")"
-        verbose "newFile: ${tan}${newFile}{$purple}"
+      newFile="$(_uniqueFileName_ "${_parseFilePath}/${newFilename}")"
+      verbose "newFile: ${tan}${newFile}{$purple}"
 
-        _execute_ -s "command mv \"${_parsedFileFull}\" \"${newFile}\"" "${savedFileName} --> ${newFilename##*/}"
+      _execute_ -s "command mv \"${_parsedFileFull}\" \"${newFile}\"" "${savedFileName} --> ${newFilename##*/}"
 
-        if ${nonInteractive}; then echo "${newFile}"; fi
+      if ${nonInteractive}; then echo "${newFile}"; fi
     fi
 
   done
@@ -217,19 +217,20 @@ _usage_() {
 
     -C, --clean       Cleans a filename of special characters and normalizes dates
                       already in the filename but does NOT prepend a date if none
-                      exists
-    -R, --removeDate  Removes dates from filenames
-    -L, --lower       Transforms the filename to all lower case characters
-    -D, --useDashes   Convert spaces to dashes
-    -S, --stopwords   Remove common stop words
-    -e, --noErrorLog  Do not print log level error and fatal to a log (default 'true')
-    -T, --test        Takes a string of input and shows the result that the script would produce
-    -n, --dryrun      Non-destructive run. Will report on changes that would have
                       been made.
-    -q, --quiet       Quiet (no output to terminal)
-    -l, --log         Print log to file
-    -v, --verbose     Output more information.
+                      exists
+    -D, --useDashes   Convert spaces to dashes
+    -e, --noErrorLog  Default behavior is to print log level error and fatal to a log. Use
+                      this flag to generate no log files at all.
     -h, --help        Display this help and exit
+    -l, --log         Print log to file
+    -L, --lower       Transforms the filename to all lower case characters
+    -n, --dryrun      Non-destructive run. Will report on changes that would have
+    -q, --quiet       Quiet (no output to terminal)
+    -R, --removeDate  Removes dates from filenames
+    -S, --stopwords   Remove common stop words
+    -T, --test        Takes a string of input and shows the result that the script would produce
+    -v, --verbose     Output more information.
     --NoFileTypeError Suppress error logging of incompatible file types (directories, etc.)
     --nonInteractive  Assumes the script is being called from another script. The only
                       output in this mode is an exit code and the cleaned name of the file
@@ -324,16 +325,16 @@ _parseOptions_() {
 # Initialize and run the script
 trap '_trapCleanup_ $LINENO $BASH_LINENO "${BASH_COMMAND} while working on ${args[*]}" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
   EXIT INT TERM SIGINT SIGQUIT
-set -o errtrace                           # Trap errors in subshells and functions
-set -o errexit                            # Exit on error. Append '||true' if you expect an error
-set -o pipefail                           # Use last non-zero exit code in a pipeline
-#shopt -s nullglob globstar               # Make `for f in *.txt` work when `*.txt` matches zero files
-IFS=$' \n\t'                              # Set IFS to preferred implementation
-# set -o xtrace                           # Run in debug mode
-set -o nounset                            # Disallow expansion of unset variables
-[[ $# -eq 0 ]] && _parseOptions_ "-h"   # Force arguments when invoking the script
-# _makeTempDir_ "$(basename "$0")"        # Create a temp directory '$tmpDir'
-# _acquireScriptLock_                     # Acquire script lock
-_parseOptions_ "$@"                       # Parse arguments passed to script
-_mainScript_                              # Run script unless in 'source-only' mode
-_safeExit_                                # Exit cleanly
+set -o errtrace                       # Trap errors in subshells and functions
+set -o errexit                        # Exit on error. Append '||true' if you expect an error
+set -o pipefail                       # Use last non-zero exit code in a pipeline
+#shopt -s nullglob globstar           # Make `for f in *.txt` work when `*.txt` matches zero files
+IFS=$' \n\t'                          # Set IFS to preferred implementation
+# set -o xtrace                       # Run in debug mode
+set -o nounset                        # Disallow expansion of unset variables
+[[ $# -eq 0 ]] && _parseOptions_ "-h" # Force arguments when invoking the script
+# _makeTempDir_ "$(basename "$0")"    # Create a temp directory '$tmpDir'
+# _acquireScriptLock_                 # Acquire script lock
+_parseOptions_ "$@"                   # Parse arguments passed to script
+_mainScript_                          # Run script
+_safeExit_                            # Exit cleanly

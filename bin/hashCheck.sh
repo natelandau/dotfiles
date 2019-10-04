@@ -38,8 +38,8 @@ _mainScript_() {
           info "referring to: $f"
 
           notice "Generating and comparing sha256 hash of $f"
-          [ ! -e "$f" ] &&
-          fatal "could not find file: $f"
+          [ ! -e "$f" ] \
+            && fatal "could not find file: $f"
 
           n=$(openssl dgst -sha256 "$f" | cut -d' ' -f2)
 
@@ -68,18 +68,19 @@ _mainScript_() {
       1)
         hashType="md5"
         command="openssl md5"
-      ;;
+        ;;
       2)
         hashType="SHA-1"
         command="openssl sha1"
-      ;;
+        ;;
       3)
         hashType="SHA-256"
         command="openssl dgst -sha256"
-      ;;
+        ;;
       *)
         notice "Could not understand input: '$n'"
         _safeExit_ 0
+        ;;
     esac
 
     read -r -p "Paste the $hashType hash: " h
@@ -98,19 +99,19 @@ _mainScript_() {
         _safeExit_ 1
       }
 
-      ff="$(_realpath_ "$f")"
+    ff="$(_realpath_ "$f")"
 
-      hh="$(eval "${command}" "$ff" | cut -d' ' -f2)"
+    hh="$(eval "${command}" "$ff" | cut -d' ' -f2)"
 
-              if [[ "$h" == "$hh" ]]; then
-            success "The two $hashType hashes match"
-            _safeExit_ 0
-          else
-            warning "The two $hashType hashes do not match"
-            _safeExit_ 1
-          fi
+    if [[ "$h" == "$hh" ]]; then
+      success "The two $hashType hashes match"
+      _safeExit_ 0
+    else
+      warning "The two $hashType hashes do not match"
+      _safeExit_ 1
+    fi
   }
-_manualHashCheck_
+  _manualHashCheck_
 
 } # end _mainScript_
 
@@ -123,11 +124,11 @@ _sourceHelperFiles_() {
   )
   for sourceFile in "${filesToSource[@]}"; do
     [ ! -f "$sourceFile" ] \
-    && {
-      echo "error: Can not find sourcefile '$sourceFile'."
-      echo "exiting..."
-      exit 1
-    }
+      && {
+        echo "error: Can not find sourcefile '$sourceFile'."
+        echo "exiting..."
+        exit 1
+      }
     source "$sourceFile"
   done
 }
@@ -166,13 +167,13 @@ _usage_() {
 
   ${bold}Option Flags:${reset}
 
-  -L, --noErrorLog  Default behavior is to print log level error and fatal to a log. Use
-  this flag to generate no log files at all.
+  -h, --help        Display this help and exit
   -l, --log         Print log to file with all log levels
+  -L, --noErrorLog  Default behavior is to print log level error and fatal to a log. Use
+                    this flag to generate no log files at all.
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
   -v, --verbose     Output more information. (Items echoed to 'verbose')
-  -h, --help        Display this help and exit
   --force       Skip all user interaction.  Implied 'Yes' to all actions.
 EOF
 }
@@ -237,16 +238,16 @@ _parseOptions_() {
 # Initialize and run the script
 trap '_trapCleanup_ $LINENO $BASH_LINENO "$BASH_COMMAND" "${FUNCNAME[*]}" "$0" "${BASH_SOURCE[0]}"' \
   EXIT INT TERM SIGINT SIGQUIT
-set -o errtrace                           # Trap errors in subshells and functions
-set -o errexit                            # Exit on error. Append '||true' if you expect an error
-set -o pipefail                           # Use last non-zero exit code in a pipeline
-shopt -s nullglob globstar                # Make `for f in *.txt` work when `*.txt` matches zero files
-IFS=$' \n\t'                              # Set IFS to preferred implementation
-# set -o xtrace                           # Run in debug mode
-set -o nounset                            # Disallow expansion of unset variables
-# [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Force arguments when invoking the script
-# _makeTempDir_ "$(basename "$0")"        # Create a temp directory '$tmpDir'
-# _acquireScriptLock_                     # Acquire script lock
-_parseOptions_ "$@"                       # Parse arguments passed to script
-_mainScript_                              # Run script unless in 'source-only' mode
-_safeExit_                                # Exit cleanly
+set -o errtrace                         # Trap errors in subshells and functions
+set -o errexit                          # Exit on error. Append '||true' if you expect an error
+set -o pipefail                         # Use last non-zero exit code in a pipeline
+#shopt -s nullglob globstar             # Make `for f in *.txt` work when `*.txt` matches zero files
+IFS=$' \n\t'                            # Set IFS to preferred implementation
+# set -o xtrace                         # Run in debug mode
+set -o nounset                          # Disallow expansion of unset variables
+# [[ $# -eq 0 ]] && _parseOptions_ "-h" # Force arguments when invoking the script
+# _makeTempDir_ "$(basename "$0")"      # Create a temp directory '$tmpDir'
+# _acquireScriptLock_                   # Acquire script lock
+_parseOptions_ "$@"                     # Parse arguments passed to script
+_mainScript_                            # Run script
+_safeExit_                              # Exit cleanly

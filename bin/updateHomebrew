@@ -89,13 +89,13 @@ _usage_() {
 
  ${bold}Option Flags:${reset}
 
-  -L, --noErrorLog  Don't print log level error and fatal to a log (default 'false')
+  -h, --help        Display this help and exit
   -l, --log         Print log to file
+  -L, --noErrorLog  Default behavior is to print log level error and fatal to a log. Use
+                    this flag to generate no log files at all.
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
   -v, --verbose     Output more information. (Items echoed to 'verbose')
-  -h, --help        Display this help and exit
-      --version     Output version information and exit
 EOF
 }
 
@@ -169,5 +169,5 @@ set -o nounset                            # Disallow expansion of unset variable
 # [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Uncomment to force arguments when invoking the script
 #_makeTempDir_ "$(basename "$0")"         # Uncomment to create a temp directory '$tmpDir'
 _acquireScriptLock_                       # Uncomment to acquire script lock
-_mainScript_                              # Run script unless in 'source-only' mode
+_mainScript_                              # Run script
 _safeExit_                                # Exit cleanly
