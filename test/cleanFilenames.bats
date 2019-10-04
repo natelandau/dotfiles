@@ -84,6 +84,13 @@ helper() {
   assert_output --partial "'testdir' is not a file"
 }
 
+@test "Fail - not a file - suppress error" {
+  mkdir "testdir"
+  run "$s" --NoFileTypeError "testdir"
+  assert_failure
+  refute_output --partial "'testdir' is not a file"
+}
+
 @test "Fail - dotfiles" {
   touch ".dotfile.txt"
   run "$s" ".dotfile.txt"
@@ -96,10 +103,10 @@ helper() {
   touch "file.download"
   run "$s" "file.dmg"
   assert_failure
-  assert_output --partial "'.dmg' is not a supported extension"
+  assert_output --partial "'.dmg' files are not supported"
   run "$s" "file.download"
   assert_failure
-  assert_output --partial "'.download' is not a supported extension"
+  assert_output --partial "'.download' files are not supported"
 
 }
 
@@ -108,7 +115,7 @@ helper() {
   touch "file.txt"
   run "$s" "file.dmg" "file.txt"
   assert_success
-  assert_output --partial "[  error] '.dmg' is not a supported extension"
+  assert_output --partial "[  error] '.dmg' files are not supported"
   assert_output --partial "[success] file.txt -->"
 }
 
@@ -145,20 +152,7 @@ helper() {
   assert_success
   assert_line --index 1 --partial "[ notice] Running in test mode."
   assert_line --index 3 --partial "Created test file"
-  assert_line --index 17 --regexp "newfile\.txt --> [0-9]{4}-[0-9]{2}-[0-9]{2} newfile\.txt"
-}
-
-@test "always print filename (-P)" {
-  run "$s" -P --test "newfile.txt"
-  assert_success
-  assert_line --index 0 --partial "[   info] Working on file"
-  assert_line --index 1 --partial "[ notice] Running in test mode."
-}
-
-@test "always print filename (--printFile)" {
-  run "$s" --printFile --test "newfile.txt"
-  assert_success
-  assert_line --index 0 --partial "[   info] Working on file"
+  assert_line --index 16 --regexp "newfile\.txt --> [0-9]{4}-[0-9]{2}-[0-9]{2} newfile\.txt"
 }
 
 @test "See filename in verbose mode" {
