@@ -6,7 +6,7 @@ trap _safeExit_ "1" EXIT INT TERM
 
 _setPATH_() {
   # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
-  PATHS=("/usr/local/bin" "$HOME/bin")
+  PATHS=("/usr/local/bin" "${HOME}/bin")
   for newPath in "${PATHS[@]}"; do
     if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)"; then
       PATH="$newPath:$PATH"
@@ -86,29 +86,15 @@ if command -v shellcheck >/dev/null; then
   done
 fi
 
-# Test bash scripts with BATS when they change
 _BATS_() {
   local filename file
 
-  # Test files in bin/
-  for file in $(git diff --cached --name-only | grep -E 'bin/'); do
+  for file in $(git diff --cached --name-only | grep -E '\.(sh|bash|bats|zsh|config)$'); do
     filename="$(basename $file)"
     filename="${filename%.*}"
     [ -f "${GITROOT}/test/${filename}.bats" ] \
       && {
         echo -e "\n## Running ${filename}.bats ##"
-        _execute_ "${GITROOT}/test/${filename}.bats -t"
-      }
-    unset filename
-  done
-
-  # Test files in bootstrap/
-  for file in $(git diff --cached --name-only | grep -E 'bootstrap/.*\.sh$'); do
-    filename="$(basename $file)"
-    filename="${filename%.*}"
-    [ -f "${GITROOT}/test/${filename}.bats" ] \
-      && {
-        echo -e "\n## Running: ${filename}.bats ##"
         _execute_ "${GITROOT}/test/${filename}.bats -t"
       }
     unset filename
@@ -130,7 +116,8 @@ _BATS_() {
         done
     fi
   fi
+
 }
 if command -v bats &>/dev/null; then _BATS_; fi
 
-_safeExit_
+_safeExit_ 0
