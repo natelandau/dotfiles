@@ -60,7 +60,7 @@ helper() {
 }
 
 @test "Fail - no file specified" {
-  run "$s" -vT
+  run "$s" -veT
   assert_failure
   assert_output --partial "[  error] No file specified"
 }
@@ -72,28 +72,28 @@ helper() {
 }
 
 @test "Fail - nonexistant file" {
-  run "$s" "nonexistant-file.txt"
+  run "$s" -e "nonexistant-file.txt"
   assert_failure
   assert_output --partial "No such file"
 }
 
 @test "Fail - not a file" {
   mkdir "testdir"
-  run "$s" "testdir"
+  run "$s" -e "testdir"
   assert_failure
   assert_output --partial "'testdir' is not a file"
 }
 
 @test "Fail - not a file - suppress error" {
   mkdir "testdir"
-  run "$s" --NoFileTypeError "testdir"
+  run "$s" -e --NoFileTypeError "testdir"
   assert_failure
   refute_output --partial "'testdir' is not a file"
 }
 
 @test "Fail - dotfiles" {
   touch ".dotfile.txt"
-  run "$s" ".dotfile.txt"
+  run "$s" -e ".dotfile.txt"
   assert_failure
   assert_output --partial "is a dotfile"
 }
@@ -101,10 +101,10 @@ helper() {
 @test "Fail - user specified file extensions" {
   touch "file.dmg"
   touch "file.download"
-  run "$s" "file.dmg"
+  run "$s" -e "file.dmg"
   assert_failure
   assert_output --partial "'.dmg' files are not supported"
-  run "$s" "file.download"
+  run "$s" -e "file.download"
   assert_failure
   assert_output --partial "'.download' files are not supported"
 
@@ -113,7 +113,7 @@ helper() {
 @test "Fail - continue parsing files if one fails" {
   touch "file.dmg"
   touch "file.txt"
-  run "$s" "file.dmg" "file.txt"
+  run "$s" -e "file.dmg" "file.txt"
   assert_success
   assert_output --partial "[  error] '.dmg' files are not supported"
   assert_output --partial "[success] file.txt -->"

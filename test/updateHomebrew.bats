@@ -49,7 +49,7 @@ teardown() {
 
 @test "Fail - bad args" {
   [[ "$OSTYPE" != "darwin"* ]] && skip "not MacOS"
-  run "$s" -K
+  run "$s" -LK
   assert_failure
   assert_output --partial "[  fatal] invalid option: '-K'"
 }

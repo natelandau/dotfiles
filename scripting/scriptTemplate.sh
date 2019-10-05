@@ -57,13 +57,13 @@ _usage_() {
 
       $ $(basename "$0") --password 'PASSWORD'
 
+    -h, --help        Display this help and exit
+    -l, --log         Print log to file with all log levels
     -L, --noErrorLog  Default behavior is to print log level error and fatal to a log. Use
                       this flag to generate no log files at all.
-    -l, --log         Print log to file with all log levels
     -n, --dryrun      Non-destructive. Makes no permanent changes.
     -q, --quiet       Quiet (no output)
     -v, --verbose     Output more information. (Items echoed to 'verbose')
-    -h, --help        Display this help and exit
     --force           Skip all user interaction.  Implied 'Yes' to all actions.
 EOF
 }
@@ -151,5 +151,5 @@ set -o nounset                            # Disallow expansion of unset variable
 _parseOptions_ "$@"                       # Parse arguments passed to script
 # _makeTempDir_ "$(basename "$0")"        # Create a temp directory '$tmpDir'
 # _acquireScriptLock_                     # Acquire script lock
-_mainScript_                              # Run script unless in 'source-only' mode
+_mainScript_                              # Run script
 _safeExit_                                # Exit cleanly
