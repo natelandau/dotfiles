@@ -44,7 +44,7 @@ _parseDate_() {
   # DESC:   Takes a string as input and attempts to find a date within it and parse
   #         the months, days, year
   # ARGS:   $1 (required) - A string
-  # OUTS:   Returns 1 if no date found
+  # OUTS:   Returns error if no date found
   #         $_parseDate_found      - The date found in the string
   #         $_parseDate_year       - The year
   #         $_parseDate_month      - The number month
@@ -354,7 +354,12 @@ _formatDate_() {
   # NOTE:   Defaults to YYYY-MM-DD or $(date +%F)
 
   [[ $# -eq 0 ]] && {
-    error 'Missing required argument to _formatDate_()!'
+    error 'Missing required argument to _formatDate_()'
+    return 1
+  }
+
+  command -v gdate &>/dev/null || {
+    error 'Missing gnu date. Check your path or install coreutils via homebrew.'
     return 1
   }
 
@@ -362,5 +367,5 @@ _formatDate_() {
   local format="${2:-%F}"
   format="${format//+/}"
 
-  date -d "$d" "+${format}"
+  gdate -d "$d" "+${format}"
 }
