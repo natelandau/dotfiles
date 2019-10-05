@@ -8,21 +8,6 @@ load 'helpers/bats-assert/load'
 s="${HOME}/dotfiles/bootstrap/config-macOS.sh"
 base="$(basename "$s")"
 
-setup() {
-
-  testdir="$(temp_make)"
-  curPath="$PWD"
-
-  BATSLIB_FILE_PATH_REM="#${TEST_TEMP_DIR}"
-  BATSLIB_FILE_PATH_ADD='<temp>'
-
-  cd "${testdir}"
-}
-
-teardown() {
-  cd "$curPath"
-  temp_del "${testdir}"
-}
 
 @test "Sanity..." {
   run true

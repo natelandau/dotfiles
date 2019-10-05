@@ -15,30 +15,14 @@ s="${HOME}/dotfiles/scripting/helpers/textProcessing.bash"
   && { source "$s"; trap - EXIT INT TERM ; } \
   || { echo "Can not find script to test" ; exit 1 ; }
 
-# Set Flags
-quiet=false;              printLog=false;             verbose=false;
-force=false;              strict=false;               dryrun=false;
-debug=false;              sourceOnly=false;           args=();
-
-setup() {
-
-  # Set arrays
-  A=(one two three 1 2 3)
-  B=(1 2 3 4 5 6)
-
-  testdir="$(temp_make)"
-  curPath="$PWD"
-
-  BATSLIB_FILE_PATH_REM="#${TEST_TEMP_DIR}"
-  BATSLIB_FILE_PATH_ADD='<temp>'
-
-  cd "${testdir}"
-}
-
-teardown() {
-  cd $curPath
-  temp_del "${testdir}"
-}
+# Set initial flags
+quiet=false
+printLog=false
+logErrors=false
+verbose=false
+force=false
+dryrun=false
+declare -a args=()
 
 @test "Sanity..." {
   run true
@@ -46,8 +30,6 @@ teardown() {
   assert_success
   assert_output ""
 }
-
-########### BEGIN TESTS ##########
 
 @test "_cleanString_: fail" {
   run _cleanString_

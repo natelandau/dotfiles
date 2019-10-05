@@ -16,27 +16,15 @@ s="${HOME}/dotfiles/scripting/helpers/dates.bash"
   && { source "$s"; trap - EXIT INT TERM ; } \
   || { echo "Can not find script to test" ; exit 1 ; }
 
-# Set Flags
-quiet=false;              printLog=false;             verbose=false;
-force=false;              strict=false;               dryrun=false;
-debug=false;              sourceOnly=false;           args=();
+# Set initial flags
+quiet=false
+printLog=false
+logErrors=false
+verbose=false
+force=false
+dryrun=false
+declare -a args=()
 automated_test_in_progress=true
-
-setup() {
-
-  testdir="$(temp_make)"
-  curPath="$PWD"
-
-  BATSLIB_FILE_PATH_REM="#${TEST_TEMP_DIR}"
-  BATSLIB_FILE_PATH_ADD='<temp>'
-
-  cd "${testdir}"
-}
-
-teardown() {
-  cd $curPath
-  temp_del "${testdir}"
-}
 
 @test "Sanity..." {
   run true

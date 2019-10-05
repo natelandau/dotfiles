@@ -22,10 +22,14 @@ source "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
   unencrypted="${BATS_TEST_DIRNAME}/fixtures/test.md"
   encrypted="${BATS_TEST_DIRNAME}/fixtures/test.md.enc"
 
-# Set Flags
-  quiet=false;              printLog=false;             verbose=false;
-  force=false;              strict=false;               dryrun=false;
-  debug=false;              sourceOnly=false;           logErrors=false;  args=();
+# Set initial flags
+quiet=false
+printLog=false
+logErrors=false
+verbose=false
+force=false
+dryrun=false
+declare -a args=()
 
 setup() {
 
@@ -39,7 +43,7 @@ setup() {
 }
 
 teardown() {
-  cd $curPath
+  cd "${curPath}"
   temp_del "${testdir}"
 }
 

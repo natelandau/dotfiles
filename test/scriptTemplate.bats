@@ -16,7 +16,7 @@ _setPATH_() {
 }
 _setPATH_
 
-if ! test -f ${HOME}/dotfiles/scripting/scriptTemplate.sh; then
+if ! test -f "${HOME}/dotfiles/scripting/scriptTemplate.sh"; then
     printf "No executable 'scriptTemplate' found.\n" >&2
     printf "Can not run tests.\n" >&2
     exit 1
@@ -25,23 +25,8 @@ else
     base="$(basename "$s")"
 fi
 
-setup() {
-  testdir="$(temp_make)"
-  curPath="$PWD"
-
-  BATSLIB_FILE_PATH_REM="#${TEST_TEMP_DIR}"
-  BATSLIB_FILE_PATH_ADD='<temp>'
-
-  cd "${testdir}"
-}
-
-teardown() {
-  cd "$curPath"
-  temp_del "${testdir}"
-}
 
 ######## RUN TESTS ##########
-
 @test "sanity" {
   run true
   assert_success

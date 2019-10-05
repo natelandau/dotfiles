@@ -6,35 +6,24 @@ load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
 s="${HOME}/dotfiles/scripting/helpers/services.bash"
-base="$(basename $s)"
+base="$(basename "$s")"
 
 [ -f "$s" ] \
   && { source "$s"; trap - EXIT INT TERM ; } \
   || { echo "Can not find script to test" ; exit 1 ; }
 
-quiet=false;              printLog=false;             verbose=false;
-force=false;              dryrun=false;
-debug=false;              sourceOnly=false;           args=();
+# Set initial flags
+quiet=false
+printLog=false
+logErrors=false
+verbose=false
+force=false
+dryrun=false
+declare -a args=()
 
 ping -t 2 -c 1 1.1.1.1 &>/dev/null \
   && noint=false \
   || noint=true
-
-setup() {
-
-  testdir="$(temp_make)"
-  curPath="$PWD"
-
-  BATSLIB_FILE_PATH_REM="#${TEST_TEMP_DIR}"
-  BATSLIB_FILE_PATH_ADD='<temp>'
-
-  cd "${testdir}"
-}
-
-teardown() {
-  cd $curPath
-  temp_del "${testdir}"
-}
 
 @test "Sanity..." {
   run true

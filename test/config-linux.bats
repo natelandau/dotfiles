@@ -1,30 +1,12 @@
 #!/usr/bin/env bats
 #shellcheck disable
-#
+
 load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
 s="${HOME}/dotfiles/bootstrap/config-linux.sh"
-base="$(basename $s)"
-
-sourceDIR="${HOME}/dotfiles/scripting/functions"
-
-setup() {
-
-  testdir="$(temp_make)"
-  curPath="$PWD"
-
-  BATSLIB_FILE_PATH_REM="#${TEST_TEMP_DIR}"
-  BATSLIB_FILE_PATH_ADD='<temp>'
-
-  cd "${testdir}"
-}
-
-teardown() {
-  cd $curPath
-  temp_del "${testdir}"
-}
+base="$(basename "$s")"
 
 @test "Sanity..." {
   run true

@@ -23,8 +23,8 @@ if ! command -v trash &>/dev/null; then
 fi
 
 s="$HOME/bin/trash"
-base="$(basename $s)"
-user=$(whoami)
+base="$(basename "$s")"
+user="$(whoami)"
 trashFolder="/Users/${user}/.Trash"
 
 setup() {
@@ -38,12 +38,12 @@ setup() {
 }
 
 teardown() {
-  cd $curPath
+  cd "${curPath}"
   temp_del "${testdir}"
 
   if [ -n "${file}" ] && [ -e "${trashFolder}/${file}" ]; then
     file="$(basename "${file}")"
-    rm -rf "${trashFolder}/${file}"
+    command rm -rf "${trashFolder}/${file}"
     unset file
   fi
 }

@@ -25,21 +25,6 @@ else
     base="$(basename "$s")"
 fi
 
-setup() {
-  testdir="$(temp_make)"
-  curPath="$PWD"
-
-  BATSLIB_FILE_PATH_REM="#${TEST_TEMP_DIR}"
-  BATSLIB_FILE_PATH_ADD='<temp>'
-
-  cd "${testdir}"
-}
-
-teardown() {
-  cd $curPath
-  temp_del "${testdir}"
-}
-
 @test "sanity" {
   [[ "$OSTYPE" != "darwin"* ]] && skip "not MacOS"
   run true

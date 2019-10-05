@@ -12,15 +12,19 @@ base="$(basename $s)"
   && { source "$s"; trap - EXIT INT TERM ; } \
   || { echo "Can not find script to test" ; exit 1 ; }
 
-# Set Flags
-quiet=false;              printLog=false;             logErrors=true;   verbose=false;
-force=false;              strict=false;               dryrun=false;
-debug=false;              sourceOnly=false;           logErrors=false;   args=();
+# Set initial flags
+quiet=false
+printLog=false
+logErrors=false
+verbose=false
+force=false
+dryrun=false
+declare -a args=()
 
 setup() {
 
   testdir="$(temp_make)"
-  curPath="$PWD"
+  curPath="${PWD}"
 
   BATSLIB_FILE_PATH_REM="#${TEST_TEMP_DIR}"
   BATSLIB_FILE_PATH_ADD='<temp>'
@@ -29,7 +33,7 @@ setup() {
 }
 
 teardown() {
-  cd $curPath
+  cd "${curPath}"
   temp_del "${testdir}"
 }
 

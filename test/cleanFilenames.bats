@@ -7,7 +7,7 @@ load 'helpers/bats-assert/load'
 
 _setPATH_() {
   # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
-  PATHS=(/usr/local/bin $HOME/bin);
+  PATHS=(/usr/local/bin ${HOME}/bin);
   for newPath in "${PATHS[@]}"; do
     if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
       PATH="$newPath:$PATH"
