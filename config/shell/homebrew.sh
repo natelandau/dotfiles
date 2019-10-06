@@ -6,7 +6,7 @@ if command -v brew &>/dev/null; then
   if [[ -s $(brew --prefix)/etc/profile.d/autojump.sh ]]; then
     . "$(brew --prefix)/etc/profile.d/autojump.sh"
   fi
-  if [[ $currentShell == "bash" ]] ; then
+  if [[ $currentShell == "bash" ]]; then
     if [ -f "$(brew --prefix)/share/bash-completion/bash_completion" ]; then
       . "$(brew --prefix)/share/bash-completion/bash_completion"
     fi
@@ -23,8 +23,8 @@ if command -v brew &>/dev/null; then
 
   if [ -d "$(brew --cellar)/coreutils" ]; then
     # Use CoreUtils over native commands
-    PATH="$(brew --prefix coreutils)/libexec/gnubin:$PATH"
-    MANPATH="$(brew --prefix coreutils)/libexec/gnuman:$MANPATH"
+    PATH="$(brew --prefix coreutils)/libexec/gnubin:${PATH}"
+    MANPATH="$(brew --prefix coreutils)/libexec/gnuman:${MANPATH}"
   fi
 
   # /Applications is now the default but leaving this for posterity

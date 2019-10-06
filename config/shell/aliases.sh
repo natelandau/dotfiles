@@ -12,7 +12,6 @@ alias .5='cd ../../../../../'       # Go back 5 directory levels
 alias .6='cd ../../../../../../'    # Go back 6 directory levelss
 alias ~="cd ~"                      # ~:      Go Home
 alias path='echo -e ${PATH//:/\\n}' # path:     Echo all executable Paths
-alias showOptions='shopt'           # Show_options: display bash options settings
 alias fix_stty='stty sane'          # fix_stty:   Restore terminal settings when screwed up
 alias kill='kill -9'                # kill:     Preferred 'kill' implementation
 alias ax='chmod a+x'                # ax:     Make a file executable
@@ -22,22 +21,29 @@ alias rmd='rm -rf'
 alias shfmt="shfmt -ci -bn -i 2" # preferred shellformat implementation
 
 # Prefer `bat` over `cat`
-[[ "$(command -v bat)" ]] && alias cat="bat"
+[[ "$(command -v bat)" ]] \
+  && alias cat="bat"
 
 # Prefer `prettyping` over `ping`
-[[ "$(command -v prettyping)" ]] && alias ping="prettyping --nolegend"
+[[ "$(command -v prettyping)" ]] \
+  && alias ping="prettyping --nolegend"
 
 # Prefer we like TLDR
-[[ "$(command -v tldr)" ]] && alias help="tldr"
+[[ "$(command -v tldr)" ]] \
+  && alias help="tldr"
 
 # Prefer `htop` over `top`
-[[ "$(command -v htop)" ]] && alias top="htop"
+[[ "$(command -v htop)" ]] \
+  && alias top="htop"
 
-[[ "$(command -v newscript)" ]] && alias ns="newscript"
+[[ "$(command -v newscript)" ]] \
+  && alias ns="newscript"
 
 # Custom commands
-[[ $currentShell == "bash" ]] && alias sourcea='source ${HOME}/.bash_profile'
-[[ $currentShell == "zsh" ]] && alias sourcea='source ${HOME}/.zshrc'
+[[ $currentShell == "bash" ]] \
+  && alias sourcea='source ${HOME}/.bash_profile'
+[[ $currentShell == "zsh" ]] \
+  && alias sourcea='source ${HOME}/.zshrc'
 
 mcd() {
   mkdir -pv "$1"

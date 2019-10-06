@@ -25,14 +25,14 @@ fi
 zmodload -i zsh/complist
 
 # Set Options
-setopt auto_cd # cd by typing directory name if it's not a command
-setopt correct_all # autocorrect commands
-setopt auto_list # automatically list choices on ambiguous completion
-setopt auto_menu # automatically use menu completion
+setopt auto_cd       # cd by typing directory name if it's not a command
+setopt correct_all   # autocorrect commands
+setopt auto_list     # automatically list choices on ambiguous completion
+setopt auto_menu     # automatically use menu completion
 setopt always_to_end # move cursor to end if word had one match
 
 # Don’t clear the screen after quitting a manual page.
-export MANPAGER='less -X';
+export MANPAGER='less -X'
 
 ## SOURCE ZSH CONFIGS ###
 # Locations containing files *.bash to be sourced to your environment
@@ -51,7 +51,7 @@ for configFileLocation in "${configFileLocations[@]}"; do
     done < <(find "${configFileLocation}" \
       -type f \
       -name '*.zsh' \
-      -o -name '*.config' \
+      -o -name '*.sh' \
       -maxdepth 1 | sort)
   fi
 done
@@ -59,6 +59,6 @@ done
 # Source History substring search if available
 if [ -f ${HOME}/Library/Caches/antibody/https-COLON--SLASH--SLASH-github.com-SLASH-zsh-users-SLASH-zsh-history-substring-search/zsh-history-substring-search.zsh ]; then
   source ${HOME}/Library/Caches/antibody/https-COLON--SLASH--SLASH-github.com-SLASH-zsh-users-SLASH-zsh-history-substring-search/zsh-history-substring-search.zsh
-  fi
+fi
 
-  unset currentShell
+unset currentShell

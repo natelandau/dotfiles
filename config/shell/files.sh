@@ -13,7 +13,7 @@ md5Check() {
   Compares an md5 hash to the md5 hash of a file
 
   Usage: ${FUNCNAME[0]} [option] <md5> <filename>
-  
+
   options:
     -h  show this message and exit
 End-Of-Usage
@@ -33,7 +33,10 @@ End-Of-Usage
   fi
 
   [ ! -e "${file}" ] \
-    && { echo "Can not find ${file}"; return 1; }
+    && {
+      echo "Can not find ${file}"
+      return 1
+    }
 
   # Get md5 has of file
   local filemd5="$(md5sum "${file}" | awk '{ print $1 }')"

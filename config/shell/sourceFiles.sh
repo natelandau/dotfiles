@@ -19,9 +19,6 @@ _sourceFiles_() {
   verbose=false
   dryrun=false
   force=false
-  sourceOnly=false
-  debug=false
-  strict=false
 
 }
 _sourceFiles_

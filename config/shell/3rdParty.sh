@@ -1,12 +1,3 @@
-# Enable GO
-if command -v go &>/dev/null; then
-  GOPATH=${HOME}/go
-  export GOPATH
-  GOBIN=${GOPATH}/bin
-  export GOBIN
-  export PATH="$PATH:${GOBIN}"
-fi
-
 # Make 'less' more with lesspipe
 [[ "$(command -v lesspipe.sh)" ]] && eval "$(lesspipe.sh)"
 
@@ -14,17 +5,17 @@ fi
 [[ -s "${HOME}/.rvm/scripts/rvm" ]] && source "${HOME}/.rvm/scripts/rvm"
 
 # ASDF Package Manager
-  [[ -s "$HOME/.asdf/asdf.sh" ]] && source "$HOME/.asdf/asdf.sh"
-  [[ -s "$HOME/.asdf/completions/asdf.bash" ]] && source "$HOME/.asdf/completions/asdf.bash"
+[[ -s "$HOME/.asdf/asdf.sh" ]] && source "$HOME/.asdf/asdf.sh"
+[[ -s "$HOME/.asdf/completions/asdf.bash" ]] && source "$HOME/.asdf/completions/asdf.bash"
 
 #nvm (node version manager)
 if [ -e "${HOME}/.nvm" ]; then
   export NVM_DIR="${HOME}/.nvm"
   [ -s "${NVM_DIR}/nvm.sh" ] && source "${NVM_DIR}/nvm.sh"
-# suorce completions with bash
-if [[ $currentShell == "bash" ]]; then
-  [ -s "${NVM_DIR}/bash_completion" ] && source "${NVM_DIR}/bash_completion"
-fi
+  # suorce completions with bash
+  if [[ $currentShell == "bash" ]]; then
+    [ -s "${NVM_DIR}/bash_completion" ] && source "${NVM_DIR}/bash_completion"
+  fi
   nvm use 8.6.0
 fi
 
@@ -41,23 +32,22 @@ fi
 # Path for Ruby (installed by Homebrew)
 #export PATH="$PATH:/usr/local/opt/ruby/bin"
 
-[[ "$(command -v thefuck)" ]] && eval "$(thefuck --alias)"
+[[ "$(command -v thefuck)" ]] \
+  && eval "$(thefuck --alias)"
 
 # [[ "$(command -v archey)" ]] && archey
 
-[[ "$(command -v docker-machine)" ]] && eval "$(docker-machine env default)"
+[[ "$(command -v docker-machine)" ]] \
+  && eval "$(docker-machine env default)"
 
 # Add python bin to PATH
 PATH="/Users/nlandau/Library/Python/3.7/bin:${PATH}"
 
-# Use a custom lynx stylesheet
-alias lynx='lynx -lss=~/dotfiles/config/dotfiles/lynx.lss'
-
 # Git-Friendly Auto Completions
 # https://github.com/jamiew/git-friendly
-if [[ $currentShell == "bash" ]] ; then
-  if type __git_complete &> /dev/null; then
-    _branch () {
+if [[ $currentShell == "bash" ]]; then
+  if type __git_complete &>/dev/null; then
+    _branch() {
       delete="${words[1]}"
       if [ "$delete" == "-d" ] || [ "$delete" == "-D" ]; then
         _git_branch
@@ -68,7 +58,7 @@ if [[ $currentShell == "bash" ]] ; then
     __git_complete branch _branch
     __git_complete merge _git_merge
   fi
-elif [[ $currentShell == "zsh" ]] ; then
+elif [[ $currentShell == "zsh" ]]; then
   fpath=($(brew --prefix)/share/zsh/functions $fpath)
   autoload -Uz _git && _git
   compdef __git_branch_names branch

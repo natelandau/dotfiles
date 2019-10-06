@@ -4,7 +4,6 @@ if command -v less &>/dev/null; then
   alias more='less -RXcqeNF'
 fi
 
-
 escape() { echo "${@}" | sed 's/[]\.|$(){}?+*^]/\\&/g'; }
 
 domainSort() {

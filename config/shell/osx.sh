@@ -93,7 +93,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
       -e 'end if' \
       -e 'end tell')
 
-    echo "$finderPath"
+    echo "${finderPath}"
   }
 
   ## SPOTLIGHT MAINTENANCE ##

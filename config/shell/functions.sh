@@ -48,7 +48,7 @@ withBackoff() {
 }
 
 # type command differs between BASH and ZSH.
-if [[ $currentShell == "zsh" ]] ; then
+if [[ $currentShell == "zsh" ]]; then
   halp() {
     # A little helper for man/alias/function info
     # http://brettterpstra.com/2016/05/18/shell-tricks-halp-a-universal-help-tool/
@@ -60,10 +60,10 @@ if [[ $currentShell == "zsh" ]] ; then
 
     OPTIND=1
     while getopts "kh" opt; do
-      case $opt in
+      case ${opt} in
         k) apro=1 ;;
         h)
-          echo -e "$helpstring"
+          echo -e "${helpstring}"
           return
           ;;
         *) return 1 ;;
@@ -72,42 +72,42 @@ if [[ $currentShell == "zsh" ]] ; then
     shift $((OPTIND - 1))
 
     if [ $# -ne 1 ]; then
-      echo -e "$helpstring"
+      echo -e "${helpstring}"
       return 1
     fi
 
     local cmd
     local cmdtest
-    cmd="$1"
-    cmdtest=$(type -w $cmd | awk -F': ' '{print $2}')
+    cmd="${1}"
+    cmdtest="$(type -w "${cmd}" | awk -F': ' '{print $2}')"
 
-    if [ -z "$cmdtest" ]; then
+    if [ -z "${cmdtest}" ]; then
       echo -e "${YELLOW}'$cmd' is not a command${RESET}"
       if [[ "$apro" == 1 ]]; then
-        man -k "$cmd"
+        man -k "${cmd}"
       else
         return 1
       fi
     fi
 
-    if [[ $cmdtest == "command" ]]; then
+    if [[ "${cmdtest}" == "command" ]]; then
       location=$(command -v "$cmd")
       bindir="${HOME}/bin/${cmd}"
       if [[ "${location}" == "${bindir}" ]]; then
         echo -e "${YELLOW}${cmd} is a custom script:  ${RESET}\n"
         $cmd -h
       else
-        man "$cmd"
+        man "${cmd}"
       fi
-    elif [[ $cmdtest == "alias" ]]; then
+    elif [[ "${cmdtest}" == "alias" ]]; then
       echo -ne "${YELLOW}${cmd} is an alias:  ${RESET}"
       alias "${cmd}" | sed -E "s/alias $cmd='(.*)'/\1/"
-    elif [[ $cmdtest == "builtin" ]]; then
+    elif [[ "${cmdtest}" == "builtin" ]]; then
       echo -ne "${YELLOW}${cmd} is a builtin command:  ${RESET}"
-      man $cmd
-    elif [[ $cmdtest == "function" ]]; then
+      man "${cmd}"
+    elif [[ "${cmdtest}" == "function" ]]; then
       echo -e "${YELLOW}${cmd} is a function:  ${RESET}"
-      type -f "$cmd" | tail -n +1
+      type -f "${cmd}" | tail -n +1
     fi
   }
 else
@@ -122,10 +122,10 @@ else
 
     OPTIND=1
     while getopts "kh" opt; do
-      case $opt in
+      case ${opt} in
         k) apro=1 ;;
         h)
-          echo -e "$helpstring"
+          echo -e "${helpstring}"
           return
           ;;
         *) return 1 ;;
@@ -138,38 +138,36 @@ else
       return 1
     fi
 
-    local cmd
-    local cmdtest
-    cmd="$1"
-    cmdtest=$(type -t "${cmd}")
+    local cmd="$1"
+    local cmdtest=$(type -t "${cmd}")
 
-    if [ -z "$cmdtest" ]; then
+    if [ -z "${cmdtest}" ]; then
       echo -e "${YELLOW}'$cmd' is not a command${RESET}"
-      if [[ "$apro" == 1 ]]; then
-        man -k "$cmd"
+      if [[ "${apro}" == 1 ]]; then
+        man -k "${cmd}"
       else
         return 1
       fi
     fi
 
-    if [[ $cmdtest == "file" ]]; then
-      location=$(which "$cmd")
+    if [[ "${cmdtest}" == "file" ]]; then
+      location="$(command -v "${cmd}")"
       bindir="${HOME}/bin/${cmd}"
       if [[ "${location}" == "${bindir}" ]]; then
         echo -e "${YELLOW}${cmd} is a custom script:  ${RESET}\n"
-        $cmd -h
+        "${cmd}" -h
       else
-        man "$cmd"
+        man "${cmd}"
       fi
-    elif [[ $cmdtest == "alias" ]]; then
+    elif [[ "${cmdtest}" == "alias" ]]; then
       echo -ne "${YELLOW}${cmd} is an alias:  ${RESET}"
       alias "${cmd}" | sed -E "s/alias $cmd='(.*)'/\1/"
-    elif [[ $cmdtest == "builtin" ]]; then
+    elif [[ "${cmdtest}" == "builtin" ]]; then
       echo -ne "${YELLOW}${cmd} is a builtin command:  ${RESET}"
       man $cmd
-    elif [[ $cmdtest == "function" ]]; then
+    elif [[ "${cmdtest}" == "function" ]]; then
       echo -e "${YELLOW}${cmd} is a function:  ${RESET}"
-      type "$cmd" | tail -n +2
+      type "${cmd}" | tail -n +2
     fi
   }
 fi
@@ -181,7 +179,7 @@ explain() {
 
   if [ "$#" -eq 0 ]; then
     while read -r -p "Command: " cmd; do
-      curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$cmd"
+      curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=${cmd}"
     done
     echo "Bye!"
   else
