@@ -59,7 +59,7 @@ if [[ $currentShell == "bash" ]]; then
     __git_complete merge _git_merge
   fi
 elif [[ $currentShell == "zsh" ]]; then
-  fpath=($(brew --prefix)/share/zsh/functions $fpath)
+  fpath=($(brew --prefix)/share/zsh/functions "${fpath}")
   autoload -Uz _git && _git
   compdef __git_branch_names branch
 fi
