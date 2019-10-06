@@ -39,9 +39,9 @@ _ignoreSymlinks_() {
 
   # Work on files not yet staged
   for f in $(git status --porcelain | grep '^??' | sed 's/^?? //'); do
-    if test -L "$f"; then
-      if ! grep "$f" "$gitIgnore"; then
-        echo -e "\n$f" >>"$gitIgnore"
+    if test -L "${f}"; then
+      if ! grep "${f}" "${gitIgnore}"; then
+        echo -e "\n${f}" >>"${gitIgnore}"
       fi
       havesymlink=true
     fi
@@ -49,10 +49,10 @@ _ignoreSymlinks_() {
 
   # Work on files that were mistakenly staged
   for f in $(git status --porcelain | grep '^A' | sed 's/^A //'); do
-    if test -L "$f"; then
-      if ! grep "$f" "$gitIgnore"; then
-        git reset -q "$f"
-        echo -e "\n$f" >>"$gitIgnore"
+    if test -L "${f}"; then
+      if ! grep "${f}" "$gitIgnore"; then
+        git reset -q "${f}"
+        echo -e "\n${f}" >>"${gitIgnore}"
       fi
       havesymlink=true
     fi
@@ -73,15 +73,15 @@ _ignoreSymlinks_
 # Lint YAML files
 if command -v yaml-lint >/dev/null; then
   for file in $(git diff --cached --name-only | grep -E '\.(yaml|yml)$'); do
-    _execute_ "yaml-lint $file"
+    _execute_ "yaml-lint ${file}"
   done
 fi
 
 # Lint shell scripts
 if command -v shellcheck >/dev/null; then
   for file in $(git diff --cached --name-only | grep -E '\.(sh|bash)$'); do
-    if [ -f "$file" ]; then
-      _execute_ "shellcheck --exclude=2016,2059,2001,2002,2148,1090,2162,2005,2034,2154,2086,2155,2181,2164,2120,2119,1083,1117,2207 $file"
+    if [ -f "${file}" ]; then
+      _execute_ "shellcheck --exclude=2016,2059,2001,2002,2148,1090,2162,2005,2034,2154,2086,2155,2181,2164,2120,2119,1083,1117,2207 ${file}"
     fi
   done
 fi
@@ -90,7 +90,7 @@ _BATS_() {
   local filename file
 
   for file in $(git diff --cached --name-only | grep -E '\.(sh|bash|bats|zsh|config)$'); do
-    filename="$(basename $file)"
+    filename="$(basename "${file}")"
     filename="${filename%.*}"
     [ -f "${GITROOT}/test/${filename}.bats" ] \
       && {
@@ -109,11 +109,11 @@ _BATS_() {
         exit 1
       fi
     else
-        echo -e "\n## Running all bats tests ##"
-        for test in "${GITROOT}"/test/*.bats; do
-            echo -e "\n####### Running: $test #######"
-            _execute_ "${test} -t"
-        done
+      echo -e "\n## Running all bats tests ##"
+      for test in "${GITROOT}"/test/*.bats; do
+        echo -e "\n####### Running: $test #######"
+        _execute_ "${test} -t"
+      done
     fi
   fi
 
