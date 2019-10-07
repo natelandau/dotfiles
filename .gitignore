@@ -1,10 +1,11 @@
 # Ignore the backup directory if one is created
-dotfiles_backup/
-tmp/
-scratch/
+dotfiles_backup
+tmp
+scratch
 
 # Other ignores
 *.sublime-workspace
+test/runtests.sh
 
 # Ignore synology junk
 *@eaDir*

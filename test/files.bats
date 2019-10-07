@@ -5,22 +5,30 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-s="${HOME}/dotfiles/scripting/helpers/files.bash"
-base="$(basename $s)"
+gitRoot="$(git rev-parse --show-toplevel)"
 
-source "${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
-
-[ -f "$s" ] \
-  && { source "$s"; trap - EXIT INT TERM ; } \
-  || { echo "Can not find script to test" ; exit 1 ; }
+filesToSource=(
+  "${gitRoot}/scripting/helpers/files.bash"
+  "${gitRoot}/scripting/helpers/baseHelpers.bash"
+)
+for sourceFile in "${filesToSource[@]}"; do
+  [ ! -f "${sourceFile}" ] \
+    && {
+      echo "error: Can not find sourcefile '${sourceFile}'"
+      echo "exiting..."
+      exit 1
+    }
+  source "${sourceFile}"
+  trap - EXIT INT TERM
+done
 
 # Fixtures
-  YAML1="${BATS_TEST_DIRNAME}/fixtures/yaml1.yaml"
-  YAML1parse="${BATS_TEST_DIRNAME}/fixtures/yaml1.yaml.txt"
-  YAML2="${BATS_TEST_DIRNAME}/fixtures/yaml2.yaml"
-  JSON="${BATS_TEST_DIRNAME}/fixtures/json.json"
-  unencrypted="${BATS_TEST_DIRNAME}/fixtures/test.md"
-  encrypted="${BATS_TEST_DIRNAME}/fixtures/test.md.enc"
+YAML1="${BATS_TEST_DIRNAME}/fixtures/yaml1.yaml"
+YAML1parse="${BATS_TEST_DIRNAME}/fixtures/yaml1.yaml.txt"
+YAML2="${BATS_TEST_DIRNAME}/fixtures/yaml2.yaml"
+JSON="${BATS_TEST_DIRNAME}/fixtures/json.json"
+unencrypted="${BATS_TEST_DIRNAME}/fixtures/test.md"
+encrypted="${BATS_TEST_DIRNAME}/fixtures/test.md.enc"
 
 # Set initial flags
 quiet=false
@@ -229,6 +237,16 @@ teardown() {
 
   assert_success
   assert [ -h "test2.txt" ]
+}
+
+@test "_makeSymlink_: Ignore identical symlinks" {
+  touch "test.txt"
+  sfile="$(_locateSourceFile_ test.txt)"
+  ln -fs "test.txt" "test2.txt"
+  run _makeSymlink_ "${sfile}" "test2.txt"
+  assert_success
+  assert [ -h "test2.txt" ]
+  assert_output --regexp "Symlink already exists.*test.txt → test2.txt"
 }
 
 @test "_makeSymlink_: backup original file" {

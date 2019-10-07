@@ -400,8 +400,9 @@ _locateSourceFile_() {
 }
 
 _makeSymlink_() {
-  # DESC:   Creates a symlink and backs up a file which may be overwritten by the new symlink. Default
-  #         behavior will create a backup of a file to be overwritten
+  # DESC:   Creates a symlink and backs up a file which may be overwritten by the new symlink. If the
+  #         exact same symlink already exists, nothing is done.
+  #         Default behavior will create a backup of a file to be overwritten
   # ARGS:   $1 (Required) - Source file
   #         $2 (Required) - Destination
   #         $3 (Optional) - Backup directory for files which may be overwritten (defaults to 'backup')
@@ -473,6 +474,12 @@ _makeSymlink_() {
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -h "${d}" ]; then
     o="$(_locateSourceFile_ "${d}")"
+
+    [[ "${o}" == "${s}" ]] && {
+      info "Symlink already exists: ${s} → ${d}"
+      return 0
+    }
+
     ($noBackup) \
       || _backupFile_ "${o}" ${b:-backup}
     ($dryrun) \
