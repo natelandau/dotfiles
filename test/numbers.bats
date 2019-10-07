@@ -5,12 +5,21 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-s="${HOME}/dotfiles/scripting/helpers/numbers.bash"
-base="$(basename "$s")"
-
-[ -f "$s" ] \
-  && { source "$s"; trap - EXIT INT TERM ; } \
-  || { echo "Can not find script to test" ; exit 1 ; }
+gitRoot="$(git rev-parse --show-toplevel)"
+filesToSource=(
+  "${gitRoot}/scripting/helpers/numbers.bash"
+  "${gitRoot}/scripting/helpers/baseHelpers.bash"
+)
+for sourceFile in "${filesToSource[@]}"; do
+  [ ! -f "${sourceFile}" ] \
+    && {
+      echo "error: Can not find sourcefile '${sourceFile}'"
+      echo "exiting..."
+      exit 1
+    }
+  source "${sourceFile}"
+  trap - EXIT INT TERM
+done
 
 # Set initial flags
 quiet=false
@@ -21,22 +30,12 @@ force=false
 dryrun=false
 declare -a args=()
 
-setup() {
-
-  # Set arrays
-  A=(one two three 1 2 3)
-  B=(1 2 3 4 5 6)
-}
-
-
 @test "Sanity..." {
   run true
 
   assert_success
   assert_output ""
 }
-
-########### BEGIN TESTS ##########
 
 @test "_convertSecs_: Seconds to human readable" {
 

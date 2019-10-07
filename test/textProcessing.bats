@@ -5,15 +5,21 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-helpers="${HOME}/dotfiles/scripting/helpers/baseHelpers.bash"
-[ -f "$helpers" ] \
-  && { source "$helpers"; trap - EXIT INT TERM ; } \
-  || { echo "Can not find helper script" ; exit 1 ; }
-
-s="${HOME}/dotfiles/scripting/helpers/textProcessing.bash"
-[ -f "$s" ] \
-  && { source "$s"; trap - EXIT INT TERM ; } \
-  || { echo "Can not find script to test" ; exit 1 ; }
+gitRoot="$(git rev-parse --show-toplevel)"
+filesToSource=(
+  "${gitRoot}/scripting/helpers/textProcessing.bash"
+  "${gitRoot}/scripting/helpers/baseHelpers.bash"
+)
+for sourceFile in "${filesToSource[@]}"; do
+  [ ! -f "${sourceFile}" ] \
+    && {
+      echo "error: Can not find sourcefile '${sourceFile}'"
+      echo "exiting..."
+      exit 1
+    }
+  source "${sourceFile}"
+  trap - EXIT INT TERM
+done
 
 # Set initial flags
 quiet=false
