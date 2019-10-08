@@ -5,24 +5,9 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-_setPATH_() {
-  # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
-  PATHS=(/usr/local/bin $HOME/bin);
-  for newPath in "${PATHS[@]}"; do
-    if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
-      PATH="$newPath:$PATH"
-   fi
- done
-}
-_setPATH_
-
-if ! command -v convertVideo &>/dev/null; then
-  printf "No executable 'trash' found.\n" >&2
-  printf "Can not run tests.\n" >&2
-  exit 1
-fi
-
-s="$HOME/bin/convertVideo"
+rootDir="$(git rev-parse --show-toplevel)"
+[[ "${rootDir}" =~ private ]] && rootDir="${HOME}/dotfiles"
+s="${rootDir}/bin/convertVideo"
 base="$(basename $s)"
 
 [ -f "$s" ] \

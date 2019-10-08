@@ -5,23 +5,14 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-_setPATH_() {
-  # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
-  PATHS=(/usr/local/bin ${HOME}/bin);
-  for newPath in "${PATHS[@]}"; do
-    if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
-      PATH="$newPath:$PATH"
-   fi
- done
-}
-_setPATH_
-
-if ! command -v $HOME/bin/cleanFilenames &>/dev/null; then
+rootDir="$(git rev-parse --show-toplevel)"
+[[ "${rootDir}" =~ private ]] && rootDir="${HOME}/dotfiles"
+if ! test -f "${rootDir}/bin/cleanFilenames" &>/dev/null; then
     printf "No executable 'cleanFilenames' found.\n" >&2
     printf "Can not run tests.\n" >&2
     exit 1
 else
-    s="${HOME}/bin/cleanFilenames"
+    s="${rootDir}/bin/cleanFilenames"
     base="$(basename "$s")"
 fi
 
@@ -127,14 +118,14 @@ helper() {
 }
 
 @test "usage (-h)" {
-  run $s -h
+  run "$s" -h
 
   assert_success
   assert_line --index 0 "  $base [OPTION]... [FILE]..."
 }
 
 @test "usage (--help)" {
-  run $s --help
+  run "$s" --help
 
   assert_success
   assert_line --index 0 "  $base [OPTION]... [FILE]..."
@@ -199,7 +190,7 @@ helper() {
 
 @test "--nonInteractive" {
   touch "2016-01-01 already datestamped.txt"
-  run $s -LC --nonInteractive "2016-01-01 already datestamped.txt"
+  run "$s" -LC --nonInteractive "2016-01-01 already datestamped.txt"
 
   assert_success
   assert_line --regexp "^/private/var/folders/.*/2016-01-01 already datestamped.txt$"
@@ -240,7 +231,7 @@ helper() {
 
 @test "Remove date (--removeDate)" {
   touch "test 01-01-2016 file.txt"
-  run $s --removeDate "test 01-01-2016 file.txt"
+  run "$s" --removeDate "test 01-01-2016 file.txt"
 
   assert_success
   assert_output --partial 'test 01-01-2016 file.txt --> test file.txt'
@@ -249,7 +240,7 @@ helper() {
 
 @test "Remove date (-R)" {
   touch "test 01-01-2016 file.txt"
-  run $s -R "test 01-01-2016 file.txt"
+  run "$s" -R "test 01-01-2016 file.txt"
 
   assert_success
   assert_output --partial 'test 01-01-2016 file.txt --> test file.txt'
@@ -258,7 +249,7 @@ helper() {
 
 @test "Dryrun (-n)" {
   touch "YYYY-MM-DD 2016-05-27.txt"
-  run $s -n "YYYY-MM-DD 2016-05-27.txt"
+  run "$s" -n "YYYY-MM-DD 2016-05-27.txt"
 
   assert_success
   assert_output --partial "[ dryrun] command mv"
@@ -267,7 +258,7 @@ helper() {
 
 @test "Dryrun (--dryrun)" {
   touch "YYYY-MM-DD 2016-05-27.txt"
-  run $s --dryrun "YYYY-MM-DD 2016-05-27.txt"
+  run "$s" --dryrun "YYYY-MM-DD 2016-05-27.txt"
 
   assert_success
   assert_output --partial "[ dryrun] command mv"
@@ -276,7 +267,7 @@ helper() {
 
 @test "Verbose (-v)" {
   touch "NAME TO TEST.txt"
-  run $s -nv "NAME TO TEST.txt"
+  run "$s" -nv "NAME TO TEST.txt"
 
   assert_success
   assert_output --regexp '\[  debug\]'
@@ -285,7 +276,7 @@ helper() {
 
 @test "Verbose (--verbose)" {
   touch "NAME TO TEST.txt"
-  run $s -n --verbose "NAME TO TEST.txt"
+  run "$s" -n --verbose "NAME TO TEST.txt"
 
   assert_success
   assert_output --regexp '\[  debug\]'
@@ -294,7 +285,7 @@ helper() {
 
 @test "Quiet mode (-q)" {
   touch "month-DD-YY March 19, 74 test.txt"
-  run $s -qv "month-DD-YY March 19, 74 test.txt"
+  run "$s" -qv "month-DD-YY March 19, 74 test.txt"
 
   assert_success
   refute_output --regexp 'debug|success|fatal|error|warning|info|notice|dryrun'
@@ -303,7 +294,7 @@ helper() {
 
 @test "Quiet mode (--quiet)" {
   touch "month-DD-YY March 19, 74 test.txt"
-  run $s -v --quiet "month-DD-YY March 19, 74 test.txt"
+  run "$s" -v --quiet "month-DD-YY March 19, 74 test.txt"
 
   assert_success
   refute_output --regexp 'debug|success|fatal|error|warning|info|notice|dryrun'

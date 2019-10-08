@@ -52,8 +52,8 @@ _functionStack_() {
 _alert_() {
   # DESC:   Controls all printing of messages to log files and stdout.
   # ARGS:   $1 (required) - The type of alert to print
-  #                         (success, header, notice, dryrun, verbose, debug, warning, error,
-  #                         fatal, info, die, input)
+  #                         (success, header, notice, dryrun, debug, warning, error,
+  #                         fatal, info, input)
   #         $2 (required) - The message to be printed to stdout and/or a log file
   #         $3 (optional) - Pass '$LINENO' to print the line number where the _alert_ was triggered
   # OUTS:   $logFile      - Path and filename of the logfile
@@ -206,7 +206,8 @@ _acquireScriptLock_() {
     readonly script_lock="${lock_dir}"
     verbose "Acquired script lock: ${tan}${script_lock}${purple}"
   else
-    die "Unable to acquire script lock: ${tan}${lock_dir}${red}"
+    error "Unable to acquire script lock: ${tan}${lock_dir}${red}"
+    fatal "If you trust the script isn't running, delete the lock dir"
   fi
 }
 
@@ -443,11 +444,11 @@ _safeExit_() {
   # ARGS: $1 (optional) - Exit code (defaults to 0)
   # OUTS: None
 
-  if [[ -d ${script_lock-} ]]; then
+  if [[ -d "${script_lock-}" ]]; then
     if command rm -rf "${script_lock}"; then
       verbose "Removing script lock"
     else
-      warning "Script lock could not be removed. Try manually deleting ${tan}${lock_dir}${red}"
+      warning "Script lock could not be removed. Try manually deleting ${tan}'${lock_dir}'${red}"
     fi
   fi
 
@@ -457,9 +458,9 @@ _safeExit_() {
         cp -r "${tmpDir}" "${tmpDir}.save"
         notice "'${tmpDir}.save' created"
       fi
-      rm -r "${tmpDir}"
+      command rm -r "${tmpDir}"
     else
-      rm -r "${tmpDir}"
+      command rm -r "${tmpDir}"
       verbose "Removing temp directory"
     fi
   fi
@@ -472,10 +473,11 @@ _seekConfirmation_() {
   # DESC:  Seek user input for yes/no question
   # ARGS:   $1 (Optional) - Question being asked
   # OUTS:   true/false
-  # USAGE:
-  #   if _seekConfirmation_ "Answer this question"; then
-  #     something
-  #   fi
+  # USAGE:  _seekConfirmation_ "Do something?" && echo "okay" || echo "not okay"
+  #         OR
+  #         if _seekConfirmation_ "Answer this question"; then
+  #           something
+  #         fi
 
   input "${1-}"
   if "${force}"; then

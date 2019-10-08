@@ -5,7 +5,9 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-s="${HOME}/dotfiles/bootstrap/config-linux.sh"
+rootDir="$(git rev-parse --show-toplevel)"
+[[ "${rootDir}" =~ private ]] && rootDir="${HOME}/dotfiles"
+s="${rootDir}/bootstrap/config-linux.sh"
 base="$(basename "$s")"
 
 @test "Sanity..." {
@@ -16,6 +18,7 @@ base="$(basename "$s")"
 }
 
 @test "Fail on unknown argument" {
+  [[ "${OSTYPE}" =~ linux-gnu* ]] || skip "not on linux"
   run "$s" -LK
 
   assert_failure
@@ -23,6 +26,7 @@ base="$(basename "$s")"
 }
 
 @test "usage (-h)" {
+  [[ "${OSTYPE}" =~ linux-gnu* ]] || skip "not on linux"
   run "$s" -h
 
   assert_success
@@ -30,6 +34,7 @@ base="$(basename "$s")"
 }
 
 @test "usage (--help)" {
+  [[ "${OSTYPE}" =~ linux-gnu* ]] || skip "not on linux"
   run "$s" --help
 
   assert_success

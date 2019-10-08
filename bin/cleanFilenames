@@ -55,7 +55,7 @@ _mainScript_() {
     else
       # Remove special characters that can cause problems before we do anything else
       testFilename="${userFile//[\[\]]/}"
-      verbose "testFilename: $testFilename"
+      verbose "testFilename: ${testFilename}"
 
       if [[ "${testFilename}" != "${userFile}" ]]; then
         notice "Filename contains restricted special characters. Removing them to continue..."
@@ -73,7 +73,7 @@ _mainScript_() {
       ("$stopwords") && _parseFileBase="$(_stopWords_ "${_parseFileBase}")"
       ("$lowerCase") && _parseFileBase="$(_cleanString_ -l "${_parseFileBase}")"
       ("$useDashes") && _parseFileBase="$(_cleanString_ -p " ,-" "${_parseFileBase}")"
-      verbose "Cleaned String: $_parseFileBase"
+      verbose "Cleaned String: ${_parseFileBase}"
 
       # Find a date for the file or use today's date and format as YYYY-MM-DD
       if ! "${cleanOnly}"; then

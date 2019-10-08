@@ -5,23 +5,14 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-_setPATH_() {
-  # setPATH() Add homebrew and ~/bin to $PATH so the script can find executables
-  PATHS=(/usr/local/bin $HOME/bin);
-  for newPath in "${PATHS[@]}"; do
-    if ! echo "$PATH" | grep -Eq "(^|:)${newPath}($|:)" ; then
-      PATH="$newPath:$PATH"
-   fi
- done
-}
-_setPATH_
-
-if ! command -v "${HOME}/bin/updateHomebrew" &>/dev/null; then
-    printf "No executable 'updateHomebrew' found.\n" >&2
+rootDir="$(git rev-parse --show-toplevel)"
+[[ "${rootDir}" =~ private ]] && rootDir="${HOME}/dotfiles"
+if ! test -f "${rootDir}/bin/updateHomebrew" &>/dev/null; then
+    printf "No executable 'trash' found.\n" >&2
     printf "Can not run tests.\n" >&2
     exit 1
 else
-    s="${HOME}/bin/updateHomebrew"
+    s="${rootDir}/bin/updateHomebrew"
     base="$(basename "$s")"
 fi
 

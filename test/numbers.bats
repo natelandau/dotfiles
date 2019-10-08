@@ -5,10 +5,11 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-gitRoot="$(git rev-parse --show-toplevel)"
+rootDir="$(git rev-parse --show-toplevel)"
+[[ "${rootDir}" =~ private ]] && rootDir="${HOME}/dotfiles"
 filesToSource=(
-  "${gitRoot}/scripting/helpers/numbers.bash"
-  "${gitRoot}/scripting/helpers/baseHelpers.bash"
+  "${rootDir}/scripting/helpers/numbers.bash"
+  "${rootDir}/scripting/helpers/baseHelpers.bash"
 )
 for sourceFile in "${filesToSource[@]}"; do
   [ ! -f "${sourceFile}" ] \

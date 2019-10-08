@@ -5,11 +5,14 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-s="${HOME}/dotfiles/bootstrap/config-macOS.sh"
+rootDir="$(git rev-parse --show-toplevel)"
+[[ "${rootDir}" =~ private ]] && rootDir="${HOME}/dotfiles"
+s="${rootDir}/bootstrap/config-macOS.sh"
 base="$(basename "$s")"
 
 
 @test "Sanity..." {
+  [[ "$OSTYPE" != "darwin"* ]] && skip
   run true
 
   assert_success
@@ -17,6 +20,7 @@ base="$(basename "$s")"
 }
 
 @test "Fail on unknown argument" {
+  [[ "$OSTYPE" != "darwin"* ]] && skip "not on mac os"
   run "$s" -LK
 
   assert_failure
@@ -24,6 +28,7 @@ base="$(basename "$s")"
 }
 
 @test "usage (-h)" {
+  [[ "$OSTYPE" != "darwin"* ]] && skip "not on mac os"
   run "$s" -h
 
   assert_success
@@ -31,6 +36,7 @@ base="$(basename "$s")"
 }
 
 @test "usage (--help)" {
+  [[ "$OSTYPE" != "darwin"* ]] && skip "not on mac os"
   run "$s" --help
 
   assert_success
