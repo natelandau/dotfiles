@@ -5,10 +5,12 @@ load 'helpers/bats-support/load'
 load 'helpers/bats-file/load'
 load 'helpers/bats-assert/load'
 
-gitRoot="$(git rev-parse --show-toplevel)"
+rootDir="$(git rev-parse --show-toplevel)"
+[[ "${rootDir}" =~ private ]] && rootDir="${HOME}/dotfiles"
+
 filesToSource=(
-  "${gitRoot}/scripting/helpers/textProcessing.bash"
-  "${gitRoot}/scripting/helpers/baseHelpers.bash"
+  "${rootDir}/scripting/helpers/textProcessing.bash"
+  "${rootDir}/scripting/helpers/baseHelpers.bash"
 )
 for sourceFile in "${filesToSource[@]}"; do
   [ ! -f "${sourceFile}" ] \
@@ -20,6 +22,9 @@ for sourceFile in "${filesToSource[@]}"; do
   source "${sourceFile}"
   trap - EXIT INT TERM
 done
+
+
+
 
 # Set initial flags
 quiet=false
@@ -58,6 +63,12 @@ declare -a args=()
   run _cleanString_ -u "   i am     in caps   "
   assert_success
   assert_output "I AM IN CAPS"
+}
+
+@test "_cleanString_: remove spaces before/aftrer -_" {
+  run _cleanString_ "word - another- word- another-word"
+  assert_success
+  assert_output "word-another-word-another-word"
 }
 
 @test "_cleanString_: alnum" {

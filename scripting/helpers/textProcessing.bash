@@ -18,6 +18,7 @@ _cleanString_() {
   #           - leading white space
   #           - trailing white space
   #           - multiple spaces become a single space
+  #           - remove spaces before and aftrer -_
 
   local opt
   local lc=false
@@ -54,10 +55,10 @@ _cleanString_() {
   local userChars="${2:-}"
 
   local arrayToClean=()
-  IFS=',' read -r -a arrayToClean <<<"$userChars"
+  IFS=',' read -r -a arrayToClean <<<"${userChars}"
 
   # trim trailing/leading white space and duplicate spaces/tabs
-  string="$(echo "$string" | awk '{$1=$1};1')"
+  string="$(echo "${string}" | awk '{$1=$1};1')"
 
   local i
   for i in "${arrayToClean[@]}"; do
@@ -82,9 +83,9 @@ _cleanString_() {
   fi
 
   # trim trailing/leading white space and duplicate dashes
-  string="$(echo "$string" | tr -s '-')"
-  string="$(echo "$string" | awk '{$1=$1};1')"
-
+  string="$(echo "${string}" | tr -s '-')"
+  string="$(echo "${string}" | sed -E 's/([-_]) /\1/g' | sed -E 's/ ([-_])/\1/g')"
+  string="$(echo "${string}" | awk '{$1=$1};1')"
 
   printf "%s\n" "${string}"
 
