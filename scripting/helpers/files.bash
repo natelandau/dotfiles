@@ -175,7 +175,7 @@ _parseFilename_() {
     && verbose "${tan}\$_parseFileBase: ${_parseFileBase}${purple}"
 
   # Grab the extension
-  if [[ "${fileToParse}" =~ .*\.[a-zA-Z]{3,4}$ ]]; then
+  if [[ "${fileToParse}" =~ .*\.[a-zA-Z]{2,4}$ ]]; then
     _parseFileExt="$(_ext_ "${_parseFileName}")"
   else
     _parseFileExt=""

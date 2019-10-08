@@ -279,7 +279,21 @@ teardown() {
   refute [ -f "backup/test2.txt" ]
 }
 
-@test "_parseFilename_: success" {
+@test "_parseFilename_: success 2 letter extension" {
+  verbose=true
+  touch "${testdir}/testfile.md"
+  run _parseFilename_ "${testdir}/testfile.md"
+  assert_success
+  assert_line --index 0 --regexp '\$_parsedFileFull: /private/.*/testfile\.md'
+  assert_line --index 1 --regexp '\$_parseFilePath: /private/.*files.bash:[0-9]{2,3}'
+  assert_line --index 2 --partial '$_parseFileName: testfile.md'
+  assert_line --index 3 --partial '$_parseFileBase: testfile'
+  assert_line --index 4 --partial '$_parseFileExt: .md'
+
+  verbose=false
+}
+
+@test "_parseFilename_: success 3 letter extension" {
   verbose=true
   touch "${testdir}/testfile.txt"
   run _parseFilename_ "${testdir}/testfile.txt"
@@ -289,6 +303,20 @@ teardown() {
   assert_line --index 2 --partial '$_parseFileName: testfile.txt'
   assert_line --index 3 --partial '$_parseFileBase: testfile'
   assert_line --index 4 --partial '$_parseFileExt: .txt'
+
+  verbose=false
+}
+
+@test "_parseFilename_: success 4 letter extension" {
+  verbose=true
+  touch "${testdir}/testfile.pptx"
+  run _parseFilename_ "${testdir}/testfile.pptx"
+  assert_success
+  assert_line --index 0 --regexp '\$_parsedFileFull: /private/.*/testfile\.pptx'
+  assert_line --index 1 --regexp '\$_parseFilePath: /private/.*files.bash:[0-9]{2,3}'
+  assert_line --index 2 --partial '$_parseFileName: testfile.pptx'
+  assert_line --index 3 --partial '$_parseFileBase: testfile'
+  assert_line --index 4 --partial '$_parseFileExt: .pptx'
 
   verbose=false
 }
