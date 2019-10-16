@@ -55,7 +55,14 @@ if [[ $currentShell == "zsh" ]]; then
     # Edited to run 'SCRIPT.sh -h' for my own personal scripts
 
     local apro=0
-    local helpstring="Usage: halp COMMAND"
+    local helpstring="Usage: halp COMMAND
+
+    ${bold}Commonly forgotten commands:${reset}
+      cleanDS             Remove .DS_Store files
+      finderPath          Gets the frontmost path from the Finder
+      lips                Prints local and external IP addresses
+      ql                  Opens any file in MacOS Quicklook Preview
+      "
     local opt OPTIND
 
     OPTIND=1
@@ -117,7 +124,14 @@ else
     # Edited to run 'SCRIPT.sh -h' for my own personal scripts
 
     local apro=0
-    local helpstring="Usage: halp COMMAND"
+    local helpstring="Usage: halp COMMAND
+
+    ${bold}Commonly forgotten commands:${reset}
+      cleanDS             Remove .DS_Store files
+      finderPath          Gets the frontmost path from the Finder
+      lips                Prints local and external IP addresses
+      ql                  Opens any file in MacOS Quicklook Preview
+      "
     local opt OPTIND
 
     OPTIND=1
