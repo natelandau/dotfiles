@@ -4,8 +4,7 @@ _mainScript_() {
 
   [[ "$OSTYPE" != "darwin"* ]] \
     && fatal "We are not on macOS" "$LINENO"
-# echo "dirname: $(dirname "${BASH_SOURCE[0]}")"
-# echo "git rev-parse: $(git rev-parse --show-toplevel)"
+
   gitRoot="$(git rev-parse --show-toplevel)" \
     && verbose "gitRoot: ${gitRoot}"
 
@@ -43,45 +42,44 @@ _mainScript_() {
     # ARGS:   None
     # OUTS:   None
 
-    if _seekConfirmation_ "Create symlinks to dotfiles and custom scripts?"; then
-      header "Creating Symlinks"
+    _seekConfirmation_ "Create symlinks to dotfiles and custom scripts?" || return 0
+    header "Creating Symlinks"
 
-      # Dotfiles
-      _makeSymlink_ "${gitRoot}/config/dotfiles/asdfrc"               "${HOME}/.asdfrc"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/bash_profile"         "${HOME}/.bash_profile"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/bashrc"               "${HOME}/.bashrc"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/curlrc"               "${HOME}/.curlrc"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/Gemfile"              "${HOME}/.Gemfile"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/gemrc"                "${HOME}/.gemrc"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/gitattributes"        "${HOME}/.gitattributes"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/gitconfig"            "${HOME}/.gitconfig"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/gitignore"            "${HOME}/.gitignore"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/hushlogin"            "${HOME}/.hushlogin"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/inputrc"              "${HOME}/.inputrc"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/micro/bindings.json"  "${HOME}/.config/micro/bindings.json"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/micro/settings.json"  "${HOME}/.config/micro/settings.json"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/profile"              "${HOME}/.profile"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/ruby-version"         "${HOME}/.ruby-version"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/sed"                  "${HOME}/.sed"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/zsh_plugins.txt"      "${HOME}/.zsh_plugins.txt"
-      _makeSymlink_ "${gitRoot}/config/dotfiles/zshrc"                "${HOME}/.zshrc"
+    # Dotfiles
+    _makeSymlink_ "${gitRoot}/config/dotfiles/asdfrc"               "${HOME}/.asdfrc"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/bash_profile"         "${HOME}/.bash_profile"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/bashrc"               "${HOME}/.bashrc"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/curlrc"               "${HOME}/.curlrc"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/Gemfile"              "${HOME}/.Gemfile"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/gemrc"                "${HOME}/.gemrc"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/gitattributes"        "${HOME}/.gitattributes"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/gitconfig"            "${HOME}/.gitconfig"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/gitignore"            "${HOME}/.gitignore"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/hushlogin"            "${HOME}/.hushlogin"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/inputrc"              "${HOME}/.inputrc"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/micro/bindings.json"  "${HOME}/.config/micro/bindings.json"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/micro/settings.json"  "${HOME}/.config/micro/settings.json"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/profile"              "${HOME}/.profile"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/ruby-version"         "${HOME}/.ruby-version"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/sed"                  "${HOME}/.sed"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/zsh_plugins.txt"      "${HOME}/.zsh_plugins.txt"
+    _makeSymlink_ "${gitRoot}/config/dotfiles/zshrc"                "${HOME}/.zshrc"
 
-      # Custom Scripts
-      _makeSymlink_ "${gitRoot}/bin/cleanFilenames"   "${HOME}/bin/cleanFilenames"
-      _makeSymlink_ "${gitRoot}/bin/convertVideo"     "${HOME}/bin/convertVideo"
-      _makeSymlink_ "${gitRoot}/bin/git-churn"        "${HOME}/bin/git-churn"
-      _makeSymlink_ "${gitRoot}/bin/hashCheck.sh"     "${HOME}/bin/hashCheck"
-      _makeSymlink_ "${gitRoot}/bin/lessfilter.sh"    "${HOME}/bin/lessfilter.sh"
-      _makeSymlink_ "${gitRoot}/bin/mailReIndex"      "${HOME}/bin/mailReIndex"
-      _makeSymlink_ "${gitRoot}/bin/newscript.sh"     "${HOME}/bin/newscript"
-      _makeSymlink_ "${gitRoot}/bin/removeSymlink"    "${HOME}/bin/removeSymlink"
-      _makeSymlink_ "${gitRoot}/bin/seconds"          "${HOME}/bin/seconds"
-      _makeSymlink_ "${gitRoot}/bin/trash"            "${HOME}/bin/trash"
-      _makeSymlink_ "${gitRoot}/bin/unlockFile"       "${HOME}/bin/unlockFile"
-      _makeSymlink_ "${gitRoot}/bin/updateHomebrew"   "${HOME}/bin/updateHomebrew"
-      _makeSymlink_ "${gitRoot}/bin/wolcmd"           "${HOME}/bin/wolcmd"
-      _makeSymlink_ "${gitRoot}/bin/xld"              "${HOME}/bin/xld"
-    fi
+    # Custom Scripts
+    _makeSymlink_ "${gitRoot}/bin/cleanFilenames"   "${HOME}/bin/cleanFilenames"
+    _makeSymlink_ "${gitRoot}/bin/convertVideo"     "${HOME}/bin/convertVideo"
+    _makeSymlink_ "${gitRoot}/bin/git-churn"        "${HOME}/bin/git-churn"
+    _makeSymlink_ "${gitRoot}/bin/hashCheck.sh"     "${HOME}/bin/hashCheck"
+    _makeSymlink_ "${gitRoot}/bin/lessfilter.sh"    "${HOME}/bin/lessfilter.sh"
+    _makeSymlink_ "${gitRoot}/bin/mailReIndex"      "${HOME}/bin/mailReIndex"
+    _makeSymlink_ "${gitRoot}/bin/newscript.sh"     "${HOME}/bin/newscript"
+    _makeSymlink_ "${gitRoot}/bin/removeSymlink"    "${HOME}/bin/removeSymlink"
+    _makeSymlink_ "${gitRoot}/bin/seconds"          "${HOME}/bin/seconds"
+    _makeSymlink_ "${gitRoot}/bin/trash"            "${HOME}/bin/trash"
+    _makeSymlink_ "${gitRoot}/bin/unlockFile"       "${HOME}/bin/unlockFile"
+    _makeSymlink_ "${gitRoot}/bin/updateHomebrew"   "${HOME}/bin/updateHomebrew"
+    _makeSymlink_ "${gitRoot}/bin/wolcmd"           "${HOME}/bin/wolcmd"
+    _makeSymlink_ "${gitRoot}/bin/xld"              "${HOME}/bin/xld"
   }
   _symlinks_
 
@@ -89,7 +87,7 @@ _mainScript_() {
     # DESC:   Installs Homebrew if necessary. Then installs packages, casks, and Mac apps via mas
     # ARGS:   None
     # OUTS:   None
-    if ! _seekConfirmation_ "Configure Homebrew and Install Packages?"; then return; fi
+    _seekConfirmation_ "Configure Homebrew and Install Packages?" || return 0
 
     info "Checking for Homebrew..."
     _checkForHomebrew_ || return 1
@@ -155,7 +153,7 @@ _mainScript_() {
       _execute_ -vp "brew cask install keybase"
 
     _brewMedia_() {
-      if ! _seekConfirmation_ "Homebrew installs for media editing?"; then return; fi
+      _seekConfirmation_ "Homebrew installs for media editing?" || return 0
       _execute_ -vp "brew install exiftool"
       _execute_ -vp "brew install ffmpeg"
       _execute_ -vp "brew install gifsicle"
@@ -165,7 +163,7 @@ _mainScript_() {
     _brewMedia_
 
     _brewDevelopment_() {
-      if ! _seekConfirmation_ "Homebrew installs for development?"; then return; fi
+      _seekConfirmation_ "Homebrew installs for development?" || return 0
       _execute_ -vp "brew tap cloudflare/cloudflare"
       _execute_ -vp "brew install cloudflare/cloudflare/cloudflared"
       _execute_ -vp "brew install diff-so-fancy"
@@ -191,7 +189,7 @@ _mainScript_() {
     _brewDevelopment_
 
     _brewPrimaryComputers_() {
-      if ! _seekConfirmation_ "Homebrew installs for primary computers?"; then return; fi
+      _seekConfirmation_ "Homebrew installs for primary computers?" || return 0
       _execute_ -vp "brew install pam_yubico"
       _execute_ -vp "brew cask install discord"
       _execute_ -vp "brew cask install fantastical"
@@ -233,7 +231,7 @@ _mainScript_() {
 
   _ruby_() {
 
-    if ! _seekConfirmation_ "Install Ruby and Gems?"; then return; fi
+    _seekConfirmation_ "Install Ruby and Gems?" || return 0
 
     _checkASDF_ \
       && success "have asdf" \
@@ -280,7 +278,7 @@ _mainScript_() {
   _ruby_ || warning "Failed to install ruby"
 
   _nodeJS_() {
-    if ! _seekConfirmation_ "Install node.js and packages??"; then return; fi
+    _seekConfirmation_ "Install node.js and packages??" || return 0
 
     _checkASDF_ \
       && success "have asdf" \
@@ -314,7 +312,7 @@ _mainScript_() {
   _nodeJS_ || warning "Failed to install nodeJS"
 
   _configureITerm2_() {
-    if ! _seekConfirmation_ "Configure iTerm2?"; then return; fi
+    _seekConfirmation_ "Configure iTerm2?" || return 0
 
     if ! [ -e /Applications/iTerm.app ]; then
       if ! _execute_ -vp "brew cask install iterm2"; then
@@ -370,7 +368,7 @@ _mainScript_() {
   _configureITerm2_
 
   _installGitHooks_() {
-    if ! _seekConfirmation_ "Install git hooks?"; then return; fi
+    _seekConfirmation_ "Install git hooks?" || return 0
 
     local hooksLocation="${gitRoot}/.hooks"
 
@@ -391,7 +389,7 @@ _mainScript_() {
   _installGitHooks_
 
   _installGitFriendly_() {
-    if ! _seekConfirmation_ "Install git-friendly?"; then return; fi
+    _seekConfirmation_ "Install git-friendly?" || return 0
     # github.com/jamiew/git-friendly
     # the `push` command which copies the github compare URL to my clipboard is heaven
     bash < <(sudo curl https://raw.github.com/jamiew/git-friendly/master/install.sh)
@@ -399,7 +397,7 @@ _mainScript_() {
   _installGitFriendly_
 
   _macSystemPrefs_() {
-    if ! _seekConfirmation_ "Set mac system preference defaults?"; then return; fi
+    _seekConfirmation_ "Set mac system preference defaults?" || return 0
     sudo -v # Ask for sudo privs up-front
 
     if _seekConfirmation_ "Would you like to set your computer name (as done via System Preferences >> Sharing)?"; then
@@ -961,7 +959,7 @@ _mainScript_() {
   _macSystemPrefs_
 
   _setDefaultShell_() {
-    if ! _seekConfirmation_ "Set the default shell?"; then return; fi
+    _seekConfirmation_ "Set the default shell?" || return 0
 
     local shell
     shellOptions=(bash zsh quit)
