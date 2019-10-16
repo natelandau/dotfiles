@@ -7,6 +7,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   alias cl="fc -e -|pbcopy"             # cl:       Copy output of last command to mac clipboard
   alias caff="caffeinate -ism"          # caff:     Run command without letting mac sleep
   alias cleanupDS="find . -type f -name '*.DS_Store' -ls -delete"
+  alias cleanDS="find . -type f -name '*.DS_Store' -ls -delete"
   alias finderShowHidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
   alias finderHideHidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
   alias screensaverDesktop='/System/Library/Frameworks/ScreenSaver.framework/Resources/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine -background'
