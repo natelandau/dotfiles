@@ -47,144 +47,83 @@ withBackoff() {
   return ${exitCode}
 }
 
-# type command differs between BASH and ZSH.
-if [[ $currentShell == "zsh" ]]; then
-  halp() {
-    # A little helper for man/alias/function info
-    # http://brettterpstra.com/2016/05/18/shell-tricks-halp-a-universal-help-tool/
-    # Edited to run 'SCRIPT.sh -h' for my own personal scripts
+halp() {
+  # A little helper for man/alias/function info
+  # http://brettterpstra.com/2016/05/18/shell-tricks-halp-a-universal-help-tool/
+  # Edited to run 'SCRIPT.sh -h' for my own personal scripts
 
-    local apro=0
-    local helpstring="Usage: halp COMMAND
+  local currentShell="$(ps -p $$ | tail -n 1 | awk -F' ' '{print $4}' | sed 's/-//g' | sed -E 's/.*\///g')"
+  local apro=0
+  local helpstring="Usage: halp COMMAND
 
-    ${bold}Commonly forgotten commands:${reset}
-      cleanDS             Remove .DS_Store files
-      finderPath          Gets the frontmost path from the Finder
-      lips                Prints local and external IP addresses
-      ql                  Opens any file in MacOS Quicklook Preview
-      "
-    local opt OPTIND
+  ${bold}Commonly forgotten commands:${reset}
+    cleanDS             Remove .DS_Store files
+    finderPath          Gets the frontmost path from the Finder
+    lips                Prints local and external IP addresses
+    ql                  Opens any file in MacOS Quicklook Preview
+    "
+  local opt OPTIND
 
-    OPTIND=1
-    while getopts "kh" opt; do
-      case ${opt} in
-        k) apro=1 ;;
-        h)
-          echo -e "${helpstring}"
-          return
-          ;;
-        *) return 1 ;;
-      esac
-    done
-    shift $((OPTIND - 1))
+  OPTIND=1
+  while getopts "kh" opt; do
+    case ${opt} in
+      k) apro=1 ;;
+      h)
+        echo -e "${helpstring}"
+        return
+        ;;
+      *) return 1 ;;
+    esac
+  done
+  shift $((OPTIND - 1))
 
-    if [ $# -ne 1 ]; then
-      echo -e "${helpstring}"
+  if [ $# -ne 1 ]; then
+    echo -e "${helpstring}"
+    return 1
+  fi
+
+  local cmd="${1}"
+  [[ $currentShell == "zsh" ]] && local cmdtest="$(type -w "${cmd}" | awk -F': ' '{print $2}')"
+  [[ $currentShell == "bash" ]] && local cmdtest=$(type -t "${cmd}")
+
+  if [ -z "${cmdtest}" ]; then
+    echo -e "${YELLOW}'${cmd}' is not a known command${RESET}"
+    if [[ "${apro}" == 1 ]]; then
+      man -k "${cmd}"
+    else
       return 1
     fi
+  fi
 
-    local cmd
-    local cmdtest
-    cmd="${1}"
-    cmdtest="$(type -w "${cmd}" | awk -F': ' '{print $2}')"
-
-    if [ -z "${cmdtest}" ]; then
-      echo -e "${YELLOW}'$cmd' is not a command${RESET}"
-      if [[ "$apro" == 1 ]]; then
-        man -k "${cmd}"
-      else
-        return 1
-      fi
-    fi
-
-    if [[ "${cmdtest}" == "command" ]]; then
-      location=$(command -v "$cmd")
-      bindir="${HOME}/bin/${cmd}"
-      if [[ "${location}" == "${bindir}" ]]; then
-        echo -e "${YELLOW}${cmd} is a custom script:  ${RESET}\n"
-        $cmd -h
+  if [[ "${cmdtest}" == "command" || "${cmdtest}" == "file" ]]; then
+    local location=$(command -v "${cmd}")
+    local bindir="${HOME}/bin/${cmd}"
+    if [[ "${location}" == "${bindir}" ]]; then
+      echo -e "${YELLOW}${cmd} is a custom script${RESET}\n"
+      "${bindir}" -h
+    else
+      if tldr "${cmd}" &>/dev/null ; then
+        tldr "${cmd}"
       else
         man "${cmd}"
       fi
-    elif [[ "${cmdtest}" == "alias" ]]; then
-      echo -ne "${YELLOW}${cmd} is an alias:  ${RESET}"
-      alias "${cmd}" | sed -E "s/alias $cmd='(.*)'/\1/"
-    elif [[ "${cmdtest}" == "builtin" ]]; then
-      echo -ne "${YELLOW}${cmd} is a builtin command:  ${RESET}"
+    fi
+  elif [[ "${cmdtest}" == "alias" ]]; then
+    echo -ne "${YELLOW}${cmd} is an alias:  ${RESET}"
+    alias "${cmd}" | sed -E "s/alias $cmd='(.*)'/\1/"
+  elif [[ "${cmdtest}" == "builtin" ]]; then
+    echo -ne "${YELLOW}${cmd} is a builtin command${RESET}"
+    if tldr "${cmd}" &>/dev/null ; then
+      tldr "${cmd}"
+    else
       man "${cmd}"
-    elif [[ "${cmdtest}" == "function" ]]; then
-      echo -e "${YELLOW}${cmd} is a function:  ${RESET}"
-      type -f "${cmd}" | tail -n +1
     fi
-  }
-else
-  halp() {
-    # A little helper for man/alias/function info
-    # http://brettterpstra.com/2016/05/18/shell-tricks-halp-a-universal-help-tool/
-    # Edited to run 'SCRIPT.sh -h' for my own personal scripts
-
-    local apro=0
-    local helpstring="Usage: halp COMMAND
-
-    ${bold}Commonly forgotten commands:${reset}
-      cleanDS             Remove .DS_Store files
-      finderPath          Gets the frontmost path from the Finder
-      lips                Prints local and external IP addresses
-      ql                  Opens any file in MacOS Quicklook Preview
-      "
-    local opt OPTIND
-
-    OPTIND=1
-    while getopts "kh" opt; do
-      case ${opt} in
-        k) apro=1 ;;
-        h)
-          echo -e "${helpstring}"
-          return
-          ;;
-        *) return 1 ;;
-      esac
-    done
-    shift $((OPTIND - 1))
-
-    if [ $# -ne 1 ]; then
-      echo -e "$helpstring"
-      return 1
-    fi
-
-    local cmd="$1"
-    local cmdtest=$(type -t "${cmd}")
-
-    if [ -z "${cmdtest}" ]; then
-      echo -e "${YELLOW}'$cmd' is not a command${RESET}"
-      if [[ "${apro}" == 1 ]]; then
-        man -k "${cmd}"
-      else
-        return 1
-      fi
-    fi
-
-    if [[ "${cmdtest}" == "file" ]]; then
-      location="$(command -v "${cmd}")"
-      bindir="${HOME}/bin/${cmd}"
-      if [[ "${location}" == "${bindir}" ]]; then
-        echo -e "${YELLOW}${cmd} is a custom script:  ${RESET}\n"
-        "${cmd}" -h
-      else
-        man "${cmd}"
-      fi
-    elif [[ "${cmdtest}" == "alias" ]]; then
-      echo -ne "${YELLOW}${cmd} is an alias:  ${RESET}"
-      alias "${cmd}" | sed -E "s/alias $cmd='(.*)'/\1/"
-    elif [[ "${cmdtest}" == "builtin" ]]; then
-      echo -ne "${YELLOW}${cmd} is a builtin command:  ${RESET}"
-      man $cmd
-    elif [[ "${cmdtest}" == "function" ]]; then
-      echo -e "${YELLOW}${cmd} is a function:  ${RESET}"
-      type "${cmd}" | tail -n +2
-    fi
-  }
-fi
+  elif [[ "${cmdtest}" == "function" ]]; then
+    echo -e "${YELLOW}${cmd} is a function${RESET}"
+    [[ $currentShell == "zsh" ]] && type -f "${cmd}" | tail -n +1
+    [[ $currentShell == "bash" ]] && type "${cmd}" | tail -n +2
+  fi
+}
 
 explain() {
   # about 'explain any bash command via mankier.com manpage API'
