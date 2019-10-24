@@ -27,6 +27,7 @@ _mainScript_() {
     _execute_ -vp "sudo apt-get install -y colordiff"
     _execute_ -vp "sudo apt-get install -y coreutils"
     _execute_ -vp "sudo apt-get install -y curl"
+    _execute_ -vp "sudo apt-get install -y dnsutils"
     _execute_ -vp "sudo apt-get install -y git-extras"
     _execute_ -vp "sudo apt-get install -y git"
     _execute_ -vp "sudo apt-get install -y httpie"
@@ -272,6 +273,15 @@ _mainScript_() {
     fi
   }
   _installGitFriendly_
+
+  _installZSH_() {
+    if ! _seekConfirmation_ "Install zsh?"; then return; fi
+    _execute_ -vp "sudo apt-get install -y zsh"
+    _execute_ -vp "curl -sfL git.io/antibody | sudo sh -s - -b /usr/local/bin"
+
+    if ! _seekConfirmation_ "Make zsh your default shell?"; then return; fi
+    chsh -s "$(command -v zsh)"
+  }
 
 } # end _mainScript_
 
