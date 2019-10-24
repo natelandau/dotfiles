@@ -49,10 +49,10 @@ for configFileLocation in "${configFileLocations[@]}"; do
     while read -r configFile; do
       source "$configFile"
     done < <(find "${configFileLocation}" \
+      -maxdepth 1 \
       -type f \
       -name '*.zsh' \
-      -o -name '*.sh' \
-      -maxdepth 1 | sort)
+      -o -name '*.sh' | sort)
   fi
 done
 
