@@ -282,6 +282,7 @@ _mainScript_() {
     if ! _seekConfirmation_ "Make zsh your default shell?"; then return; fi
     chsh -s "$(command -v zsh)"
   }
+  _installZSH_
 
 } # end _mainScript_
 
