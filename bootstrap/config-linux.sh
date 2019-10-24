@@ -234,7 +234,7 @@ _mainScript_() {
       h="$(basename ${h})"
       [[ -L "${gitRoot}/.git/hooks/${h%.sh}" ]] \
         || _makeSymlink_ -n "${hooksLocation}/${h}" "${gitRoot}/.git/hooks/${h%.sh}"
-    done < <(find "${hooksLocation}" -name "*.sh" -type f -maxdepth 1 | sort)
+    done < <(find "${hooksLocation}" -maxdepth 1 -name "*.sh" -type f | sort)
 
   }
   _installGitHooks_
