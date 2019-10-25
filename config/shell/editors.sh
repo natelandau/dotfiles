@@ -1,10 +1,15 @@
 if command -v code &>/dev/null; then # Use visual studio code when available
   q() {
-    # easy access to VisualCode
-    if [ $# -eq 0 ]; then
-      code -r .
+    if command -v code &>/dev/null; then
+      if [ $# -eq 0 ]; then
+        code -r .
+      else
+        code -r "$@"
+      fi
+    elif command -v micro &>/dev/null; then
+      micro "$@"
     else
-      code -r "$@"
+      nano "$@"
     fi
   }
 fi
