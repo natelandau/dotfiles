@@ -20,7 +20,7 @@
     "keymenu": true,
     "linter": true,
     "literate": true,
-    "matchbrace": false,
+    "matchbrace": true,
     "matchbraceleft": false,
     "misspell": true,
     "mouse": true,

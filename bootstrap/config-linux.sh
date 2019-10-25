@@ -33,12 +33,7 @@ _mainScript_() {
     _execute_ -vp "sudo apt-get install -y httpie"
     _execute_ -vp "sudo apt-get install -y jq"
     _execute_ -vp "sudo apt-get install -y less"
-    _execute_ -vp "sudo apt-get install -y ncurses"
     _execute_ -vp "sudo apt-get install -y p7zip"
-    _execute_ -vp "sudo apt-get install -y python-software-properties"
-    _execute_ -vp "sudo apt-get install -y python3-software-properties"
-    _execute_ -vp "sudo apt-get install -y shellcheck"
-    _execute_ -vp "sudo apt-get install -y software-properties-common"
     _execute_ -vp "sudo apt-get install -y source-highlight"
     _execute_ -vp "sudo apt-get install -y sudo"
     _execute_ -vp "sudo apt-get install -y tree"
@@ -47,6 +42,10 @@ _mainScript_() {
 
     if ! _seekConfirmation_ "Install apt-get development packages?"; then return; fi
     _execute_ -vp "sudo apt-get install -y default-jre"
+    _execute_ -vp "sudo apt-get install -y python-software-properties"
+    _execute_ -vp "sudo apt-get install -y python3-software-properties"
+    _execute_ -vp "sudo apt-get install -y shellcheck"
+    _execute_ -vp "sudo apt-get install -y software-properties-common"
     _execute_ -vp "sudo apt-get install -y id3tool"
     _execute_ -vp "sudo apt-get install -y imagemagick"
     _execute_ -vp "sudo apt-get install -y jpegoptim"
