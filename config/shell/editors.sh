@@ -24,3 +24,5 @@ export EDITOR
 LESSEDIT="$EDITOR %f" && export LESSEDIT
 VISUAL="$EDITOR" && export VISUAL
 m() { $EDITOR "$@"; }
+
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
