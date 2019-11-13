@@ -1,28 +1,19 @@
-q() {
-  if command -v code &>/dev/null; then
-    if [ $# -eq 0 ]; then
-      code -r .
-    else
-      code -r "$@"
-    fi
-  elif command -v micro &>/dev/null; then
-    micro "$@"
-  elif command -v nano &>/dev/null; then
-    nano "$@"
-  else
-    "${EDITOR}" "$@"
-  fi
-}
-
-if command -v micro &>/dev/null; then
-  EDITOR=$(type micro nano pico | sed 's/ .*$//;q')
+if [ -f "${HOME}/dotfiles/bin/editor.sh" ]; then
+  export EDITOR="${HOME}/dotfiles/bin/editor.sh"
 else
-  EDITOR=$(type nano pico | sed 's/ .*$//;q')
+  export EDITOR="nano"
 fi
 
-export EDITOR
-LESSEDIT="$EDITOR %f" && export LESSEDIT
-VISUAL="$EDITOR" && export VISUAL
-m() { $EDITOR "$@"; }
+q() {
+  if [ $# -eq 1 ]; then
+    ${EDITOR} "$@"
+  elif [ $# -eq 0 ]; then
+    if command -v code &>/dev/null; then
+      code -r .
+    elif command -v subl &>/dev/null; then
+      subl .
+    fi
+  fi
+}
 
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
