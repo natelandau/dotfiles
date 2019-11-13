@@ -15,7 +15,6 @@ export PATH="/usr/local/bin:${PATH}:/usr/local/sbin:${HOME}/bin"
 
 ### SOURCE BASH PLUGINS ###
 
-## SOURCE ZSH CONFIGS ###
 # Locations containing files *.bash to be sourced to your environment
 configFileLocations=(
   "${HOME}/dotfiles/config/shell"

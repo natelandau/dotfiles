@@ -1,6 +1,7 @@
 if [[ "$OSTYPE" == "darwin"* ]]; then
 
   ## ALIASES ##
+  alias cpwd='pwd|tr -d "\n"|pbcopy'    # cpwd:     Copy the working directory path
   alias chrome='open -a Google\ Chrome' # chrome:   Open item in Google Chrome browser
   alias f='open -a Finder ./'           # f:        Opens current directory in MacOS Finder
   alias cpwd='pwd|tr -d "\n"|pbcopy'    # cpwd:     Copy the current path to mac clipboard
@@ -18,7 +19,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   fi
 
   # Opens any file in MacOS Quicklook Preview
-  ql() { qlmanage -p "$*" >&/dev/null; }
+  ql() { qlmanage -p "$*" &>/dev/null; }
 
   # Clean up LaunchServices to remove duplicates in the "Open With" menu
   alias cleanupLS="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder"
