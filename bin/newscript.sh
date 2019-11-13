@@ -38,7 +38,8 @@ _mainScript_() {
     if ! _errorChecks_ "$a"; then
       break
     fi
-    _execute_ -s "cp \"$template\" \"$a\"; chmod a+x \"$a\"" "Created '${a}'"
+    _execute_ -s "cp \"${template}\" \"${a}\"; chmod a+x \"${a}\"" "Created '${a}'"
+    "${EDITOR}" "${a}"
   done
 
 } # end _mainScript_
