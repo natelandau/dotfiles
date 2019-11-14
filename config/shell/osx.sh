@@ -3,7 +3,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   ## ALIASES ##
   alias cpwd='pwd|tr -d "\n"|pbcopy'    # cpwd:     Copy the working directory path
   alias chrome='open -a Google\ Chrome' # chrome:   Open item in Google Chrome browser
-  alias f='open -a Finder ./'           # f:        Opens current directory in MacOS Finder
   alias cpwd='pwd|tr -d "\n"|pbcopy'    # cpwd:     Copy the current path to mac clipboard
   alias cl="fc -e -|pbcopy"             # cl:       Copy output of last command to mac clipboard
   alias caff="caffeinate -ism"          # caff:     Run command without letting mac sleep
@@ -12,6 +11,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   alias finderShowHidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
   alias finderHideHidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
   alias screensaverDesktop='/System/Library/Frameworks/ScreenSaver.framework/Resources/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine -background'
+
+  # Open the finder to a specified path or to current directory.
+  f() { open -a "Finder" "${1-.}"; }
 
   if command -v trash &>/dev/null; then
     alias rm='trash'
