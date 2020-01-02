@@ -1,6 +1,6 @@
 if command -v less &>/dev/null; then
   [ -e ${HOME}/bin/lessfilter.sh ] && export LESSOPEN='|~/bin/lessfilter.sh %s'
-  alias less='less -RXcqeNF'
+  alias less='less -RXcqeF'
   alias more='less -RXcqeNF'
 fi
 
