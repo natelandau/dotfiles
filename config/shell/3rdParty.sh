@@ -40,8 +40,12 @@ fi
 [[ "$(command -v docker-machine)" ]] \
   && eval "$(docker-machine env default)"
 
-# Add python bin to PATH
-PATH="/Users/nlandau/Library/Python/3.7/bin:${PATH}"
+# Add python bins to PATH
+[ -f "${HOME}/Library/Python/3.7/bin" ] \
+  && PATH="${HOME}/Library/Python/3.7/bin:${PATH}"
+
+[ -f "${HOME}/.local/bin" ] \
+  && PATH="${HOME}/.local/bin:${PATH}"
 
 # Git-Friendly Auto Completions
 # https://github.com/jamiew/git-friendly
