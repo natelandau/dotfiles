@@ -2,6 +2,7 @@
 dotfiles_backup
 tmp
 scratch
+config/dotfiles/Gemfile.lock
 
 # Other ignores
 *.sublime-workspace

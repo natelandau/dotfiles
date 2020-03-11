@@ -4,6 +4,6 @@ gem 'bundler'
 gem 'jekyll', '~> 3.4.3'
 gem 'fileutils'
 gem 'ghi'       # GitHub Issues on the command line
-gem 'rake'
+gem "rake", ">= 12.3.3"
 gem 'yaml-lint'
 gem 'colorls'
