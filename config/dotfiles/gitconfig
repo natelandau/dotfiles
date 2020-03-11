@@ -89,7 +89,7 @@
 
 	# Set default editor to use VisualCode
 	editor = code -w
-	pager = diff-so-fancy | less --tabs=4 -RFX
+	# pager = diff-so-fancy | less --tabs=4 -RFX
 
 [color]
 
