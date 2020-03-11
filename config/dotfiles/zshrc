@@ -62,3 +62,4 @@ if [ -f ${HOME}/Library/Caches/antibody/https-COLON--SLASH--SLASH-github.com-SLA
 fi
 
 unset currentShell
+export PATH="/usr/local/opt/mysql-client/bin:$PATH"
