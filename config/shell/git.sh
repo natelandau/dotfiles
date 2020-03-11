@@ -69,7 +69,11 @@ alias gb='git branch'                                     # Lists local branches
 alias gba='git branch -a'                                 # Lists local and remote branches
 
 # General Commands
-alias diff="diff-so-fancy"
+if command -v diff-so-fancy &>/dev/null; then
+  alias diff="diff-so-fancy"
+else
+  alias diff="git diff"
+fi
 alias gdiff="git difftool" # Open file in git's default diff tool
 alias gstash='git stash'   # stash git changes and put them into your list
 alias gpop='git stash pop' # bring back your changes, but it removes them from your stash

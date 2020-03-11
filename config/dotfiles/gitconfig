@@ -185,8 +185,8 @@
 
   status = true
   show-branch = true
-  diff = diff-so-fancy | less --tabs=1,5 -RFX
-  show = diff-so-fancy | less --tabs=1,5 -RFX
+  # diff = diff-so-fancy | less --tabs=1,5 -RFX
+  # show = diff-so-fancy | less --tabs=1,5 -RFX
 
 # Rewrites of repo paths
 [url "git@github.com:"]
