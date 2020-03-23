@@ -37,8 +37,8 @@ fi
 
 # [[ "$(command -v archey)" ]] && archey
 
-[[ "$(command -v docker-machine)" ]] \
-  && eval "$(docker-machine env default)"
+# [[ "$(command -v docker-machine)" ]] \
+#   && eval "$(docker-machine env default)"
 
 # Add python bins to PATH
 [ -e "${HOME}/Library/Python/3.7/bin" ] \
