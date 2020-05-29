@@ -8,7 +8,7 @@ esac
 [ -z "$PS1" ] && return
 
 # Build PATH
-export PATH="/usr/local/bin:${PATH}:/usr/local/sbin:${HOME}/bin"
+export PATH="/usr/local/bin:${PATH}:/usr/local/sbin:${HOME}/bin:${HOME}/.local/bin"
 
 # Encoding
 export LANG='en_US.UTF-8'
