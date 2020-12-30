@@ -24,19 +24,18 @@ _mainScript_() {
 
     # Now we update casks
     while read -r c; do
-      version=$(brew cask info $c | sed -n "s/$c:\ \(.*\)/\1/p")
-      installed=$(find "/usr/local/Caskroom/$c" -type d -maxdepth 1 -maxdepth 1 -name "$c")
-      # if [[ "$version" == "latest" ]]; then
+      version="$(brew info --cask "${c}" | awk '{print $2}')"
+      installed=$(find "/usr/local/Caskroom/${c}" -type d -maxdepth 1 -maxdepth 1 -name "${c}")
+      # if [[ "${version}" == "latest" ]]; then
       #   # info "Cask '$c' does not report version numbers. Update individually."
       #   continue
       # fi
       notice "'${c}' requires update."
-      verbose "From: $installed"
-      verbose "To: $version"
-      _execute_ -vp "brew cask uninstall \"$c\" --force" "Uninstalled '$c'"
-      _execute_ -vp "brew cask install \"$c\" --force" "Reinstalled '$c'"
-    done < <(brew cask outdated --greedy --verbose | awk '$4 != "latest" {print $1}')
-
+      verbose "From: ${installed}"
+      verbose "To: ${version}"
+      _execute_ -vp "brew uninstall \"${c}\" --cask --force" "Uninstalled '${c}'"
+      _execute_ -vp "brew install \"${c}\" --cask --force" "Reinstalled '${c}'"
+    done < <(brew outdated --cask --greedy --verbose | awk '$4 != "latest" {print $1}')
   }
   _upgradeCasks_
 
