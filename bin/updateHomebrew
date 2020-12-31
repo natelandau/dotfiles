@@ -24,8 +24,8 @@ _mainScript_() {
 
     # Now we update casks
     while read -r c; do
-      version="$(brew info --cask "${c}" | awk '{print $2}')"
-      installed=$(find "/usr/local/Caskroom/${c}" -type d -maxdepth 1 -maxdepth 1 -name "${c}")
+      # version="$(brew info --cask "${c}" | awk '{print $2}')"
+      # installed=$(find "/usr/local/Caskroom/${c}" -type d -maxdepth 1 -maxdepth 1 -name "${c}")
       # if [[ "${version}" == "latest" ]]; then
       #   # info "Cask '$c' does not report version numbers. Update individually."
       #   continue
