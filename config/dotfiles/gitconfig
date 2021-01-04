@@ -1,5 +1,7 @@
 
 [alias]
+	up = "!git remote update -p; git merge --ff-only @{u}"
+
 	# View abbreviated SHA, description, and history graph of the latest 20 commits
 	ls = log --color --pretty=oneline -n 20 --graph --abbrev-commit
 
