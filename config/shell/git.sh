@@ -18,13 +18,13 @@ gac() {
 # Cloning, Fetching, Pushing, and Pulling
 alias gp='git push'
 alias gpush='git push'
-alias gu='git pull'
+alias gu='git up'
 alias gfu="git fetch origin"                 # Get updates from Origin
 alias gcl='git clone --recursive'            # Clone with all submodules
 gcheckout() { git checkout "${@:-master}"; } # Checkout master by default
 
 gpull() {
-  git pull
+  git up
   git submodule foreach git pull origin master
 }
 
