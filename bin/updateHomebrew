@@ -31,8 +31,8 @@ _mainScript_() {
       #   continue
       # fi
       notice "'${c}' requires update."
-      verbose "From: ${installed}"
-      verbose "To: ${version}"
+      # verbose "From: ${installed}"
+      # verbose "To: ${version}"
       _execute_ -vp "brew uninstall \"${c}\" --cask --force" "Uninstalled '${c}'"
       _execute_ -vp "brew install \"${c}\" --cask --force" "Reinstalled '${c}'"
     done < <(brew outdated --cask --greedy --verbose | awk '$4 != "latest" {print $1}')
