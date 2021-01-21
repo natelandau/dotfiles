@@ -8,45 +8,45 @@ _mainScript_() {
   if ! command -v brew &>/dev/null; then fatal "Can not continue wthout homebrew" "${LINENO}"; fi
 
   notice "Updating Homebrew..."
-#   _execute_ -vp "brew update"
-#   _execute_ -vp "brew upgrade"
+  _execute_ -vp "brew update"
+  _execute_ -vp "brew upgrade"
 
-#   _upgradeCasks_() {
-#     notice "Updating casks ..."
-#     local c cask
+  _upgradeCasks_() {
+    notice "Updating casks ..."
+    local c cask
 
-#     # Sometimes license files can get old and cause 'brew cask' to throw errors.  This can help
-#     # identify the culprits
-#     # shellcheck disable=2046,2063
-#     while read -r cask; do
-#       info "Possible license error detected. If 'brew cask list' throws license errors attempt to reinstall '$cask'"
-#     done < <(grep -ilr --include \*.rb license $(brew --prefix)/Caskroom/*/.metadata | awk -F '/' '{print $5}' | sort -u)
+    # Sometimes license files can get old and cause 'brew cask' to throw errors.  This can help
+    # identify the culprits
+    # shellcheck disable=2046,2063
+    while read -r cask; do
+      info "Possible license error detected. If 'brew cask list' throws license errors attempt to reinstall '$cask'"
+    done < <(grep -ilr --include \*.rb license $(brew --prefix)/Caskroom/*/.metadata | awk -F '/' '{print $5}' | sort -u)
 
-#     # Now we update casks
-#     while read -r c; do
-#       # version="$(brew info --cask "${c}" | awk '{print $2}')"
-#       # installed=$(find "/usr/local/Caskroom/${c}" -type d -maxdepth 1 -maxdepth 1 -name "${c}")
-#       # if [[ "${version}" == "latest" ]]; then
-#       #   # info "Cask '$c' does not report version numbers. Update individually."
-#       #   continue
-#       # fi
-#       notice "'${c}' requires update."
-#       # verbose "From: ${installed}"
-#       # verbose "To: ${version}"
-#       _execute_ -vp "brew uninstall \"${c}\" --cask --force" "Uninstalled '${c}'"
-#       _execute_ -vp "brew install \"${c}\" --cask --force" "Reinstalled '${c}'"
-#     done < <(brew outdated --cask --greedy --verbose | awk '$4 != "latest" {print $1}')
-#   }
-#   _upgradeCasks_
+    # Now we update casks
+    while read -r c; do
+      # version="$(brew info --cask "${c}" | awk '{print $2}')"
+      # installed=$(find "/usr/local/Caskroom/${c}" -type d -maxdepth 1 -maxdepth 1 -name "${c}")
+      # if [[ "${version}" == "latest" ]]; then
+      #   # info "Cask '$c' does not report version numbers. Update individually."
+      #   continue
+      # fi
+      notice "'${c}' requires update."
+      # verbose "From: ${installed}"
+      # verbose "To: ${version}"
+      _execute_ -vp "brew uninstall \"${c}\" --cask --force" "Uninstalled '${c}'"
+      _execute_ -vp "brew install \"${c}\" --cask --force" "Reinstalled '${c}'"
+    done < <(brew outdated --cask --greedy --verbose | awk '$4 != "latest" {print $1}')
+  }
+  _upgradeCasks_
 
-#   _upgradeAppStore_() {
-#     notice "Updating from Mac App Store via mas..."
-#     _execute_ -vp "mas upgrade"
-#   }
-#   _upgradeAppStore_
+  _upgradeAppStore_() {
+    notice "Updating from Mac App Store via mas..."
+    _execute_ -vp "mas upgrade"
+  }
+  _upgradeAppStore_
 
-#   notice "Cleaning Up..."
-#   _execute_ -vp "brew cleanup"
+  notice "Cleaning Up..."
+  _execute_ -vp "brew cleanup"
 
 } # end _mainScript_
 
