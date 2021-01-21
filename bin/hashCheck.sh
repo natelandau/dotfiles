@@ -136,8 +136,7 @@ _sourceHelperFiles_
 
 # Set initial flags
 quiet=false
-printLog=false
-logErrors=true
+LOGLEVEL=ERROR
 verbose=false
 force=false
 dryrun=false
@@ -168,9 +167,10 @@ _usage_() {
   ${bold}Option Flags:${reset}
 
   -h, --help        Display this help and exit
-  -l, --log         Print log to file with all log levels
-  -L, --noErrorLog  Default behavior is to print log level error and fatal to a log. Use
-                    this flag to generate no log files at all.
+  -l, --loglevel    One of: FATAL, ERROR, WARN, INFO, DEBUG, ALL, OFF  (Default is 'ERROR')
+
+      $ $(basename "$0") --loglevel 'WARN'
+
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
   -v, --verbose     Output more information. (Items echoed to 'verbose')
@@ -218,10 +218,12 @@ _parseOptions_() {
         _usage_ >&2
         _safeExit_
         ;;
-      -L | --noErrorLog) logErrors=false ;;
       -n | --dryrun) dryrun=true ;;
       -v | --verbose) verbose=true ;;
-      -l | --log) printLog=true ;;
+      -l | --loglevel)
+        shift
+        LOGLEVEL=${1}
+        ;;
       -q | --quiet) quiet=true ;;
       --force) force=true ;;
       --endopts)

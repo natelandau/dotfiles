@@ -72,21 +72,21 @@ _alert_() {
   if [ -z "${logFile-}" ]; then
     readonly logLocation="${HOME}/logs"
     readonly logName="${scriptName%.sh}.log"
-    [ ! -d "$logLocation" ] && mkdir -p "$logLocation"
+    [ ! -d "${logLocation}" ] && mkdir -p "${logLocation}"
     logFile="${logLocation}/${logName}"
   fi
 
-  if [ -z "$line" ]; then
+  if [ -z "${line}" ]; then
     [[ "$1" =~ ^(fatal|error|debug|warning) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
-      && message="$message $(_functionStack_)"
+      && message="${message} $(_functionStack_)"
   else
     [[ "$1" =~ ^(fatal|error|debug) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
-      && message="$message (line: $line) $(_functionStack_)"
+      && message="${message} (line: $line) $(_functionStack_)"
   fi
 
-  if [ -n "$line" ]; then
+  if [ -n "${line}" ]; then
     [[ "$1" =~ ^(warning|info|notice|dryrun) && "${FUNCNAME[2]}" != "_trapCleanup_" ]] \
-      && message="$message (line: $line)"
+      && message="${message} (line: $line)"
   fi
 
   if [[ "${TERM}" != "xterm"* ]] || [ -t 1 ]; then
@@ -113,31 +113,72 @@ _alert_() {
 
   _writeToScreen_() {
     # Print to console when script is not 'quiet'
-    ("$quiet") \
+    ("${quiet}") \
       && {
         tput cuu1
         return 0
       } # tput cuu1 moves cursor up one line
+
+   [[ ${verbose} == false && "${alertType}" =~ ^(debug|verbose) ]] && {
+        tput cuu1
+        return 0
+      }
 
     echo -e "$(date +"%r") ${color}$(printf "[%7s]" "${alertType}") ${message}${reset}"
   }
   _writeToScreen_
 
   _writeToLog_() {
-    [[ "$alertType" =~ ^(input|debug) ]] && return 0
+ [[ "${alertType}" == "input" ]] && return 0
+    [[ "${LOGLEVEL}" =~ (off|OFF|Off) ]] && return 0
+    [[ ! -f "${logFile}" ]] && touch "$logFile"
 
-    if [[ "${printLog}" == true ]] || [[ "${logErrors}" == "true" && "$alertType" =~ ^(error|fatal) ]]; then
-      [[ ! -f "$logFile" ]] && touch "$logFile"
-      # Don't use colors in logs
-      if command -v gsed &>/dev/null; then
-        local cleanmessage="$(echo "$message" | gsed -E 's/(\x1b)?\[(([0-9]{1,2})(;[0-9]{1,3}){0,2})?[mGK]//g')"
-      else
-        local cleanmessage="$(echo "$message" | sed -E 's/(\x1b)?\[(([0-9]{1,2})(;[0-9]{1,3}){0,2})?[mGK]//g')"
-      fi
-      echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${alertType}") ${cleanmessage}" >>"${logFile}"
+    # Don't use colors in logs
+    if command -v gsed &>/dev/null; then
+      local cleanmessage="$(echo "${message}" | gsed -E 's/(\x1b)?\[(([0-9]{1,2})(;[0-9]{1,3}){0,2})?[mGK]//g')"
+    else
+      local cleanmessage="$(echo "${message}" | sed -E 's/(\x1b)?\[(([0-9]{1,2})(;[0-9]{1,3}){0,2})?[mGK]//g')"
     fi
+    echo -e "$(date +"%b %d %R:%S") $(printf "[%7s]" "${alertType}") [$(/bin/hostname)] ${cleanmessage}" >>"${logFile}"
   }
-  _writeToLog_
+
+# Write specified log level data to logfile
+case "${LOGLEVEL:-ERROR}" in
+  ALL|all|All)
+    _writeToLog_
+    ;;
+  DEBUG|debug|Debug)
+    _writeToLog_
+    ;;
+  INFO|info|Info)
+    if [[ "${alertType}" =~ ^(die|error|fatal|warning|info|notice|success) ]]; then
+      _writeToLog_
+    fi
+    ;;
+  WARN|warn|Warn)
+    if [[ "${alertType}" =~ ^(die|error|fatal|warning) ]]; then
+      _writeToLog_
+    fi
+    ;;
+  ERROR|error|Error)
+    if [[ "${alertType}" =~ ^(die|error|fatal) ]]; then
+      _writeToLog_
+    fi
+    ;;
+  FATAL|fatal|Fatal)
+    if [[ "${alertType}" =~ ^(die|fatal) ]]; then
+      _writeToLog_
+    fi
+   ;;
+  OFF|off)
+    return 0
+  ;;
+  *)
+    if [[ "${alertType}" =~ ^(die|error|fatal) ]]; then
+      _writeToLog_
+    fi
+    ;;
+esac
 
 } # /_alert_
 
@@ -151,21 +192,8 @@ input() { echo -n "$(_alert_ input "${1}" ${2-})"; }
 header() { echo -e "$(_alert_ header "== ${1} ==" ${2-})"; }
 die() { echo -e "$(_alert_ fatal "${1}" ${2-})"; _safeExit_ "1" ; }
 fatal() { echo -e "$(_alert_ fatal "${1}" ${2-})"; _safeExit_ "1" ; }
-debug() {
-  ($verbose) \
-    && {
-      echo -e "$(_alert_ debug "${1}" "${2-}")"
-    } \
-    || return 0
-}
-
-verbose() {
-  ($verbose) \
-    && {
-      echo -e "$(_alert_ debug "${1}" ${2-})"
-    } \
-    || return 0
-}
+debug() { echo -e "$(_alert_ debug "${1}" "${2-}")"; }
+verbose() { echo -e "$(_alert_ debug "${1}" "${2-}")"; }
 
 _makeTempDir_() {
   # DESC:   Creates a temp direcrtory to house temporary files

@@ -65,8 +65,7 @@ _sourceHelperFiles_
 
 # Set Flags
 quiet=false
-printLog=false
-logErrors=false
+LOGLEVEL=ERROR
 verbose=false
 force=false
 dryrun=false
@@ -86,7 +85,10 @@ _usage_() {
     $ $(basename "$0") NEWSCRIPTNAME.SH
 
  ${bold}Options:${reset}
-  -l, --log         Print log to file with all log levels
+    -l, --loglevel    One of: FATAL, ERROR, WARN, INFO, DEBUG, ALL, OFF  (Default is 'ERROR')
+
+      $ $(basename "$0") --loglevel 'WARN'
+
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
   -v, --verbose     Output more information. (Items echoed to 'verbose')
@@ -134,10 +136,12 @@ _parseOptions_() {
         _usage_ >&2
         _safeExit_
         ;;
-      -L | --noErrorLog) logErrors=false ;;
+      -l | --loglevel)
+        shift
+        LOGLEVEL=${1}
+        ;;
       -n | --dryrun) dryrun=true ;;
       -v | --verbose) verbose=true ;;
-      -l | --log) printLog=true ;;
       -q | --quiet) quiet=true ;;
       --endopts)
         shift

@@ -150,8 +150,7 @@ done
 
 # Set Flags
 quiet=false
-printLog=false
-logErrors=true
+LOGLEVEL=ERROR
 verbose=false
 dryrun=false
 declare -a args=()
@@ -183,8 +182,10 @@ _usage_() {
     -e, --empty         Empty trash contents
     -h, --help          Display this help and exit
     -l , --list         List trash contents
-    -L, --noErrorLog    Default behavior is to print log level error and fatal to a log. Use
-                        this flag to generate no log files at all.
+    -L, --loglevel    One of: FATAL, ERROR, WARN, INFO, DEBUG, ALL, OFF  (Default is 'ERROR')
+
+      $ $(basename "$0") --loglevel 'WARN'
+
     -n, --dryrun        Non-destructive run.
     -q, --quiet         Quiet (no output)
     -s, --system        Forces native Unix 'rm' command
@@ -238,10 +239,12 @@ _parseOptions_() {
       -s | --system) systemRM=true ;;
       -l | --list) list=true ;;
       -e | --empty) emptyTrash=true ;;
-      -L | --noErrorLog) logErrors=false ;;
+      -L | --loglevel)
+        shift
+        LOGLEVEL=${1}
+        ;;
       -n | --dryrun) dryrun=true ;;
       -v | --verbose) verbose=true ;;
-      --log) printLog=true ;;
       -q | --quiet) quiet=true ;;
       --force) force=true ;;
       --endopts)

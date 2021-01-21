@@ -492,7 +492,7 @@ scriptName=$(basename "$0")
 
 # Set Flags
 quiet=false
-printLog=false
+LOGLEVEL=ERROR
 verbose=false
 force=false
 strict=false
@@ -552,7 +552,10 @@ ${bold}File Options:${reset}
   --force           Skip all user interaction.  Implied 'Yes' to all actions.
   -q, --quiet       Quiet (no output)
   -n, --dryrun      Non-destructive. Makes no permanent changes.
-  -l, --log         Print log to file
+  -l, --loglevel    One of: FATAL, ERROR, WARN, INFO, DEBUG, ALL, OFF  (Default is 'ERROR')
+
+      $ $(basename "$0") --loglevel 'WARN'
+
   -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
   -v, --verbose     Output more information. (Items echoed to 'verbose')
   -d, --debug       Runs script in BASH debug mode (set -x)
@@ -691,7 +694,10 @@ while [[ $1 == -?* ]]; do
       _safeExit_
       ;;
     -v | --verbose) verbose=true ;;
-    -l | --log) printLog=true ;;
+    -l | --loglevel)
+      shift
+      LOGLEVEL=${1}
+      ;;
     -q | --quiet) quiet=true ;;
     -s | --strict) strict=true ;;
     -d | --debug) debug=true ;;

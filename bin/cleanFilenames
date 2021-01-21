@@ -166,10 +166,9 @@ _sourceHelperFiles_
 
 # Set initial flags
 quiet=false
-printLog=false
-logErrors=true
 verbose=false
 force=false
+LOGLEVEL=ERROR
 dryrun=false
 suppressFileTypeErrors=false
 declare -a args=()
@@ -223,7 +222,10 @@ _usage_() {
     -e, --noErrorLog  Default behavior is to print log level error and fatal to a log. Use
                       this flag to generate no log files at all.
     -h, --help        Display this help and exit
-    -l, --log         Print log to file
+    -l, --loglevel    One of: FATAL, ERROR, WARN, INFO, DEBUG, ALL, OFF  (Default is 'ERROR')
+
+      $ $(basename "$0") --loglevel 'WARN'
+
     -L, --lower       Transforms the filename to all lower case characters
     -n, --dryrun      Non-destructive run. Will report on changes that would have
     -q, --quiet       Quiet (no output to terminal)
@@ -303,7 +305,10 @@ _parseOptions_() {
       -D | --useDashes) useDashes=true ;;
       -n | --dryrun) dryrun=true ;;
       -v | --verbose) verbose=true ;;
-      -l | --log) printLog=true ;;
+      -l | --loglevel)
+        shift
+        LOGLEVEL=${1}
+        ;;
       -q | --quiet) quiet=true ;;
       --nonInteractive)
         nonInteractive=true

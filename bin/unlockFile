@@ -68,8 +68,7 @@ scriptName=$(basename "$0")
 
 # Set Flags
 quiet=false
-printLog=false
-logErrors=true
+LOGLEVEL=ERROR
 verbose=false
 force=false
 strict=false
@@ -94,8 +93,10 @@ Adapted from: http://applehelpwriter.com/2016/08/20/how-to-fix-file-in-use-probl
  ${bold}Options:${reset}
 
 
-  -L, --noErrorLog  Print log level error and fatal to a log (default 'true')
-  -l, --log         Print log to file
+  -l, --loglevel    One of: FATAL, ERROR, WARN, INFO, DEBUG, ALL, OFF  (Default is 'ERROR')
+
+      $ $(basename "$0") --loglevel 'WARN'
+
   -n, --dryrun      Non-destructive. Makes no permanent changes.
   -q, --quiet       Quiet (no output)
   -s, --strict      Exit script with null variables.  i.e 'set -o nounset'
@@ -155,10 +156,12 @@ while [[ $1 == -?* ]]; do
       _usage_ >&2
       _safeExit_
       ;;
-    -L | --noErrorLog) logErrors=false ;;
+    -l | --loglevel)
+      shift
+      LOGLEVEL=${1}
+      ;;
     -n | --dryrun) dryrun=true ;;
     -v | --verbose) verbose=true ;;
-    -l | --log) printLog=true ;;
     -q | --quiet) quiet=true ;;
     -s | --strict) strict=true ;;
     -d | --debug) debug=true ;;
