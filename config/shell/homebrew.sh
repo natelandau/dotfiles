@@ -36,12 +36,11 @@ if command -v brew &>/dev/null; then
   bup() {
     local brewScript="${HOME}/bin/updateHomebrew"
     if [ -e "${brewScript}" ]; then
-      "${brewScript}"
+      "${brewScript}" "$*"
     else
       brew update
       brew upgrade
       brew cleanup
-      brew cask cleanup
       brew prune
     fi
   }
