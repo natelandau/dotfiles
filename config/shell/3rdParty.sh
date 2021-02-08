@@ -13,7 +13,7 @@ if [ -e "${HOME}/.nvm" ]; then
   export NVM_DIR="${HOME}/.nvm"
   [ -s "${NVM_DIR}/nvm.sh" ] && source "${NVM_DIR}/nvm.sh"
   # suorce completions with bash
-  if [[ $currentShell == "bash" ]]; then
+  if [[ "${SHELL##*/}" == "bash" ]]; then
     [ -s "${NVM_DIR}/bash_completion" ] && source "${NVM_DIR}/bash_completion"
   fi
   nvm use 8.6.0
@@ -49,7 +49,7 @@ fi
 
 # Git-Friendly Auto Completions
 # https://github.com/jamiew/git-friendly
-if [[ $currentShell == "bash" ]]; then
+if [[ "${SHELL##*/}" == "bash" ]]; then
   if type __git_complete &>/dev/null; then
     _branch() {
       delete="${words[1]}"
@@ -62,7 +62,7 @@ if [[ $currentShell == "bash" ]]; then
     __git_complete branch _branch
     __git_complete merge _git_merge
   fi
-elif [[ $currentShell == "zsh" ]] && [[ "$OSTYPE" == "darwin"* ]]; then
+elif [[ "${SHELL##*/}" == "zsh" ]] && [[ "$OSTYPE" == "darwin"* ]]; then
   fpath=($(brew --prefix)/share/zsh/functions "${fpath}")
   autoload -Uz _git && _git
   compdef __git_branch_names branch

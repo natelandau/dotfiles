@@ -21,9 +21,6 @@ configFileLocations=(
   "${HOME}/dotfiles-private/config/shell"
 )
 
-# Set a shell variable so we can customize the config files
-currentShell="$(ps -p $$ | tail -n 1 | awk -F' ' '{print $4}' | sed 's/-//g')"
-
 for configFileLocation in "${configFileLocations[@]}"; do
   if [ -d "${configFileLocation}" ]; then
     while read -r configFile; do
@@ -36,8 +33,6 @@ for configFileLocation in "${configFileLocations[@]}"; do
       | sort)
   fi
 done
-
-unset currentShell
 
 # Always list directory contents upon 'cd'.
 # (Somehow this always failed when I put it in a sourced file)

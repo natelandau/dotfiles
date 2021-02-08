@@ -41,9 +41,6 @@ configFileLocations=(
   "${HOME}/dotfiles-private/config/shell"
 )
 
-# Set a shell variable so we can customize the config files
-currentShell="$(ps -p $$ | tail -n 1 | awk -F' ' '{print $4}' | sed 's/-//g')"
-
 for configFileLocation in "${configFileLocations[@]}"; do
   if [ -d "${configFileLocation}" ]; then
     while read -r configFile; do
@@ -61,5 +58,4 @@ if [ -f ${HOME}/Library/Caches/antibody/https-COLON--SLASH--SLASH-github.com-SLA
   source ${HOME}/Library/Caches/antibody/https-COLON--SLASH--SLASH-github.com-SLASH-zsh-users-SLASH-zsh-history-substring-search/zsh-history-substring-search.zsh
 fi
 
-unset currentShell
 export PATH="/usr/local/opt/mysql-client/bin:$PATH"

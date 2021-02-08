@@ -52,7 +52,6 @@ halp() {
   # http://brettterpstra.com/2016/05/18/shell-tricks-halp-a-universal-help-tool/
   # Edited to run 'SCRIPT.sh -h' for my own personal scripts
 
-  local currentShell="$(ps -p $$ | tail -n 1 | awk -F' ' '{print $4}' | sed 's/-//g' | sed -E 's/.*\///g')"
   local apro=0
   local helpstring="Usage: halp COMMAND
 
@@ -83,8 +82,8 @@ halp() {
   fi
 
   local cmd="${1}"
-  [[ $currentShell == "zsh" ]] && local cmdtest="$(type -w "${cmd}" | awk -F': ' '{print $2}')"
-  [[ $currentShell == "bash" ]] && local cmdtest=$(type -t "${cmd}")
+  [[ "${SHELL##*/}" == "zsh" ]] && local cmdtest="$(type -w "${cmd}" | awk -F': ' '{print $2}')"
+  [[ "${SHELL##*/}" == "bash" ]] && local cmdtest=$(type -t "${cmd}")
 
   if [ -z "${cmdtest}" ]; then
     echo -e "${YELLOW}'${cmd}' is not a known command${RESET}"
@@ -120,8 +119,8 @@ halp() {
     fi
   elif [[ "${cmdtest}" == "function" ]]; then
     echo -e "${YELLOW}${cmd} is a function${RESET}"
-    [[ $currentShell == "zsh" ]] && type -f "${cmd}" | tail -n +1
-    [[ $currentShell == "bash" ]] && type "${cmd}" | tail -n +2
+    [[ "${SHELL##*/}" == "zsh" ]] && type -f "${cmd}" | tail -n +1
+    [[ "${SHELL##*/}" == "bash" ]] && type "${cmd}" | tail -n +2
   fi
 }
 

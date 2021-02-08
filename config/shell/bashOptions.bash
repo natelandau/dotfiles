@@ -1,4 +1,4 @@
-if [[ $currentShell == "bash" ]]; then
+if [[ "${SHELL##*/}" == "bash" ]]; then
   ## GENERAL PREFERENCES ##
   export BLOCKSIZE=1k
   export LANG="en_US"

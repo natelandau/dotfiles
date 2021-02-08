@@ -40,9 +40,9 @@ alias shfmt="shfmt -ci -bn -i 2" # preferred shellformat implementation
   && alias ns="newscript"
 
 # Custom commands
-[[ $currentShell == "bash" ]] \
+[[ "${SHELL##*/}" == "bash" ]] \
   && alias sourcea='source ${HOME}/.bash_profile'
-[[ $currentShell == "zsh" ]] \
+[[ "${SHELL##*/}" == "zsh" ]] \
   && alias sourcea='source ${HOME}/.zshrc'
 
 mcd() {

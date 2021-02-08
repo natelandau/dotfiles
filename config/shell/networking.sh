@@ -8,6 +8,11 @@ alias ipInfo1='ipconfig getpacket en1'            # ipInfo1:   Get info on conne
 alias openPorts='sudo lsof -i | grep LISTEN'      # openPorts: All listening connections
 alias showBlocked='sudo ipfw list'                # showBlocked:  All ipfw rules inc/ blocked IPs
 alias newDHCP='sudo ipconfig set en0 DHCP'        # newDHCP:    Renews DHCP lease
+if ! command -v dig &>/dev/null; then
+  if command -v drill &>/dev/null; then
+    alias dig='drill'
+  fi
+fi
 
 newMAC() {
   # DESC:   Changes MAC address to get around public wifi limitations
