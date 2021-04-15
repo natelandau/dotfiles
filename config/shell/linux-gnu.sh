@@ -6,4 +6,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sudo apt-get upgrade -y
   }
 
+[ -e "/usr/bin/snap" ] \
+  && PATH="/snap/bin:${PATH}"
+
 fi
