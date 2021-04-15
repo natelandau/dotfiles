@@ -8,7 +8,7 @@ _listFiles_() {
   # NOTE:  Searches are NOT case sensitive
   # USAGE: _listFiles_ glob "*.txt" "some/backup/dir"
   #        _listFiles_ regex ".*\.txt" "some/backup/dir"
-  #        readarry -t array < <(_listFiles_ g "*.txt"))
+  #        readarry -t array < <(_listFiles_ g "*.txt")
 
   [[ $# -lt 2 ]] && {
     error 'Missing required argument to _listFiles_()!'
@@ -178,7 +178,7 @@ _parseFilename_() {
   if [[ "${fileToParse}" =~ .*\.[a-zA-Z]{2,4}$ ]]; then
     _parseFileExt="$(_ext_ "${_parseFileName}")"
   else
-    _parseFileExt=""
+    _parseFileExt=".${_parseFileName##*.}"
   fi
   verbose "${tan}\$_parseFileExt: ${_parseFileExt}${purple}"
 

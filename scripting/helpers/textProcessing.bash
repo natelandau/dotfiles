@@ -9,11 +9,11 @@ _cleanString_() {
   # OPTS:   -l  Forces all text to lowercase
   #         -u  Forces all text to uppercase
   #         -a  Removes all non-alphanumeric characters except for spaces and dashes
-  #         -p  Replace one character with another (separated by commas)
-  #         -s  Incombination with -a, replaces characters with a space
+  #         -p  Replace one character with another (separated by commas) (escape regex characters)
+  #         -s  In combination with -a, replaces characters with a space
   # OUTS:   Prints result to STDOUT
   # USAGE:  _cleanString_ [OPT] [STRING] [CHARS TO REPLACE]
-  #         _cleanString_ -p " ,-" [OPT] [STRING] [CHARS TO REPLACE]
+  #         _cleanString_ -p " ,-" [STRING] [CHARS TO REPLACE]
   # NOTES:  Always cleaned:
   #           - leading white space
   #           - trailing white space
