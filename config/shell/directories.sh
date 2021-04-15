@@ -10,10 +10,10 @@ elif command -v colorls &>/dev/null; then
   alias lll="exa -alh --git"
 elif [[ $(command -v ls) =~ gnubin || "$OSTYPE" =~ linux ]]; then
   alias ls="ls --color=auto"
-  alias ll='ls -FlAhp --color=auto'
+  alias ll='ls -FlAhpv --color=auto'
 else
   alias ls="ls -G"
-  alias ll='ls -FGlAhp'
+  alias ll='ls -FGlAhpv'
 fi
 
 cd() {
