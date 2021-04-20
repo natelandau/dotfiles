@@ -228,10 +228,6 @@ _safeExit_() {
 
   if [[ -n "${tmpDir-}" && -d "${tmpDir-}" ]]; then
     if [[ ${1-} == 1 && -n "$(ls "${tmpDir}")" ]]; then
-      if _seekConfirmation_ "Save the temp directory for debugging?"; then
-        cp -r "${tmpDir}" "${tmpDir}.save"
-        notice "'${tmpDir}.save' created"
-      fi
       command rm -r "${tmpDir}"
     else
       command rm -r "${tmpDir}"
