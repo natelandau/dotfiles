@@ -2,8 +2,8 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
   alias sag='sudo apt-get'
   aup() {
-    sudo apt-get update
-    sudo apt-get upgrade -y
+    sudo apt update
+    apt list --upgradable
   }
 
 [ -e "/usr/bin/snap" ] \
