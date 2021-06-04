@@ -144,27 +144,27 @@ _cleanFilename_() {
 }
 
 _parseFilename_() {
-  # DESC:   Break a filename into its component parts
+  # DESC:   Break a filename into its component parts which are placed into variables prefixed
+  #         with _parseFile...
   # ARGS:   $1 (Required) - A file
-  # OUTS:   $_parsedFileFull    - File and its real path (from _realPath_())
+  # OUTS:   $_parsedFileFull    - File and its real path (ie, resolve symlinks)
   #         $_parseFilePath     - Path to the file
   #         $_parseFileName     - Name of the file WITH extension
   #         $_parseFileBase     - Name of file WITHOUT extension
   #         $_parseFileExt      - The extension of the file (from _ext_())
 
-  local fileToParse="${1:?No file provided to _parseFilename_}"
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _parseFilename_()!'
+  local fileToParse="${1}"
 
   [[ -f "${fileToParse}" ]] || {
     error "Can't locate good file to parse at: ${fileToParse}"
     return 1
   }
 
-  # Grab the directory
-  _parsedFileFull="$(_realpath_ "${fileToParse}")" \
-    && verbose "${tan}\$_parsedFileFull: ${_parsedFileFull-}${purple}"
 
-  _parseFilePath=$(_realpath_ -d "$_parsedFileFull") \
-    && verbose "${tan}\$_parseFilePath: ${_parseFilePath}${purple}"
+  # Ensure we are working with a real file, not a symlink
+  _parsedFileFull="$(realpath "${fileToParse}")" \
+    && verbose "${tan}\${_parsedFileFull}: ${_parsedFileFull-}${purple}"
 
   # use the basename of the userFile going forward since the path is now in $filePath
   _parseFileName=$(basename "${fileToParse}") \
@@ -181,6 +181,10 @@ _parseFilename_() {
     _parseFileExt=".${_parseFileName##*.}"
   fi
   verbose "${tan}\$_parseFileExt: ${_parseFileExt}${purple}"
+
+  # Grab the directory
+  _parseFilePath="${_parsedFileFull%/*}" \
+    && verbose "${tan}\${_parseFilePath}: ${_parseFilePath}${purple}"
 
 }
 
@@ -251,10 +255,10 @@ _ext_() {
   # OPTS:   -n            - optional flag for number of extension levels (Ex: -n2)
   # OUTS:   Print extension to STDOUT
   # USAGE:
-  #   _ext_     foo.txt     #==> .txt
-  #   _ext_ -n2 foo.tar.gz  #==> .tar.gz
-  #   _ext_     foo.tar.gz  #==> .tar.gz
-  #   _ext_ -n1 foo.tar.gz  #==> .gz
+  #   _ext_     foo.txt     #==> txt
+  #   _ext_ -n2 foo.tar.gz  #==> tar.gz
+  #   _ext_     foo.tar.gz  #==> tar.gz
+  #   _ext_ -n1 foo.tar.gz  #==> gz
 
   [[ $# -lt 1 ]] && fatal 'Missing required argument to _ext_()!'
 
@@ -290,7 +294,7 @@ _ext_() {
   levels=${levels:-1}
 
   for ((i = 0; i < levels; i++)); do
-    ext=.${fn##*.}
+    ext=${fn##*.}
     exts=$ext${exts-}
     fn=${fn%$ext}
     [[ "$exts" == "$filename" ]] && return
@@ -407,6 +411,7 @@ _makeSymlink_() {
   #         $2 (Required) - Destination
   #         $3 (Optional) - Backup directory for files which may be overwritten (defaults to 'backup')
   # OPTS:  -n             - Do not create a backup if target already exists
+  #        -s             - Use sudo when removing old files to make way for new symlinks
   # OUTS:   None
   # USAGE:  _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
   # NOTE:   This function makes use of the _execute_ function
@@ -414,10 +419,12 @@ _makeSymlink_() {
   local opt
   local OPTIND=1
   local noBackup=false
+  local useSudo=false
 
-  while getopts ":nN" opt; do
+  while getopts ":nNsS" opt; do
     case $opt in
       n | N) noBackup=true ;;
+      s | S) useSudo=true ;;
       *)
         {
           error "Unrecognized option '$1' passed to _makeSymlink_" "$LINENO"
@@ -447,7 +454,7 @@ _makeSymlink_() {
     }
   [ -z "$d" ] \
     && {
-      error "'$d' not specified"
+      error "'${d}' not specified"
       return 1
     }
   [ ! "$(declare -f "_execute_")" ] \
@@ -480,16 +487,28 @@ _makeSymlink_() {
       return 0
     }
 
-    ($noBackup) \
-      || _backupFile_ "${o}" ${b:-backup}
-    ($dryrun) \
-      || command rm -rf "${d}"
+    if [[ "${noBackup}" == true ]]; then
+      _backupFile_ "${d}" "${b:-backup}"
+    fi
+    if [[ "${dryrun}" == false ]]; then
+      if [[ "${useSudo}" == true ]]; then
+        command rm -rf "${d}"
+      else
+        command rm -rf "${d}"
+      fi
+    fi
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -e "${d}" ]; then
-    ($noBackup) \
-      || _backupFile_ "${d}" "${b:-backup}"
-    ($dryrun) \
-      || rm -rf "$d"
+    if [[ "${noBackup}" == true ]]; then
+      _backupFile_ "${d}" "${b:-backup}"
+    fi
+    if [[ "${dryrun}" == false ]]; then
+      if [[ "${useSudo}" == true ]]; then
+        sudo command rm -rf "${d}"
+      else
+        command rm -rf "${d}"
+      fi
+    fi
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   else
     warning "Error linking: ${s} → ${d}"

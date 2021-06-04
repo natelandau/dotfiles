@@ -1,5 +1,5 @@
 ### VARIABLES ###
-
+LOGLEVEL=ERROR
 now=$(LC_ALL=C date +"%m-%d-%Y %r")                   # Returns: 06-14-2015 10:34:40 PM
 datestamp=$(LC_ALL=C date +%Y-%m-%d)                  # Returns: 2015-06-14
 hourstamp=$(LC_ALL=C date +%r)                        # Returns: 10:34:40 PM
