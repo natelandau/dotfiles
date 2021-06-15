@@ -380,7 +380,7 @@ _mainScript_() {
 
     local h
     while read -r h; do
-      h="$(basename ${h})"
+      h="$(basename "${h}")"
       [[ -L "${gitRoot}/.git/hooks/${h%.sh}" ]] \
         || _makeSymlink_ -n "${hooksLocation}/${h}" "${gitRoot}/.git/hooks/${h%.sh}"
     done < <(find "${hooksLocation}" -name "*.sh" -type f -maxdepth 1 | sort)
@@ -567,7 +567,7 @@ _mainScript_() {
     defaults write com.apple.screensaver askForPasswordDelay -int 0
 
     info "Save screenshots to the desktop"
-    defaults write com.apple.screencapture location -string ${HOME}/Desktop
+    defaults write com.apple.screencapture location -string "${HOME}/Desktop"
 
     info "Save screenshots in PNG format"
     defaults write com.apple.screencapture type -string 'png'

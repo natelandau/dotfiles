@@ -1,7 +1,7 @@
 segmentLastCommand() {
   local timerM=0
   local timerS=0
-  local commandExitCode="$lastExit"
+  local commandExitCode="${lastExit}"
   local enabled=true # If false, this segment will be ignored
   local seperator=""
 
@@ -13,14 +13,14 @@ segmentLastCommand() {
   local lastHistoryCommand=$(awk '{print $3}' <<<"$lastHistory")
 
   # Set colors based on exit code of previous command
-  if [ $commandExitCode -eq 0 ]; then
+  if [ "${commandExitCode}" -eq 0 ]; then
     local fground="${bold}${fore_whi}"
-    local bground="$back_grn"
-    local invertedBckgrnd="$fore_grn" # Foreground of the current background
+    local bground="${back_grn}"
+    local invertedBckgrnd="${fore_grn}" # Foreground of the current background
   else
     local fground="${bold}${fore_whi}"
-    local bground="$back_red"
-    local invertedBckgrnd="$fore_red" # Foreground of the current background
+    local bground="${back_red}"
+    local invertedBckgrnd="${fore_red}" # Foreground of the current background
   fi
 
   if [[ "$commandTime" -gt 0 ]]; then

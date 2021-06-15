@@ -64,7 +64,7 @@ _alert_() {
   local message="${2}"
   local line="${3-}"
 
-  [ -z ${scriptName-} ] && scriptName="$(basename "$0")"
+  [ -z "${scriptName-}" ] && scriptName="$(basename "$0")"
 
   if [ -z "${logFile-}" ]; then
     readonly logLocation="${HOME}/logs"

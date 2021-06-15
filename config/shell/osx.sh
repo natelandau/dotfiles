@@ -66,8 +66,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # example '$ ron -5 man/rip.5.ron | browser'
     local f
     f=$(mktemp -t browser.XXXXXX.html)
-    cat /dev/stdin >|$f
-    open -a safari $f
+    cat /dev/stdin >|"${f}"
+    open -a safari "${f}"
   }
 
   lst() {

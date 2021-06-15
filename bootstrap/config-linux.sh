@@ -230,7 +230,7 @@ _mainScript_() {
 
     local h
     while read -r h; do
-      h="$(basename ${h})"
+      h="$(basename "${h}")"
       [[ -L "${gitRoot}/.git/hooks/${h%.sh}" ]] \
         || _makeSymlink_ -n "${hooksLocation}/${h}" "${gitRoot}/.git/hooks/${h%.sh}"
     done < <(find "${hooksLocation}" -maxdepth 1 -name "*.sh" -type f | sort)

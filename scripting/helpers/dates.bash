@@ -82,7 +82,7 @@ _parseDate_() {
       _parseDate_found="${BASH_REMATCH[2]}"
       _parseDate_year=$(( 10#${BASH_REMATCH[3]} ))
       _parseDate_month=$(( 10#${BASH_REMATCH[4]} ))
-      _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+      _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
       _parseDate_day=$(( 10#${BASH_REMATCH[5]} ))
 
   # Month DD, YYYY
@@ -90,7 +90,7 @@ _parseDate_() {
       verbose "regex match: ${tan}Month DD, YYYY${purple}"
       _parseDate_found="${BASH_REMATCH[1]}"
       _parseDate_month=$(_monthToNumber_ ${BASH_REMATCH[2]})
-      _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+      _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
       _parseDate_day=$(( 10#${BASH_REMATCH[3]} ))
       _parseDate_year=$(( 10#${BASH_REMATCH[5]} ))
 
@@ -99,7 +99,7 @@ _parseDate_() {
       verbose "regex match: ${tan}Month DD, YY${purple}"
       _parseDate_found="${BASH_REMATCH[1]}"
       _parseDate_month=$(_monthToNumber_ ${BASH_REMATCH[2]})
-      _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+      _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
       _parseDate_day=$(( 10#${BASH_REMATCH[3]} ))
       _parseDate_year="20$(( 10#${BASH_REMATCH[5]} ))"
 
@@ -109,7 +109,7 @@ _parseDate_() {
       _parseDate_found="${BASH_REMATCH[2]}"
       _parseDate_day=$(( 10#"${BASH_REMATCH[3]}" ))
       _parseDate_month="$(_monthToNumber_ "${BASH_REMATCH[4]}")"
-      _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+      _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
       _parseDate_year=$(( 10#"${BASH_REMATCH[5]}" ))
 
   # MM-DD-YYYY  or  DD-MM-YYYY
@@ -123,7 +123,7 @@ _parseDate_() {
             _parseDate_found="${BASH_REMATCH[2]}"
             _parseDate_year=$(( 10#${BASH_REMATCH[5]} ))
             _parseDate_month=$(( 10#${BASH_REMATCH[3]} ))
-            _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+            _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
             _parseDate_day=$(( 10#${BASH_REMATCH[4]} ))
       elif [[ $(( 10#${BASH_REMATCH[3]} )) -gt 12 && \
               $(( 10#${BASH_REMATCH[3]} )) -lt 32 && \
@@ -133,7 +133,7 @@ _parseDate_() {
             _parseDate_found="${BASH_REMATCH[2]}"
             _parseDate_year=$(( 10#${BASH_REMATCH[5]} ))
             _parseDate_month=$(( 10#${BASH_REMATCH[4]} ))
-            _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+            _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
             _parseDate_day=$(( 10#${BASH_REMATCH[3]} ))
       elif [[ $(( 10#${BASH_REMATCH[3]} )) -lt 32 && \
             $(( 10#${BASH_REMATCH[4]} )) -lt 13
@@ -142,7 +142,7 @@ _parseDate_() {
           _parseDate_found="${BASH_REMATCH[2]}"
           _parseDate_year=$(( 10#${BASH_REMATCH[5]} ))
           _parseDate_month=$(( 10#${BASH_REMATCH[3]} ))
-          _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+          _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
           _parseDate_day=$(( 10#${BASH_REMATCH[4]} ))
       else
         shopt -u nocasematch
@@ -159,7 +159,7 @@ _parseDate_() {
             _parseDate_found="${BASH_REMATCH[2]}"
             _parseDate_year="20$(( 10#${BASH_REMATCH[5]} ))"
             _parseDate_month=$(( 10#${BASH_REMATCH[3]} ))
-            _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+            _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
             _parseDate_day=$(( 10#${BASH_REMATCH[4]} ))
       elif [[ $(( 10#${BASH_REMATCH[3]} )) -gt 12 && \
               $(( 10#${BASH_REMATCH[3]} )) -lt 32 && \
@@ -169,7 +169,7 @@ _parseDate_() {
             _parseDate_found="${BASH_REMATCH[2]}"
             _parseDate_year="20$(( 10#${BASH_REMATCH[5]} ))"
             _parseDate_month=$(( 10#${BASH_REMATCH[4]} ))
-            _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+            _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
             _parseDate_day=$(( 10#${BASH_REMATCH[3]} ))
       elif [[ $(( 10#${BASH_REMATCH[3]} )) -lt 32 && \
             $(( 10#${BASH_REMATCH[4]} )) -lt 13
@@ -178,7 +178,7 @@ _parseDate_() {
           _parseDate_found="${BASH_REMATCH[2]}"
           _parseDate_year="20$(( 10#${BASH_REMATCH[5]} ))"
           _parseDate_month=$(( 10#${BASH_REMATCH[3]} ))
-          _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+          _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
           _parseDate_day=$(( 10#${BASH_REMATCH[4]} ))
       else
         shopt -u nocasematch
@@ -200,7 +200,7 @@ _parseDate_() {
       _parseDate_found="${BASH_REMATCH[2]}"
       _parseDate_day="$(( 10#${BASH_REMATCH[5]} ))"
       _parseDate_month="$(( 10#${BASH_REMATCH[4]} ))"
-      _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+      _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
       _parseDate_year="$(( 10#${BASH_REMATCH[3]} ))"
       _parseDate_hour="$(( 10#${BASH_REMATCH[6]} ))"
       _parseDate_minute="$(( 10#${BASH_REMATCH[7]} ))"
@@ -211,7 +211,7 @@ _parseDate_() {
       _parseDate_found="${BASH_REMATCH[2]}"
       _parseDate_day="$(( 10#${BASH_REMATCH[5]} ))"
       _parseDate_month="$(( 10#${BASH_REMATCH[4]} ))"
-      _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+      _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
       _parseDate_year="$(( 10#${BASH_REMATCH[3]} ))"
       _parseDate_hour="${BASH_REMATCH[6]}"
       _parseDate_minute="00"
@@ -229,7 +229,7 @@ _parseDate_() {
               _parseDate_found="${BASH_REMATCH[2]}"
               _parseDate_day="$(( 10#${BASH_REMATCH[4]} ))"
               _parseDate_month="$(( 10#${BASH_REMATCH[3]} ))"
-              _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+              _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
               _parseDate_year="${BASH_REMATCH[5]}${BASH_REMATCH[6]}"
         # DDMMYYYY
         elif [[ $(( 10#${BASH_REMATCH[5]} )) -eq 20 && \
@@ -241,7 +241,7 @@ _parseDate_() {
               _parseDate_found="${BASH_REMATCH[2]}"
               _parseDate_day="$(( 10#${BASH_REMATCH[3]} ))"
               _parseDate_month="$(( 10#${BASH_REMATCH[4]} ))"
-              _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+              _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
               _parseDate_year="${BASH_REMATCH[5]}${BASH_REMATCH[6]}"
         # YYYYMMDD
         elif [[ $(( 10#${BASH_REMATCH[3]} )) -eq 20 \
@@ -253,7 +253,7 @@ _parseDate_() {
               _parseDate_found="${BASH_REMATCH[2]}"
               _parseDate_day="$(( 10#${BASH_REMATCH[6]} ))"
               _parseDate_month="$(( 10#${BASH_REMATCH[5]} ))"
-              _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+              _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
               _parseDate_year="${BASH_REMATCH[3]}${BASH_REMATCH[4]}"
         # YYYYDDMM
         elif [[ $(( 10#${BASH_REMATCH[3]} )) -eq 20 \
@@ -265,7 +265,7 @@ _parseDate_() {
               _parseDate_found="${BASH_REMATCH[2]}"
               _parseDate_day="$(( 10#${BASH_REMATCH[5]} ))"
               _parseDate_month="$(( 10#${BASH_REMATCH[6]} ))"
-              _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+              _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
               _parseDate_year="${BASH_REMATCH[3]}${BASH_REMATCH[4]}"
         # Assume YYYMMDD
         elif [[ $(( 10#${BASH_REMATCH[3]} )) -eq 20 \
@@ -276,7 +276,7 @@ _parseDate_() {
               _parseDate_found="${BASH_REMATCH[2]}"
               _parseDate_day="$(( 10#${BASH_REMATCH[6]} ))"
               _parseDate_month="$(( 10#${BASH_REMATCH[5]} ))"
-              _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+              _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
               _parseDate_year="${BASH_REMATCH[3]}${BASH_REMATCH[4]}"
         else
           shopt -u nocasematch
@@ -295,14 +295,14 @@ _parseDate_() {
   #       ]]; then
   #             _parseDate_day="$(( 10#${BASH_REMATCH[2]} ))"
   #             _parseDate_month="$(( 10#${BASH_REMATCH[3]} ))"
-  #             _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+  #             _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
   #             _parseDate_year="$(date +%Y )"
   #     elif [[ $(( 10#${BASH_REMATCH[2]} )) -lt 13 \
   #          && $(( 10#${BASH_REMATCH[3]} )) -lt 32 \
   #          ]]; then
   #             _parseDate_day="$(( 10#${BASH_REMATCH[3]} ))"
   #             _parseDate_month="$(( 10#${BASH_REMATCH[2]} ))"
-  #             _parseDate_monthName="$(_numberToMonth_ $_parseDate_month)"
+  #             _parseDate_monthName="$(_numberToMonth_ "${_parseDate_month}")"
   #             _parseDate_year="$(date +%Y )"
   #     else
   #       shopt -u nocasematch

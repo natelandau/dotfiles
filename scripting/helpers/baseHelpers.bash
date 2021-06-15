@@ -188,10 +188,10 @@ notice() { echo -e "$(_alert_ notice "${1}" "${2-}")"; }
 info() { echo -e "$(_alert_ info "${1}" "${2-}")"; }
 success() { echo -e "$(_alert_ success "${1}" "${2-}")"; }
 dryrun() { echo -e "$(_alert_ dryrun "${1}" "${2-}")"; }
-input() { echo -n "$(_alert_ input "${1}" ${2-})"; }
+input() { echo -n "$(_alert_ input "${1}" "${2-}")"; }
 header() { echo -e "$(_alert_ header "== ${1} ==" ${2-})"; }
-die() { echo -e "$(_alert_ fatal "${1}" ${2-})"; _safeExit_ "1" ; }
-fatal() { echo -e "$(_alert_ fatal "${1}" ${2-})"; _safeExit_ "1" ; }
+die() { echo -e "$(_alert_ fatal "${1}" "${2-}")"; _safeExit_ "1" ; }
+fatal() { echo -e "$(_alert_ fatal "${1}" "${2-}")"; _safeExit_ "1" ; }
 debug() { echo -e "$(_alert_ debug "${1}" "${2-}")"; }
 verbose() { echo -e "$(_alert_ debug "${1}" "${2-}")"; }
 

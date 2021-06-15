@@ -1,25 +1,27 @@
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/96fb62a631014ebbacb9a19193012741)](https://www.codacy.com/gh/natelandau/dotfiles/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=natelandau/dotfiles&amp;utm_campaign=Badge_Grade)
+
 This repository contains my base setup for a new computer along with a number of bash scripts and bash scripting utilities.  It is opinionated and based on my own work flows. I highly recommend that you read through the files and customize them for your own purposes.
 
 Included here are:
 
-* Dotfiles for both BASH and ZSH
-* A series of bash scripts performing different useful functions
-* Scripting templates and utilities
-* Bootstrap scripts to automate the process of provisioning a new computer or VM.
+  * Dotfiles for both BASH and ZSH
+  * A series of bash scripts performing different useful functions
+  * Scripting templates and utilities
+  * Bootstrap scripts to automate the process of provisioning a new computer or VM.
 
 **Disclaimer:**  *I am not a professional or trained programmer and I bear no responsibility whatsoever if any of these scripts wipes your computer, destroys your data, burns your toast, crashes your car, or otherwise causes mayhem and destruction. Please configure these to your own needs and USE AT YOUR OWN RISK.*
 
 ## Files and organization
 The file organization is as follows:
 
-* **bin/** - A collection of BASH scripts that I have found very helpful over the years
-* **bootstrap/** - Scripts and utilities to bootstrap a new Mac or Linux computer/VM
-* **config/** - Contains the elements needed to configure your environment and specific apps.
-  * config/**dotfiles/** - Ahem, dotfiles.
-  * config/**iterm/** - My preferred [iTerm](https://www.iterm2.com) configuration
-  * config/**shell/** - Aliases and other goodies that are sourced by either BASH or ZSH
-* **scripting/** - Shell scripting utilities and templates
-* **test/** - Unit tests written using [BATS](https://github.com/sstephenson/bats)
+  * **bin/** - A collection of BASH scripts that I have found very helpful over the years
+  * **bootstrap/** - Scripts and utilities to bootstrap a new Mac or Linux computer/VM
+  * **config/** - Contains the elements needed to configure your environment and specific apps.
+    * config/**dotfiles/** - Ahem, dotfiles.
+    * config/**iterm/** - My preferred [iTerm](https://www.iterm2.com) configuration
+    * config/**shell/** - Aliases and other goodies that are sourced by either BASH or ZSH
+  * **scripting/** - Shell scripting utilities and templates
+  * **test/** - Unit tests written using [BATS](https://github.com/sstephenson/bats)
 
 **IMPORTANT:** Unless you want to use my defaults, make sure you review the files in `config/` to configure your own aliases, preferences, etc.
 
@@ -32,10 +34,10 @@ curl -SL https://gist.githubusercontent.com/natelandau/b3e1dfba7491137f0a0f5e257
 
 This gist creates a script `~/bootstrap.sh` in your home directory which completes the following tasks
 
-1. Creates a new public SSH key if needed
-2. Copies your public key to your clipboard
-3. Opens Github to allow you to add this public key to your 'known keys'
-4. Clones this repo to your home directory
+  1. Creates a new public SSH key if needed
+  2. Copies your public key to your clipboard
+  3. Opens Github to allow you to add this public key to your 'known keys'
+  4. Clones this repo to your home directory
 
 See, easy. Now you're ready to run one of the bootstrap scripts and get your new computer working.
 

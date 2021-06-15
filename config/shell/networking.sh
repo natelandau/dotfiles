@@ -18,7 +18,7 @@ newMAC() {
   # DESC:   Changes MAC address to get around public wifi limitations
   #         Copied from:  https://github.com/stefanjudis/.dotfiles
   NEW_MAC_ADDRESS=$(openssl rand -hex 6 | sed 's/\(..\)/\1:/g; s/.$//')
-  echo $NEW_MAC_ADDRESS
+  echo "${NEW_MAC_ADDRESS}"
   sudo ifconfig en0 ether "$NEW_MAC_ADDRESS"
   echo "New MAC Address set"
 }

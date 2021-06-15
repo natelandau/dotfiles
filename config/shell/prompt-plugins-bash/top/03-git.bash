@@ -1,7 +1,7 @@
 segmentGit() {
   local fground="${bold}${fore_whi}"
   local bground="$back_ora"
-  local invertedBckgrnd="$fore_ora" # Foreground of the current background
+  local invertedBckgrnd="${fore_ora}" # Foreground of the current background
   local enabled=true # If false, this segment will be ignored
   local seperator=""
 
@@ -41,10 +41,10 @@ segmentGit() {
 
       # See how many commits ahead or behind we are
       local stat="$(env LANG=C git status --porcelain --branch | grep --color=never -o '\[.\+\]$')"
-      local aheadN="$(echo $stat | grep --color=never -o 'ahead [[:digit:]]\+' | grep --color=never -o '[[:digit:]]\+')"
-      local behindN="$(echo $stat | grep --color=never -o 'behind [[:digit:]]\+' | grep --color=never -o '[[:digit:]]\+')"
-      [ -n "$aheadN" ] && s+=" ⇡$aheadN"
-      [ -n "$behindN" ] && s+=" ⇣$behindN"
+      local aheadN="$(echo "${stat}" | grep --color=never -o 'ahead [[:digit:]]\+' | grep --color=never -o '[[:digit:]]\+')"
+      local behindN="$(echo "${stat}" | grep --color=never -o 'behind [[:digit:]]\+' | grep --color=never -o '[[:digit:]]\+')"
+      [ -n "${aheadN}" ] && s+=" ⇡${aheadN}"
+      [ -n "${behindN}" ] && s+=" ⇣${behindN}"
     fi
 
     # Get the short symbolic ref.

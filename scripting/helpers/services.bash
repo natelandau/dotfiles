@@ -13,7 +13,7 @@ _haveInternet_() {
     return 0
   elif command -v route &>/dev/null; then
     local GATEWAY="$(route -n get default | grep gateway)"
-    ping -t 2 -c 1 "$(echo $GATEWAY | cut -d ':' -f 2)" &>/dev/null \
+    ping -t 2 -c 1 "$(echo "${GATEWAY}" | cut -d ':' -f 2)" &>/dev/null \
       && return 0 \
       || return 1
   elif command -v ip &>/dev/null; then
@@ -56,8 +56,8 @@ _httpStatus_() {
   local curlops="${arg4} ${arg5} ${arg6} ${arg7}"
 
   #      __________ get the CODE which is numeric:
-  code=$(echo "$(curl --write-out %{http_code} --silent --connect-timeout ${timeout} \
-    --no-keepalive ${curlops} --output /dev/null ${url})")
+  code=$(echo "$(curl --write-out %{http_code} --silent --connect-timeout "${timeout}" \
+    --no-keepalive "${curlops}" --output /dev/null "${url}")")
 
   #      __________ get the STATUS (from code) which is human interpretable:
   case $code in

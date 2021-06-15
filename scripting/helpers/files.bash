@@ -212,7 +212,7 @@ _decryptFile_() {
 
   [ ! -f "$fileToDecrypt" ] && return 1
 
-  if [ -z $PASS ]; then
+  if [ -z "${PASS}" ]; then
     _execute_ "openssl enc -aes-256-cbc -d -in \"${fileToDecrypt}\" -out \"${decryptedFile}\"" "Decrypt ${fileToDecrypt}"
   else
     _execute_ "openssl enc -aes-256-cbc -d -in \"${fileToDecrypt}\" -out \"${decryptedFile}\" -k \"${PASS}\"" "Decrypt ${fileToDecrypt}"
@@ -242,7 +242,7 @@ _encryptFile_() {
       return 1
     }
 
-  if [ -z $PASS ]; then
+  if [ -z "${PASS}" ]; then
     _execute_ "openssl enc -aes-256-cbc -salt -in \"${fileToEncrypt}\" -out \"${encryptedFile}\"" "Encrypt ${fileToEncrypt}"
   else
     _execute_ "openssl enc -aes-256-cbc -salt -in \"${fileToEncrypt}\" -out \"${encryptedFile}\" -k \"${PASS}\"" "Encrypt ${fileToEncrypt}"
@@ -286,7 +286,7 @@ _ext_() {
 
   # Detect some common multi-extensions
   if [[ ! ${levels-} ]]; then
-    case $(tr '[:upper:]' '[:lower:]' <<<$filename) in
+    case $(tr '[:upper:]' '[:lower:]' <<<"${filename}") in
       *.tar.gz | *.tar.bz2) levels=2 ;;
     esac
   fi
@@ -295,9 +295,9 @@ _ext_() {
 
   for ((i = 0; i < levels; i++)); do
     ext=${fn##*.}
-    exts=$ext${exts-}
+    exts=${ext}${exts-}
     fn=${fn%$ext}
-    [[ "$exts" == "$filename" ]] && return
+    [[ "$exts" == "${filename}" ]] && return
   done
 
   echo "$exts"
