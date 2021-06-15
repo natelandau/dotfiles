@@ -10,6 +10,9 @@ Included here are:
 **Disclaimer:**  *I am not a professional or trained programmer and I bear no responsibility whatsoever if any of these scripts wipes your computer, destroys your data, burns your toast, crashes your car, or otherwise causes mayhem and destruction. Please configure these to your own needs and USE AT YOUR OWN RISK.*
 
 ## Files and organization
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/99668008a2224482a7646b663fb9a5a7)](https://app.codacy.com/gh/natelandau/dotfiles?utm_source=github.com&utm_medium=referral&utm_content=natelandau/dotfiles&utm_campaign=Badge_Grade_Settings)
+
 The file organization is as follows:
 
 * **bin/** - A collection of BASH scripts that I have found very helpful over the years
