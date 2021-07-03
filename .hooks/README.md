@@ -1,1 +1,0 @@
-On each local system these files must be symlinked into `repo/.git/hooks` directory.

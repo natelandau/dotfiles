@@ -34,11 +34,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   # Open the finder to a specified path or to current directory.
   f() { open -a "Finder" "${1-.}"; }
 
-  if command -v trash &>/dev/null; then
-    alias rm='trash'
-    alias rmd='trash'
-  fi
-
   # Opens any file in MacOS Quicklook Preview
   ql() { qlmanage -p "$*" &>/dev/null; }
 

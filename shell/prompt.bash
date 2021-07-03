@@ -86,8 +86,8 @@ else
     local lastExit=$?
     local reset seperator oldBG ii iii
     divider=""
-    topPluginLocation="${HOME}/dotfiles/config/shell/prompt-plugins-bash/top"
-    bottomPluginLocation="${HOME}/dotfiles/config/shell/prompt-plugins-bash/bottom"
+    topPluginLocation="${DOTFILES_LOCATION}/shell/prompt-plugins-bash/top"
+    bottomPluginLocation="${DOTFILES_LOCATION}/shell/prompt-plugins-bash/bottom"
     PS1="" # Add a newline at the beginning of the prompt
     oldBG=""
 
