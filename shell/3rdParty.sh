@@ -25,7 +25,7 @@ if command -v npm &>/dev/null; then
 fi
 
 # Use Java JDK 1.8
-if [[ "$(command -v java)" && -e "/usr/libexec/java_home" ]]; then
+if [[ "$(java -version &>/dev/null)" ]] && [[ -e "/usr/libexec/java_home" ]]; then
   export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
 fi
 
