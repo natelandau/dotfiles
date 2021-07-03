@@ -1,4 +1,3 @@
-
 [alias]
 	up = "!git remote update -p; git merge --ff-only @{u}"
 
@@ -144,7 +143,6 @@
 	# Automatically correct and execute mistyped commands
 	autocorrect = 1
 
-
 # Use separate file for username / github token / etc
 [include]
   path = ~/.gitconfig.local
@@ -175,13 +173,15 @@
     #                     │        └─ decorations (branch, heads or tags)
     #                     └─ hash (abbreviated)
 
+[pull]
+  rebase = true
+
 [push]
 
 	default = simple
 
 	# Make `git push` push relevant annotated tags when pushing branches out.
 	followTags = true
-
 
 [pager]
 

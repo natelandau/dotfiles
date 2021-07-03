@@ -1,4 +1,0 @@
-symlinks:
-  # format is 'destination: source'
-  - links/testfile-link.txt:           testfile.txt
-  - links/dotfile-link:               .dotfile

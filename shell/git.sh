@@ -169,35 +169,8 @@ gitRollback() {
   fi
 }
 
-# Github integration
-github() {
-  # Open github web page of current git repo
-  local github_url
-  if ! git remote -v >/dev/null; then
-    return 1
-  fi
-  # get remotes for fetch
-  github_url="$(git remote -v | grep github\.com | grep \(fetch\)$)"
-
-  if [ -z "$github_url" ]; then
-    echo "A GitHub remote was not found for this repository."
-    return 1
-  fi
-
-  # look for origin in remotes, use that if found, otherwise use first result
-  if echo "$github_url" | grep '^origin' >/dev/null 2>&1; then
-    github_url="$(echo "$github_url" | grep '^origin')"
-  else
-    github_url="$(echo "$github_url" | head -n1)"
-  fi
-
-  github_url="$(echo "$github_url" | awk '{ print $2 }')"
-
-  github_url="$(echo "git@github.com:natelandau/dotfiles.git" | sed -e "s/git@github\.com:/http:\/\/github\.com\//g")"
-  open "$github_url"
-}
-
 gurl() {
+  # Prints URL of current git repository
   local remote remotename host user_repo
 
   remotename="${*:-origin}"

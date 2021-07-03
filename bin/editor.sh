@@ -4,7 +4,7 @@
 # and the system being used.
 #
 # Usage:  Place the following in .bash_profile
-#         export EDITOR="${HOME}/dotfiles/bin/editor.sh"
+#         export EDITOR="[LOCATION OF THIS SCRIPT]/editor.sh"
 
 case "$1" in
   *.md | *.markdown | *.mmd | *.mkd)

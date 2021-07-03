@@ -7,6 +7,9 @@ case $- in
 esac
 [ -z "$PS1" ] && return
 
+# IMPORTANT: Edit this to reflect the location of this repository
+DOTFILES_LOCATION="${HOME}/repos/dotfiles"
+
 # set default umask
 umask 002
 
@@ -17,7 +20,7 @@ export PATH="/usr/local/bin:${PATH}:/usr/local/sbin:${HOME}/bin:${HOME}/.local/b
 
 # Locations containing files *.bash to be sourced to your environment
 configFileLocations=(
-  "${HOME}/dotfiles/config/shell"
+  "${DOTFILES_LOCATION}/shell"
   "${HOME}/dotfiles-private/config/shell"
 )
 

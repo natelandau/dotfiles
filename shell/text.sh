@@ -1,5 +1,5 @@
 if command -v less &>/dev/null; then
-  [ -e "${HOME}/bin/lessfilter.sh" ] && export LESSOPEN='|~/bin/lessfilter.sh %s'
+  [ -e "${DOTFILES_LOCATION}/bin/lessfilter.sh" ] && export LESSOPEN='|${DOTFILES_LOCATION}/bin/lessfilter.sh %s'
   alias less='less -RXqeF'
   alias more='less -RXqeNF'
 fi
@@ -71,7 +71,7 @@ htmldecode() {
   # Decode HTML characters with sed
   # Usage: htmlDecode <string>
   local sedLocation
-  sedLocation="${HOME}/dotfiles/config/sed/htmlDecode.sed"
+  sedLocation="${HOME}/.sed/htmlDecode.sed"
   if [ -f "$sedLocation" ]; then
     echo "${1}" | sed -f "$sedLocation"
   else
@@ -84,7 +84,7 @@ htmlencode() {
   # Usage: htmlEncode <string>
 
   local sedLocation
-  sedLocation="${HOME}/dotfiles/config/sed/htmlEncode.sed"
+  sedLocation="${HOME}/.sed/htmlEncode.sed"
   if [ -f "$sedLocation" ]; then
     echo "${1}" | sed -f "$sedLocation"
   else

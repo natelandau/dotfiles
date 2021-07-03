@@ -1,12 +1,35 @@
-# Ignore the backup directory if one is created
-dotfiles_backup
+# Ignore common directories and files
 tmp
 scratch
-config/dotfiles/Gemfile.lock
-
-# Other ignores
-*.sublime-workspace
-test/runtests.sh
-
-# Ignore synology junk
+*.DS_Store
+*.LSOverride
+.AppleDouble
+.bundle
 *@eaDir*
+.MacOSX
+.Trash
+._*
+ehthumbs.db
+*[Tt]humbs.db
+
+# npm & bower
+bower_components
+node_modules
+npm-debug.log
+.npmignore
+
+# Files that might appear in the root of a Mac volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# IDE
+.idea/
+*.sublime-workspace
+
+# Other
+*.stfolder
