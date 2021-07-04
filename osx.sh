@@ -309,28 +309,28 @@ defaults write com.apple.dock enable-spring-load-actions-on-all-items -bool true
 # Show indicator lights for open applications in the Dock
 defaults write com.apple.dock show-process-indicators -bool true
 
-info "Disable App Persistence (re-opening apps on login)"
+# Disable App Persistence (re-opening apps on login)
 defaults write -g ApplePersistence -bool no
 
-info "Don’t animate opening applications from the Dock"
+# Don’t animate opening applications from the Dock
 defaults write com.apple.dock launchanim -bool false
 
-info "Speed up Mission Control animations"
+# Speed up Mission Control animations
 defaults write com.apple.dock expose-animation-duration -float 0.1
 
-info "Disable Dashboard"
+# Disable Dashboard
 defaults write com.apple.dashboard mcx-disabled -bool true
 
-info "Don’t show Dashboard as a Space"
+# Don’t show Dashboard as a Space
 defaults write com.apple.dock dashboard-in-overlay -bool true
 
-info "Remove the auto-hiding Dock delay"
+# Remove the auto-hiding Dock delay
 defaults write com.apple.dock autohide-delay -float 0
 
-info "Remove the animation when hiding/showing the Dock"
+# Remove the animation when hiding/showing the Dock
 defaults write com.apple.dock autohide-time-modifier -float 0
 
-info "Automatically hide and show the Dock"
+# Automatically hide and show the Dock
 defaults write com.apple.dock autohide -bool true
 
 # Wipe all (default) app icons from the Dock
@@ -376,23 +376,23 @@ defaults write com.apple.Safari ShowOverlayStatusBar -bool true
 # Add a context menu item for showing the Web Inspector in web views
 defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
 
-info "Make Safari’s search banners default to Contains instead of Starts With"
+# Make Safari’s search banners default to Contains instead of Starts With
 defaults write com.apple.Safari FindOnPageMatchesWordStartsOnly -bool false
 
-info "Privacy: don’t send search queries to Apple"
+# Privacy: don’t send search queries to Apple
 defaults write com.apple.Safari UniversalSearchEnabled -bool false
 defaults write com.apple.Safari SuppressSearchSuggestions -bool true
 
-info "Show the full URL in the address bar (note: this still hides the scheme)"
+# Show the full URL in the address bar (note: this still hides the scheme)
 defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true
 
-info "Set Safari’s home page to about:blank for faster loading"
+# Set Safari’s home page to about:blank for faster loading
 defaults write com.apple.Safari HomePage -string "about:blank"
 
-info "Prevent Safari from opening safe files automatically after downloading"
+# Prevent Safari from opening safe files automatically after downloading
 defaults write com.apple.Safari AutoOpenSafeDownloads -bool false
 
-info "Remove useless icons from Safari’s bookmarks bar"
+# Remove useless icons from Safari’s bookmarks bar
 # defaults write com.apple.Safari ProxiesInBookmarksBar "()"
 
 # Show favorites bar in Safari by default:
@@ -406,11 +406,11 @@ defaults write com.apple.Safari ShowFavoritesBar -bool true
 # Copy email addresses as `foo@example.com` instead of `Foo Bar <foo@example.com>` in Mail.app
 defaults write com.apple.mail AddressesIncludeNameOnPasteboard -bool false
 
-info "Disable send and reply animations in Mail.app"
+# Disable send and reply animations in Mail.app
 defaults write com.apple.mail DisableReplyAnimations -bool true
 defaults write com.apple.mail DisableSendAnimations -bool true
 
-info "Display emails in threaded mode, sorted by date (newest at the top)"
+# Display emails in threaded mode, sorted by date (newest at the top)
 defaults write com.apple.mail DraftsViewerAttributes -dict-add "DisplayInThreadedMode" -string "yes"
 defaults write com.apple.mail DraftsViewerAttributes -dict-add "SortedDescending" -string "no"
 defaults write com.apple.mail DraftsViewerAttributes -dict-add "SortOrder" -string "received-date"
@@ -442,10 +442,10 @@ defaults write com.apple.ActivityMonitor OpenMainWindow -bool true
 # Show all processes in Activity Monitor
 defaults write com.apple.ActivityMonitor ShowCategory -int 0
 
-info "Visualize CPU usage in the Activity Monitor Dock icon"
+# Visualize CPU usage in the Activity Monitor Dock icon
 defaults write com.apple.ActivityMonitor IconType -int 5
 
-info "Sort Activity Monitor results by CPU usage"
+# Sort Activity Monitor results by CPU usage
 defaults write com.apple.ActivityMonitor SortColumn -string "CPUUsage"
 defaults write com.apple.ActivityMonitor SortDirection -int 0
 
@@ -459,40 +459,40 @@ defaults write com.apple.messageshelper.MessageController SOInputLineSettings -d
 # Disable continuous spell checking
 defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "continuousSpellCheckingEnabled" -bool false
 
-info "Disable automatic emoji substitution in Messages.app (i.e. use plain text smileys)"
+# Disable automatic emoji substitution in Messages.app (i.e. use plain text smileys)
 defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticEmojiSubstitutionEnablediMessage" -bool false
 
 ###############################################################################
 # Time Machine                                                                #
 ###############################################################################
-info "Prevent Time Machine from prompting to use new hard drives as backup volume"
+# Prevent Time Machine from prompting to use new hard drives as backup volume
 defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool true
 
-info "Disable local Time Machine backups"
+# Disable local Time Machine backups
 hash tmutil &>/dev/null && sudo tmutil disablelocal
 
 ###############################################################################
 # Other Apps                                                                  #
 ###############################################################################
-info "Use plain text mode for new TextEdit documents"
+# Use plain text mode for new TextEdit documents
 defaults write com.apple.TextEdit RichText -int 0
 
-info "Open and save files as UTF-8 in TextEdit"
+# Open and save files as UTF-8 in TextEdit
 defaults write com.apple.TextEdit PlainTextEncoding -int 4
 defaults write com.apple.TextEdit PlainTextEncodingForWrite -int 4
 
-info "Enable the debug menu in Disk Utility"
+# Enable the debug menu in Disk Utility
 defaults write com.apple.DiskUtility DUDebugMenuEnabled -bool true
 defaults write com.apple.DiskUtility advanced-image-options -bool true
 
-info "Stop Photos from opening whenever a camera is connected"
+# Stop Photos from opening whenever a camera is connected
 defaults -currentHost write com.apple.ImageCapture disableHotPlug -bool YES
 
-info "Configure Google Chrome"
+# Configure Google Chrome
 defaults write com.google.Chrome DisablePrintPreview -bool true
 defaults write com.google.Chrome.canary DisablePrintPreview -bool true
 
-info "Enable the debug menu in Address Book"
+# Enable the debug menu in Address Book
 defaults write com.apple.addressbook ABShowDebugMenu -bool true
 
 ###############################################################################
