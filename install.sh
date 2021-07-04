@@ -2,18 +2,18 @@
 
 _mainScript_() {
 
-while read -r f; do
-  if [ -e "${HOME}/${f}" ]; then
-    _execute_ "mv \"${HOME}/${f}\" \"${HOME}/${f}.bak\"" "Backup: ~/${f} --> ~/${f}.bak"
-  fi
+  while read -r f; do
+    if [ -e "${HOME}/${f}" ]; then
+      _execute_ "mv \"${HOME}/${f}\" \"${HOME}/${f}.bak\"" "Backup: ~/${f} --> ~/${f}.bak"
+    fi
 
-  _makeSymlink_ -n "$(pwd)/${f}" "${HOME}/${f}"
+    _makeSymlink_ -n "$(pwd)/${f}" "${HOME}/${f}"
 
-done< <(find . -maxdepth 1 -iregex '\./\..*' \
-        -not -name '.vscode' \
-        -not -name '.git' \
-        -not -name '.DS_Store' \
-        | sed "s|^\./||")
+  done< <(find . -maxdepth 1 -iregex '\./\..*' \
+          -not -name '.vscode' \
+          -not -name '.git' \
+          -not -name '.DS_Store' \
+          | sed "s|^\./||")
 
 } # end _mainScript_
 
@@ -551,7 +551,7 @@ _makeSymlink_() {
       return 0
     }
 
-    if [[ "${noBackup}" == true ]]; then
+    if [[ "${noBackup}" == false ]]; then
       _backupFile_ "${d}" "${b:-backup}"
     fi
     if [[ "${DRYRUN}" == false ]]; then
@@ -563,7 +563,7 @@ _makeSymlink_() {
     fi
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -e "${d}" ]; then
-    if [[ "${noBackup}" == true ]]; then
+    if [[ "${noBackup}" == false ]]; then
       _backupFile_ "${d}" "${b:-backup}"
     fi
     if [[ "${DRYRUN}" == false ]]; then

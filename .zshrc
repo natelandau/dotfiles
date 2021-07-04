@@ -41,7 +41,7 @@ export MANPAGER='less -X'
 # Locations containing files *.bash to be sourced to your environment
 configFileLocations=(
   "${DOTFILES_LOCATION}/shell"
-  "${HOME}/dotfiles-private/config/shell"
+  "${HOME}/repos/dotfiles-private/shell"
 )
 
 for configFileLocation in "${configFileLocations[@]}"; do
