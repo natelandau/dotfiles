@@ -1,5 +1,5 @@
 if command -v less &>/dev/null; then
-  [ -e "${DOTFILES_LOCATION}/bin/lessfilter.sh" ] && export LESSOPEN='|${DOTFILES_LOCATION}/bin/lessfilter.sh %s'
+  [ -e "~/bin/lessfilter.sh" ] && export LESSOPEN='|~/bin/lessfilter.sh %s'
   alias less='less -RXqeF'
   alias more='less -RXqeNF'
 fi
