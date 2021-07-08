@@ -10,8 +10,10 @@ case "$1" in
   *.md | *.markdown | *.mmd | *.mkd)
     if open -Ra "Mark Text" &>/dev/null; then
       open -a "Mark Text" "${1}"
+    elif command -v code &>/dev/null; then
+      code -wr "${1}"
     else
-      editorCommand="$(command -v code subl micro nano pico | head -n 1)"
+      editorCommand="$(command -v subl micro nano pico | head -n 1)"
       "${editorCommand}" "${1}"
     fi
     ;;
@@ -63,7 +65,11 @@ case "$1" in
       echo "Error: '${1}' is a media file"
     ;;
   *)
-    editorCommand="$(command -v code subl micro nano pico | head -n 1)"
-    "${editorCommand}" "${1}"
+    if command -v code &>/dev/null; then
+      code -wr "${1}"
+    else
+      editorCommand="$(command -v subl micro nano pico | head -n 1)"
+      "${editorCommand}" "${1}"
+   fi
     ;;
 esac
