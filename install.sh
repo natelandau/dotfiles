@@ -2,6 +2,8 @@
 
 _mainScript_() {
 
+  _setPATH_ "/usr/local/bin"
+
   while read -r f; do
     _makeSymlink_ "${f}" "${USER_HOME}/$(basename "${f}")"
   done < <(find "$(_findBaseDir_)" -maxdepth 1 \
@@ -350,6 +352,25 @@ _execute_() {
       "${passFailures}" && return 0 || return 1
     fi
   fi
+}
+
+_setPATH_() {
+  # DESC:   Add directories to $PATH so script can find executables
+  # ARGS:   $@ - One or more paths
+  # OUTS:   $PATH
+  # USAGE:  _setPATH_ "/usr/local/bin" "${HOME}/bin" "$(npm bin)"
+  local NEWPATH NEWPATHS USERPATH
+
+  for USERPATH in "$@"; do
+    NEWPATHS+=("$USERPATH")
+  done
+
+  for NEWPATH in "${NEWPATHS[@]}"; do
+    if ! echo "${PATH}" | grep -Eq "(^|:)${NEWPATH}($|:)"; then
+      PATH="${NEWPATH}:${PATH}"
+      debug "Added '${tan}${NEWPATH}${purple}' to PATH"
+    fi
+  done
 }
 
 _findBaseDir_() {
