@@ -3,7 +3,7 @@
 _mainScript_() {
 
   while read -r f; do
-    _makeSymlink_ "${f}" "${HOME}/$(basename "${f}")"
+    _makeSymlink_ "${f}" "${USER_HOME}/$(basename "${f}")"
   done < <(find "$(_findBaseDir_)" -maxdepth 1 \
     -iregex '^/.*/\..*$' \
     -not -name '.vscode' \
@@ -14,6 +14,8 @@ _mainScript_() {
 } # end _mainScript_
 
 # Set initial flags
+USER_HOME="${HOME}"
+
 QUIET=false
 LOGLEVEL=WARN
 VERBOSE=false
@@ -741,6 +743,10 @@ _parseOptions_() {
   # Read the options and set stuff
   while [[ ${1-} == -?* ]]; do
     case $1 in
+      --user-home)
+        shift
+        USER_HOME="$1"
+        ;;
       -h | --help)
         _usage_ >&2
         _safeExit_
@@ -772,6 +778,10 @@ _usage_() {
   This script creates symlinks in the user's home directory to the dotfiles contained in this repository.
 
   ${bold}Options:${reset}
+    --user-home       Set user home directory to symlink dotfiles to (Defaults to '~/')
+
+      $ $(basename "$0") --user-home "/user/home/user1/"
+
     -h, --help        Display this help and exit
     -l, --loglevel    One of: FATAL, ERROR, WARN, INFO, DEBUG, ALL, OFF  (Default is 'ERROR')
 
