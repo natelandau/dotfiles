@@ -3,17 +3,13 @@
 _mainScript_() {
 
   while read -r f; do
-    if [ -e "${HOME}/${f}" ]; then
-      _execute_ "mv \"${HOME}/${f}\" \"${HOME}/${f}.bak\"" "Backup: ~/${f} --> ~/${f}.bak"
-    fi
-
-    _makeSymlink_ -n "$(pwd)/${f}" "${HOME}/${f}"
-
-  done< <(find . -maxdepth 1 -iregex '\./\..*' \
-          -not -name '.vscode' \
-          -not -name '.git' \
-          -not -name '.DS_Store' \
-          | sed "s|^\./||")
+    _makeSymlink_ "${f}" "${HOME}/$(basename "${f}")"
+  done < <(find "$(_findBaseDir_)" -maxdepth 1 \
+    -iregex '^/.*/\..*$' \
+    -not -name '.vscode' \
+    -not -name '.git' \
+    -not -name '.DS_Store' \
+    -not -name '.hooks' )
 
 } # end _mainScript_
 
@@ -354,6 +350,28 @@ _execute_() {
   fi
 }
 
+_findBaseDir_() {
+  # DESC: Locates the real directory of the script being run. similar to GNU readlink -n
+  # ARGS:  None
+  # OUTS:  Echo result to STDOUT
+  # USE :  baseDir="$(_findBaseDir_)"
+
+  local SOURCE
+  local DIR
+
+  # Is file sourced?
+  [[ $_ != "$0" ]] \
+    && SOURCE="${BASH_SOURCE[1]}" \
+    || SOURCE="${BASH_SOURCE[0]}"
+
+  while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+  done
+  echo "$(cd -P "$(dirname "${SOURCE}")" && pwd)"
+}
+
 _realpath_() {
   # DESC:   Convert a file with relative path to an absolute path
   # ARGS:   $1 (Required) - Input file
@@ -472,6 +490,82 @@ _locateSourceFile_() {
   return 0
 }
 
+_backupFile_() {
+  # DESC:   Creates a backup of a specified file with .bak.
+  # ARGS:   $1 (Required)   - Source file
+  #         $2 (Optional)   - Destination dir name used only with -d flag (defaults to ./backup)
+  # OPTS:   -d              - Move files to a backup direcory
+  #         -m              - Replaces copy (default) with move, effectively removing the
+  # OUTS:   None
+  # USAGE:  _backupFile_ "sourcefile.txt" "some/backup/dir"
+  # NOTE:   dotfiles have their leading '.' removed in their backup
+
+  local opt
+  local OPTIND=1
+  local useDirectory=false
+  local moveFile=false
+
+  while getopts ":dDmM" opt; do
+    case ${opt} in
+      d | D) useDirectory=true ;;
+      m | M) moveFile=true ;;
+      *)
+        {
+          error "Unrecognized option '$1' passed to _makeSymlink_" "${LINENO}"
+          return 1
+        }
+        ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+
+  [[ $# -lt 1 ]] && fatal 'Missing required argument to _backupFile_()!'
+
+  local s="${1}"
+  local d="${2:-backup}"
+  local n # New filename (created by _uniqueFilename_)
+
+  # Error handling
+  [ ! "$(declare -f "_execute_")" ] \
+    && {
+      warning "need function _execute_"
+      return 1
+    }
+  [ ! "$(declare -f "_uniqueFileName_")" ] \
+    && {
+      warning "need function _uniqueFileName_"
+      return 1
+    }
+  [ ! -e "$s" ] \
+    && {
+      warning "Source '${s}' not found"
+      return 1
+    }
+
+  if [ ${useDirectory} == true ]; then
+
+    [ ! -d "${d}" ] \
+      && _execute_ "mkdir -p \"${d}\"" "Creating backup directory"
+
+    if [ -e "$s" ]; then
+      n="$(basename "${s}")"
+      n="$(_uniqueFileName_ "${d}/${s#.}")"
+      if [ ${moveFile} == true ]; then
+        _execute_ "mv \"${s}\" \"${d}/${n##*/}\"" "Moving: '${s}' to '${d}/${n##*/}'"
+      else
+        _execute_ "cp -R \"${s}\" \"${d}/${n##*/}\"" "Backing up: '${s}' to '${d}/${n##*/}'"
+      fi
+    fi
+  else
+    n="$(_uniqueFileName_ "${s}.bak")"
+    if [ ${moveFile} == true ]; then
+      _execute_ "mv \"${s}\" \"${n}\"" "Moving '${s}' to '${n}'"
+    else
+      _execute_ "cp -R \"${s}\" \"${n}\"" "Backing up '${s}' to '${n}'"
+    fi
+  fi
+}
+
 _makeSymlink_() {
   # DESC:   Creates a symlink and backs up a file which may be overwritten by the new symlink. If the
   #         exact same symlink already exists, nothing is done.
@@ -487,12 +581,12 @@ _makeSymlink_() {
 
   local opt
   local OPTIND=1
-  local noBackup=false
+  local backupOriginal=true
   local useSudo=false
 
   while getopts ":nNsS" opt; do
     case $opt in
-      n | N) noBackup=true ;;
+      n | N) backupOriginal=false ;;
       s | S) useSudo=true ;;
       *)
         {
@@ -503,6 +597,15 @@ _makeSymlink_() {
     esac
   done
   shift $((OPTIND - 1))
+
+  if ! command -v realpath >/dev/null 2>&1; then
+    error "We must have 'realpath' installed and available in \$PATH to run."
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      notice "Install coreutils using homebrew and rerun this script."
+      info "\t$ brew install coreutils"
+    fi
+    _safeExit_ 1
+  fi
 
   [[ $# -lt 2 ]] && fatal 'Missing required argument to _makeSymlink_()!'
 
@@ -531,9 +634,9 @@ _makeSymlink_() {
       echo "need function _execute_"
       return 1
     }
-  [ ! "$(declare -f "_locateSourceFile_")" ] \
+  [ ! "$(declare -f "_backupFile_")" ] \
     && {
-      echo "need function _locateSourceFile_"
+      echo "need function _backupFile_"
       return 1
     }
 
@@ -544,26 +647,30 @@ _makeSymlink_() {
   if [ ! -e "${d}" ]; then
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -h "${d}" ]; then
-    o="$(_locateSourceFile_ "${d}")"
+    o="$(realpath "${d}")"
 
     [[ "${o}" == "${s}" ]] && {
-      info "Symlink already exists: ${s} → ${d}"
+      if [ "${DRYRUN}" == true ]; then
+        dryrun "Symlink already exists: ${s} → ${d}"
+      else
+        info "Symlink already exists: ${s} → ${d}"
+      fi
       return 0
     }
 
-    if [[ "${noBackup}" == false ]]; then
+    if [[ "${backupOriginal}" == true ]]; then
       _backupFile_ "${d}" "${b:-backup}"
     fi
     if [[ "${DRYRUN}" == false ]]; then
       if [[ "${useSudo}" == true ]]; then
-        sudo command rm -rf "${d}"
+        command rm -rf "${d}"
       else
         command rm -rf "${d}"
       fi
     fi
     _execute_ "ln -fs \"${s}\" \"${d}\"" "symlink ${s} → ${d}"
   elif [ -e "${d}" ]; then
-    if [[ "${noBackup}" == false ]]; then
+    if [[ "${backupOriginal}" == true ]]; then
       _backupFile_ "${d}" "${b:-backup}"
     fi
     if [[ "${DRYRUN}" == false ]]; then
