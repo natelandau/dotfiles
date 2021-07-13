@@ -728,6 +728,49 @@ _functionStack_() {
   printf ' )\n'
 }
 
+_uniqueFileName_() {
+  # DESC:   Ensure a file to be created has a unique filename to avoid overwriting other files
+  # ARGS:   $1 (Required) - Name of file to be created
+  #         $2 (Optional) - Separation characted (Defaults to a dash '-')
+  # OUTS:   Prints unique filename to STDOUT
+  # USAGE:  _uniqueFileName_ "/some/dir/file.txt" "-"
+
+  local fullfile="${1:?_uniqueFileName_ needs a file}"
+  local spacer="${2:--}"
+  local directory
+  local filename
+  local extension
+  local newfile
+  local n
+
+  # Find directories with _realpath_ if input is an actual file
+  if [ -e "$fullfile" ]; then
+    fullfile="$(realpath "$fullfile")"
+  fi
+
+  directory="$(dirname "$fullfile")"
+  filename="$(basename "$fullfile")"
+
+  # Extract extensions only when they exist
+  if [[ "$filename" =~ \.[a-zA-Z]{2,4}$ ]]; then
+    extension=".${filename##*.}"
+    filename="${filename%.*}"
+  fi
+
+  newfile="${directory}/${filename}${extension-}"
+
+  if [ -e "${newfile}" ]; then
+    n=2
+    while [[ -e "${directory}/${filename}${spacer}${n}${extension-}" ]]; do
+      ((n++))
+    done
+    newfile="${directory}/${filename}${spacer}${n}${extension-}"
+  fi
+
+  echo "${newfile}"
+  return 0
+}
+
 _parseOptions_() {
   # Iterate over options
   # breaking -ab into -a -b when needed and --foo=bar into --foo bar
