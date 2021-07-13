@@ -395,89 +395,6 @@ _findBaseDir_() {
   echo "$(cd -P "$(dirname "${SOURCE}")" && pwd)"
 }
 
-_realpath_() {
-  # DESC:   Convert a file with relative path to an absolute path
-  # ARGS:   $1 (Required) - Input file
-  # OPTS:   -d            - Print the directory information only, without the filename in the output
-  # OUTS:   Prints absolute path of file. Returns 0 if successful or 1 if an error
-  # NOTE:   http://github.com/morgant/realpath
-
-  local file_basename
-  local directory
-  local output
-  local showOnlyDir=false
-  local OPTIND=1
-  local opt
-
-  while getopts ":dD" opt; do
-    case $opt in
-      d | D) showOnlyDir=true ;;
-      *) {
-        error "Unrecognized option '$1' passed to _execute. Exiting."
-        _safeExit_
-      }
-        ;;
-    esac
-  done
-  shift $((OPTIND - 1))
-
-  local path="${1:?_realpath_ needs an input}"
-
-  # make sure the string isn't empty as that implies something in further logic
-  if [ -z "$path" ]; then
-    return 1
-  else
-    # start with the file name (sans the trailing slash)
-    path="${path%/}"
-
-    # if we stripped off the trailing slash and were left with nothing, that means we're in the root directory
-    if [ -z "$path" ]; then
-      path="/"
-    fi
-
-    # get the basename of the file (ignoring '.' & '..', because they're really part of the path)
-    file_basename="${path##*/}"
-    if [[ ("$file_basename" == ".") || ("$file_basename" == "..") ]]; then
-      file_basename=""
-    fi
-
-    # extracts the directory component of the full path, if it's empty then assume '.' (the current working directory)
-    directory="${path%$file_basename}"
-    if [ -z "$directory" ]; then
-      directory='.'
-    fi
-
-    # attempt to change to the directory
-    if ! cd "$directory" &>/dev/null; then
-      return 1
-    fi
-
-    # does the filename exist?
-    if [[ (-n "$file_basename") && (! -e "$file_basename") ]]; then
-      return 1
-    fi
-
-    # get the absolute path of the current directory & change back to previous directory
-    local abs_path
-    abs_path="$(pwd -P)"
-    cd "-" &>/dev/null || return
-
-    # Append base filename to absolute path
-    if [ "${abs_path}" = "/" ]; then
-      output="${abs_path}${file_basename}"
-    else
-      output="${abs_path}/${file_basename}"
-    fi
-
-    # output the absolute path
-    if ! $showOnlyDir ; then
-      echo "${output}"
-    else
-      echo "${abs_path}"
-    fi
-  fi
-}
-
 _locateSourceFile_() {
   # DESC:   Find original file of a symlink
   # ARGS:   $1 (Required) - Input symlink
@@ -487,21 +404,14 @@ _locateSourceFile_() {
   local PHYS_DIR
   local RESULT
 
-  # Error handling
-  [ ! "$(declare -f "_realpath_")" ] \
-    && {
-      error "'_locateSourceFile_' requires function '_realpath_' "
-      return 1
-    }
-
   TARGET_FILE="${1:?_locateSourceFile_ needs a file}"
 
-  cd "$(_realpath_ -d "${TARGET_FILE}")" &>/dev/null || return 1
+  cd "$(realpath "${TARGET_FILE}")" &>/dev/null || return 1
   TARGET_FILE="$(basename "${TARGET_FILE}")"
   # Iterate down a (possible) chain of symlinks
   while [ -L "${TARGET_FILE}" ]; do
     TARGET_FILE=$(readlink "${TARGET_FILE}")
-    cd "$(_realpath_ -d "${TARGET_FILE}")" &>/dev/null || return 1
+    cd "$(realpath "${TARGET_FILE}")" &>/dev/null || return 1
     TARGET_FILE="$(basename "${TARGET_FILE}")"
   done
 
@@ -743,7 +653,7 @@ _uniqueFileName_() {
   local newfile
   local n
 
-  # Find directories with _realpath_ if input is an actual file
+  # Find directories with realpath if input is an actual file
   if [ -e "$fullfile" ]; then
     fullfile="$(realpath "$fullfile")"
   fi
