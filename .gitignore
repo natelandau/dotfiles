@@ -17,6 +17,7 @@ bower_components
 node_modules
 npm-debug.log
 .npmignore
+package-lock.json
 
 # Files that might appear in the root of a Mac volume
 .DocumentRevisions-V100
