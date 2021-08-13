@@ -11,6 +11,8 @@ _mainScript_() {
     -not -name '.vscode' \
     -not -name '.git' \
     -not -name '.DS_Store' \
+    -not -name '.yamllint.yml' \
+    -not -name '.ansible-lint.yml' \
     -not -name '.hooks' )
 
 } # end _mainScript_
