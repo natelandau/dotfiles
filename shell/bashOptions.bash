@@ -3,7 +3,7 @@ if [[ "${SHELL##*/}" == "bash" ]]; then
   export BLOCKSIZE=1k
   export LANG="en_US"
   export LC_ALL="en_US.UTF-8"
-  export LESS_TERMCAP_md="$ORANGE"         # Highlight section titles in manual pages
+  export LESS_TERMCAP_md="${yellow}"         # Highlight section titles in manual pages
   export MANPAGER="less -X"                # Don’t clear the screen after quitting a man page
   set -o noclobber                         # Prevent file overwrite on stdout redirection
   shopt -s checkwinsize                    # Update window size after every command

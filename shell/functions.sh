@@ -86,7 +86,7 @@ halp() {
   [[ "${SHELL##*/}" == "bash" ]] && local cmdtest=$(type -t "${cmd}")
 
   if [ -z "${cmdtest}" ]; then
-    echo -e "${YELLOW}'${cmd}' is not a known command${RESET}"
+    echo -e "${yellow}'${cmd}' is not a known command${reset}"
     if [[ "${apro}" == 1 ]]; then
       man -k "${cmd}"
     else
@@ -98,7 +98,7 @@ halp() {
     local location=$(command -v "${cmd}")
     local bindir="${HOME}/bin/${cmd}"
     if [[ "${location}" == "${bindir}" ]]; then
-      echo -e "${YELLOW}${cmd} is a custom script${RESET}\n"
+      echo -e "${yellow}${cmd} is a custom script${reset}\n"
       "${bindir}" -h
     else
       if tldr "${cmd}" &>/dev/null ; then
@@ -108,17 +108,17 @@ halp() {
       fi
     fi
   elif [[ "${cmdtest}" == "alias" ]]; then
-    echo -ne "${YELLOW}${cmd} is an alias:  ${RESET}"
+    echo -ne "${yellow}${cmd} is an alias:  ${reset}"
     alias "${cmd}" | sed -E "s/alias $cmd='(.*)'/\1/"
   elif [[ "${cmdtest}" == "builtin" ]]; then
-    echo -ne "${YELLOW}${cmd} is a builtin command${RESET}"
+    echo -ne "${yellow}${cmd} is a builtin command${reset}"
     if tldr "${cmd}" &>/dev/null ; then
       tldr "${cmd}"
     else
       man "${cmd}"
     fi
   elif [[ "${cmdtest}" == "function" ]]; then
-    echo -e "${YELLOW}${cmd} is a function${RESET}"
+    echo -e "${yellow}${cmd} is a function${reset}"
     [[ "${SHELL##*/}" == "zsh" ]] && type -f "${cmd}" | tail -n +1
     [[ "${SHELL##*/}" == "bash" ]] && type "${cmd}" | tail -n +2
   fi

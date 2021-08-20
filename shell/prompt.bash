@@ -55,11 +55,11 @@ if [[ "$OSTYPE" =~ linux ]]; then
   }
 
   export PS1="\[$WHITE\]________________________________________________________________________________\n| \
-\[${BOLD}${MAGENTA}\]\u \[$WHITE\]at \[$ORANGE\]\h \
-\[$WHITE\]in \[$GREEN\]\w\[$WHITE\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\
-\[$PURPLE\]\$(_promptGit_ \"$PRUPLE\")\[$WHITE\]\[$reset\] \
-\n\[$WHITE\]| =>\[$reset\] "
-  export PS2="\[$WHITE\]→ $reset"
+\[${bold}${purple}\]\u \[$white\]at \[$yellow\]\h \
+\[$white\]in \[$green\]\w\[$white\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\
+\[$purple\]\$(_promptGit_ \"$purple\")\[$white\]\[$reset\] \
+\n\[$white\]| =>\[$reset\] "
+  export PS2="\[$white\]→ $reset"
 
 else
   # ####################################################
