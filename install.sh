@@ -4,8 +4,10 @@ _mainScript_() {
 
     _setPATH_ "/usr/local/bin"
 
+    i=0
     while read -r f; do
-        _makeSymlink_ "${f}" "${USER_HOME}/$(basename "${f}")"
+        _makeSymlink_ -c "${f}" "${USER_HOME}/$(basename "${f}")"
+        ((i = i + 1))
     done < <(find "$(_findBaseDir_)" -maxdepth 1 \
         -iregex '^/.*/\..*$' \
         -not -name '.vscode' \
@@ -14,17 +16,21 @@ _mainScript_() {
         -not -name '.yamllint.yml' \
         -not -name '.ansible-lint.yml' \
         -not -name '.hooks')
+    notice "Confirmed ${i} symlinks"
 
     REPOS=(
         "\"git@github.com:scopatz/nanorc\" \"${HOME}/.nano/\""
     )
 
+    i=0
     for r in "${REPOS[@]}"; do
+        ((i++))
         REPO_DIR="$(echo "${r}" | awk 'BEGIN { FS = "\"" } ; { print $4 }')"
         if [ ! -d "${REPO_DIR}" ]; then
             _execute_ -s "git clone ${r}"
         fi
     done
+    notice "Confirmed ${i} repositories"
 
 }
   # end _mainScript_
@@ -197,11 +203,29 @@ _setPATH_() {
 }
 
 _uniqueFileName_() {
-    # DESC:   Ensure a file to be created has a unique filename to avoid overwriting other files
+    # DESC:   Ensure a file to be created has a unique filename to avoid overwriting other
+    #         filenames by appending an integer to the filename if it already exists.
     # ARGS:   $1 (Required) - Name of file to be created
     #         $2 (Optional) - Separation characted (Defaults to a period '.')
     # OUTS:   Prints unique filename to STDOUT
+    # OPTS:  -i             - Places the unique integer before the file extension
     # USAGE:  _uniqueFileName_ "/some/dir/file.txt" "-"
+
+    local opt
+    local OPTIND=1
+    local INTERNAL_INTEGER=false
+    while getopts ":iI" opt; do
+        case ${opt} in
+            i | I) INTERNAL_INTEGER=true ;;
+            *)
+                {
+                    error "Unrecognized option '${1}' passed to _uniqueFileName_" "${LINENO}"
+                    return 1
+                }
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
 
     local fullfile="${1:?_uniqueFileName_ needs a file}"
     local spacer="${2:-.}"
@@ -209,7 +233,7 @@ _uniqueFileName_() {
     local filename
     local extension
     local newfile
-    local n
+    local num
 
     if ! command -v realpath >/dev/null 2>&1; then
         error "We must have 'realpath' installed and available in \$PATH to run."
@@ -229,19 +253,29 @@ _uniqueFileName_() {
     filename="$(basename "${fullfile}")"
 
     # Extract extensions only when they exist
-    if [[ ${filename} =~ \.[a-zA-Z]{2,4}$ ]]; then
+    if [[ "${filename}" =~ \.[a-zA-Z]{2,4}$ ]]; then
         extension=".${filename##*.}"
         filename="${filename%.*}"
+    fi
+    if [[ "${filename}" == "${extension:-}" ]]; then
+        extension=""
     fi
 
     newfile="${directory}/${filename}${extension:-}"
 
     if [ -e "${newfile}" ]; then
-        n=1
-        while [[ -e "${directory}/${filename}${extension:-}${spacer}${n}" ]]; do
-            ((n++))
-        done
-        newfile="${directory}/${filename}${extension:-}${spacer}${n}"
+        num=1
+        if [ "${INTERNAL_INTEGER}" = true ]; then
+            while [[ -e "${directory}/${filename}${spacer}${num}${extension:-}" ]]; do
+                ((num++))
+            done
+            newfile="${directory}/${filename}${spacer}${num}${extension:-}"
+        else
+            while [[ -e "${directory}/${filename}${extension:-}${spacer}${num}" ]]; do
+                ((num++))
+            done
+            newfile="${directory}/${filename}${extension:-}${spacer}${num}"
+        fi
     fi
 
     echo "${newfile}"
@@ -254,7 +288,8 @@ _backupFile_() {
     # ARGS:   $1 (Required)   - Source file
     #         $2 (Optional)   - Destination dir name used only with -d flag (defaults to ./backup)
     # OPTS:   -d              - Move files to a backup direcory
-    #         -m              - Replaces copy (default) with move, effectively removing the
+    #         -m              - Replaces copy (default) with move, effectively removing
+    #                           the original file
     # OUTS:   None
     # USAGE:  _backupFile_ "sourcefile.txt" "some/backup/dir"
     # NOTE:   dotfiles have their leading '.' removed in their backup
@@ -262,15 +297,15 @@ _backupFile_() {
     local opt
     local OPTIND=1
     local useDirectory=false
-    local moveFile=false
+    local MOVE_FILE=false
 
     while getopts ":dDmM" opt; do
         case ${opt} in
             d | D) useDirectory=true ;;
-            m | M) moveFile=true ;;
+            m | M) MOVE_FILE=true ;;
             *)
                 {
-                    error "Unrecognized option '$1' passed to _makeSymlink_" "${LINENO}"
+                    error "Unrecognized option '${1}' passed to _backupFile_" "${LINENO}"
                     return 1
                 }
                 ;;
@@ -280,7 +315,7 @@ _backupFile_() {
 
     [[ $# -lt 1 ]] && fatal 'Missing required argument to _backupFile_()!'
 
-    local s="${1}"
+    local SOURCE_FILE="${1}"
     local d="${2:-backup}"
     local n # New filename (created by _uniqueFilename_)
 
@@ -295,9 +330,9 @@ _backupFile_() {
             warning "need function _uniqueFileName_"
             return 1
         }
-    [ ! -e "$s" ] \
+    [ ! -e "${SOURCE_FILE}" ] \
         && {
-            warning "Source '${s}' not found"
+            warning "Source '${SOURCE_FILE}' not found"
             return 1
         }
 
@@ -306,21 +341,20 @@ _backupFile_() {
         [ ! -d "${d}" ] \
             && _execute_ "mkdir -p \"${d}\"" "Creating backup directory"
 
-        if [ -e "$s" ]; then
-            n="$(basename "${s}")"
-            n="$(_uniqueFileName_ "${d}/${s#.}")"
-            if [ ${moveFile} == true ]; then
-                _execute_ "mv \"${s}\" \"${d}/${n##*/}\"" "Moving: '${s}' to '${d}/${n##*/}'"
+        if [ -e "${SOURCE_FILE}" ]; then
+            n="$(_uniqueFileName_ "${d}/${SOURCE_FILE#.}")"
+            if [ ${MOVE_FILE} == true ]; then
+                _execute_ "mv \"${SOURCE_FILE}\" \"${d}/${n##*/}\"" "Moving: '${SOURCE_FILE}' to '${d}/${n##*/}'"
             else
-                _execute_ "cp -R \"${s}\" \"${d}/${n##*/}\"" "Backing up: '${s}' to '${d}/${n##*/}'"
+                _execute_ "cp -R \"${SOURCE_FILE}\" \"${d}/${n##*/}\"" "Backing up: '${SOURCE_FILE}' to '${d}/${n##*/}'"
             fi
         fi
     else
-        n="$(_uniqueFileName_ "${s}.bak")"
-        if [ ${moveFile} == true ]; then
-            _execute_ "mv \"${s}\" \"${n}\"" "Moving '${s}' to '${n}'"
+        n="$(_uniqueFileName_ "${SOURCE_FILE}.bak")"
+        if [ ${MOVE_FILE} == true ]; then
+            _execute_ "mv \"${SOURCE_FILE}\" \"${n}\"" "Moving '${SOURCE_FILE}' to '${n}'"
         else
-            _execute_ "cp -R \"${s}\" \"${n}\"" "Backing up '${s}' to '${n}'"
+            _execute_ "cp -R \"${SOURCE_FILE}\" \"${n}\"" "Backing up '${SOURCE_FILE}' to '${n}'"
         fi
     fi
 }
@@ -332,8 +366,9 @@ _makeSymlink_() {
     # ARGS:   $1 (Required) - Source file
     #         $2 (Required) - Destination
     #         $3 (Optional) - Backup directory for files which may be overwritten (defaults to 'backup')
-    # OPTS:  -n             - Do not create a backup if target already exists
-    #        -s             - Use sudo when removing old files to make way for new symlinks
+    # OPTS:   -c             - Only report on new/changed symlinks.  Quiet when nothing done.
+    #         -n             - Do not create a backup if target already exists
+    #         -s             - Use sudo when removing old files to make way for new symlinks
     # OUTS:   None
     # USAGE:  _makeSymlink_ "/dir/someExistingFile" "/dir/aNewSymLink" "/dir/backup/location"
     # NOTE:   This function makes use of the _execute_ function
@@ -342,11 +377,13 @@ _makeSymlink_() {
     local OPTIND=1
     local backupOriginal=true
     local useSudo=false
+    local ONLY_SHOW_CHANGED=false
 
-    while getopts ":nNsS" opt; do
+    while getopts ":cCnNsS" opt; do
         case $opt in
             n | N) backupOriginal=false ;;
             s | S) useSudo=true ;;
+            c | C) ONLY_SHOW_CHANGED=true ;;
             *)
                 {
                     error "Unrecognized option '$1' passed to _makeSymlink_" "$LINENO"
@@ -409,7 +446,10 @@ _makeSymlink_() {
         o="$(realpath "${d}")"
 
         [[ ${o} == "${s}" ]] && {
-            if [ "${DRYRUN}" == true ]; then
+
+            if [ ${ONLY_SHOW_CHANGED} == true ]; then
+                debug "Symlink already exists: ${s} → ${d}"
+            elif [ "${DRYRUN}" == true ]; then
                 dryrun "Symlink already exists: ${s} → ${d}"
             else
                 info "Symlink already exists: ${s} → ${d}"
