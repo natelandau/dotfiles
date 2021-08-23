@@ -24,7 +24,7 @@ _mainScript_() {
 
     i=0
     for r in "${REPOS[@]}"; do
-        ((i++))
+        ((i = i + 1))
         REPO_DIR="$(echo "${r}" | awk 'BEGIN { FS = "\"" } ; { print $4 }')"
         if [ ! -d "${REPO_DIR}" ]; then
             _execute_ -s "git clone ${r}"
