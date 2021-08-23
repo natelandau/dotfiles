@@ -26,7 +26,9 @@ _mainScript_() {
     for r in "${REPOS[@]}"; do
         ((i = i + 1))
         REPO_DIR="$(echo "${r}" | awk 'BEGIN { FS = "\"" } ; { print $4 }')"
-        if [ ! -d "${REPO_DIR}" ]; then
+        if [ -d "${REPO_DIR}" ]; then
+            debug "${REPO_DIR} already exists"
+        else
             _execute_ -s "git clone ${r}"
         fi
     done
