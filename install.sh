@@ -16,7 +16,7 @@ _mainScript_() {
         -not -name '.yamllint.yml' \
         -not -name '.ansible-lint.yml' \
         -not -name '.hooks')
-    notice "Confirmed ${i} symlinks"
+    notice "Symlinks confirmed: ${i}"
 
     REPOS=(
         "\"git@github.com:scopatz/nanorc\" \"${HOME}/.nano/\""
@@ -32,7 +32,7 @@ _mainScript_() {
             _execute_ -s "git clone ${r}"
         fi
     done
-    notice "Confirmed ${i} repositories"
+    notice "Repositories confirmed: ${i}"
 
 }
   # end _mainScript_
