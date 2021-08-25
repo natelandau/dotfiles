@@ -4,6 +4,10 @@ _mainScript_() {
 
     _setPATH_ "/usr/local/bin"
 
+    REPOS=(
+        "\"git@github.com:scopatz/nanorc\" \"${HOME}/.nano/\""
+    )
+
     i=0
     while read -r f; do
         _makeSymlink_ -c "${f}" "${USER_HOME}/$(basename "${f}")"
@@ -17,10 +21,6 @@ _mainScript_() {
         -not -name '.ansible-lint.yml' \
         -not -name '.hooks')
     notice "Symlinks confirmed: ${i}"
-
-    REPOS=(
-        "\"git@github.com:scopatz/nanorc\" \"${HOME}/.nano/\""
-    )
 
     i=0
     for r in "${REPOS[@]}"; do
@@ -489,30 +489,52 @@ _makeSymlink_() {
     return 0
 }
 # ################################## Common Functions for script template
-# Colors
-  if tput setaf 1 &>/dev/null; then
-    bold=$(tput bold)
-    white=$(tput setaf 7)
-    reset=$(tput sgr0)
-    purple=$(tput setaf 171)
-    red=$(tput setaf 1)
-    green=$(tput setaf 76)
-    tan=$(tput setaf 3)
-    yellow=$(tput setaf 3)
-    blue=$(tput setaf 38)
-    underline=$(tput sgr 0 1)
-else
-    bold="\033[4;37m"
-    white="\033[0;37m"
-    reset="\033[0m"
-    purple="\033[0;35m"
-    red="\033[0;31m"
-    green="\033[1;32m"
-    tan="\033[0;33m"
-    yellow="\033[0;33m"
-    blue="\033[0;34m"
-    underline="\033[4;37m"
-fi
+_setColors_() {
+    # DESC: Sets colors use for alerts.
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:  echo "${blue}Some text${reset}"
+
+    if tput setaf 1 &>/dev/null; then
+        bold=$(tput bold)
+        underline=$(tput smul)
+        reverse=$(tput rev)
+        reset=$(tput sgr0)
+
+        if [[ $(tput colors) -ge 256 ]] 2>/dev/null; then
+            white=$(tput setaf 231)
+            blue=$(tput setaf 38)
+            yellow=$(tput setaf 11)
+            tan=$(tput setaf 3)
+            green=$(tput setaf 82)
+            red=$(tput setaf 1)
+            purple=$(tput setaf 171)
+            gray=$(tput setaf 248)
+        else
+            white=$(tput setaf 7)
+            blue=$(tput setaf 38)
+            yellow=$(tput setaf 3)
+            tan=$(tput setaf 3)
+            green=$(tput setaf 2)
+            red=$(tput setaf 1)
+            purple=$(tput setaf 13)
+            gray=$(tput setaf 7)
+        fi
+    else
+        bold="\033[4;37m"
+        reset="\033[0m"
+        underline="\033[4;37m"
+        reverse=""
+        white="\033[0;37m"
+        blue="\033[0;34m"
+        yellow="\033[0;33m"
+        tan="\033[0;33m"
+        green="\033[1;32m"
+        red="\033[0;31m"
+        purple="\033[0;35m"
+        gray="\033[0;37m"
+    fi
+}
 
 _alert_() {
     # DESC:   Controls all printing of messages to log files and stdout.
@@ -837,13 +859,14 @@ _usage_() {
 
   ${bold}$(basename "$0") [OPTION]...${reset}
 
-  This script creates symlinks in the user's home directory to the dotfiles contained in this repository.  In addition, selected git repositories are cloned into the users home directory.
+  This script creates symlinks in the user's home directory to the dotfiles contained in
+  this repository.  In addition, selected git repositories are cloned into the users home directory.
 
   Be sure to review the settings and information within this repository as well as the repos
   specified in _mainScript_() before running this script.
 
   ${bold}Options:${reset}
-    --user-home             Set user home directory to symlink dotfiles to (Defaults to '~/')
+    --user-home [DIR]       Set user home directory to symlink dotfiles to (Defaults to '~/')
     -h, --help              Display this help and exit
     --loglevel [LEVEL]      One of: FATAL, ERROR, WARN, INFO, DEBUG, ALL, OFF  (Default is 'ERROR')
     --logfile [FILE]        Full PATH to logfile.  (Default is '${HOME}/logs/$(basename "$0").log')
@@ -869,6 +892,7 @@ set -o pipefail                           # Use last non-zero exit code in a pip
 # shopt -s nullglob globstar              # Make `for f in *.txt` work when `*.txt` matches zero files
 IFS=$' \n\t'                              # Set IFS to preferred implementation
 # set -o xtrace                           # Run in debug mode
+_setColors_                               # Initialize color constants
 set -o nounset                            # Disallow expansion of unset variables
 # [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Force arguments when invoking the script
 _parseOptions_ "$@"                       # Parse arguments passed to script

@@ -14,25 +14,25 @@ allcolors() {
 }
 
 mycolors() {
-  echo "${bold} This is bold text ${reset}"
-  echo "${underline} This is underlined text ${reset}"
-  echo "${reverse} This is reversed text ${reset}"
+    echo "${bold} This is bold text ${reset}"
+    echo "${underline} This is underlined text ${reset}"
+    echo "${reverse} This is reversed text ${reset}"
 
-  echo "${white} This is white text ${reset}"
-  echo "${blue} This is blue text ${reset}"
-  echo "${yellow} This is yellow text"
-  echo "${purple} This is purple text${reset}"
-  echo "${red} This is red text ${reset}"
-  echo "${green} This is green text${reset}"
-  echo "${gray} This is gray text${reset}"
+    echo "${white} This is white text ${reset}"
+    echo "${blue} This is blue text ${reset}"
+    echo "${yellow} This is yellow text"
+    echo "${purple} This is purple text${reset}"
+    echo "${red} This is red text ${reset}"
+    echo "${green} This is green text${reset}"
+    echo "${gray} This is gray text${reset}"
 
-  echo "${white}${reverse} This is white reversed text ${reset}"
-  echo "${blue}${reverse} This is blue reversed text ${reset}"
-  echo "${yellow}${reverse} This is yellow reversed text"
-  echo "${purple}${reverse} This is purple reversed text${reset}"
-  echo "${red}${reverse} This is red reversed text ${reset}"
-  echo "${green}${reverse} This is green reversed text${reset}"
-  echo "${gray}${reverse} This is gray reversed text${reset}"
+    echo "${white}${reverse} This is white reversed text ${reset}"
+    echo "${blue}${reverse} This is blue reversed text ${reset}"
+    echo "${yellow}${reverse} This is yellow reversed text"
+    echo "${purple}${reverse} This is purple reversed text${reset}"
+    echo "${red}${reverse} This is red reversed text ${reset}"
+    echo "${green}${reverse} This is green reversed text${reset}"
+    echo "${gray}${reverse} This is gray reversed text${reset}"
 }
 
 # Add color to terminal
@@ -67,11 +67,11 @@ if tput setaf 1 &>/dev/null; then
 
     if [[ $(tput colors) -ge 256 ]] 2>/dev/null; then
         white=$(tput setaf 231)
-        blue=$(tput setaf 51)
+        blue=$(tput setaf 38)
         yellow=$(tput setaf 11)
         tan=$(tput setaf 3)
         green=$(tput setaf 82)
-        red=$(tput setaf 196)
+        red=$(tput setaf 1)
         purple=$(tput setaf 171)
         gray=$(tput setaf 248)
     else

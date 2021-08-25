@@ -10,14 +10,14 @@ _mainScript_() {
         # ARGS:   $1 (Required) - File to check
         # OUTS:   None
         # USAGE:  Call the function
-        # NOTE:   Requires a file localed at `~/.git_stop_words` containing one word per line.
+        # NOTE:   Requires a file located at `~/.git_stop_words` containing one word per line.
 
         # Fail if any matching words are present in the diff
 
         STOP_WORD_FILE="${HOME}/.git_stop_words"
         GIT_DIFF_TEMP="${TMP_DIR}/diff.txt"
 
-        if [ -f "${STOP_WORD_FILE}" ]; then
+        if cat "${STOP_WORD_FILE}" | grep . | grep -v '# ' >"${TMP_DIR}/pattern_file.txt"; then
 
             if [[ $(basename "${STOP_WORD_FILE}") == "$(basename "${1}")" ]]; then
                 debug "Don't check stop words file for stop words. Skipping $(basename "${1}")"
@@ -25,18 +25,16 @@ _mainScript_() {
             fi
             debug "Checking for stop words"
 
-            # remove blank lines from stopwords file
-            cat "${STOP_WORD_FILE}" | sed '/^$/d' >"${TMP_DIR}/pattern_file.txt"
+            # remove blank lines and comments from stopwords file
 
             # Add diff to a temporary file
              git diff --cached -- "${1}" | grep '^+' >"${GIT_DIFF_TEMP}"
-
             if grep --file="${TMP_DIR}/pattern_file.txt" "${GIT_DIFF_TEMP}"; then
                 error "Found git stop word in '$(basename "${1}")'"
                 _safeExit_ 1
             fi
         else
-            debug "Could not find git stopwords file expected at '${STOP_WORD_FILE}'. Continuing..."
+            debug "Could not find git stopwords file expected at '${STOP_WORD_FILE}'. Or it was empty. Continuing..."
         fi
     }
 
@@ -169,7 +167,7 @@ _mainScript_() {
             error "Ansible-lint error"
             _safeExit_ 1
         else
-          success "ansible-lint passed: ${1}"
+            success "ansible-lint passed: ${1}"
         fi
     }
 
@@ -251,30 +249,52 @@ _setPATH_() {
     done
 }
 # ################################## Common Functions for script template
-# Colors
-  if tput setaf 1 &>/dev/null; then
-    bold=$(tput bold)
-    white=$(tput setaf 7)
-    reset=$(tput sgr0)
-    purple=$(tput setaf 171)
-    red=$(tput setaf 1)
-    green=$(tput setaf 76)
-    tan=$(tput setaf 3)
-    yellow=$(tput setaf 3)
-    blue=$(tput setaf 38)
-    underline=$(tput sgr 0 1)
-else
-    bold="\033[4;37m"
-    white="\033[0;37m"
-    reset="\033[0m"
-    purple="\033[0;35m"
-    red="\033[0;31m"
-    green="\033[1;32m"
-    tan="\033[0;33m"
-    yellow="\033[0;33m"
-    blue="\033[0;34m"
-    underline="\033[4;37m"
-fi
+_setColors_() {
+    # DESC: Sets colors use for alerts.
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:  echo "${blue}Some text${reset}"
+
+    if tput setaf 1 &>/dev/null; then
+        bold=$(tput bold)
+        underline=$(tput smul)
+        reverse=$(tput rev)
+        reset=$(tput sgr0)
+
+        if [[ $(tput colors) -ge 256 ]] 2>/dev/null; then
+            white=$(tput setaf 231)
+            blue=$(tput setaf 38)
+            yellow=$(tput setaf 11)
+            tan=$(tput setaf 3)
+            green=$(tput setaf 82)
+            red=$(tput setaf 1)
+            purple=$(tput setaf 171)
+            gray=$(tput setaf 248)
+        else
+            white=$(tput setaf 7)
+            blue=$(tput setaf 38)
+            yellow=$(tput setaf 3)
+            tan=$(tput setaf 3)
+            green=$(tput setaf 2)
+            red=$(tput setaf 1)
+            purple=$(tput setaf 13)
+            gray=$(tput setaf 7)
+        fi
+    else
+        bold="\033[4;37m"
+        reset="\033[0m"
+        underline="\033[4;37m"
+        reverse=""
+        white="\033[0;37m"
+        blue="\033[0;34m"
+        yellow="\033[0;33m"
+        tan="\033[0;33m"
+        green="\033[1;32m"
+        red="\033[0;31m"
+        purple="\033[0;35m"
+        gray="\033[0;37m"
+    fi
+}
 
 _alert_() {
     # DESC:   Controls all printing of messages to log files and stdout.
@@ -626,6 +646,7 @@ set -o pipefail                           # Use last non-zero exit code in a pip
 IFS=$' \n\t'                              # Set IFS to preferred implementation
 # set -o xtrace                           # Run in debug mode
 set -o nounset                            # Disallow expansion of unset variables
+_setColors_                               # Initialize color constants
 # [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Force arguments when invoking the script
 _parseOptions_ "$@"                       # Parse arguments passed to script
 _makeTempDir_ "$(basename "$0")"          # Create a temp directory '$TMP_DIR'
