@@ -2,6 +2,7 @@
 
 _mainScript_() {
 
+    LOGFILE="${HOME}/logs/$(basename "$(_findBaseDir_)")-$(basename "$0").log"
     _setPATH_ "/usr/local/bin"
 
     REPOS=(
