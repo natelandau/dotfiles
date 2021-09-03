@@ -1,4 +1,4 @@
-allcolors() {
+showcolors() {
     # will print all tput colors to terminal
     local x y i os
     (
@@ -14,25 +14,24 @@ allcolors() {
 }
 
 mycolors() {
-    echo "${bold} This is bold text ${reset}"
     echo "${underline} This is underlined text ${reset}"
     echo "${reverse} This is reversed text ${reset}"
-
+    echo "${gray} This is gray text${reset}"
     echo "${white} This is white text ${reset}"
+    echo "${bold} This is bold text ${reset}"
     echo "${blue} This is blue text ${reset}"
     echo "${yellow} This is yellow text"
     echo "${purple} This is purple text${reset}"
     echo "${red} This is red text ${reset}"
     echo "${green} This is green text${reset}"
-    echo "${gray} This is gray text${reset}"
 
     echo "${white}${reverse} This is white reversed text ${reset}"
+    echo "${gray}${reverse} This is gray reversed text${reset}"
     echo "${blue}${reverse} This is blue reversed text ${reset}"
     echo "${yellow}${reverse} This is yellow reversed text"
     echo "${purple}${reverse} This is purple reversed text${reset}"
     echo "${red}${reverse} This is red reversed text ${reset}"
     echo "${green}${reverse} This is green reversed text${reset}"
-    echo "${gray}${reverse} This is gray reversed text${reset}"
 }
 
 # Add color to terminal
@@ -59,53 +58,62 @@ else
 fi
 
 # Set colors
-if tput setaf 1 &>/dev/null; then
-    bold=$(tput bold)
-    underline=$(tput smul)
-    reverse=$(tput rev)
-    reset=$(tput sgr0)
+_setColors_() {
+    # DESC: Sets colors use for alerts.
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:  echo "${blue}Some text${reset}"
 
-    if [[ $(tput colors) -ge 256 ]] 2>/dev/null; then
-        white=$(tput setaf 231)
-        blue=$(tput setaf 38)
-        yellow=$(tput setaf 11)
-        tan=$(tput setaf 3)
-        green=$(tput setaf 82)
-        red=$(tput setaf 1)
-        purple=$(tput setaf 171)
-        gray=$(tput setaf 248)
+    if tput setaf 1 &>/dev/null; then
+        bold=$(tput bold)
+        underline=$(tput smul)
+        reverse=$(tput rev)
+        reset=$(tput sgr0)
+
+        if [[ $(tput colors) -ge 256 ]] 2>/dev/null; then
+            white=$(tput setaf 231)
+            blue=$(tput setaf 38)
+            yellow=$(tput setaf 11)
+            tan=$(tput setaf 3)
+            green=$(tput setaf 82)
+            red=$(tput setaf 1)
+            purple=$(tput setaf 171)
+            gray=$(tput setaf 250)
+        else
+            white=$(tput setaf 7)
+            blue=$(tput setaf 38)
+            yellow=$(tput setaf 3)
+            tan=$(tput setaf 3)
+            green=$(tput setaf 2)
+            red=$(tput setaf 1)
+            purple=$(tput setaf 13)
+            gray=$(tput setaf 7)
+        fi
     else
-        white=$(tput setaf 7)
-        blue=$(tput setaf 38)
-        yellow=$(tput setaf 3)
-        tan=$(tput setaf 3)
-        green=$(tput setaf 2)
-        red=$(tput setaf 1)
-        purple=$(tput setaf 13)
-        gray=$(tput setaf 7)
+        bold="\033[4;37m"
+        reset="\033[0m"
+        underline="\033[4;37m"
+        reverse=""
+        white="\033[0;37m"
+        blue="\033[0;34m"
+        yellow="\033[0;33m"
+        tan="\033[0;33m"
+        green="\033[1;32m"
+        red="\033[0;31m"
+        purple="\033[0;35m"
+        gray="\033[0;37m"
     fi
-else
-    bold="\033[4;37m"
-    reset="\033[0m"
-    underline="\033[4;37m"
-    reverse=""
-    white="\033[0;37m"
-    blue="\033[0;34m"
-    yellow="\033[0;33m"
-    tan="\033[0;33m"
-    green="\033[1;32m"
-    red="\033[0;31m"
-    purple="\033[0;35m"
-    gray="\033[0;37m"
-fi
-    export bold
-    export underline
-    export reverse
-    export reset
-    export white
-    export blue
-    export yellow
-    export green
-    export red
-    export purple
-    export gray
+}
+_setColors_
+
+export bold
+export underline
+export reverse
+export reset
+export white
+export blue
+export yellow
+export green
+export red
+export purple
+export gray

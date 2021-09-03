@@ -1,5 +1,5 @@
 _alert_() {
-    # DESC:   Controls all printing of messages to  stdout.
+    # DESC:   Controls all printing of messages to stdout.
     # ARGS:   $1 (required) - The type of alert to print
     #                         (success, header, notice, dryrun, debug, warning, error,
     #                         fatal, info, input)
@@ -13,16 +13,20 @@ _alert_() {
 
     if [[ ${alertType} =~ ^(error|fatal) ]]; then
         color="${bold}${red}"
-    elif [ "${alertType}" = "warning" ]; then
+    elif [ "${alertType}" == "info" ]; then
+        color="${gray}"
+    elif [ "${alertType}" == "warning" ]; then
         color="${red}"
-    elif [ "${alertType}" = "success" ]; then
+    elif [ "${alertType}" == "success" ]; then
         color="${green}"
-    elif [ "${alertType}" = "debug" ]; then
+    elif [ "${alertType}" == "debug" ]; then
         color="${purple}"
-    elif [ "${alertType}" = "header" ]; then
-        color="${bold}${yellow}"
-    elif [[ ${alertType} =~ ^(input|notice) ]]; then
+    elif [ "${alertType}" == "header" ]; then
+        color="${bold}${tan}"
+    elif [ ${alertType} == "notice" ]; then
         color="${bold}"
+    elif [ ${alertType} == "input"  ]; then
+        color="${bold}${underline}"
     elif [ "${alertType}" = "dryrun" ]; then
         color="${blue}"
     else
@@ -53,4 +57,3 @@ header() { _alert_ header "${reverse}${1}" "${2:-}"; }
 die() { _alert_ fatal "${1}" "${2:-}"; }
 fatal() { _alert_ fatal "${1}" "${2:-}"; }
 debug() { _alert_ debug "${1}" "${2:-}"; }
-verbose() { _alert_ debug "${1}" "${2:-}"; }
