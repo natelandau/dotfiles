@@ -28,7 +28,7 @@ _mainScript_() {
             # remove blank lines and comments from stopwords file
 
             # Add diff to a temporary file
-             git diff --cached -- "${1}" | grep '^+' >"${GIT_DIFF_TEMP}"
+            git diff --cached -- "${1}" | grep '^+' >"${GIT_DIFF_TEMP}"
             if grep --file="${TMP_DIR}/pattern_file.txt" "${GIT_DIFF_TEMP}"; then
                 error "Found git stop word in '$(basename "${1}")'"
                 _safeExit_ 1
@@ -87,7 +87,7 @@ _mainScript_() {
                 error "Error in ${1}"
                 _safeExit_ 1
             else
-                    success "yaml-lint passed: '${1}'"
+                success "yaml-lint passed: '${1}'"
             fi
         elif command -v yamllint >/dev/null; then
             debug "Linting YAML File"
@@ -115,7 +115,7 @@ _mainScript_() {
         if command -v shellcheck >/dev/null; then
             debug "Linting shellscript: ${1}"
             if ! shellcheck --exclude=2016,2059,2001,2002,2148,1090,2162,2005,2034,2154,2086,2155,2181,2164,2120,2119,1083,1117,2207 "${1}"; then
-                error "Error in ${file}"
+                error "Error in ${1}"
                 _safeExit_ 1
             else
                 success "shellcheck passed: '${1}'"
@@ -151,7 +151,7 @@ _mainScript_() {
             # Don't lint files that are not Ansible playbooks
             debug "won't ansible lint: ${1}"
             return 0
-        elif [[ "${1}" =~ /(handlers|vars/|defaults/|meta/|molecule/|templates/|files/)/ ]]; then
+        elif [[ ${1} =~ /(handlers|vars/|defaults/|meta/|molecule/|templates/|files/)/ ]]; then
             # Don't lint in directory names that are not likely to contain Ansible playbooks
             debug "Won't ansible lint: ${1}"
             return 0
@@ -191,16 +191,16 @@ _mainScript_() {
 
             _gitStopWords_ "${STAGED_FILE}"
 
-            if [[ "${STAGED_FILE}" =~ \.(yaml|yml)$ ]]; then
+            if [[ ${STAGED_FILE} =~ \.(yaml|yml)$ ]]; then
                 _lintYAML_ "${STAGED_FILE}"
                 if [ "${IS_ANSIBLE_REPO}" = true ]; then
                     _lintAnsible_ "${STAGED_FILE}"
                 fi
             fi
-            if [[ "${STAGED_FILE}" =~ \.(bash|sh)$ ]]; then
+            if [[ ${STAGED_FILE} =~ \.(bash|sh)$ ]]; then
                 _lintShellscripts_ "${STAGED_FILE}"
             fi
-            if [[ "${STAGED_FILE}" =~ \.(sh|bash|bats|zsh)$ ]]; then
+            if [[ ${STAGED_FILE} =~ \.(sh|bash|bats|zsh)$ ]]; then
                 _BATS_ "${STAGED_FILE}"
             fi
         else
@@ -212,22 +212,22 @@ _mainScript_() {
 } # end _mainScript_
 
 # ################################## Flags and defaults
-  # Script specific
+# Script specific
 
-  # Common
-    LOGFILE="${HOME}/logs/$(basename "$0").log"
-    QUIET=false
-    LOGLEVEL=ERROR
-    VERBOSE=false
-    FORCE=false
-    DRYRUN=false
-    declare -a ARGS=()
-    NOW=$(LC_ALL=C date +"%m-%d-%Y %r")                   # Returns: 06-14-2015 10:34:40 PM
-    DATESTAMP=$(LC_ALL=C date +%Y-%m-%d)                  # Returns: 2015-06-14
-    HOURSTAMP=$(LC_ALL=C date +%r)                        # Returns: 10:34:40 PM
-    TIMESTAMP=$(LC_ALL=C date +%Y%m%d_%H%M%S)             # Returns: 20150614_223440
-    LONGDATE=$(LC_ALL=C date +"%a, %d %b %Y %H:%M:%S %z") # Returns: Sun, 10 Jan 2016 20:47:53 -0500
-    GMTDATE=$(LC_ALL=C date -u -R | sed 's/\+0000/GMT/')  # Returns: Wed, 13 Jan 2016 15:55:29 GMT
+# Common
+LOGFILE="${HOME}/logs/$(basename "$0").log"
+QUIET=false
+LOGLEVEL=ERROR
+VERBOSE=false
+FORCE=false
+DRYRUN=false
+declare -a ARGS=()
+NOW=$(LC_ALL=C date +"%m-%d-%Y %r")                   # Returns: 06-14-2015 10:34:40 PM
+DATESTAMP=$(LC_ALL=C date +%Y-%m-%d)                  # Returns: 2015-06-14
+HOURSTAMP=$(LC_ALL=C date +%r)                        # Returns: 10:34:40 PM
+TIMESTAMP=$(LC_ALL=C date +%Y%m%d_%H%M%S)             # Returns: 20150614_223440
+LONGDATE=$(LC_ALL=C date +"%a, %d %b %Y %H:%M:%S %z") # Returns: Sun, 10 Jan 2016 20:47:53 -0500
+GMTDATE=$(LC_ALL=C date -u -R | sed 's/\+0000/GMT/')  # Returns: Wed, 13 Jan 2016 15:55:29 GMT
 
 # ################################## Custom utility functions
 _setPATH_() {
@@ -311,17 +311,17 @@ _alert_() {
     local function_name color
     local alertType="${1}"
     local message="${2}"
-    local line="${3:-}"  # Optional line number
+    local line="${3:-}" # Optional line number
 
-    if [[ -n "${line}" && "${alertType}" =~ ^(fatal|error) && "${FUNCNAME[2]}" != "_trapCleanup_" ]]; then
+    if [[ -n ${line} && ${alertType} =~ ^(fatal|error) && ${FUNCNAME[2]} != "_trapCleanup_" ]]; then
         message="${message} (line: ${line}) $(_functionStack_)"
-    elif [[ -n "${line}" && "${FUNCNAME[2]}" != "_trapCleanup_" ]]; then
+    elif [[ -n ${line} && ${FUNCNAME[2]} != "_trapCleanup_" ]]; then
         message="${message} (line: ${line})"
-    elif [[ -z "${line}" && "${alertType}" =~ ^(fatal|error) && "${FUNCNAME[2]}" != "_trapCleanup_" ]]; then
+    elif [[ -z ${line} && ${alertType} =~ ^(fatal|error) && ${FUNCNAME[2]} != "_trapCleanup_" ]]; then
         message="${message} $(_functionStack_)"
     fi
 
-    if [[ "${alertType}" =~ ^(error|fatal) ]]; then
+    if [[ ${alertType} =~ ^(error|fatal) ]]; then
         color="${bold}${red}"
     elif [ "${alertType}" = "warning" ]; then
         color="${red}"
@@ -331,7 +331,7 @@ _alert_() {
         color="${purple}"
     elif [ "${alertType}" = "header" ]; then
         color="${bold}${tan}"
-    elif [[ "${alertType}" =~ ^(input|notice) ]]; then
+    elif [[ ${alertType} =~ ^(input|notice) ]]; then
         color="${bold}"
     elif [ "${alertType}" = "dryrun" ]; then
         color="${blue}"
@@ -342,7 +342,7 @@ _alert_() {
     _writeToScreen_() {
 
         ("${QUIET}") && return 0 # Print to console when script is not 'quiet'
-        [[ ${VERBOSE} == false && "${alertType}" =~ ^(debug|verbose) ]] && return 0
+        [[ ${VERBOSE} == false && ${alertType} =~ ^(debug|verbose) ]] && return 0
 
         if ! [[ -t 1 ]]; then # Don't use colors on non-recognized terminals
             color=""
@@ -354,11 +354,11 @@ _alert_() {
     _writeToScreen_
 
     _writeToLog_() {
-        [[ "${alertType}" == "input" ]] && return 0
-        [[ "${LOGLEVEL}" =~ (off|OFF|Off) ]] && return 0
+        [[ ${alertType} == "input" ]] && return 0
+        [[ ${LOGLEVEL} =~ (off|OFF|Off) ]] && return 0
         [ -z "${LOGFILE:-}" ] && LOGFILE="$(pwd)/$(basename "$0").log"
         [ ! -d "$(dirname "${LOGFILE}")" ] && command mkdir -p "$(dirname "${LOGFILE}")"
-        [[ ! -f "${LOGFILE}" ]] && touch "${LOGFILE}"
+        [[ ! -f ${LOGFILE} ]] && touch "${LOGFILE}"
 
         # Don't use colors in logs
         if command -v gsed &>/dev/null; then
@@ -378,22 +378,22 @@ _alert_() {
             _writeToLog_
             ;;
         INFO | info | Info)
-            if [[ "${alertType}" =~ ^(die|error|fatal|warning|info|notice|success) ]]; then
+            if [[ ${alertType} =~ ^(die|error|fatal|warning|info|notice|success) ]]; then
                 _writeToLog_
             fi
             ;;
         WARN | warn | Warn)
-            if [[ "${alertType}" =~ ^(die|error|fatal|warning) ]]; then
+            if [[ ${alertType} =~ ^(die|error|fatal|warning) ]]; then
                 _writeToLog_
             fi
             ;;
         ERROR | error | Error)
-            if [[ "${alertType}" =~ ^(die|error|fatal) ]]; then
+            if [[ ${alertType} =~ ^(die|error|fatal) ]]; then
                 _writeToLog_
             fi
             ;;
         FATAL | fatal | Fatal)
-            if [[ "${alertType}" =~ ^(die|fatal) ]]; then
+            if [[ ${alertType} =~ ^(die|fatal) ]]; then
                 _writeToLog_
             fi
             ;;
@@ -401,7 +401,7 @@ _alert_() {
             return 0
             ;;
         *)
-            if [[ "${alertType}" =~ ^(die|error|fatal) ]]; then
+            if [[ ${alertType} =~ ^(die|error|fatal) ]]; then
                 _writeToLog_
             fi
             ;;
@@ -433,7 +433,7 @@ _safeExit_() {
     # ARGS: $1 (optional) - Exit code (defaults to 0)
     # OUTS: None
 
-    if [[ -d "${SCRIPT_LOCK:-}" ]]; then
+    if [[ -d ${SCRIPT_LOCK:-} ]]; then
         if command rm -rf "${SCRIPT_LOCK}"; then
             debug "Removing script lock"
         else
@@ -441,7 +441,7 @@ _safeExit_() {
         fi
     fi
 
-    if [[ -n "${TMP_DIR:-}" && -d "${TMP_DIR:-}" ]]; then
+    if [[ -n ${TMP_DIR:-} && -d ${TMP_DIR:-} ]]; then
         if [[ ${1:-} == 1 && -n "$(ls "${TMP_DIR}")" ]]; then
             # Do something here to save TMP_DIR on a non-zero script exit for debugging
             command rm -r "${TMP_DIR}"
@@ -475,7 +475,7 @@ _trapCleanup_() {
 
     funcstack="'$(echo "$funcstack" | sed -E 's/ / < /g')'"
 
-    if [[ "${script##*/}" == "${sourced##*/}" ]]; then
+    if [[ ${script##*/} == "${sourced##*/}" ]]; then
         fatal "${7:-} command: '${command}' (line: ${line}) [func: $(_functionStack_)]"
     else
         fatal "${7:-} command: '${command}' (func: ${funcstack} called at line ${linecallfunc} of '${script##*/}') (line: $line of '${sourced##*/}') "
@@ -537,7 +537,7 @@ _functionStack_() {
     funcStackResponse=()
     for ((_i = 1; _i < ${#BASH_SOURCE[@]}; _i++)); do
         case "${FUNCNAME[$_i]}" in "_alert_" | "_trapCleanup_" | fatal | error | warning | notice | info | verbose | debug | dryrun | header | success | die) continue ;; esac
-        funcStackResponse+=("${FUNCNAME[$_i]}:$(basename ${BASH_SOURCE[$_i]}):${BASH_LINENO[$_i - 1]}")
+        funcStackResponse+=("${FUNCNAME[$_i]}:$(basename ${BASH_SOURCE[$_i]}):${BASH_LINENO[_i - 1]}")
     done
     printf "( "
     printf %s "${funcStackResponse[0]}"
@@ -639,17 +639,17 @@ EOF
 
 trap '_trapCleanup_ ${LINENO} ${BASH_LINENO} "${BASH_COMMAND}" "${FUNCNAME[*]}" "${0}" "${BASH_SOURCE[0]}"' \
     EXIT INT TERM SIGINT SIGQUIT
-set -o errtrace                           # Trap errors in subshells and functions
-set -o errexit                            # Exit on error. Append '||true' if you expect an error
-set -o pipefail                           # Use last non-zero exit code in a pipeline
+set -o errtrace # Trap errors in subshells and functions
+set -o errexit  # Exit on error. Append '||true' if you expect an error
+set -o pipefail # Use last non-zero exit code in a pipeline
 # shopt -s nullglob globstar              # Make `for f in *.txt` work when `*.txt` matches zero files
-IFS=$' \n\t'                              # Set IFS to preferred implementation
+IFS=$' \n\t' # Set IFS to preferred implementation
 # set -o xtrace                           # Run in debug mode
-set -o nounset                            # Disallow expansion of unset variables
-_setColors_                               # Initialize color constants
+set -o nounset # Disallow expansion of unset variables
+_setColors_    # Initialize color constants
 # [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Force arguments when invoking the script
-_parseOptions_ "$@"                       # Parse arguments passed to script
-_makeTempDir_ "$(basename "$0")"          # Create a temp directory '$TMP_DIR'
+_parseOptions_ "$@"              # Parse arguments passed to script
+_makeTempDir_ "$(basename "$0")" # Create a temp directory '$TMP_DIR'
 # _acquireScriptLock_                     # Acquire script lock
-_mainScript_                              # Run the main logic script
-_safeExit_                                # Exit cleanly
+_mainScript_ # Run the main logic script
+_safeExit_   # Exit cleanly
