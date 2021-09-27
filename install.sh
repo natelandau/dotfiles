@@ -36,32 +36,33 @@ _mainScript_() {
     notice "Repositories confirmed: ${i}"
 
 }
-  # end _mainScript_
+# end _mainScript_
 
 # ################################## Flags and defaults
-  # Script specific
-    USER_HOME="${HOME}"
-  # Common
-    LOGFILE="${HOME}/logs/$(basename "$0").log"
-    QUIET=false
-    LOGLEVEL=ERROR
-    VERBOSE=false
-    FORCE=false
-    DRYRUN=false
-    declare -a ARGS=()
-    NOW=$(LC_ALL=C date +"%m-%d-%Y %r")                   # Returns: 06-14-2015 10:34:40 PM
-    DATESTAMP=$(LC_ALL=C date +%Y-%m-%d)                  # Returns: 2015-06-14
-    HOURSTAMP=$(LC_ALL=C date +%r)                        # Returns: 10:34:40 PM
-    TIMESTAMP=$(LC_ALL=C date +%Y%m%d_%H%M%S)             # Returns: 20150614_223440
-    LONGDATE=$(LC_ALL=C date +"%a, %d %b %Y %H:%M:%S %z") # Returns: Sun, 10 Jan 2016 20:47:53 -0500
-    GMTDATE=$(LC_ALL=C date -u -R | sed 's/\+0000/GMT/')  # Returns: Wed, 13 Jan 2016 15:55:29 GMT
+# Script specific
+USER_HOME="${HOME}"
+# Common
+LOGFILE="${HOME}/logs/$(basename "$0").log"
+QUIET=false
+LOGLEVEL=ERROR
+VERBOSE=false
+FORCE=false
+DRYRUN=false
+declare -a ARGS=()
+NOW=$(LC_ALL=C date +"%m-%d-%Y %r")                   # Returns: 06-14-2015 10:34:40 PM
+DATESTAMP=$(LC_ALL=C date +%Y-%m-%d)                  # Returns: 2015-06-14
+HOURSTAMP=$(LC_ALL=C date +%r)                        # Returns: 10:34:40 PM
+TIMESTAMP=$(LC_ALL=C date +%Y%m%d_%H%M%S)             # Returns: 20150614_223440
+LONGDATE=$(LC_ALL=C date +"%a, %d %b %Y %H:%M:%S %z") # Returns: Sun, 10 Jan 2016 20:47:53 -0500
+GMTDATE=$(LC_ALL=C date -u -R | sed 's/\+0000/GMT/')  # Returns: Wed, 13 Jan 2016 15:55:29 GMT
 
 # ################################## Custom utility functions
 _execute_() {
     # DESC: Executes commands with safety and logging options
     # ARGS:  $1 (Required) - The command to be executed.  Quotation marks MUST be escaped.
     #        $2 (Optional) - String to display after command is executed
-    # OPTS:  -v    Always print debug output from the execute function
+    # OPTS:  -v    Always print output from the execute function to STDOUT
+    #        -n    Use NOTICE level alerting (default is INFO)
     #        -p    Pass a failed command with 'return 0'.  This effectively bypasses set -e.
     #        -e    Bypass _alert_ functions and use 'echo RESULT'
     #        -s    Use '_alert_ success' for successful output. (default is 'info')
@@ -70,25 +71,28 @@ _execute_() {
     # USE :  _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message"
     #        _execute_ -sv "mkdir \"some/dir\""
     # NOTE:
-    #         If $DRYRUN=true no commands are executed
-    #         If $VERBOSE=true the command's native output is printed to
-    #         stderr and stdin. This can be forced with `_execute_ -v`
+    #         If $DRYRUN=true, no commands are executed and the command that would have
+    #         been executed is printed to STDOUT using dryrun level alerting
+    #         If $VERBOSE=true, the command's native output is printed to
+    #         stdout. This can be forced with `_execute_ -v`
 
     local LOCAL_VERBOSE=false
     local PASS_FAILURES=false
     local ECHO_RESULT=false
     local SUCCESS_RESULT=false
-    local QUIET_RESULT=false
+    local QUIETMODE=false
+    local NOTICE_RESULT=false
     local opt
 
     local OPTIND=1
-    while getopts ":vVpPeEsSqQ" opt; do
+    while getopts ":vVpPeEsSqQnN" opt; do
         case $opt in
             v | V) LOCAL_VERBOSE=true ;;
             p | P) PASS_FAILURES=true ;;
             e | E) ECHO_RESULT=true ;;
             s | S) SUCCESS_RESULT=true ;;
-            q | Q) QUIET_RESULT=true ;;
+            q | Q) QUIETMODE=true ;;
+            n | N) NOTICE_RESULT=true ;;
             *)
                 {
                     error "Unrecognized option '$1' passed to _execute_. Exiting."
@@ -108,8 +112,8 @@ _execute_() {
     fi
 
     if "${DRYRUN}"; then
-        if "${QUIET_RESULT}"; then
-            VERBOSE=$SAVE_VERBOSE
+        if "${QUIETMODE}"; then
+            VERBOSE=${SAVE_VERBOSE}
             return 0
         fi
         if [ -n "${2:-}" ]; then
@@ -119,17 +123,21 @@ _execute_() {
         fi
     elif ${VERBOSE}; then
         if eval "${CMD}"; then
-            if "${ECHO_RESULT}"; then
+            if "${QUIETMODE}"; then
+                VERBOSE=${SAVE_VERBOSE}
+            elif "${ECHO_RESULT}"; then
                 echo "${EXECUTE_MESSAGE}"
             elif "${SUCCESS_RESULT}"; then
                 success "${EXECUTE_MESSAGE}"
+            elif "${NOTICE_RESULT}"; then
+                notice "${EXECUTE_MESSAGE}"
             else
                 info "${EXECUTE_MESSAGE}"
             fi
-            VERBOSE=${SAVE_VERBOSE}
-            return 0
         else
-            if "${ECHO_RESULT}"; then
+            if "${QUIETMODE}"; then
+                VERBOSE=${SAVE_VERBOSE}
+            elif "${ECHO_RESULT}"; then
                 echo "warning: ${EXECUTE_MESSAGE}"
             else
                 warning "${EXECUTE_MESSAGE}"
@@ -139,20 +147,21 @@ _execute_() {
         fi
     else
         if eval "${CMD}" &>/dev/null; then
-            if "${QUIET_RESULT}"; then
+            if "${QUIETMODE}"; then
                 VERBOSE=${SAVE_VERBOSE}
-                return 0
             elif "${ECHO_RESULT}"; then
                 echo "${EXECUTE_MESSAGE}"
             elif "${SUCCESS_RESULT}"; then
                 success "${EXECUTE_MESSAGE}"
+            elif "${NOTICE_RESULT}"; then
+                notice "${EXECUTE_MESSAGE}"
             else
                 info "${EXECUTE_MESSAGE}"
             fi
-            VERBOSE=${SAVE_VERBOSE}
-            return 0
         else
-            if "${ECHO_RESULT}"; then
+            if "${QUIETMODE}"; then
+                VERBOSE=$SAVE_VERBOSE
+            elif "${ECHO_RESULT}"; then
                 echo "error: ${EXECUTE_MESSAGE}"
             else
                 warning "${EXECUTE_MESSAGE}"
@@ -161,6 +170,8 @@ _execute_() {
             "${PASS_FAILURES}" && return 0 || return 1
         fi
     fi
+    VERBOSE=${SAVE_VERBOSE}
+    return 0
 }
 
 _findBaseDir_() {
@@ -178,10 +189,10 @@ _findBaseDir_() {
         && SOURCE="${BASH_SOURCE[1]}" \
         || SOURCE="${BASH_SOURCE[0]}"
 
-    while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-        DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-        SOURCE="$(readlink "$SOURCE")"
-        [[ $SOURCE != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    while [ -h "${SOURCE}" ]; do # Resolve $SOURCE until the file is no longer a symlink
+        DIR="$(cd -P "$(dirname "$SOUR{CE")" && pwd)"
+        SOURCE="$(readlink "${SOURCE}")"
+        [[ ${SOURCE} != /* ]] && SOURCE="${DIR}/${SOURCE}" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
     done
     echo "$(cd -P "$(dirname "${SOURCE}")" && pwd)"
 }
@@ -198,9 +209,15 @@ _setPATH_() {
     done
 
     for NEWPATH in "${NEWPATHS[@]}"; do
-        if ! echo "$PATH" | grep -Eq "(^|:)${NEWPATH}($|:)"; then
-            PATH="${NEWPATH}:${PATH}"
-            debug "Added '${tan}${NEWPATH}${purple}' to PATH"
+        if [ -d "${NEWPATH}" ]; then
+            if ! echo "${PATH}" | grep -Eq "(^|:)${NEWPATH}($|:)"; then
+                PATH="${NEWPATH}:${PATH}"
+                debug "Added '${NEWPATH}' to PATH"
+            else
+                debug "_setPATH_: '${NEWPATH}' already exists in PATH"
+            fi
+        else
+            debug "_setPATH_: can not find: ${NEWPATH}"
         fi
     done
 }
@@ -256,11 +273,11 @@ _uniqueFileName_() {
     filename="$(basename "${fullfile}")"
 
     # Extract extensions only when they exist
-    if [[ "${filename}" =~ \.[a-zA-Z]{2,4}$ ]]; then
+    if [[ ${filename} =~ \.[a-zA-Z]{2,4}$ ]]; then
         extension=".${filename##*.}"
         filename="${filename%.*}"
     fi
-    if [[ "${filename}" == "${extension:-}" ]]; then
+    if [[ ${filename} == "${extension:-}" ]]; then
         extension=""
     fi
 
@@ -510,7 +527,7 @@ _setColors_() {
             green=$(tput setaf 82)
             red=$(tput setaf 1)
             purple=$(tput setaf 171)
-            gray=$(tput setaf 248)
+            gray=$(tput setaf 250)
         else
             white=$(tput setaf 7)
             blue=$(tput setaf 38)
@@ -552,28 +569,32 @@ _alert_() {
     local function_name color
     local alertType="${1}"
     local message="${2}"
-    local line="${3:-}"  # Optional line number
+    local line="${3:-}" # Optional line number
 
-    if [[ -n "${line}" && "${alertType}" =~ ^(fatal|error) && "${FUNCNAME[2]}" != "_trapCleanup_" ]]; then
+    if [[ -n ${line} && ${alertType} =~ ^(fatal|error) && ${FUNCNAME[2]} != "_trapCleanup_" ]]; then
         message="${message} (line: ${line}) $(_functionStack_)"
-    elif [[ -n "${line}" && "${FUNCNAME[2]}" != "_trapCleanup_" ]]; then
+    elif [[ -n ${line} && ${FUNCNAME[2]} != "_trapCleanup_" ]]; then
         message="${message} (line: ${line})"
-    elif [[ -z "${line}" && "${alertType}" =~ ^(fatal|error) && "${FUNCNAME[2]}" != "_trapCleanup_" ]]; then
+    elif [[ -z ${line} && ${alertType} =~ ^(fatal|error) && ${FUNCNAME[2]} != "_trapCleanup_" ]]; then
         message="${message} $(_functionStack_)"
     fi
 
-    if [[ "${alertType}" =~ ^(error|fatal) ]]; then
+    if [[ ${alertType} =~ ^(error|fatal) ]]; then
         color="${bold}${red}"
-    elif [ "${alertType}" = "warning" ]; then
+    elif [ "${alertType}" == "info" ]; then
+        color="${gray}"
+    elif [ "${alertType}" == "warning" ]; then
         color="${red}"
-    elif [ "${alertType}" = "success" ]; then
+    elif [ "${alertType}" == "success" ]; then
         color="${green}"
-    elif [ "${alertType}" = "debug" ]; then
+    elif [ "${alertType}" == "debug" ]; then
         color="${purple}"
-    elif [ "${alertType}" = "header" ]; then
+    elif [ "${alertType}" == "header" ]; then
         color="${bold}${tan}"
-    elif [[ "${alertType}" =~ ^(input|notice) ]]; then
+    elif [ ${alertType} == "notice" ]; then
         color="${bold}"
+    elif [ ${alertType} == "input" ]; then
+        color="${bold}${underline}"
     elif [ "${alertType}" = "dryrun" ]; then
         color="${blue}"
     else
@@ -583,7 +604,7 @@ _alert_() {
     _writeToScreen_() {
 
         ("${QUIET}") && return 0 # Print to console when script is not 'quiet'
-        [[ ${VERBOSE} == false && "${alertType}" =~ ^(debug|verbose) ]] && return 0
+        [[ ${VERBOSE} == false && ${alertType} =~ ^(debug|verbose) ]] && return 0
 
         if ! [[ -t 1 ]]; then # Don't use colors on non-recognized terminals
             color=""
@@ -595,11 +616,13 @@ _alert_() {
     _writeToScreen_
 
     _writeToLog_() {
-        [[ "${alertType}" == "input" ]] && return 0
-        [[ "${LOGLEVEL}" =~ (off|OFF|Off) ]] && return 0
-        [ -z "${LOGFILE:-}" ] && LOGFILE="$(pwd)/$(basename "$0").log"
-        [ ! -d "$(dirname "${LOGFILE}")" ] && command mkdir -p "$(dirname "${LOGFILE}")"
-        [[ ! -f "${LOGFILE}" ]] && touch "${LOGFILE}"
+        [[ ${alertType} == "input" ]] && return 0
+        [[ ${LOGLEVEL} =~ (off|OFF|Off) ]] && return 0
+        if [ -z "${LOGFILE:-}" ]; then
+            LOGFILE="$(pwd)/$(basename "$0").log"
+        fi
+        [ ! -d "$(dirname "${LOGFILE}")" ] && mkdir -p "$(dirname "${LOGFILE}")"
+        [[ ! -f ${LOGFILE} ]] && touch "${LOGFILE}"
 
         # Don't use colors in logs
         if command -v gsed &>/dev/null; then
@@ -619,22 +642,27 @@ _alert_() {
             _writeToLog_
             ;;
         INFO | info | Info)
-            if [[ "${alertType}" =~ ^(die|error|fatal|warning|info|notice|success) ]]; then
+            if [[ ${alertType} =~ ^(error|fatal|warning|info|notice|success) ]]; then
+                _writeToLog_
+            fi
+            ;;
+        NOTICE | notice | Notice)
+            if [[ ${alertType} =~ ^(error|fatal|warning|notice|success) ]]; then
                 _writeToLog_
             fi
             ;;
         WARN | warn | Warn)
-            if [[ "${alertType}" =~ ^(die|error|fatal|warning) ]]; then
+            if [[ ${alertType} =~ ^(error|fatal|warning) ]]; then
                 _writeToLog_
             fi
             ;;
         ERROR | error | Error)
-            if [[ "${alertType}" =~ ^(die|error|fatal) ]]; then
+            if [[ ${alertType} =~ ^(error|fatal) ]]; then
                 _writeToLog_
             fi
             ;;
         FATAL | fatal | Fatal)
-            if [[ "${alertType}" =~ ^(die|fatal) ]]; then
+            if [[ ${alertType} =~ ^fatal ]]; then
                 _writeToLog_
             fi
             ;;
@@ -642,7 +670,7 @@ _alert_() {
             return 0
             ;;
         *)
-            if [[ "${alertType}" =~ ^(die|error|fatal) ]]; then
+            if [[ ${alertType} =~ ^(error|fatal) ]]; then
                 _writeToLog_
             fi
             ;;
@@ -658,23 +686,35 @@ success() { _alert_ success "${1}" "${2:-}"; }
 dryrun() { _alert_ dryrun "${1}" "${2:-}"; }
 input() { _alert_ input "${1}" "${2:-}"; }
 header() { _alert_ header "== ${1} ==" "${2:-}"; }
-die() {
-    _alert_ fatal "${1}" "${2:-}"
-    _safeExit_ "1"
-}
+debug() { _alert_ debug "${1}" "${2:-}"; }
 fatal() {
     _alert_ fatal "${1}" "${2:-}"
     _safeExit_ "1"
 }
-debug() { _alert_ debug "${1}" "${2:-}"; }
-verbose() { _alert_ debug "${1}" "${2:-}"; }
+
+_functionStack_() {
+    # DESC:   Prints the function stack in use
+    # ARGS:   None
+    # OUTS:   Prints [function]:[file]:[line]
+    # NOTE:   Does not print functions from the alert class
+    local _i
+    funcStackResponse=()
+    for ((_i = 1; _i < ${#BASH_SOURCE[@]}; _i++)); do
+        case "${FUNCNAME[$_i]}" in "_alert_" | "_trapCleanup_" | fatal | error | warning | notice | info | debug | dryrun | header | success) continue ;; esac
+        funcStackResponse+=("${FUNCNAME[$_i]}:$(basename ${BASH_SOURCE[$_i]}):${BASH_LINENO[_i - 1]}")
+    done
+    printf "( "
+    printf %s "${funcStackResponse[0]}"
+    printf ' < %s' "${funcStackResponse[@]:1}"
+    printf ' )\n'
+}
 
 _safeExit_() {
     # DESC: Cleanup and exit from a script
     # ARGS: $1 (optional) - Exit code (defaults to 0)
     # OUTS: None
 
-    if [[ -d "${SCRIPT_LOCK:-}" ]]; then
+    if [[ -d ${SCRIPT_LOCK:-} ]]; then
         if command rm -rf "${SCRIPT_LOCK}"; then
             debug "Removing script lock"
         else
@@ -682,7 +722,7 @@ _safeExit_() {
         fi
     fi
 
-    if [[ -n "${TMP_DIR:-}" && -d "${TMP_DIR:-}" ]]; then
+    if [[ -n ${TMP_DIR:-} && -d ${TMP_DIR:-} ]]; then
         if [[ ${1:-} == 1 && -n "$(ls "${TMP_DIR}")" ]]; then
             # Do something here to save TMP_DIR on a non-zero script exit for debugging
             command rm -r "${TMP_DIR}"
@@ -716,7 +756,7 @@ _trapCleanup_() {
 
     funcstack="'$(echo "$funcstack" | sed -E 's/ / < /g')'"
 
-    if [[ "${script##*/}" == "${sourced##*/}" ]]; then
+    if [[ ${script##*/} == "${sourced##*/}" ]]; then
         fatal "${7:-} command: '${command}' (line: ${line}) [func: $(_functionStack_)]"
     else
         fatal "${7:-} command: '${command}' (func: ${funcstack} called at line ${linecallfunc} of '${script##*/}') (line: $line of '${sourced##*/}') "
@@ -767,23 +807,6 @@ _acquireScriptLock_() {
         error "Unable to acquire script lock: ${tan}${LOCK_DIR}${red}"
         fatal "If you trust the script isn't running, delete the lock dir"
     fi
-}
-
-_functionStack_() {
-    # DESC:   Prints the function stack in use
-    # ARGS:   None
-    # OUTS:   Prints [function]:[file]:[line]
-    # NOTE:   Does not print functions from the alert class
-    local _i
-    funcStackResponse=()
-    for ((_i = 1; _i < ${#BASH_SOURCE[@]}; _i++)); do
-        case "${FUNCNAME[$_i]}" in "_alert_" | "_trapCleanup_" | fatal | error | warning | notice | info | verbose | debug | dryrun | header | success | die) continue ;; esac
-        funcStackResponse+=("${FUNCNAME[$_i]}:$(basename ${BASH_SOURCE[$_i]}):${BASH_LINENO[$_i - 1]}")
-    done
-    printf "( "
-    printf %s "${funcStackResponse[0]}"
-    printf ' < %s' "${funcStackResponse[@]:1}"
-    printf ' )\n'
 }
 
 _parseOptions_() {
@@ -869,7 +892,8 @@ _usage_() {
   ${bold}Options:${reset}
     --user-home [DIR]       Set user home directory to symlink dotfiles to (Defaults to '~/')
     -h, --help              Display this help and exit
-    --loglevel [LEVEL]      One of: FATAL, ERROR, WARN, INFO, DEBUG, ALL, OFF  (Default is 'ERROR')
+    --loglevel [LEVEL]      One of: FATAL, ERROR, WARN, INFO, NOTICE, DEBUG, ALL, OFF
+                            (Default is 'ERROR')
     --logfile [FILE]        Full PATH to logfile.  (Default is '${HOME}/logs/$(basename "$0").log')
     -n, --dryrun            Non-destructive. Makes no permanent changes.
     -q, --quiet             Quiet (no output)
@@ -885,19 +909,46 @@ EOF
 # ################################## INITIALIZE AND RUN THE SCRIPT
 #                                    (Comment or uncomment the lines below to customize script behavior)
 
-trap '_trapCleanup_ ${LINENO} ${BASH_LINENO} "${BASH_COMMAND}" "${FUNCNAME[*]}" "${0}" "${BASH_SOURCE[0]}"' \
-    EXIT INT TERM SIGINT SIGQUIT
-set -o errtrace                           # Trap errors in subshells and functions
-set -o errexit                            # Exit on error. Append '||true' if you expect an error
-set -o pipefail                           # Use last non-zero exit code in a pipeline
-# shopt -s nullglob globstar              # Make `for f in *.txt` work when `*.txt` matches zero files
-IFS=$' \n\t'                              # Set IFS to preferred implementation
-# set -o xtrace                           # Run in debug mode
-_setColors_                               # Initialize color constants
-set -o nounset                            # Disallow expansion of unset variables
-# [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Force arguments when invoking the script
-_parseOptions_ "$@"                       # Parse arguments passed to script
-# _makeTempDir_ "$(basename "$0")"        # Create a temp directory '$TMP_DIR'
-# _acquireScriptLock_                     # Acquire script lock
-_mainScript_                              # Run the main logic script
-_safeExit_                                # Exit cleanly
+trap '_trapCleanup_ ${LINENO} ${BASH_LINENO} "${BASH_COMMAND}" "${FUNCNAME[*]}" "${0}" "${BASH_SOURCE[0]}"' EXIT INT TERM SIGINT SIGQUIT
+
+# Trap errors in subshells and functions
+set -o errtrace
+
+# Exit on error. Append '||true' if you expect an error
+set -o errexit
+
+# Use last non-zero exit code in a pipeline
+set -o pipefail
+
+# Make `for f in *.txt` work when `*.txt` matches zero files
+# shopt -s nullglob globstar
+
+# Set IFS to preferred implementation
+IFS=$' \n\t'
+
+# Run in debug mode
+# set -o xtrace
+
+# Initialize color constants
+_setColors_
+
+# Disallow expansion of unset variables
+set -o nounset
+
+# Force arguments when invoking the script
+# [[ $# -eq 0 ]] && _parseOptions_ "-h"
+
+# Parse arguments passed to script
+_parseOptions_ "$@"
+
+# Create a temp directory '$TMP_DIR'
+# _makeTempDir_ "$(basename "$0")"
+
+# Acquire script lock
+# _acquireScriptLock_
+
+# Run the main logic script
+_mainScript_
+
+# Exit cleanly
+_safeExit_

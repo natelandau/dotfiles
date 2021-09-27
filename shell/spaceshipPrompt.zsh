@@ -1,18 +1,18 @@
 SPACESHIP_PROMPT_ORDER=(
-  user          # Username section
-  host          # Hostname section
-  dir           # Current directory section
-  git           # Git section (git_branch + git_status)
-  ruby
-  exec_time     # Execution time
+    user # Username section
+    host # Hostname section
+    dir  # Current directory section
+    git  # Git section (git_branch + git_status)
+    ruby
+    exec_time # Execution time
 
-  line_sep      # Line break
-  exit_code     # Exit code section
-  char          # Prompt character
+    line_sep  # Line break
+    exit_code # Exit code section
+    char      # Prompt character
 )
 
 SPACESHIP_RPROMPT_ORDER=(
-  time
+    time
 )
 
 SPACESHIP_PROMPT_ADD_NEWLINE=true

@@ -17,40 +17,37 @@ alias kill='kill -9'                # kill:     Preferred 'kill' implementation
 alias ax='chmod a+x'                # ax:     Make a file executable
 alias rm='rm -i'
 alias rmd='rm -rf'
-
 alias shfmt="shfmt -ci -bn -i 2" # preferred shellformat implementation
 
 # Prefer `bat` over `cat`
 [[ "$(command -v bat)" ]] \
-  && alias cat="bat"
+    && alias cat="bat"
 
 # Prefer `prettyping` over `ping`
 [[ "$(command -v prettyping)" ]] \
-  && alias ping="prettyping --nolegend"
+    && alias ping="prettyping --nolegend"
 
 # Prefer we like TLDR
 [[ "$(command -v tldr)" ]] \
-  && alias help="tldr"
+    && alias help="tldr"
 
 # Prefer `htop` over `top`
 [[ "$(command -v htop)" ]] \
-  && alias top="htop"
-
-[[ "$(command -v newscript)" ]] \
-  && alias ns="newscript"
+    && alias top="htop"
 
 # Custom commands
-[[ "${SHELL##*/}" == "bash" ]] \
-  && alias sourcea='source ${HOME}/.bash_profile'
-[[ "${SHELL##*/}" == "zsh" ]] \
-  && alias sourcea='source ${HOME}/.zshrc'
+[[ ${SHELL##*/} == "bash" ]] \
+    && alias sourcea='source ${HOME}/.bash_profile'
+[[ ${SHELL##*/} == "zsh" ]] \
+    && alias sourcea='source ${HOME}/.zshrc'
 
 mcd() {
-  mkdir -pv "$1"
-  cd "$1" || exit
+    mkdir -pv "$1"
+    cd "$1" || exit
 }
+
 mkcd() {
-  mcd "$1"
+    mcd "$1"
 }
 
 mine() { ps "$@" -u "$USER" -o pid,%cpu,%mem,start,time,bsdtime,command; }
@@ -61,8 +58,7 @@ titlebar() { echo -n $'\e]0;'"$*"$'\a'; } # Set the terminal's title bar.
 
 # Use the scripts in /bin
 if command -v cleanFilenames &>/dev/null; then
-  alias clean='cleanFilenames' # Alias to invoke my clean filenames script
-  alias cf="cleanFilenames"
+    alias cf="cleanFilenames" # Alias to invoke my clean filenames script
 fi
 
 # Preferred implementation of shellcheck

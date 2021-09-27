@@ -1,53 +1,53 @@
 # Functions needed
-_zshWifiSignal_(){
-  # Originally found here: https://github.com/bhilburn/powerlevel9k/wiki/Show-Off-Your-Config
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    local output=$(/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -I)
-    local airport=$(echo $output | grep 'AirPort' | awk -F': ' '{print $2}')
+_zshWifiSignal_() {
+    # Originally found here: https://github.com/bhilburn/powerlevel9k/wiki/Show-Off-Your-Config
+    if [[ $OSTYPE == "darwin"* ]]; then
+        local output=$(/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -I)
+        local airport=$(echo $output | grep 'AirPort' | awk -F': ' '{print $2}')
 
-    if [ "$airport" = "Off" ]; then
-      local color='%F{black}'
-      echo -n "%{$color%}Wifi Off"
+        if [ "${airport}" = "Off" ]; then
+            local color='%F{black}'
+            echo -n "%{$color%}Wifi Off"
+        else
+            local ssid=$(echo ${output} | grep ' SSID' | awk -F': ' '{print $2}')
+            local speed=$(echo ${output} | grep 'lastTxRate' | awk -F': ' '{print $2}')
+            local color='%F{black}'
+
+            [[ ${speed} -gt 100 ]] && color='%F{black}'
+            [[ ${speed} -lt 50 ]] && color='%F{red}'
+
+            echo -n "%{$color%}$speed Mbps \uf1eb%{%f%}" # removed char not in my PowerLine font
+        fi
+    elif command -v nmcli &>/dev/null; then
+        local signal=$(nmcli device wifi | grep yes | awk '{print $8}')
+        local color='%F{yellow}'
+        [[ ${signal} -gt 75 ]] && color='%F{green}'
+        [[ ${signal} -lt 50 ]] && color='%F{red}'
+        echo -n "%{$color%}\uf230  $signal%{%f%}" # \uf230 is 
     else
-      local ssid=$(echo $output | grep ' SSID' | awk -F': ' '{print $2}')
-      local speed=$(echo $output | grep 'lastTxRate' | awk -F': ' '{print $2}')
-      local color='%F{black}'
-
-      [[ $speed -gt 100 ]] && color='%F{black}'
-      [[ $speed -lt 50 ]] && color='%F{red}'
-
-      echo -n "%{$color%}$speed Mbps \uf1eb%{%f%}" # removed char not in my PowerLine font
+        return 0
     fi
-  elif command -v nmcli &>/dev/null; then
-    local signal=$(nmcli device wifi | grep yes | awk '{print $8}')
-    local color='%F{yellow}'
-    [[ $signal -gt 75 ]] && color='%F{green}'
-    [[ $signal -lt 50 ]] && color='%F{red}'
-    echo -n "%{$color%}\uf230  $signal%{%f%}" # \uf230 is 
-  else
-    return 0
-  fi
 }
 
 # backgorund of terminal: grey236
 
 # Prompt Elements
 POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
-  root_indicator
-  context
-  dir_writable
-  dir
-  vcs
-  status
-  ssh
-  )
+    root_indicator
+    context
+    dir_writable
+    dir
+    vcs
+    status
+    ssh
+)
 
 POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
-  time
-  #battery
-  ip
-  custom_wifi_signal
-  )
+    time
+    #battery
+    ip
+    custom_wifi_signal
+)
 
 # Set nerdfont (https://github.com/ryanoasis/nerd-fonts)
 POWERLEVEL9K_MODE='nerdfont-complete'
@@ -75,7 +75,7 @@ POWERLEVEL9K_BATTERY_ICON='\uf1e6'
 # Context
 # Set Default user to only display context when NOT default
 whoamiregex="nlandau|natelandau|ncl"
-[[ "$(whoami)" =~ $whoamiregex ]] && DEFAULT_USER=$(whoami)
+[[ "$(whoami)" =~ ${whoamiregex} ]] && DEFAULT_USER=$(whoami)
 POWERLEVEL9K_CONTEXT_TEMPLATE='%n@%m'
 POWERLEVEL9K_CONTEXT_DEFAULT_FOREGROUND='white'
 POWERLEVEL9K_CONTEXT_DEFAULT_BACKGROUND='black'

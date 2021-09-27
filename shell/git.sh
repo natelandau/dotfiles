@@ -10,9 +10,9 @@ alias gap='git add -p'                        # step through each change, or hun
 alias unstage='git reset --'                  # unstage a file
 ga() { git add "${@:-.}"; }                   # Add all files by default
 gac() {
-  # Add and Commit a single specified file with a commit message
-  git add -A "${1}"
-  git commit -m "${2}"
+    # Add and Commit a single specified file with a commit message
+    git add -A "${1}"
+    git commit -m "${2}"
 }
 
 # Cloning, Fetching, Pushing, and Pulling
@@ -24,8 +24,8 @@ alias gcl='git clone --recursive'            # Clone with all submodules
 gcheckout() { git checkout "${@:-master}"; } # Checkout master by default
 
 gpull() {
-  git up
-  git submodule foreach git pull origin master
+    git up
+    git submodule foreach git pull origin master
 }
 
 # _gitAliases_() {
@@ -70,9 +70,9 @@ alias gba='git branch -a'                                 # Lists local and remo
 
 # General Commands
 if command -v diff-so-fancy &>/dev/null; then
-  alias diff="diff-so-fancy"
+    alias diff="diff-so-fancy"
 else
-  alias diff="git diff"
+    alias diff="git diff"
 fi
 alias gdiff="git difftool" # Open file in git's default diff tool
 alias gstash='git stash'   # stash git changes and put them into your list
@@ -90,99 +90,99 @@ alias gist-paste="gist --private --copy --paste --filename"
 alias gist-file="gist --private --copy"
 
 applyGitIgnore() {
-  # Applies changes to the git .ignorefile after the files
-  # mentioned were already committed to the repo
-  git ls-files -ci --exclude-standard -z | xargs -0 git rm --cached
+    # Applies changes to the git .ignorefile after the files
+    # mentioned were already committed to the repo
+    git ls-files -ci --exclude-standard -z | xargs -0 git rm --cached
 }
 
 gitRevert() {
-  # Applies changes to HEAD that revert all changes after specified commit
-  git reset "${1}"gg
-  git reset --soft HEAD@{1}
-  git commit -m "Revert to ${1}"
-  git reset --hard
+    # Applies changes to HEAD that revert all changes after specified commit
+    git reset "${1}"gg
+    git reset --soft HEAD@{1}
+    git commit -m "Revert to ${1}"
+    git reset --hard
 }
 
 gitRollback() {
-  # Resets the current HEAD to specified commit
+    # Resets the current HEAD to specified commit
 
-  is_clean() {
-    if [[ $(git diff --shortstat 2>/dev/null | tail -n1) != "" ]]; then
-      echo "Your branch is dirty, please commit your changes"
-      kill -INT $$
+    is_clean() {
+        if [[ $(git diff --shortstat 2>/dev/null | tail -n1) != "" ]]; then
+            echo "Your branch is dirty, please commit your changes"
+            kill -INT $$
+        fi
+    }
+
+    commit_exists() {
+        git rev-list --quiet "$1"
+        status=$?
+        if [ $status -ne 0 ]; then
+            echo "Commit ${1} does not exist"
+            kill -INT $$
+        fi
+    }
+
+    keep_changes() {
+        while true; do
+            read -r -p "Do you want to keep all changes from rolled back revisions in your working tree? [Y/N]" RESP
+            case $RESP in
+
+                [yY])
+                    echo "Rolling back to commit ${1} with unstaged changes"
+                    git reset "$1"
+                    break
+                    ;;
+                [nN])
+                    echo "Rolling back to commit ${1} with a clean working tree"
+                    git reset --hard "$1"
+                    break
+                    ;;
+                *)
+                    echo "Please enter Y or N"
+                    ;;
+            esac
+        done
+    }
+
+    if [ -n "$(git symbolic-ref HEAD 2>/dev/null)" ]; then
+        is_clean
+        commit_exists "$1"
+
+        while true; do
+            read -r -p "WARNING: This will change your history and move the current HEAD back to commit ${1}, continue? [Y/N]" RESP
+            case $RESP in
+
+                [yY])
+                    keep_changes "$1"
+                    break
+                    ;;
+                [nN])
+                    break
+                    ;;
+                *)
+                    echo "Please enter Y or N"
+                    ;;
+            esac
+        done
+    else
+        echo "you're currently not in a git repository"
     fi
-  }
-
-  commit_exists() {
-    git rev-list --quiet "$1"
-    status=$?
-    if [ $status -ne 0 ]; then
-      echo "Commit ${1} does not exist"
-      kill -INT $$
-    fi
-  }
-
-  keep_changes() {
-    while true; do
-      read -r -p "Do you want to keep all changes from rolled back revisions in your working tree? [Y/N]" RESP
-      case $RESP in
-
-        [yY])
-          echo "Rolling back to commit ${1} with unstaged changes"
-          git reset "$1"
-          break
-          ;;
-        [nN])
-          echo "Rolling back to commit ${1} with a clean working tree"
-          git reset --hard "$1"
-          break
-          ;;
-        *)
-          echo "Please enter Y or N"
-          ;;
-      esac
-    done
-  }
-
-  if [ -n "$(git symbolic-ref HEAD 2>/dev/null)" ]; then
-    is_clean
-    commit_exists "$1"
-
-    while true; do
-      read -r -p "WARNING: This will change your history and move the current HEAD back to commit ${1}, continue? [Y/N]" RESP
-      case $RESP in
-
-        [yY])
-          keep_changes "$1"
-          break
-          ;;
-        [nN])
-          break
-          ;;
-        *)
-          echo "Please enter Y or N"
-          ;;
-      esac
-    done
-  else
-    echo "you're currently not in a git repository"
-  fi
 }
 
 gurl() {
-  # Prints URL of current git repository
-  local remote remotename host user_repo
+    # Prints URL of current git repository
+    local remote remotename host user_repo
 
-  remotename="${*:-origin}"
-  remote="$(git remote -v | awk '/^'"${remotename}"'.*\(push\)$/ {print $2}')"
-  [[ "$remote" ]] || return
-  host="$(echo "$remote" | perl -pe 's/.*@//;s/:.*//')"
-  user_repo="$(echo "$remote" | perl -pe 's/.*://;s/\.git$//')"
-  echo "https://${host}/${user_repo}"
+    remotename="${*:-origin}"
+    remote="$(git remote -v | awk '/^'"${remotename}"'.*\(push\)$/ {print $2}')"
+    [[ "$remote" ]] || return
+    host="$(echo "$remote" | perl -pe 's/.*@//;s/:.*//')"
+    user_repo="$(echo "$remote" | perl -pe 's/.*://;s/\.git$//')"
+    echo "https://${host}/${user_repo}"
 }
 
 githelp() {
-  cat <<TEXT
+    cat <<TEXT
 
   Git has no undo feature, but maybe these will help:
   ===================================================

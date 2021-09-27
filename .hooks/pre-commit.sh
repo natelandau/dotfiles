@@ -10,14 +10,14 @@ _mainScript_() {
         # ARGS:   $1 (Required) - File to check
         # OUTS:   None
         # USAGE:  Call the function
-        # NOTE:   Requires a file located at `~/.git_stop_words` containing one word per line.
+        # NOTE:   Requires a file localed at `~/.git_stop_words` containing one word per line.
 
         # Fail if any matching words are present in the diff
 
         STOP_WORD_FILE="${HOME}/.git_stop_words"
         GIT_DIFF_TEMP="${TMP_DIR}/diff.txt"
 
-        if cat "${STOP_WORD_FILE}" | grep . | grep -v '# ' >"${TMP_DIR}/pattern_file.txt"; then
+        if [ -f "${STOP_WORD_FILE}" ]; then
 
             if [[ $(basename "${STOP_WORD_FILE}") == "$(basename "${1}")" ]]; then
                 debug "Don't check stop words file for stop words. Skipping $(basename "${1}")"
@@ -25,16 +25,18 @@ _mainScript_() {
             fi
             debug "Checking for stop words"
 
-            # remove blank lines and comments from stopwords file
+            # remove blank lines from stopwords file
+            cat "${STOP_WORD_FILE}" | sed '/^$/d' >"${TMP_DIR}/pattern_file.txt"
 
             # Add diff to a temporary file
             git diff --cached -- "${1}" | grep '^+' >"${GIT_DIFF_TEMP}"
+
             if grep --file="${TMP_DIR}/pattern_file.txt" "${GIT_DIFF_TEMP}"; then
                 error "Found git stop word in '$(basename "${1}")'"
                 _safeExit_ 1
             fi
         else
-            debug "Could not find git stopwords file expected at '${STOP_WORD_FILE}'. Or it was empty. Continuing..."
+            debug "Could not find git stopwords file expected at '${STOP_WORD_FILE}'. Continuing..."
         fi
     }
 
@@ -114,7 +116,7 @@ _mainScript_() {
     _lintShellscripts_() {
         if command -v shellcheck >/dev/null; then
             debug "Linting shellscript: ${1}"
-            if ! shellcheck --exclude=2016,2059,2001,2002,2148,1090,2162,2005,2034,2154,2086,2155,2181,2164,2120,2119,1083,1117,2207 "${1}"; then
+            if ! shellcheck --exclude=2016,2059,2001,2002,2148,1090,2162,2005,2034,2154,2086,2155,2181,2164,2120,2119,1083,1117,2207,1091 "${1}"; then
                 error "Error in ${1}"
                 _safeExit_ 1
             else
@@ -197,14 +199,12 @@ _mainScript_() {
                     _lintAnsible_ "${STAGED_FILE}"
                 fi
             fi
-            if [[ ${STAGED_FILE} =~ \.(bash|sh)$ ]]; then
+            if [[ ${STAGED_FILE} =~ \.(bash|sh)$ || "$(head -n 1 "${STAGED_FILE}")" =~ ^#!.*bash$ ]]; then
                 _lintShellscripts_ "${STAGED_FILE}"
             fi
-            if [[ ${STAGED_FILE} =~ \.(sh|bash|bats|zsh)$ ]]; then
+            if [[ ${STAGED_FILE} =~ \.(sh|bash|bats|zsh)$ || "$(head -n 1 "${STAGED_FILE}")" =~ ^#!.*bash$ ]]; then
                 _BATS_ "${STAGED_FILE}"
             fi
-        else
-            fatal "${STAGED_FILE} does not exist"
         fi
 
     done < <(git diff --cached --name-only --line-prefix="$(git rev-parse --show-toplevel)/")
@@ -242,9 +242,15 @@ _setPATH_() {
     done
 
     for NEWPATH in "${NEWPATHS[@]}"; do
-        if ! echo "$PATH" | grep -Eq "(^|:)${NEWPATH}($|:)"; then
-            PATH="${NEWPATH}:${PATH}"
-            debug "Added '${tan}${NEWPATH}${purple}' to PATH"
+        if [ -d "${NEWPATH}" ]; then
+            if ! echo "${PATH}" | grep -Eq "(^|:)${NEWPATH}($|:)"; then
+                PATH="${NEWPATH}:${PATH}"
+                debug "Added '${NEWPATH}' to PATH"
+            else
+                debug "_setPATH_: '${NEWPATH}' already exists in PATH"
+            fi
+        else
+            debug "_setPATH_: can not find: ${NEWPATH}"
         fi
     done
 }
@@ -269,7 +275,7 @@ _setColors_() {
             green=$(tput setaf 82)
             red=$(tput setaf 1)
             purple=$(tput setaf 171)
-            gray=$(tput setaf 248)
+            gray=$(tput setaf 250)
         else
             white=$(tput setaf 7)
             blue=$(tput setaf 38)
@@ -323,16 +329,20 @@ _alert_() {
 
     if [[ ${alertType} =~ ^(error|fatal) ]]; then
         color="${bold}${red}"
-    elif [ "${alertType}" = "warning" ]; then
+    elif [ "${alertType}" == "info" ]; then
+        color="${gray}"
+    elif [ "${alertType}" == "warning" ]; then
         color="${red}"
-    elif [ "${alertType}" = "success" ]; then
+    elif [ "${alertType}" == "success" ]; then
         color="${green}"
-    elif [ "${alertType}" = "debug" ]; then
+    elif [ "${alertType}" == "debug" ]; then
         color="${purple}"
-    elif [ "${alertType}" = "header" ]; then
+    elif [ "${alertType}" == "header" ]; then
         color="${bold}${tan}"
-    elif [[ ${alertType} =~ ^(input|notice) ]]; then
+    elif [ ${alertType} == "notice" ]; then
         color="${bold}"
+    elif [ ${alertType} == "input" ]; then
+        color="${bold}${underline}"
     elif [ "${alertType}" = "dryrun" ]; then
         color="${blue}"
     else
@@ -356,8 +366,10 @@ _alert_() {
     _writeToLog_() {
         [[ ${alertType} == "input" ]] && return 0
         [[ ${LOGLEVEL} =~ (off|OFF|Off) ]] && return 0
-        [ -z "${LOGFILE:-}" ] && LOGFILE="$(pwd)/$(basename "$0").log"
-        [ ! -d "$(dirname "${LOGFILE}")" ] && command mkdir -p "$(dirname "${LOGFILE}")"
+        if [ -z "${LOGFILE:-}" ]; then
+            LOGFILE="$(pwd)/$(basename "$0").log"
+        fi
+        [ ! -d "$(dirname "${LOGFILE}")" ] && mkdir -p "$(dirname "${LOGFILE}")"
         [[ ! -f ${LOGFILE} ]] && touch "${LOGFILE}"
 
         # Don't use colors in logs
@@ -378,22 +390,27 @@ _alert_() {
             _writeToLog_
             ;;
         INFO | info | Info)
-            if [[ ${alertType} =~ ^(die|error|fatal|warning|info|notice|success) ]]; then
+            if [[ ${alertType} =~ ^(error|fatal|warning|info|notice|success) ]]; then
+                _writeToLog_
+            fi
+            ;;
+        NOTICE | notice | Notice)
+            if [[ ${alertType} =~ ^(error|fatal|warning|notice|success) ]]; then
                 _writeToLog_
             fi
             ;;
         WARN | warn | Warn)
-            if [[ ${alertType} =~ ^(die|error|fatal|warning) ]]; then
+            if [[ ${alertType} =~ ^(error|fatal|warning) ]]; then
                 _writeToLog_
             fi
             ;;
         ERROR | error | Error)
-            if [[ ${alertType} =~ ^(die|error|fatal) ]]; then
+            if [[ ${alertType} =~ ^(error|fatal) ]]; then
                 _writeToLog_
             fi
             ;;
         FATAL | fatal | Fatal)
-            if [[ ${alertType} =~ ^(die|fatal) ]]; then
+            if [[ ${alertType} =~ ^fatal ]]; then
                 _writeToLog_
             fi
             ;;
@@ -401,7 +418,7 @@ _alert_() {
             return 0
             ;;
         *)
-            if [[ ${alertType} =~ ^(die|error|fatal) ]]; then
+            if [[ ${alertType} =~ ^(error|fatal) ]]; then
                 _writeToLog_
             fi
             ;;
@@ -417,16 +434,28 @@ success() { _alert_ success "${1}" "${2:-}"; }
 dryrun() { _alert_ dryrun "${1}" "${2:-}"; }
 input() { _alert_ input "${1}" "${2:-}"; }
 header() { _alert_ header "== ${1} ==" "${2:-}"; }
-die() {
-    _alert_ fatal "${1}" "${2:-}"
-    _safeExit_ "1"
-}
+debug() { _alert_ debug "${1}" "${2:-}"; }
 fatal() {
     _alert_ fatal "${1}" "${2:-}"
     _safeExit_ "1"
 }
-debug() { _alert_ debug "${1}" "${2:-}"; }
-verbose() { _alert_ debug "${1}" "${2:-}"; }
+
+_functionStack_() {
+    # DESC:   Prints the function stack in use
+    # ARGS:   None
+    # OUTS:   Prints [function]:[file]:[line]
+    # NOTE:   Does not print functions from the alert class
+    local _i
+    funcStackResponse=()
+    for ((_i = 1; _i < ${#BASH_SOURCE[@]}; _i++)); do
+        case "${FUNCNAME[$_i]}" in "_alert_" | "_trapCleanup_" | fatal | error | warning | notice | info | debug | dryrun | header | success) continue ;; esac
+        funcStackResponse+=("${FUNCNAME[$_i]}:$(basename ${BASH_SOURCE[$_i]}):${BASH_LINENO[_i - 1]}")
+    done
+    printf "( "
+    printf %s "${funcStackResponse[0]}"
+    printf ' < %s' "${funcStackResponse[@]:1}"
+    printf ' )\n'
+}
 
 _safeExit_() {
     # DESC: Cleanup and exit from a script
@@ -528,23 +557,6 @@ _acquireScriptLock_() {
     fi
 }
 
-_functionStack_() {
-    # DESC:   Prints the function stack in use
-    # ARGS:   None
-    # OUTS:   Prints [function]:[file]:[line]
-    # NOTE:   Does not print functions from the alert class
-    local _i
-    funcStackResponse=()
-    for ((_i = 1; _i < ${#BASH_SOURCE[@]}; _i++)); do
-        case "${FUNCNAME[$_i]}" in "_alert_" | "_trapCleanup_" | fatal | error | warning | notice | info | verbose | debug | dryrun | header | success | die) continue ;; esac
-        funcStackResponse+=("${FUNCNAME[$_i]}:$(basename ${BASH_SOURCE[$_i]}):${BASH_LINENO[_i - 1]}")
-    done
-    printf "( "
-    printf %s "${funcStackResponse[0]}"
-    printf ' < %s' "${funcStackResponse[@]:1}"
-    printf ' )\n'
-}
-
 _parseOptions_() {
     # Iterate over options
     # breaking -ab into -a -b when needed and --foo=bar into --foo bar
@@ -621,7 +633,8 @@ _usage_() {
 
   ${bold}Options:${reset}
     -h, --help              Display this help and exit
-    --loglevel [LEVEL]      One of: FATAL, ERROR, WARN, INFO, DEBUG, ALL, OFF  (Default is 'ERROR')
+    --loglevel [LEVEL]      One of: FATAL, ERROR, WARN, INFO, NOTICE, DEBUG, ALL, OFF
+                            (Default is 'ERROR')
     --logfile [FILE]        Full PATH to logfile.  (Default is '${HOME}/logs/$(basename "$0").log')
     -n, --dryrun            Non-destructive. Makes no permanent changes.
     -q, --quiet             Quiet (no output)
@@ -637,19 +650,46 @@ EOF
 # ################################## INITIALIZE AND RUN THE SCRIPT
 #                                    (Comment or uncomment the lines below to customize script behavior)
 
-trap '_trapCleanup_ ${LINENO} ${BASH_LINENO} "${BASH_COMMAND}" "${FUNCNAME[*]}" "${0}" "${BASH_SOURCE[0]}"' \
-    EXIT INT TERM SIGINT SIGQUIT
-set -o errtrace # Trap errors in subshells and functions
-set -o errexit  # Exit on error. Append '||true' if you expect an error
-set -o pipefail # Use last non-zero exit code in a pipeline
-# shopt -s nullglob globstar              # Make `for f in *.txt` work when `*.txt` matches zero files
-IFS=$' \n\t' # Set IFS to preferred implementation
-# set -o xtrace                           # Run in debug mode
-set -o nounset # Disallow expansion of unset variables
-_setColors_    # Initialize color constants
-# [[ $# -eq 0 ]] && _parseOptions_ "-h"   # Force arguments when invoking the script
-_parseOptions_ "$@"              # Parse arguments passed to script
-_makeTempDir_ "$(basename "$0")" # Create a temp directory '$TMP_DIR'
-# _acquireScriptLock_                     # Acquire script lock
-_mainScript_ # Run the main logic script
-_safeExit_   # Exit cleanly
+trap '_trapCleanup_ ${LINENO} ${BASH_LINENO} "${BASH_COMMAND}" "${FUNCNAME[*]}" "${0}" "${BASH_SOURCE[0]}"' EXIT INT TERM SIGINT SIGQUIT
+
+# Trap errors in subshells and functions
+set -o errtrace
+
+# Exit on error. Append '||true' if you expect an error
+set -o errexit
+
+# Use last non-zero exit code in a pipeline
+set -o pipefail
+
+# Make `for f in *.txt` work when `*.txt` matches zero files
+# shopt -s nullglob globstar
+
+# Set IFS to preferred implementation
+IFS=$' \n\t'
+
+# Run in debug mode
+# set -o xtrace
+
+# Initialize color constants
+_setColors_
+
+# Disallow expansion of unset variables
+set -o nounset
+
+# Force arguments when invoking the script
+# [[ $# -eq 0 ]] && _parseOptions_ "-h"
+
+# Parse arguments passed to script
+_parseOptions_ "$@"
+
+# Create a temp directory '$TMP_DIR'
+_makeTempDir_ "$(basename "$0")"
+
+# Acquire script lock
+# _acquireScriptLock_
+
+# Run the main logic script
+_mainScript_
+
+# Exit cleanly
+_safeExit_
