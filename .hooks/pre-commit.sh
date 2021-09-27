@@ -10,7 +10,7 @@ _mainScript_() {
         # ARGS:   $1 (Required) - File to check
         # OUTS:   None
         # USAGE:  Call the function
-        # NOTE:   Requires a file localed at `~/.git_stop_words` containing one word per line.
+        # NOTE:   Requires a file located at `~/.git_stop_words` containing one word per line.
 
         # Fail if any matching words are present in the diff
 
@@ -149,7 +149,7 @@ _mainScript_() {
         if ! command -v ansible-lint >/dev/null; then
             notice "Found Ansible files but ansible-lint is not available. Continuing..."
             return 0
-        elif [[ "$(basename ${1})" =~ (^\.|^requirements|j2|variables|meta|defaults?) ]]; then
+        elif [[ "$(basename ${1})" =~ (^\.|^requirements|j2|vault\.yml|variables|meta|defaults?|inventory) ]]; then
             # Don't lint files that are not Ansible playbooks
             debug "won't ansible lint: ${1}"
             return 0
