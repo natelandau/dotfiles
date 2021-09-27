@@ -1,4 +1,4 @@
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [[ ${OSTYPE} == "darwin"* ]]; then
 
     # Favor gnu tools when available from homebrew
     if [ -d "/usr/local/opt/findutils/libexec/gnubin" ]; then
@@ -13,19 +13,22 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     if [ -d "/usr/local/opt/coreutils/libexec/gnubin" ]; then
         PATH="/usr/local/opt/coreutils/libexec/gnubin:${PATH}"
     fi
-        if [ -d "/usr/local/opt/gnu-tar/libexec/gnubin" ]; then
+    if [ -d "/usr/local/opt/gnu-tar/libexec/gnubin" ]; then
         PATH="/usr/local/opt/gnu-tar/libexec/gnubin:${PATH}"
+    fi
+    if [ -d "/usr/local/opt/gnu-getopt/bin" ]; then
+        PATH="/usr/local/opt/gnu-getopt/bin:${PATH}"
     fi
 
     if [ -e "/Applications/iTerm.app" ]; then
-        if [[ -n $BASH ]]; then
+        if [[ -n ${BASH} ]]; then
             if [[ -f ~/.iterm2_shell_integration.bash ]]; then
                 source ~/.iterm2_shell_integration.bash
             else
                 curl -L https://iterm2.com/shell_integration/bash \
                     -o ~/.iterm2_shell_integration.bash &>/dev/null
             fi
-        elif [[ -n $ZSH_NAME ]]; then
+        elif [[ -n ${ZSH_NAME} ]]; then
             if [[ -f ~/.iterm2_shell_integration.zsh ]]; then
                 # export ITERM2_SQUELCH_MARK=1
                 source ~/.iterm2_shell_integration.zsh
@@ -37,9 +40,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     fi
 
     ## ALIASES ##
-    alias cpwd='pwd|tr -d "\n"|pbcopy'  # cpwd:     Copy the working directory path
-    alias cl="fc -e -|pbcopy"           # cl:       Copy output of last command to mac clipboard
-    alias caff="caffeinate -ism"        # caff:     Run command without letting mac sleep
+    alias cpwd='pwd | tr -d "\n" | pbcopy' # cpwd:     Copy the working directory path
+    alias cl="fc -e -|pbcopy"              # cl:       Copy output of last command to mac clipboard
+    alias caff="caffeinate -ism"           # caff:     Run command without letting mac sleep
     alias cleanDS="find . -type f -name '*.DS_Store' -ls -delete"
     alias finderShowHidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
     alias finderHideHidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
@@ -48,14 +51,14 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     f() { open -a "Finder" "${1:-.}"; }
 
     # Opens any file in MacOS Quicklook Preview
-    ql() { qlmanage -p "$*" &>/dev/null; }
+    ql() { qlmanage -p "${*}" &>/dev/null; }
 
     # Clean up LaunchServices to remove duplicates in the "Open With" menu
     alias cleanupLS="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder"
 
     unmountDrive() {
         # unmountDrive - If an AFP drive is mounted, this will unmount the volume.
-        if [ -d "$1" ]; then
+        if [ -d "${1}" ]; then
             diskutil unmount "${1}"
         fi
     }
@@ -75,7 +78,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         local f
         f=$(mktemp -t browser.XXXXXX.html)
         cat /dev/stdin >|"${f}"
-        open -a safari "${f}"
+        open -a Safari "${f}"
     }
 
     lst() {
