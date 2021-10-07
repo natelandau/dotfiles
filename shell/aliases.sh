@@ -56,10 +56,5 @@ alias cpuHogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'
 
 titlebar() { echo -n $'\e]0;'"$*"$'\a'; } # Set the terminal's title bar.
 
-# Use the scripts in /bin
-if command -v cleanFilenames &>/dev/null; then
-    alias cf="cleanFilenames" # Alias to invoke my clean filenames script
-fi
-
 # Preferred implementation of shellcheck
 alias sc='shellcheck --exclude=1090,2005,2034,2086,1083,2119,2120,2059,2001,2002,2148,2129,1117'

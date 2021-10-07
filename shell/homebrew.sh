@@ -21,19 +21,6 @@ if command -v brew &>/dev/null; then
     # /Applications is now the default but leaving this for posterity
     export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 
-    alias cask='brew cask'
     alias brwe='brew' #typos
-
-    bup() {
-        local brewScript="${HOME}/bin/updateHomebrew"
-        if [ -e "${brewScript}" ]; then
-            "${brewScript}" "$*"
-        else
-            brew update
-            brew upgrade
-            brew cleanup
-            brew prune
-        fi
-    }
 
 fi
