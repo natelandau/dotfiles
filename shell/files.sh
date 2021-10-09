@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 md5Check() {
   local opt
   local OPTIND=1

@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 
 # Run locally installed npm packages
 # http://stackoverflow.com/questions/9679932/how-to-use-package-installed-locally-in-node-modules
