@@ -1,4 +1,3 @@
-
 # Run locally installed npm packages
 # http://stackoverflow.com/questions/9679932/how-to-use-package-installed-locally-in-node-modules
 # usage:
@@ -13,8 +12,7 @@ if command -v ghi &>/dev/null; then
     alias task='ghi'
 fi
 
-# Grabs headers from web page
-httpHeaders() { http -h "$@"; }
+httpHeaders() { http -h "$@"; } # network: Grabs headers from web page
 
 # Start an HTTP server from a directory, optionally specifying the port
 server() {
@@ -41,9 +39,9 @@ smartResize() {
 # Apache specific commands
 if command -v apache &>/dev/null; then
     alias apacheLogs='less +F /var/log/apache2/error_log'
-    alias apacheEdit='sudo edit /etc/httpd/httpd.conf' # apacheEdit:    Edit httpd.conf
-    alias apacheRestart='sudo apachectl graceful'      # apacheRestart: Restart Apache
-    alias herr='tail /var/log/httpd/error_log'         #  herr:  Tails HTTP error logs
+    alias apacheEdit='sudo edit /etc/httpd/httpd.conf'
+    alias apacheRestart='sudo apachectl graceful'
+    alias herr='tail /var/log/httpd/error_log'
 fi
 
 httpStatus() {

@@ -1,32 +1,43 @@
-alias g='git'
-
-# Adding and Committing
-alias gm="git add .; git commit -m"           # Add and Commit git changes
-alias gcm="git --no-pager commit -m "         # Commit - Short message
-alias gc="git --no-pager commit"              # Commit - Long message
-alias gcv="git --no-pager commit --no-verify" # Commit - Long message, skips pre-commit hook
-alias gshit='git add . ; git commit --amend'  # Appends current changes to the last commit
-alias gap='git add -p'                        # step through each change, or hunk
-alias unstage='git reset --'                  # unstage a file
-ga() { git add "${@:-.}"; }                   # Add all files by default
-gac() {
-    # Add and Commit a single specified file with a commit message
-    git add -A "${1}"
-    git commit -m "${2}"
-}
-
-# Cloning, Fetching, Pushing, and Pulling
+# Short commit
+alias gcm="git --no-pager commit -m "
+# Long commit
+alias gc="git --no-pager commit"
+# Long commit no verification
+alias gcv="git --no-pager commit --no-verify"
+alias gshit='git add . ; git commit --amend' # Appends current changes to the last commit
+alias gap='git add -p'                       # Step through each change
+alias unstage='git reset --'                 # Unstage a file
+ga() { git add "${@:-.}"; }                  # Add all files by default
 alias gp='git push'
-alias gpush='git push'
 alias gu='git up'
-alias gfu="git fetch origin"                 # Get updates from Origin
-alias gcl='git clone --recursive'            # Clone with all submodules
-gcheckout() { git checkout "${@:-master}"; } # Checkout master by default
-
-gpull() {
-    git up
-    git submodule foreach git pull origin master
-}
+alias gfo="git fetch origin"
+# Clone with all submodules
+alias gcl='git clone --recursive'
+alias gsubs='git submodule update --recursive --remote'
+alias ginitsubs='git submodule update --init --recursive'
+# Are we behind remote?
+alias gs="git --no-pager status -s --untracked-files=all"
+# Find a string in Git History
+alias gsearch='git rev-list --all | xargs git grep -F'
+alias gss="git remote update && git status -uno"
+# List all configured Git remotes
+alias gr="git remote -v"
+# A nicer Git Log
+alias gl="git ll"
+# Lists local branches
+alias gb='git branch'
+# Lists local and remote branches
+alias gba='git branch -a'
+if command -v diff-so-fancy &>/dev/null; then
+    alias diff="diff-so-fancy"
+else
+    alias diff="git diff"
+fi
+alias gdiff="git difftool" # Open file in git's default diff tool
+alias gstash='git stash'
+alias gpop='git stash pop'
+alias greset="git fetch --all;git reset --hard origin/master" # Reset all changes to origin/remote
+alias undopush="git push -f origin HEAD^:master"              # Undo a `git push`
 
 # _gitAliases_() {
 #   # This function creates completion-aware g<alias> bash aliases for each of your git aliases.
@@ -54,33 +65,6 @@ gpull() {
 #   done
 # }
 # _gitAliases_
-
-# Submodules
-alias gsubs='git submodule update --recursive --remote'
-alias ginitsubs='git submodule update --init --recursive'
-
-# Status, Logs, and information
-alias gs="git --no-pager status -s --untracked-files=all" # Git Status
-alias gsearch='git rev-list --all | xargs git grep -F'    # Find a string in Git History
-alias gss="git remote update && git status -uno"          # Check local is behind remote
-alias gr="git remote -v"                                  # List all configured Git remotes
-alias gl="git ll"                                         # A nicer Git Log
-alias gb='git branch'                                     # Lists local branches
-alias gba='git branch -a'                                 # Lists local and remote branches
-
-# General Commands
-if command -v diff-so-fancy &>/dev/null; then
-    alias diff="diff-so-fancy"
-else
-    alias diff="git diff"
-fi
-alias gdiff="git difftool" # Open file in git's default diff tool
-alias gstash='git stash'   # stash git changes and put them into your list
-alias gpop='git stash pop' # bring back your changes, but it removes them from your stash
-alias greset="git fetch --all;git reset --hard origin/master"
-
-# Cleaning up messes
-alias undopush="git push -f origin HEAD^:master" # Undo a `git push`
 
 # Gists
 

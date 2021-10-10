@@ -47,20 +47,13 @@ withBackoff() {
     return ${exitCode}
 }
 
-halp() {
+help() {
     # A little helper for man/alias/function info
     # http://brettterpstra.com/2016/05/18/shell-tricks-halp-a-universal-help-tool/
     # Edited to run 'SCRIPT.sh -h' for my own personal scripts
 
     local apro=0
-    local helpstring="Usage: halp COMMAND
-
-  ${bold}Commonly forgotten commands:${reset}
-    cleanDS             Remove .DS_Store files
-    finderPath          Gets the frontmost path from the Finder
-    lips                Prints local and external IP addresses
-    ql                  Opens any file in MacOS Quicklook Preview
-    "
+    local helpstring="Usage: help COMMAND"
     local opt OPTIND
 
     OPTIND=1

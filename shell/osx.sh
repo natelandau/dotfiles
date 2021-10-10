@@ -40,21 +40,17 @@ if [[ ${OSTYPE} == "darwin"* ]]; then
     fi
 
     ## ALIASES ##
-    alias cpwd='pwd | tr -d "\n" | pbcopy' # cpwd:     Copy the working directory path
-    alias cl="fc -e -|pbcopy"              # cl:       Copy output of last command to mac clipboard
-    alias caff="caffeinate -ism"           # caff:     Run command without letting mac sleep
-    alias cleanDS="find . -type f -name '*.DS_Store' -ls -delete"
+    alias cpwd='pwd | tr -d "\n" | pbcopy'                        # Copy the working path to clipboard
+    alias cl="fc -e -|pbcopy"                                     # Copy output of last command to clipboard
+    alias caff="caffeinate -ism"                                  # Run command without letting mac sleep
+    alias cleanDS="find . -type f -name '*.DS_Store' -ls -delete" # Delete .DS_Store files on Macs
     alias finderShowHidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
     alias finderHideHidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
 
-    # Open the finder to a specified path or to current directory.
-    f() { open -a "Finder" "${1:-.}"; }
+    f() { open -a "Finder" "${1:-.}"; }      # Open the finder to a specified path or to current directory.
+    ql() { qlmanage -p "${*}" &>/dev/null; } # Opens any file in MacOS Quicklook Preview
 
-    # Opens any file in MacOS Quicklook Preview
-    ql() { qlmanage -p "${*}" &>/dev/null; }
-
-    # Clean up LaunchServices to remove duplicates in the "Open With" menu
-    alias cleanupLS="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder"
+    alias cleanupLS="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder" # Clean up LaunchServices to remove duplicates in the "Open With" menu
 
     unmountDrive() {
         # unmountDrive - If an AFP drive is mounted, this will unmount the volume.

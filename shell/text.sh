@@ -96,7 +96,8 @@ htmlencode() {
 #alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1]);"'
 
 urlencode() {
-    # URL encoding/decoding from: https://gist.github.com/cdown/1163649
+    # Encode a URL
+    # from: https://gist.github.com/cdown/1163649
     # Usage: urlencode <string>
     local i
     local LANG=C
@@ -110,7 +111,7 @@ urlencode() {
     done
 }
 
-alias urldecode='python -c "import sys, urllib as ul; print ul.unquote_plus(sys.argv[1])"'
+alias urldecode='python -c "import sys, urllib as ul; print ul.unquote_plus(sys.argv[1])"' # dev: Decode a URL
 
 lower() {
     # Convert stdin to lowercase.
@@ -146,8 +147,7 @@ trim() {
 }
 
 squeeze() {
-    # Removes leading/trailing whitespace and condenses all other consecutive
-    # whitespace into a single space.
+    # Removes leading/trailing whitespace and condenses all other consecutive whitespace into a single space.
     #
     # Usage examples:
     #     echo "  foo  bar   baz  " | squeeze  #==> "foo bar baz"

@@ -21,6 +21,7 @@ if command -v brew &>/dev/null; then
     # /Applications is now the default but leaving this for posterity
     export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 
-    alias brwe='brew' #typos
+    # Fix common typo
+    alias brwe='brew'
 
 fi

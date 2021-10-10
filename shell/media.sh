@@ -1,9 +1,5 @@
 if command -v ffprobe &>/dev/null; then
-    ffjson() {
-        # Use ffmpeg's built in file checker to output a JSON containing all
-        # the stream information from a media file
-        ffprobe -v quiet -print_format json -show_format -show_streams "${1}"
-    }
+    alias ffjson="ffprobe -v quiet -print_format json -show_format -show_streams" # ffprobe streams in json format
 fi
 
 if command -v ffmpeg &>/dev/null; then
