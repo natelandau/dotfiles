@@ -1,5 +1,5 @@
 alias netCons='lsof -i'                           # Show all open TCP/IP sockets
-alias flushDNS='dscacheutil -flushcache'          # Flush out the DNS Cache
+alias flushDNS='dscacheutil -flushcache'          # linux: Flush out the DNS Cache
 alias lsock='sudo /usr/sbin/lsof -i -P'           # Display open sockets
 alias lsockU='sudo /usr/sbin/lsof -nP | grep UDP' # Display only open UDP sockets
 alias lsockT='sudo /usr/sbin/lsof -nP | grep TCP' # Display only open TCP sockets
