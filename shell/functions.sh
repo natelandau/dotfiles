@@ -8,18 +8,13 @@ su() {
 }
 
 withBackoff() {
-    # Retries a command a configurable number of times with backoff.
-    # (http://stackoverflow.com/questions/8350942/how-to-re-run-the-curl-command-automatically-when-the-error-occurs/8351489#8351489)
-    #
-    # The retry count is given by ATTEMPTS (default 5), the initial backoff
-    # timeout is given by TIMEOUT in seconds (default 1.)
-    #
-    # Successive backoffs double the timeout.
-    #
-    # Then use it in conjunction with any command that properly sets a failing exit code:
-    #
-    # with_backoff curl 'http://monkeyfeathers.example.com/'
-    # #######################################################################
+    # DESC: Retries a command a configurable number of times with backoff.
+    # http://stackoverflow.com/questions/8350942/how-to-re-run-the-curl-command-automatically-when-the-error-occurs/8351489#8351489
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:  with_backoff curl 'http://monkeyfeathers.example.com/'
+    # NOTE: The retry count is given by ATTEMPTS (default 5), the initial backoff timeout is given by TIMEOUT in seconds (default 1.) Successive backoffs double the timeout. Then use it in conjunction with any command that properly sets a failing exit code:
+
     local max_attempts=${ATTEMPTS-5}
     local timeout=${TIMEOUT-1}
     local attempt=0
@@ -47,80 +42,88 @@ withBackoff() {
     return ${exitCode}
 }
 
-help() {
-    # A little helper for man/alias/function info
-    # http://brettterpstra.com/2016/05/18/shell-tricks-halp-a-universal-help-tool/
-    # Edited to run 'SCRIPT.sh -h' for my own personal scripts
+if ! command -v help; then
+    help() {
+        # DESC:		A little helper for man/alias/function info
+        # ARGS:		$1 - Command
+        # OUTS:		None
+        # REQS:
+        # NOTE:	  http://brettterpstra.com/2016/05/18/shell-tricks-halp-a-universal-help-tool/
+        # USAGE:
 
-    local apro=0
-    local helpstring="Usage: help COMMAND"
-    local opt OPTIND
+        local apro=0
+        local helpstring="Use: help COMMAND"
+        local opt OPTIND
 
-    OPTIND=1
-    while getopts "kh" opt; do
-        case ${opt} in
-            k) apro=1 ;;
-            h)
-                echo -e "${helpstring}"
-                return
-                ;;
-            *) return 1 ;;
-        esac
-    done
-    shift $((OPTIND - 1))
+        OPTIND=1
+        while getopts "kh" opt; do
+            case ${opt} in
+                k) apro=1 ;;
+                h)
+                    echo -e "${helpstring}"
+                    return
+                    ;;
+                *) return 1 ;;
+            esac
+        done
+        shift $((OPTIND - 1))
 
-    if [ $# -ne 1 ]; then
-        echo -e "${helpstring}"
-        return 1
-    fi
-
-    local cmd="${1}"
-    [[ ${SHELL##*/} == "zsh" ]] && local cmdtest="$(type -w "${cmd}" | awk -F': ' '{print $2}')"
-    [[ ${SHELL##*/} == "bash" ]] && local cmdtest=$(type -t "${cmd}")
-
-    if [ -z "${cmdtest}" ]; then
-        echo -e "${yellow}'${cmd}' is not a known command${reset}"
-        if [[ ${apro} == 1 ]]; then
-            man -k "${cmd}"
-        else
+        if [ $# -ne 1 ]; then
+            echo -e "${helpstring}"
             return 1
         fi
-    fi
 
-    if [[ ${cmdtest} == "command" || ${cmdtest} == "file" ]]; then
-        local location=$(command -v "${cmd}")
-        local bindir="${HOME}/bin/${cmd}"
-        if [[ ${location} == "${bindir}" ]]; then
-            echo -e "${yellow}${cmd} is a custom script${reset}\n"
-            "${bindir}" -h
-        else
+        local cmd="${1}"
+        [[ ${SHELL##*/} == "zsh" ]] && local cmdtest="$(type -w "${cmd}" | awk -F': ' '{print $2}')"
+        [[ ${SHELL##*/} == "bash" ]] && local cmdtest=$(type -t "${cmd}")
+
+        if [ -z "${cmdtest}" ]; then
+            echo -e "${yellow}'${cmd}' is not a known command${reset}"
+            if [[ ${apro} == 1 ]]; then
+                man -k "${cmd}"
+            else
+                return 1
+            fi
+        fi
+
+        if [[ ${cmdtest} == "command" || ${cmdtest} == "file" ]]; then
+            local location=$(command -v "${cmd}")
+            local bindir="${HOME}/bin/${cmd}"
+            if [[ ${location} == "${bindir}" ]]; then
+                echo -e "${yellow}${cmd} is a custom script${reset}\n"
+                "${bindir}" -h
+            else
+                if tldr "${cmd}" &>/dev/null; then
+                    tldr "${cmd}"
+                else
+                    man "${cmd}"
+                fi
+            fi
+        elif [[ ${cmdtest} == "alias" ]]; then
+            echo -ne "${yellow}${cmd} is an alias:  ${reset}"
+            alias "${cmd}" | sed -E "s/alias $cmd='(.*)'/\1/"
+        elif [[ ${cmdtest} == "builtin" ]]; then
+            echo -ne "${yellow}${cmd} is a builtin command${reset}"
             if tldr "${cmd}" &>/dev/null; then
                 tldr "${cmd}"
             else
                 man "${cmd}"
             fi
+        elif [[ ${cmdtest} == "function" ]]; then
+            echo -e "${yellow}${cmd} is a function${reset}"
+            [[ ${SHELL##*/} == "zsh" ]] && type -f "${cmd}" | tail -n +1
+            [[ ${SHELL##*/} == "bash" ]] && type "${cmd}" | tail -n +2
         fi
-    elif [[ ${cmdtest} == "alias" ]]; then
-        echo -ne "${yellow}${cmd} is an alias:  ${reset}"
-        alias "${cmd}" | sed -E "s/alias $cmd='(.*)'/\1/"
-    elif [[ ${cmdtest} == "builtin" ]]; then
-        echo -ne "${yellow}${cmd} is a builtin command${reset}"
-        if tldr "${cmd}" &>/dev/null; then
-            tldr "${cmd}"
-        else
-            man "${cmd}"
-        fi
-    elif [[ ${cmdtest} == "function" ]]; then
-        echo -e "${yellow}${cmd} is a function${reset}"
-        [[ ${SHELL##*/} == "zsh" ]] && type -f "${cmd}" | tail -n +1
-        [[ ${SHELL##*/} == "bash" ]] && type "${cmd}" | tail -n +2
-    fi
-}
+    }
+fi
 
 explain() {
-    # about 'explain any bash command via mankier.com manpage API'
-    # example '$ explain                # interactive mode. Type commands to explain in REPL'
-    # example '$ explain cmd -o | ... # one command to explain it.'
+    # DESC:		Explain any bash command with options via mankier.com manpage API
+    # ARGS:		$1: Command to explain
+    # OUTS:		None
+    # REQS:
+    # NOTE:
+    # USAGE:	explain ls -al
 
     if [ "$#" -eq 0 ]; then
         while read -r -p "Command: " cmd; do

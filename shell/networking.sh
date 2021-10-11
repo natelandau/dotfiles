@@ -15,8 +15,13 @@ if ! command -v dig &>/dev/null; then
 fi
 
 newMAC() {
-    # DESC:   Changes MAC address to get around public wifi limitations
-    #         Copied from:  https://github.com/stefanjudis/.dotfiles
+    # DESC:   Changes MAC address of en0 to get around public wifi limitations
+    # ARGS:		None
+    # OUTS:		None
+    # REQS:   Linux
+    # NOTE:   https://github.com/stefanjudis/.dotfiles
+    # USAGE:
+
     NEW_MAC_ADDRESS=$(openssl rand -hex 6 | sed 's/\(..\)/\1:/g; s/.$//')
     echo "${NEW_MAC_ADDRESS}"
     sudo ifconfig en0 ether "$NEW_MAC_ADDRESS"
@@ -24,20 +29,32 @@ newMAC() {
 }
 
 lips() {
-    # DESC:   Prints local and external IP addresses
-    local ip locip extip
+    # DESC:		Prints local and external IP addresses
+    # ARGS:		$1 (optional): Interface name (Defaults to en0)
+    # OUTS:		None
 
-    ip=$(ifconfig en0 | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
-    [ "$ip" != "" ] && locip="${ip}" || locip="inactive"
+    local IP_TMP LOCAL_IP EXTERNAL_IP LIPS_INTERFACE
+    LIPS_INTERFACE=${1:-en0}
 
-    ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
-    [ "$ip" != "" ] && extip=${ip} || extip="inactive"
+    IP_TMP=$(ifconfig ${LIPS_INTERFACE} | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
+    [ "${IP_TMP}" != "" ] && LOCAL_IP="${IP_TMP}" || LOCAL_IP="inactive"
 
-    printf '%11s: %s\n%11s: %s\n' "Local IP" ${locip} "External IP" ${extip}
+    IP_TMP=$(curl -s https://icanhazip.com)
+    [ "${IP_TMP}" != "" ] && EXTERNAL_IP=${IP_TMP} || EXTERNAL_IP="inactive"
+
+    printf "${white}${bold}%-11s${reset} %s\n" "Local IP:" "${LOCAL_IP}"
+    printf "${white}${bold}%-11s${reset} %s\n" "External IP:" "${EXTERNAL_IP}"
+
 }
 
-clearDNS() {
-    # DESC:   Clears the DNS cache to help fix networking errors
-    sudo dscacheutil -flushcache \
-        && sudo killall -HUP mDNSResponder
-}
+if [[ ${OSTYPE} == "darwin"* ]]; then
+    clearDNS() {
+        # DESC:		Clears the DNS cache to help fix networking errors
+        # ARGS:		None
+        # OUTS:		None
+        # REQS:		MacOS
+
+        sudo dscacheutil -flushcache \
+            && sudo killall -HUP mDNSResponder
+    }
+fi

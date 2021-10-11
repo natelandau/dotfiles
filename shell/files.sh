@@ -1,29 +1,13 @@
 md5Check() {
+    # DESC:		Compares an md5 hash to the md5 hash of a file
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:	md5Check <md5> <filename>
+
     local opt
     local OPTIND=1
     local md5="$1"
     local file="$2"
-
-    while getopts "hv" opt; do
-        case "$opt" in
-            h)
-                cat <<End-Of-Usage
-  Compares an md5 hash to the md5 hash of a file
-
-  Usage: ${FUNCNAME[0]} [option] <md5> <filename>
-
-  options:
-    -h  show this message and exit
-End-Of-Usage
-                return
-                ;;
-            ?)
-                md5Check -h >&2
-                return 1
-                ;;
-        esac
-    done
-    shift $((OPTIND - 1))
 
     if ! command -v md5sum &>/dev/null; then
         echo "Can not find 'md5sum' utility"
@@ -68,6 +52,12 @@ buf() {
 }
 
 extract() {
+    # DESC:		Extracts a compressed file from multiple formats
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:  extract -v <file>
+    # NOTE:
+
     local opt
     local OPTIND=1
 
@@ -75,7 +65,7 @@ extract() {
         case "$opt" in
             h)
                 cat <<End-Of-Usage
-Usage: ${FUNCNAME[0]} [option] <archives>
+  $ ${FUNCNAME[0]} [option] <archives>
   options:
     -h  show this message and exit
     -v  verbosely list files processed

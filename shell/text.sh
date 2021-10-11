@@ -4,10 +4,23 @@ if command -v less &>/dev/null; then
     alias more='less -RXqeNF'
 fi
 
-escape() { echo "${@}" | sed 's/[]\.|$(){}?+*^]/\\&/g'; }
+escape() {
+    # DESC:		Escape special characters in a string
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:
+    # NOTE:
+    echo "${@}" | sed 's/[]\.|$(){}?+*^]/\\&/g'
+}
 
 domainSort() {
-    # Take a list of URLS and sort it into a list of unique top-level domains
+    # DESC:		Take a list of URLS and sort it into a list of unique top-level domains
+    # ARGS:		None
+    # OUTS:		None
+    # REQS:
+    # NOTE:
+    # USAGE:  domainSort [URL] [URL] [URL] ...
+
     local domain tmp opt helpstring list thirdLvlSubs
     local count=false
     local noSubs=false
@@ -68,8 +81,12 @@ domainSort() {
 }
 
 htmldecode() {
-    # Decode HTML characters with sed
-    # Usage: htmlDecode <string>
+    # DESC:		Decode HTML entities in a string
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:	htmlDecode <string>
+    # NOTE:
+
     local sedLocation
     sedLocation="${HOME}/.sed/htmlDecode.sed"
     if [ -f "${sedLocation}" ]; then
@@ -80,8 +97,10 @@ htmldecode() {
 }
 
 htmlencode() {
-    # Encode HTML characters with sed
-    # Usage: htmlEncode <string>
+    # DESC:		Encode characters in a string to HTML
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:	htmlEncode <string>
 
     local sedLocation
     sedLocation="${HOME}/.sed/htmlEncode.sed"
@@ -96,9 +115,12 @@ htmlencode() {
 #alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1]);"'
 
 urlencode() {
-    # Encode a URL
-    # from: https://gist.github.com/cdown/1163649
-    # Usage: urlencode <string>
+    # DESC:		Encode a URL
+    #         from: https://gist.github.com/cdown/1163649
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:	urlencode <string>
+
     local i
     local LANG=C
     local length="${#1}"
@@ -114,43 +136,47 @@ urlencode() {
 alias urldecode='python -c "import sys, urllib as ul; print ul.unquote_plus(sys.argv[1])"' # dev: Decode a URL
 
 lower() {
-    # Convert stdin to lowercase.
-    # usage:  text=$(lower <<<"$1")
-    #         echo "MAKETHISLOWERCASE" | lower
+    # DESC:		Convert stdin to lowercase.
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:	 echo "MAKETHISLOWERCASE" | lower
+    # NOTE:
+
     tr '[:upper:]' '[:lower:]'
 }
 
 upper() {
-    # Convert stdin to uppercase.
-    # usage:  text=$(upper <<<"$1")
-    #         echo "MAKETHISUPPERCASE" | upper
+    # DESC:		Convert stdin to uppercase.
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:	echo "makethisuppercase" | upper
+    # NOTE:
+
     tr '[:lower:]' '[:upper:]'
 }
 
 ltrim() {
-    # Removes all leading whitespace (from the left).
+    # DESC:		Removes all leading whitespace (from the left).
     local char=${1:-[:space:]}
     sed "s%^[${char//%/\\%}]*%%"
 }
 
 rtrim() {
-    # Removes all trailing whitespace (from the right).
+    # DESC:		Removes all trailing whitespace (from the right).
     local char=${1:-[:space:]}
     sed "s%[${char//%/\\%}]*$%%"
 }
 
 trim() {
-    # Removes all leading/trailing whitespace
-    # Usage examples:
-    #     echo "  foo  bar baz " | trim  #==> "foo  bar baz"
+    # DESC:		Removes all leading/trailing whitespace
+    # USAGE:  echo "  foo  bar baz " | trim
     ltrim "$1" | rtrim "$1"
 }
 
 squeeze() {
-    # Removes leading/trailing whitespace and condenses all other consecutive whitespace into a single space.
+    # DESC:		Removes leading/trailing whitespace and condenses all other consecutive whitespace into a single space.
     #
-    # Usage examples:
-    #     echo "  foo  bar   baz  " | squeeze  #==> "foo bar baz"
+    # USAGE: echo "  foo  bar baz " | squeeze
 
     local char=${1:-[[:space:]]}
     sed "s%\(${char//%/\\%}\)\+%\1%g" | trim "$char"

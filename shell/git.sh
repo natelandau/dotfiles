@@ -73,13 +73,16 @@ alias gist-paste="gist --private --copy --paste --filename"
 # gist-file filename.ext -- create private Gist from a file
 alias gist-file="gist --private --copy"
 
-applyGitIgnore() {
-    # Applies changes to the git .ignorefile after the files
-    # mentioned were already committed to the repo
+gitapplyignore() {
+    # DESC:   Applies changes to the git .ignorefile after the files mentioned were already committed to the repo
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:
+
     git ls-files -ci --exclude-standard -z | xargs -0 git rm --cached
 }
 
-gitRevert() {
+gitrevert() {
     # Applies changes to HEAD that revert all changes after specified commit
     git reset "${1}"gg
     git reset --soft HEAD@{1}
@@ -87,26 +90,31 @@ gitRevert() {
     git reset --hard
 }
 
-gitRollback() {
-    # Resets the current HEAD to specified commit
+gitrollback() {
+    # DESC:		Resets the current HEAD to specified commit
+    # ARGS:		$1 (Required): Commit to revert to
+    # OUTS:		None
+    # USAGE:  gitRollback <commit>
 
-    is_clean() {
+    _is_clean_() {
         if [[ $(git diff --shortstat 2>/dev/null | tail -n1) != "" ]]; then
             echo "Your branch is dirty, please commit your changes"
-            kill -INT $$
+            return 1
         fi
+        return 0
     }
 
-    commit_exists() {
+    _commit_exists_() {
         git rev-list --quiet "$1"
         status=$?
         if [ $status -ne 0 ]; then
             echo "Commit ${1} does not exist"
-            kill -INT $$
+            return 1
         fi
+        return 0
     }
 
-    keep_changes() {
+    _keep_changes_() {
         while true; do
             read -r -p "Do you want to keep all changes from rolled back revisions in your working tree? [Y/N]" RESP
             case $RESP in
@@ -129,39 +137,44 @@ gitRollback() {
     }
 
     if [ -n "$(git symbolic-ref HEAD 2>/dev/null)" ]; then
-        is_clean
-        commit_exists "$1"
+        if _is_clean_; then
+            if _commit_exists_ "$1"; then
 
-        while true; do
-            read -r -p "WARNING: This will change your history and move the current HEAD back to commit ${1}, continue? [Y/N]" RESP
-            case $RESP in
+                while true; do
+                    read -r -p "WARNING: This will change your history and move the current HEAD back to commit ${1}, continue? [Y/N]" RESP
+                    case $RESP in
 
-                [yY])
-                    keep_changes "$1"
-                    break
-                    ;;
-                [nN])
-                    break
-                    ;;
-                *)
-                    echo "Please enter Y or N"
-                    ;;
-            esac
-        done
+                        [yY])
+                            _keep_changes_ "$1"
+                            break
+                            ;;
+                        [nN])
+                            break
+                            ;;
+                        *)
+                            echo "Please enter Y or N"
+                            ;;
+                    esac
+                done
+            fi
+        fi
     else
         echo "you're currently not in a git repository"
     fi
 }
 
-gurl() {
-    # Prints URL of current git repository
+giturl() {
+    # DESC:		Prints URL of current git repository
+    # ARGS:		None
+    # OUTS:		None
+
     local remote remotename host user_repo
 
     remotename="${*:-origin}"
     remote="$(git remote -v | awk '/^'"${remotename}"'.*\(push\)$/ {print $2}')"
-    [[ "$remote" ]] || return
-    host="$(echo "$remote" | perl -pe 's/.*@//;s/:.*//')"
-    user_repo="$(echo "$remote" | perl -pe 's/.*://;s/\.git$//')"
+    [[ "${remote}" ]] || return
+    host="$(echo "${remote}" | perl -pe 's/.*@//;s/:.*//')"
+    user_repo="$(echo "${remote}" | perl -pe 's/.*://;s/\.git$//')"
     echo "https://${host}/${user_repo}"
 }
 

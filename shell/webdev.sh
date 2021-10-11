@@ -48,7 +48,7 @@ httpStatus() {
     # -----------------------------------
     # Shamelessly taken from: https://gist.github.com/rsvp/1171304
     #
-    # Usage:  httpStatus URL [timeout] [--code or --status] [see 4.]
+    # Use:  httpStatus URL [timeout] [--code or --status] [see 4.]
     #                                             ^message with code (default)
     #                                     ^code (numeric only)
     #                           ^in secs (default: 3)

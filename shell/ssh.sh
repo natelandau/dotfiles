@@ -1,7 +1,12 @@
 alias pubkey="more ~/.ssh/id_rsa.pub | pbcopy | echo '=> Public key copied to pasteboard.'"
 
 createTunnel() {
-    # createTunnel:  Create a ssh tunnel with arguments or querying for it.
+    # DESC:		Create a ssh tunnel with arguments.  Ask for args if none given.
+    # ARGS:		None
+    # OUTS:		None
+    # REQS:
+    # NOTE:
+    # USAGE:  createTunnel [user] [host] [local_port] [remote_port]
     if [ $# -eq 3 ]; then
         local user=$1
         local host=$2

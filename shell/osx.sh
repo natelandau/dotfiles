@@ -48,85 +48,78 @@ if [[ ${OSTYPE} == "darwin"* ]]; then
     alias finderHideHidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
 
     # Open the finder to a specified path or to current directory.
-    f() { open -a "Finder" "${1:-.}"; }
+    f() {
+        # DESC:		Opens the Finder to specified directory. (Default is current oath)
+        # ARGS:		$1 (optional): Path to open in finder
+        # REQS:		MacOS
+        # USAGE:  f [path]
+        open -a "Finder" "${1:-.}"
+    }
 
-    # Open the finder to a specified path or to current directory.
-    ql() { qlmanage -p "${*}" &>/dev/null; }
+    ql() {
+        # DESC:   Opens files in MacOS Quicklook
+        # ARGS:		$1 (optional): File to open in Quicklook
+        # OUTS:		None
+        # REQS:   macOS
+        # USAGE: ql [file1] [file2]
+        qlmanage -p "${*}" &>/dev/null
+    }
 
     alias cleanupLS="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder" # Clean up LaunchServices to remove duplicates in the "Open With" menu
 
-    unmountDrive() {
-        # unmountDrive - If an AFP drive is mounted, this will unmount the volume.
-        if [ -d "${1}" ]; then
-            diskutil unmount "${1}"
-        fi
-    }
-
     unquarantine() {
+        # DESC:		Manually remove a downloaded app or file from the MacOS quarantine
+        # ARGS:		$1 (required): Path to file or app
+        # OUTS:		None
+        # REQS:   macOS
+        # NOTE:
+        # USAGE:  unquarantine [file]
+
         local attribute
-        # unquarantine: Manually remove a downloaded app or file from the quarantine
+        # unquarantine:
         for attribute in com.apple.metadata:kMDItemDownloadedDate com.apple.metadata:kMDItemWhereFroms com.apple.quarantine; do
             xattr -r -d "${attribute}" "$@"
         done
     }
 
     browser() {
-        # Pipe html to a web browser
-        # example '$ echo "<h1>hi mom!</h1>" | browser'
-        # example '$ ron -5 man/rip.5.ron | browser'
-        local f
-        f=$(mktemp -t browser.XXXXXX.html)
-        cat /dev/stdin >|"${f}"
-        open -a Safari "${f}"
+        # DESC:		Pipe HTML to a Safari browser window
+        # ARGS:		None
+        # OUTS:		None
+        # REQS:   macOS
+        # NOTE:
+        # USAGE: echo "<h1>hi mom!</h1>" | browser'
+
+        local FILE
+        FILE=$(mktemp -t browser.XXXXXX.html)
+        cat /dev/stdin >|"${FILE}"
+        open -a Safari "${FILE}"
     }
 
-    lst() {
-        # lst:  Search for files based on OSX native tags
-        #       More info:  http://brettterpstra.com/2013/10/28/mavericks-tags-spotlight-and-terminal/
-        local query bool
-        # if the first argument is "all" (case insensitive),
-        # a boolean AND search will be used. Defaults to OR.
-        bool="OR"
-        [[ ${1} =~ "all" ]] && bool="AND" && shift
-
-        # if there's no argument or the argument is "+"
-        # list all files with any tags
-        if [[ -z ${1} || ${1} == "+" ]]; then
-            query="kMDItemUserTags == '*'"
-            # if the first argument is "-"
-            # list only files without tags
-        elif [[ ${1} == "-" ]]; then
-            query="kMDItemUserTags != '*'"
-            # Otherwise, build a Spotlight syntax query string
-        else
-            query="tag:${1}"
-            shift
-            for tag in "$@"; do
-                query="${query} ${bool} tag:${tag}"
-            done
-        fi
-
-        while IFS= read -r -d $'\0' line; do
-            echo "${line#$(pwd)/}"
-        done < <(mdfind -onlyin . -0 "${query}")
-    }
-
-    finderPath() {
+    finderpath() {
+        # DESC:		Print the path of a file in the Finder
+        # ARGS:		None
+        # OUTS:		None
+        # REQS:   MACOS
+        # NOTE:
+        # USAGE:
         # Gets the frontmost path from the Finder
         #
         # credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md
 
-        local finderPath
+        local FINDER_PATH
 
-        finderPath=$(osascript -e 'tell application "Finder"' \
-            -e "if (${1-1} <= (count Finder windows)) then" \
-            -e "get POSIX path of (target of window ${1-1} as alias)" \
-            -e 'else' \
-            -e 'get POSIX path of (desktop as alias)' \
-            -e 'end if' \
-            -e 'end tell')
+        FINDER_PATH=$(
+            osascript -e 'tell application "Finder"' \
+                -e "if (${1-1} <= (count Finder windows)) then" \
+                -e "get POSIX path of (target of window ${1-1} as alias)" \
+                -e 'else' \
+                -e 'get POSIX path of (desktop as alias)' \
+                -e 'end if' \
+                -e 'end tell' 2>/dev/null
+        )
 
-        echo "${finderPath}"
+        echo "${FINDER_PATH}"
     }
 
     ## SPOTLIGHT MAINTENANCE ##

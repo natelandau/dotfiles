@@ -2,61 +2,61 @@ if command -v ffprobe &>/dev/null; then
     alias ffjson="ffprobe -v quiet -print_format json -show_format -show_streams" # ffprobe streams in json format
 fi
 
-if command -v ffmpeg &>/dev/null; then
-    gifify() {
-        # about 'Converts a .mov file into an into an animated GIF.'
-        #   From https://gist.github.com/SlexAxton/4989674#comment-1199058
-        #   Requirements (Mac OS X using Homebrew): brew install ffmpeg gifsicle imagemagick
-        # param '1: MOV file name'
-        # param '2: max width in pixels (optional)'
-        # example '$ gifify foo.mov'
-        # example '$ gifify foo.mov 600'
+if command -v sips &>/dev/null; then
+    imgSize() {
+        # DESC:		Quickly get image dimensions from the command line
+        # ARGS:		$1 (required): Image file
+        # OUTS:		None
+        # REQS:		macOS
+        # USAGE:
+        # NOTE:
 
         if [ -z "${1}" ]; then
-            echo "$(tput setaf 1)No input file given. Example: gifify example.mov [max width (pixels)]$(tput sgr 0)"
+            echo "No input file given"
             return 1
         fi
 
-        local output_file="${1%.*}.gif"
-
-        echo "$(tput setaf 2)Creating ${output_file}...$(tput sgr 0)"
-
-        if [ -n "$2" ]; then
-            local maxsize="-vf scale=$2:-1"
+        local width height
+        if [[ -f $1 ]]; then
+            height=$(sips -g pixelHeight "$1" | tail -n 1 | awk '{print $2}')
+            width=$(sips -g pixelWidth "$1" | tail -n 1 | awk '{print $2}')
+            echo "${width} x ${height}"
         else
-            local maxsize=""
+            echo "File not found"
         fi
-
-        ffmpeg -loglevel panic -i ${1} $maxsize -r 10 -vcodec png gifify-tmp-%05d.png
-        convert +dither -layers Optimize gifify-tmp-*.png GIF:- | gifsicle --no-warnings --colors 256 --delay=10 --loop --optimize=3 --multifile - >${output_file}
-        rm gifify-tmp-*.png
-
-        echo "$(tput setaf 2)Done.$(tput sgr 0)"
     }
 fi
 
-imgSize() {
-    # imgSize:  Quickly get image dimensions from the command line
-    local width height
-    if [[ -f $1 ]]; then
-        height=$(sips -g pixelHeight "$1" | tail -n 1 | awk '{print $2}')
-        width=$(sips -g pixelWidth "$1" | tail -n 1 | awk '{print $2}')
-        echo "${width} x ${height}"
-    else
-        echo "File not found"
-    fi
-}
-
-64enc() {
-    # Encode a given image file as base64 and output css background property to clipboard
-    openssl base64 -in "$1" | awk -v ext="${1#*.}" '{ str1=str1 $0 }END{ print "background:url(data:image/"ext";base64,"str1");" }' | pbcopy
-    echo "$1 encoded to clipboard"
-}
-
 if [[ ${OSTYPE} == "darwin"* ]]; then
+    64enc() {
+        # DESC:   Encode a given image file as base64 and output css background property to clipboard
+        # ARGS:		$1 (required): Image file
+        # OUTS:		None
+        # REQS:   macOS
+        # NOTE:
+        # USAGE:
+        if [ -z "${1}" ]; then
+            echo "No input file given"
+            return 1
+        fi
+
+        openssl base64 -in "$1" | awk -v ext="${1#*.}" '{ str1=str1 $0 }END{ print "background:url(data:image/"ext";base64,"str1");" }' | pbcopy
+        echo "$1 encoded to clipboard"
+    }
+
     whereisthis() {
-        # Run on photos with embedded geo-data to get the coordinates
-        # and open it in a Google map
+        # DESC:		Run on photos with embedded geo-data to get the coordinates and open it in a Google map
+        # ARGS:		$1 (required): Image file
+        # OUTS:		None
+        # REQS:		macOS
+        # NOTE:
+        # USAGE:
+
+        if [ -z "${1}" ]; then
+            echo "No input file given"
+            return 1
+        fi
+
         local lat=$(mdls -raw -name kMDItemLatitude "${1}")
         if [ "${lat}" != "(null)" ]; then
             local long=$(mdls -raw -name kMDItemLongitude "${1}")

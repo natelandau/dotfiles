@@ -1,12 +1,17 @@
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+if [[ $OSTYPE == "linux-gnu"* ]]; then
 
-  alias sag='sudo apt-get'
-  aup() {
-    sudo apt update
-    apt list --upgradable
-  }
+    alias sag='sudo apt-get'
+    aup() {
+        # DESC:		List available updated from apt-get
+        # ARGS:		None
+        # OUTS:		None
+        # USAGE:
 
-[ -e "/usr/bin/snap" ] \
-  && PATH="/snap/bin:${PATH}"
+        sudo apt update
+        apt list --upgradable
+    }
+
+    [ -e "/usr/bin/snap" ] \
+        && PATH="/snap/bin:${PATH}"
 
 fi
