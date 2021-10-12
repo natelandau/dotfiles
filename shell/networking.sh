@@ -18,24 +18,37 @@ fi
 
 newMAC() {
     # DESC:   Changes MAC Address to get around public wifi limitations
-    # ARGS:		1 (optional): Interface name (Defaults to first of en0 or en1 with active local IP)
+    # ARGS:		1 (optional): Interface name
     # OUTS:		None
     # REQS:   Linux
     # NOTE:   https://github.com/stefanjudis/.dotfiles
     # USAGE:  newMAC [interface]
 
+    local TEST_INTERFACE
     local NEW_MAC_ADDRESS
     local INTERFACE=${1:-unknown}
 
+    if command -v ip &>/dev/null; then
+        local IP_COMMAND="ip address show"
+    elif command -v ifconfig &>/dev/null; then
+        local IP_COMMAND="ifconfig"
+    else
+        echo "ERROR: Neither 'ip' nor 'ifconfig' found"
+        return 1
+    fi
+
     if [[ ${INTERFACE} == "unknown" ]]; then
-        if [[ $(ifconfig en0 | grep inet | grep -v 127.0.0.1 | awk '{print $2}') ]]; then
-            INTERFACE=en0
-        elif [[ $(ifconfig en1 | grep inet | grep -v 127.0.0.1 | awk '{print $2}') ]]; then
-            INTERFACE=en1
-        else
-            echo "No active local IP found on en0 or en1"
-            return 1
-        fi
+        for TEST_INTERFACE in en0 en1 eth0 eth1; do
+            IP_TMP=$(${IP_COMMAND} ${TEST_INTERFACE} | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
+            if [[ ${IP_TMP} =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+                INTERFACE=${TEST_INTERFACE}
+                break
+            fi
+        done
+    fi
+    if [[ ${INTERFACE} == "unknown" ]]; then
+        echo "ERROR: No interface found with a valid IP address"
+        return 1
     fi
 
     NEW_MAC_ADDRESS=$(openssl rand -hex 6 | sed 's/\(..\)/\1:/g; s/.$//')
@@ -53,15 +66,24 @@ lips() {
     local IP_TMP LOCAL_IP EXTERNAL_IP LIPS_INTERFACE
     LIPS_INTERFACE=${1:-unknown}
 
+    if command -v ip &>/dev/null; then
+        local IP_COMMAND="ip address show"
+    elif command -v ifconfig &>/dev/null; then
+        local IP_COMMAND="ifconfig"
+    else
+        echo "ERROR: Neither 'ip' nor 'ifconfig' found"
+        return 1
+    fi
+
     if [[ ${LIPS_INTERFACE} == "unknown" ]]; then
-        for TEST_INTERFACE in en0 en1; do
-            IP_TMP=$(ifconfig ${TEST_INTERFACE} | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
-            if [[ -n ${IP_TMP} ]]; then
+        for TEST_INTERFACE in en0 en1 eth0 eth1; do
+            IP_TMP=$(${IP_COMMAND} ${TEST_INTERFACE} | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
+            if [[ ${IP_TMP} =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
                 break
             fi
         done
     else
-        IP_TMP=$(ifconfig ${LIPS_INTERFACE} | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
+        IP_TMP=$(${IP_COMMAND} ${LIPS_INTERFACE} | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
     fi
 
     [ "${IP_TMP}" != "" ] && LOCAL_IP="${IP_TMP}" || LOCAL_IP="${LIPS_INTERFACE} inactive"
