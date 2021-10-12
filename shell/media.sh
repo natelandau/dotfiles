@@ -8,7 +8,7 @@ if command -v sips &>/dev/null; then
         # ARGS:		$1 (required): Image file
         # OUTS:		None
         # REQS:		macOS
-        # USAGE:
+        # USAGE:  sips [/path/to/image]
         # NOTE:
 
         if [ -z "${1}" ]; then

@@ -1,25 +1,5 @@
 if [[ ${OSTYPE} == "darwin"* ]]; then
 
-    # Favor gnu tools when available from homebrew
-    if [ -d "/usr/local/opt/findutils/libexec/gnubin" ]; then
-        PATH="/usr/local/opt/findutils/libexec/gnubin:${PATH}"
-    fi
-    if [ -d "/usr/local/opt/gnu-sed/libexec/gnubin" ]; then
-        PATH="/usr/local/opt/gnu-sed/libexec/gnubin:${PATH}"
-    fi
-    if [ -d "/usr/local/opt/grep/libexec/gnubin" ]; then
-        PATH="/usr/local/opt/grep/libexec/gnubin:${PATH}"
-    fi
-    if [ -d "/usr/local/opt/coreutils/libexec/gnubin" ]; then
-        PATH="/usr/local/opt/coreutils/libexec/gnubin:${PATH}"
-    fi
-    if [ -d "/usr/local/opt/gnu-tar/libexec/gnubin" ]; then
-        PATH="/usr/local/opt/gnu-tar/libexec/gnubin:${PATH}"
-    fi
-    if [ -d "/usr/local/opt/gnu-getopt/bin" ]; then
-        PATH="/usr/local/opt/gnu-getopt/bin:${PATH}"
-    fi
-
     ## ALIASES ##
     alias cpwd='pwd | tr -d "\n" | pbcopy'                        # Copy the working path to clipboard
     alias cl="fc -e -|pbcopy"                                     # Copy output of last command to clipboard
@@ -78,12 +58,12 @@ if [[ ${OSTYPE} == "darwin"* ]]; then
     }
 
     finderpath() {
-        # DESC:		Print the path of a file in the Finder
+        # DESC:		Echoes the path of the frontmost window in the finder
         # ARGS:		None
         # OUTS:		None
         # REQS:   MACOS
         # NOTE:
-        # USAGE:
+        # USAGE:  cd $(finderpath)
         # Gets the frontmost path from the Finder
         #
         # credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md

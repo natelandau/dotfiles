@@ -24,4 +24,24 @@ if command -v brew &>/dev/null; then
     # Fix common typo
     alias brwe='brew'
 
+    # Favor gnu tools when available from homebrew
+    if [ -d "/usr/local/opt/findutils/libexec/gnubin" ]; then
+        PATH="/usr/local/opt/findutils/libexec/gnubin:${PATH}"
+    fi
+    if [ -d "/usr/local/opt/gnu-sed/libexec/gnubin" ]; then
+        PATH="/usr/local/opt/gnu-sed/libexec/gnubin:${PATH}"
+    fi
+    if [ -d "/usr/local/opt/grep/libexec/gnubin" ]; then
+        PATH="/usr/local/opt/grep/libexec/gnubin:${PATH}"
+    fi
+    if [ -d "/usr/local/opt/coreutils/libexec/gnubin" ]; then
+        PATH="/usr/local/opt/coreutils/libexec/gnubin:${PATH}"
+    fi
+    if [ -d "/usr/local/opt/gnu-tar/libexec/gnubin" ]; then
+        PATH="/usr/local/opt/gnu-tar/libexec/gnubin:${PATH}"
+    fi
+    if [ -d "/usr/local/opt/gnu-getopt/bin" ]; then
+        PATH="/usr/local/opt/gnu-getopt/bin:${PATH}"
+    fi
+
 fi

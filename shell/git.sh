@@ -8,6 +8,7 @@ alias gshit='git add . ; git commit --amend' # Appends current changes to the la
 alias gap='git add -p'                       # Step through each change
 alias unstage='git reset --'                 # Unstage a file
 ga() { git add "${@:-.}"; }                  # Add all files by default
+alias gl="git ll"                            # A nicer Git Log
 alias gp='git push'
 alias gu='git up'
 alias gfo="git fetch origin"
@@ -22,8 +23,6 @@ alias gsearch='git rev-list --all | xargs git grep -F'
 alias gss="git remote update && git status -uno"
 # List all configured Git remotes
 alias gr="git remote -v"
-# A nicer Git Log
-alias gl="git ll"
 # Lists local branches
 alias gb='git branch'
 # Lists local and remote branches
