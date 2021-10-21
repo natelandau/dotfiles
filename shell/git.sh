@@ -25,8 +25,8 @@ alias gss="git remote update && git status -uno"
 alias gr="git remote -v"
 # Lists local branches
 alias gb='git branch'
-# Lists local and remote branches
-alias gba='git branch -a'
+
+alias gba='git branch -a' # Lists local and remote branches
 if command -v diff-so-fancy &>/dev/null; then
     alias diff="diff-so-fancy"
 else
@@ -38,32 +38,15 @@ alias gpop='git stash pop'
 alias greset="git fetch --all;git reset --hard origin/master" # Reset all changes to origin/remote
 alias undopush="git push -f origin HEAD^:master"              # Undo a `git push`
 
-# _gitAliases_() {
-#   # This function creates completion-aware g<alias> bash aliases for each of your git aliases.
-#   # Taken wholecloth from here:  https://gist.github.com/tyomo4ka/f76ac325ecaa3260808b98e715410067
+gitDeleteBranches() {
+    # DESC:		Delete all local git branches that have been merged and deleted from remote
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:
 
-#   local al __git_aliased_command __git_aliases __git_complete complete_fnc complete_func
+    git branch -d "$(git branch -vv | grep '\[[^:]\+: gone\]' | awk '{print $1}' | xargs)"
 
-#   if [ -f "$(brew --prefix)/share/bash-completion/bash_completion" ]; then
-#       . "$(brew --prefix)/share/bash-completion/bash_completion"
-#   else
-#     echo "no completions"
-#     return 0
-#   fi
-
-#   function_exists() {
-#       declare -f -F $1 > /dev/null
-#       return $?
-#   }
-
-#   for al in $(__git_aliases); do
-#       # shellcheck disable=2139
-#       alias g${al}="git $al"
-#       complete_func=_git_$(__git_aliased_command ${al})
-#       function_exists ${complete_fnc} && __git_complete g${al} ${complete_func}
-#   done
-# }
-# _gitAliases_
+}
 
 # Gists
 
@@ -72,7 +55,7 @@ alias gist-paste="gist --private --copy --paste --filename"
 # gist-file filename.ext -- create private Gist from a file
 alias gist-file="gist --private --copy"
 
-gitapplyignore() {
+gitApplyIgnore() {
     # DESC:   Applies changes to the git .ignorefile after the files mentioned were already committed to the repo
     # ARGS:		None
     # OUTS:		None
@@ -241,3 +224,30 @@ githelp() {
 
 TEXT
 }
+
+# _gitAliases_() {
+#   # This function creates completion-aware g<alias> bash aliases for each of your git aliases.
+#   # Taken wholecloth from here:  https://gist.github.com/tyomo4ka/f76ac325ecaa3260808b98e715410067
+
+#   local al __git_aliased_command __git_aliases __git_complete complete_fnc complete_func
+
+#   if [ -f "$(brew --prefix)/share/bash-completion/bash_completion" ]; then
+#       . "$(brew --prefix)/share/bash-completion/bash_completion"
+#   else
+#     echo "no completions"
+#     return 0
+#   fi
+
+#   function_exists() {
+#       declare -f -F $1 > /dev/null
+#       return $?
+#   }
+
+#   for al in $(__git_aliases); do
+#       # shellcheck disable=2139
+#       alias g${al}="git $al"
+#       complete_func=_git_$(__git_aliased_command ${al})
+#       function_exists ${complete_fnc} && __git_complete g${al} ${complete_func}
+#   done
+# }
+# _gitAliases_
