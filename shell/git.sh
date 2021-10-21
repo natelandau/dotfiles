@@ -38,16 +38,6 @@ alias gpop='git stash pop'
 alias greset="git fetch --all;git reset --hard origin/master" # Reset all changes to origin/remote
 alias undopush="git push -f origin HEAD^:master"              # Undo a `git push`
 
-gitDeleteBranches() {
-    # DESC:		Delete all local git branches that have been merged and deleted from remote
-    # ARGS:		None
-    # OUTS:		None
-    # USAGE:
-
-    git branch -d "$(git branch -vv | grep '\[[^:]\+: gone\]' | awk '{print $1}' | xargs)"
-
-}
-
 # Gists
 
 # gist-paste filename.ext -- create private Gist from the clipboard contents
