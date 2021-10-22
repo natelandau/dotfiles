@@ -42,7 +42,7 @@ withBackoff() {
     return ${exitCode}
 }
 
-if ! command -v help; then
+if ! command -v help &>/dev/null; then
     help() {
         # DESC:		A little helper for man/alias/function info
         # ARGS:		$1 - Command
