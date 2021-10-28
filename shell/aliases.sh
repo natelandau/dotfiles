@@ -49,4 +49,4 @@ mine() {
 alias memHogs='ps wwaxm -o pid,stat,vsize,rss,time,command | head -10' # system: Show top 10 memory hogs
 alias cpuHogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'      # system: Show top 10 cpu hogs
 
-alias sc='shellcheck --exclude=1090,2005,2034,2086,1083,2119,2120,2059,2001,2002,2148,2129,1117' # dev: Preferred shellcheck implementation
+alias sc='shellcheck --exclude=2001,2148' # dev: Preferred shellcheck implementation

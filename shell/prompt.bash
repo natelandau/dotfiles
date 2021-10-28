@@ -1,5 +1,4 @@
-# shellcheck disable=SC2153
-
+# shellcheck disable=SC2034,SC2154
 if [[ ${OSTYPE} =~ linux ]]; then
 
     _promptGit_() {
@@ -139,7 +138,7 @@ else
             fi
 
             # if there was a previous segment, print the separator
-            if [ $ii -gt 0 ]; then
+            if [ "$ii" -gt 0 ]; then
                 PS1+="${bg}${oldBG}${sep} ${reset}"
             fi
 
@@ -158,6 +157,7 @@ else
         local ii=0
         if [ -d "${topPluginLocation}" ]; then
             for plugin in "${topPluginLocation}"/*.bash; do
+                # shellcheck disable=SC1090
                 [ -f "${plugin}" ] && source "${plugin}"
                 [ -f "${plugin}" ] && ((ii++))
             done
@@ -171,18 +171,19 @@ else
         # ########
 
         # Add a newline if any plugins were added to the top line
-        [ $ii -gt 0 ] && PS1+="\n"
+        [ "$ii" -gt 0 ] && PS1+="\n"
 
         local ii=0
         if [ -d "${bottomPluginLocation}" ]; then
             for plugin in "${bottomPluginLocation}"/*.bash; do
+                # shellcheck disable=SC1090
                 [ -f "${plugin}" ] && source "${plugin}"
                 [ -f "${plugin}" ] && ((ii++))
             done
         fi
 
         # If we don't have any bottom plugins, add a simple prompt
-        [ $ii -eq 0 ] && PS1+="${back_gry}${fore_whi}  ${reset}" && oldBG="${back_gry}"
+        [ "$ii" -eq 0 ] && PS1+="${back_gry}${fore_whi}  ${reset}" && oldBG="${back_gry}"
 
         # Add a seperator at the end of the line
         PS1+="${oldBG}${divider} ${reset}"
