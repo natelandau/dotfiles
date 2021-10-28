@@ -27,7 +27,8 @@ server() {
 # (Requires PHP 5.4.0+.)
 phpserver() {
     local port="${1:-4000}"
-    local ip=$(ipconfig getifaddr en1)
+    local ip
+    ip=$(ipconfig getifaddr en1)
     sleep 1 && open "http://${ip}:${port}/" &
     php -S "${ip}:${port}"
 }
@@ -85,8 +86,9 @@ httpstatus() {
     curlops="${arg4} ${arg5} ${arg6} ${arg7}"
 
     #      __________ get the CODE which is numeric:
-    code=$(echo "$(curl --write-out %{http_code} --silent --connect-timeout ${timeout} \
-        --no-keepalive ${curlops} --output /dev/null ${url})")
+    # shellcheck disable=SC1083
+    code="$(curl --write-out %{http_code} --silent --connect-timeout "${timeout}" \
+        --no-keepalive "${curlops}" --output /dev/null "${url}")"
 
     #      __________ get the STATUS (from code) which is human interpretable:
     case $code in
@@ -137,11 +139,11 @@ httpstatus() {
 
     # _______________ MAIN
     case ${flag} in
-        --status) echo "${code} ${status}" ;;
-        -s) echo "${code} ${status}" ;;
-        --code) echo "${code}" ;;
-        -c) echo "${code}" ;;
-        *) echo " !!  httpstatus: bad flag" && safeExit ;;
+        --status) printf "%s\n" "${code} ${status}" ;;
+        -s) printf "%s\n" "${code} ${status}" ;;
+        --code) printf "%s\n" "${code}" ;;
+        -c) printf "%s\n" "${code}" ;;
+        *) printf "%s\n" " !!  httpstatus: bad flag" && safeExit ;;
     esac
 
     IFS="${saveIFS}"

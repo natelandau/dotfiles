@@ -1,3 +1,5 @@
+# shellcheck disable=SC2154
+
 alias netCons='lsof -i'                           # Show all open TCP/IP sockets
 alias lsock='sudo /usr/sbin/lsof -i -P'           # Display open sockets
 alias lsockU='sudo /usr/sbin/lsof -nP | grep UDP' # Display only open UDP sockets
@@ -83,7 +85,7 @@ lips() {
             fi
         done
     else
-        IP_TMP=$(${IP_COMMAND} ${LIPS_INTERFACE} | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
+        IP_TMP=$("${IP_COMMAND}" "${LIPS_INTERFACE}" | grep "inet " | grep -v 127.0.0.1 | awk '{print $2}')
     fi
 
     [ "${IP_TMP}" != "" ] && LOCAL_IP="${IP_TMP}" || LOCAL_IP="${LIPS_INTERFACE} inactive"

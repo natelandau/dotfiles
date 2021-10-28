@@ -57,9 +57,11 @@ if [[ ${OSTYPE} == "darwin"* ]]; then
             return 1
         fi
 
-        local lat=$(mdls -raw -name kMDItemLatitude "${1}")
+        local lat
+        lat=$(mdls -raw -name kMDItemLatitude "${1}")
         if [ "${lat}" != "(null)" ]; then
-            local long=$(mdls -raw -name kMDItemLongitude "${1}")
+            local long
+            long=$(mdls -raw -name kMDItemLongitude "${1}")
             echo -n "${lat}","${long}" | pbcopy
             echo "${lat}","${long}" copied
             open https://www.google.com/maps?q="${lat}","${long}"

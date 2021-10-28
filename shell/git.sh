@@ -1,3 +1,5 @@
+# shellcheck disable=SC2154,SC1083
+
 # Short commit
 alias gcm="git --no-pager commit -m "
 # Long commit

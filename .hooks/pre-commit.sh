@@ -165,16 +165,17 @@ _mainScript_() {
 
         local _filename
         _filename="$(_fileName_ "${1}")"
+
         if command -v shellcheck >/dev/null; then
             debug "${_filename}: Linting shellscript..."
             if [[ ${_filename} == "*.j2" ]]; then
-                if shellcheck --exclude=1009,1054,1056,1072,1073,1083,2001,2148 "${1}"; then
+                if shellcheck -x --exclude=1009,1054,1056,1072,1073,1083,2001,2148 "${1}"; then
                     return 0
                 else
                     return 1
                 fi
             else
-                if shellcheck --exclude=2001,2148 "${1}"; then
+                if shellcheck -x --exclude=2001,2148 "${1}"; then
                     return 0
                 else
                     return 1
@@ -212,7 +213,7 @@ _mainScript_() {
 
     _lintAnsible_() {
         # DESC:
-        #					Lint Ansible YMAL files staged for commit.  Requires ansible-lint to be installed.
+        #					Lint Ansible YAML files staged for commit.  Requires ansible-lint to be installed.
         # ARGS:
         #					$1 (Required):  Path to file
         # OUTS:
@@ -424,7 +425,7 @@ _setColors_() {
     # OUTS:
     #         None
     # USAGE:
-    #         echo "${blue}Some text${reset}"
+    #         printf "%s\n" "${blue}Some text${reset}"
 
     if tput setaf 1 >/dev/null 2>&1; then
         bold=$(tput bold)
@@ -676,7 +677,7 @@ _trapCleanup_() {
     #         $5:  Scriptname
     #         $6:  $BASH_SOURCE
     # USAGE:
-    #         trap '_trapCleanup_ ${LINENO} ${BASH_LINENO} "${BASH_COMMAND}" "${FUNCNAME[*]}" "${0}" "${BASH_SOURCE[0]}"' EXIT INT TERM SIGINT SIGQUIT SIGTERM
+    #         trap '_trapCleanup_ ${LINENO} ${BASH_LINENO} "${BASH_COMMAND}" "${FUNCNAME[*]}" "${0}" "${BASH_SOURCE[0]}"' EXIT INT TERM SIGINT SIGQUIT SIGTERM ERR
     # OUTS:
     #         Exits script with error code 1
 
@@ -688,7 +689,9 @@ _trapCleanup_() {
     local _sourced="${6:-}"
 
     if [[ "$(declare -f "fatal")" && "$(declare -f "_printFuncStack_")" ]]; then
-        _funcstack="'$(echo "${_funcstack}" | sed -E 's/ / < /g')'"
+
+        _funcstack="'$(printf "%s" "${_funcstack}" | sed -E 's/ / < /g')'"
+
         if [[ ${_script##*/} == "${_sourced##*/}" ]]; then
             fatal "${7:-} command: '${_command}' (line: ${_line}) [func: $(_printFuncStack_)]"
         else
@@ -777,7 +780,7 @@ _setPATH_() {
 
     for _newPath in "$@"; do
         if [ -d "${_newPath}" ]; then
-            if ! echo "${PATH}" | grep -Eq "(^|:)${_newPath}($|:)"; then
+            if ! printf "%s" "${PATH}" | grep -Eq "(^|:)${_newPath}($|:)"; then
                 if PATH="${_newPath}:${PATH}"; then
                     debug "Added '${_newPath}' to PATH"
                 else

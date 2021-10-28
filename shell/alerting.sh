@@ -1,3 +1,5 @@
+# shellcheck disable=SC2154
+
 _alert_() {
     # DESC:   Controls all printing of messages to stdout.
     # ARGS:   $1 (required) - The type of alert to print
@@ -7,7 +9,7 @@ _alert_() {
     # OUTS:   None
     # USAGE:  [ALERTTYPE] "[MESSAGE]"
 
-    local function_name color
+    local color
     local alertType="${1}"
     local message="${2}"
 

@@ -21,7 +21,8 @@ md5Check() {
         }
 
     # Get md5 has of file
-    local filemd5="$(md5sum "${file}" | awk '{ print $1 }')"
+    local filemd5
+    filemd5="$(md5sum "${file}" | awk '{ print $1 }')"
 
     if [[ $filemd5 == "$md5" ]]; then
         success "The two md5 hashes match"

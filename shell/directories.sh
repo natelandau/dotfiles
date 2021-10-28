@@ -17,7 +17,7 @@ else
 fi
 
 cd() {
-    builtin cd "$@"
+    builtin cd "$@" || return 1
     ll
 }
 

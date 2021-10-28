@@ -3,7 +3,7 @@
 # Here is autojump's recommended prompt-command
 export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND ;} history -a"
 
-# Allow use to re-edit a faild history substitution.
+# Allow use to re-edit a failed history substitution.
 shopt -s histreedit
 
 # Save multi-line commands as one command

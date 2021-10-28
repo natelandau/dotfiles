@@ -26,7 +26,8 @@ fi
 
 # Use Java JDK 1.8
 if [[ "$(java -version &>/dev/null)" ]] && [[ -e "/usr/libexec/java_home" ]]; then
-    export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+    JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+    export JAVA_HOME
 fi
 
 # Path for Ruby (installed by Homebrew)

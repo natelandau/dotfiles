@@ -29,5 +29,5 @@ createTunnel() {
             read -r localPort
         fi
     fi
-    ssh -N -f ${user}@${host} -L ${localPort}:${host}:${remotePort}
+    ssh -N -f "${user}@${host}" -L "${localPort}:${host}:${remotePort}"
 }

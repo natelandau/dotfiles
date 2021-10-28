@@ -10,7 +10,7 @@ escape() {
     # OUTS:		None
     # USAGE:
     # NOTE:
-    echo "${@}" | sed 's/[]\.|$(){}?+*^]/\\&/g'
+    printf "%s" "${@}" | sed 's/[]\.|$(){}?+*^]/\\&/g'
 }
 
 domainSort() {
@@ -21,7 +21,7 @@ domainSort() {
     # NOTE:
     # USAGE:  domainSort [URL] [URL] [URL] ...
 
-    local domain tmp opt helpstring list thirdLvlSubs
+    local tmp opt helpstring list thirdLvlSubs
     local count=false
     local noSubs=false
     helpstring="Takes a list of URLs and sorts it into a list of unique top-level domains.\n \nOptions:\n\t-c:\t Add a count of the occurrences of each unique domain.\n \t-s:\t Remove subdomains"
@@ -51,7 +51,7 @@ domainSort() {
         }
 
     # Remove protocol and file paths
-    cat "$list" | sed 's/https?:\/\///;s|\/.*||' >|"$tmp"
+    sed 's/https?:\/\///;s|\/.*||' "${list}" >|"${tmp}"
 
     # Generate output
     if "${noSubs}"; then
@@ -127,7 +127,7 @@ urlencode() {
     for ((i = 0; i < length; i++)); do
         local c="${1:i:1}"
         case ${c} in
-            [a-zA-Z0-9.~_-]) printf "${c}" ;;
+            [a-zA-Z0-9.~_-]) printf "%s" "${c}" ;;
             *) printf '%%%02X' "'${c}" ;;
         esac
     done

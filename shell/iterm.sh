@@ -1,3 +1,5 @@
+# shellcheck disable=SC1090
+
 if [ -e "/Applications/iTerm.app" ]; then
     if [[ -n ${BASH} ]]; then
         if [[ -f ~/.iterm2_shell_integration.bash ]]; then

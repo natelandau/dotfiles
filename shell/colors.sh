@@ -1,37 +1,39 @@
+# shellcheck disable=SC2154
+
 showcolors() {
     # will print all tput colors to terminal
-    local x y i os
+    local x y i o
     (
         x=$(tput op) y=$(printf %$((COLUMNS - 6))s)
         for i in {0..256}; do
             o=00$i
             echo -e ${o:${#o}-3:3} "$(
-                tput setaf $i
-                tput setab $i
+                tput setaf "$i"
+                tput setab "$i"
             )"${y// /=}$x
         done
     )
 }
 
 mycolors() {
-    echo "${underline} This is underlined text ${reset}"
-    echo "${reverse} This is reversed text ${reset}"
-    echo "${gray} This is gray text${reset}"
-    echo "${white} This is white text ${reset}"
-    echo "${bold} This is bold text ${reset}"
-    echo "${blue} This is blue text ${reset}"
-    echo "${yellow} This is yellow text"
-    echo "${purple} This is purple text${reset}"
-    echo "${red} This is red text ${reset}"
-    echo "${green} This is green text${reset}"
+    printf "%s\n" "${underline} This is underlined text ${reset}"
+    printf "%s\n" "${reverse} This is reversed text ${reset}"
+    printf "%s\n" "${gray} This is gray text${reset}"
+    printf "%s\n" "${white} This is white text ${reset}"
+    printf "%s\n" "${bold} This is bold text ${reset}"
+    printf "%s\n" "${blue} This is blue text ${reset}"
+    printf "%s\n" "${yellow} This is yellow text"
+    printf "%s\n" "${purple} This is purple text${reset}"
+    printf "%s\n" "${red} This is red text ${reset}"
+    printf "%s\n" "${green} This is green text${reset}"
 
-    echo "${white}${reverse} This is white reversed text ${reset}"
-    echo "${gray}${reverse} This is gray reversed text${reset}"
-    echo "${blue}${reverse} This is blue reversed text ${reset}"
-    echo "${yellow}${reverse} This is yellow reversed text"
-    echo "${purple}${reverse} This is purple reversed text${reset}"
-    echo "${red}${reverse} This is red reversed text ${reset}"
-    echo "${green}${reverse} This is green reversed text${reset}"
+    printf "%s\n" "${white}${reverse} This is white reversed text ${reset}"
+    printf "%s\n" "${gray}${reverse} This is gray reversed text${reset}"
+    printf "%s\n" "${blue}${reverse} This is blue reversed text ${reset}"
+    printf "%s\n" "${yellow}${reverse} This is yellow reversed text"
+    printf "%s\n" "${purple}${reverse} This is purple reversed text${reset}"
+    printf "%s\n" "${red}${reverse} This is red reversed text ${reset}"
+    printf "%s\n" "${green}${reverse} This is green reversed text${reset}"
 }
 
 # Add color to terminal
@@ -74,7 +76,6 @@ _setColors_() {
             white=$(tput setaf 231)
             blue=$(tput setaf 38)
             yellow=$(tput setaf 11)
-            tan=$(tput setaf 3)
             green=$(tput setaf 82)
             red=$(tput setaf 1)
             purple=$(tput setaf 171)
@@ -83,7 +84,6 @@ _setColors_() {
             white=$(tput setaf 7)
             blue=$(tput setaf 38)
             yellow=$(tput setaf 3)
-            tan=$(tput setaf 3)
             green=$(tput setaf 2)
             red=$(tput setaf 1)
             purple=$(tput setaf 13)
@@ -97,7 +97,6 @@ _setColors_() {
         white="\033[0;37m"
         blue="\033[0;34m"
         yellow="\033[0;33m"
-        tan="\033[0;33m"
         green="\033[1;32m"
         red="\033[0;31m"
         purple="\033[0;35m"
