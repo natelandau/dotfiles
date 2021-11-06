@@ -1,4 +1,4 @@
-if [ -f "${DOTFILES_LOCATION}/bin/editor.sh" ]; then
+if [ -f "${DOTFILES_LOCATION:-}/bin/editor.sh" ]; then
     export EDITOR="${DOTFILES_LOCATION}/bin/editor.sh"
 else
     export EDITOR="nano"

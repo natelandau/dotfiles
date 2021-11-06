@@ -39,7 +39,7 @@ elif [[ ${SHELL##*/} == "zsh" ]]; then
 fi
 
 mine() {
-    # DESC:		Show user's processes
+    # DESC:   Show your own processes
     # ARGS:		None
     # OUTS:		None
     # USAGE:

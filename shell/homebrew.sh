@@ -3,9 +3,9 @@ if command -v brew &>/dev/null; then
     # Don't send analytics data
     export HOMEBREW_NO_ANALYTICS=1
 
-    if [[ -s /usr/local/etc/profile.d/autojump.sh ]]; then
-        source "/usr/local/etc/profile.d/autojump.sh"
-    fi
+    # if [[ -s /usr/local/etc/profile.d/autojump.sh ]]; then
+    #     source "/usr/local/etc/profile.d/autojump.sh"
+    # fi
     if [[ ${SHELL##*/} == "bash" ]]; then
         if [ -f "/usr/local/etc/profile.d/bash_completion.sh" ]; then
             source "/usr/local/etc/profile.d/bash_completion.sh"
