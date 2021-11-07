@@ -1,6 +1,7 @@
 if [[ $OSTYPE == "linux-gnu"* ]]; then
 
     alias sag='sudo apt-get'
+
     aup() {
         # DESC:		List available updated from apt-get
         # ARGS:		None
@@ -11,7 +12,11 @@ if [[ $OSTYPE == "linux-gnu"* ]]; then
         apt list --upgradable
     }
 
-    [ -e "/usr/bin/snap" ] \
-        && PATH="/snap/bin:${PATH}"
+    # Fix potential locale issues
+    export LC_ALL=C
+
+    if [ -e "/usr/bin/snap" ]; then
+        PATH="/snap/bin:${PATH}"
+    fi
 
 fi
