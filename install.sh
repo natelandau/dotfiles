@@ -887,7 +887,7 @@ _setPATH_() {
             fi
         else
             debug "_setPATH_: can not find: ${_newPath}"
-            return 0
+            continue
         fi
     done
     return 0
@@ -1014,7 +1014,7 @@ _parseOptions_() {
         shift
     done
 
-    if [[ -z ${*} || ${*} == null ]]; then
+    if [[ -z ${*} ]]; then
         ARGS=()
     else
         ARGS+=("$@") # Store the remaining user input as arguments.
@@ -1064,13 +1064,13 @@ set -o errexit
 set -o pipefail
 
 # Confirm we have BASH greater than v4
-[ "${BASH_VERSINFO:-0}" -ge 4 ] || {
-    printf "%s\n" "ERROR: BASH_VERSINFO is '${BASH_VERSINFO:-0}'.  This script requires BASH v4 or greater."
-    exit 1
-}
+#[ "${BASH_VERSINFO:-0}" -ge 4 ] || {
+#    printf "%s\n" "ERROR: BASH_VERSINFO is '${BASH_VERSINFO:-0}'.  This script requires BASH v4 or greater."
+#    exit 1
+#}
 
 # Make `for f in *.txt` work when `*.txt` matches zero files
-shopt -s nullglob globstar
+# shopt -s nullglob globstar
 
 # Set IFS to preferred implementation
 IFS=$' \n\t'
@@ -1082,7 +1082,7 @@ IFS=$' \n\t'
 _setColors_
 
 # Disallow expansion of unset variables
-set -o nounset
+# set -o nounset
 
 # Force arguments when invoking the script
 # [[ $# -eq 0 ]] && _parseOptions_ "-h"
