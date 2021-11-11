@@ -3,7 +3,7 @@ if command -v brew &>/dev/null; then
     # Don't send analytics data
     export HOMEBREW_NO_ANALYTICS=1
 
-    if [[ -d "/opt/homebrew/bin/brew" ]]; then
+    if [[ -e "/opt/homebrew/bin/brew" ]]; then
         eval "$(/opt/homebrew/bin/brew shellenv)"
     fi
 

@@ -14,7 +14,7 @@ DOTFILES_LOCATION="${HOME}/repos/dotfiles"
 umask 002
 
 # Build PATH and put /usr/local/bin before existing PATH
-export PATH="/usr/local/bin:${PATH}:/usr/local/sbin:${HOME}/bin:${HOME}/.local/bin"
+export PATH="/opt/homebrew/bin:/usr/local/bin:${PATH}:/usr/local/sbin:${HOME}/bin:${HOME}/.local/bin"
 
 ### SOURCE BASH PLUGINS ###
 

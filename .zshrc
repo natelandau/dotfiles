@@ -11,7 +11,7 @@ esac
 DOTFILES_LOCATION="${HOME}/repos/dotfiles"
 
 # Build PATH
-export PATH="/usr/local/bin:${HOME}/bin:${PATH}:/usr/local/sbin:${HOME}/.local/bin"
+export PATH="/opt/homebrew/bin:/usr/local/bin:${HOME}/bin:${PATH}:/usr/local/sbin:${HOME}/.local/bin"
 
 # Encoding
 export LANG='en_US.UTF-8'
