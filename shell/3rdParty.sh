@@ -59,8 +59,8 @@ if [[ ${SHELL##*/} == "bash" ]]; then
         __git_complete branch _branch
         __git_complete merge _git_merge
     fi
-elif [[ ${SHELL##*/} == "zsh" ]] && [[ $OSTYPE == "darwin"* ]]; then
-    fpath=($(brew --prefix)/share/zsh/functions "${fpath}")
-    autoload -Uz _git && _git
-    compdef __git_branch_names branch
+# elif [[ ${SHELL##*/} == "zsh" ]] && [[ $OSTYPE == "darwin"* ]]; then
+#     fpath=($(brew --prefix)/share/zsh/functions "${fpath}")
+#     autoload -Uz _git && _git
+#     compdef __git_branch_names branch
 fi
