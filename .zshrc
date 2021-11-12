@@ -78,7 +78,7 @@ zinit load "rupa/z"
 zinit light "zsh-users/zsh-completions"
 
 autoload -Uz compinit
-compinit
+compinit -i
 
 # CONFIGURE PLUGINS
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=242' # Use a lighter gray for the suggested text
