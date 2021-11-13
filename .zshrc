@@ -66,9 +66,9 @@ source "${HOME}/.zinit/bin/zinit.zsh"
 # zinit update --parallel &>/dev/null
 
 # Zinit prompt
-zinit light "denysdovhan/spaceship-prompt"
+# zinit light "denysdovhan/spaceship-prompt"
 # zinit ice depth=1
-# zinit light romkatv/powerlevel10k
+zinit light romkatv/powerlevel10k
 
 # Zinit plugins
 zinit light "zsh-users/zsh-autosuggestions"
