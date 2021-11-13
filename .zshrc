@@ -67,7 +67,7 @@ source "${HOME}/.zinit/bin/zinit.zsh"
 
 # Zinit prompt
 # zinit light "denysdovhan/spaceship-prompt"
-# zinit ice depth=1
+zinit ice depth=1
 zinit light romkatv/powerlevel10k
 
 # Zinit plugins
