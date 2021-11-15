@@ -232,19 +232,27 @@ export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 
 # Install/Configure atuin (https://github.com/ellie/atuin)
 #############################################
-if command -v atuin &>/dev/null; then
-    export ATUIN_NOBIND="true"
-    eval "$(atuin init zsh)"
-    bindkey '^r' _atuin_search_widget
-else
-    if [ -f "${HOME}/.zsh/plugins/atuin/install.sh" ]; then
-        if ${HOME}/.zsh/plugins/atuin/install.sh; then
-            export ATUIN_NOBIND="true"
-            eval "$(atuin init zsh)"
-            bindkey '^r' _atuin_search_widget
-            atuin import zsh
-        else
-            printf "%s\n" "ERROR: Could not install Atuin. Docs: https://github.com/ellie/atuin"
+
+_atuin_() {
+    if command -v atuin &>/dev/null; then
+        export ATUIN_NOBIND="true"
+        eval "$(atuin init zsh)"
+        bindkey '^r' _atuin_search_widget
+    else
+        if hostnamectl | grep -q Raspbian &>/dev/null; then
+            return 0
+        elif [ -f "${HOME}/.zsh/plugins/atuin/install.sh" ]; then
+            if ${HOME}/.zsh/plugins/atuin/install.sh; then
+                if command -v atuin &>/dev/null; then
+                    export ATUIN_NOBIND="true"
+                    eval "$(atuin init zsh)"
+                    bindkey '^r' _atuin_search_widget
+                    atuin import zsh
+                fi
+            else
+                printf "%s\n" "ERROR: Could not install Atuin. Docs: https://github.com/ellie/atuin"
+            fi
         fi
     fi
-fi
+}
+_atuin_
