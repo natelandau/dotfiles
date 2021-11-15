@@ -6,6 +6,13 @@ insert-last-command-output() {
 zle -N insert-last-command-output
 bindkey '^[x' insert-last-command-output
 
+# hist zsh plugin undo
+bindkey "^_" undo
+
+# [Ctrl-r] - Search backward incrementally for a specified string.
+# The string may begin with ^ to anchor the search to the beginning of the line.
+bindkey '^r' history-incremental-search-backward
+
 # Navigate by words with alt+right/left arrows
 bindkey "^[^[[C" forward-word
 bindkey "^[^[[D" backward-word
@@ -14,9 +21,6 @@ bindkey "^[^[[D" backward-word
 bindkey '^[^[[A' history-substring-search-up
 bindkey '^[^[[B' history-substring-search-down
 
-# [Ctrl-r] - Search backward incrementally for a specified string.
-# The string may begin with ^ to anchor the search to the beginning of the line.
-bindkey '^r' history-incremental-search-backward
 # [PageUp] - Up a line of history
 if [[ -n "$terminfo[kpp]" ]]; then
     bindkey "$terminfo[kpp]" up-line-or-history
@@ -36,6 +40,7 @@ fi
 if [[ -n "$terminfo[khome]" ]]; then
     # [Home] - Go to beginning of line
     bindkey "$terminfo[khome]" beginning-of-line
+
     # OPTION+left
     bindkey '[D' beginning-of-line
 fi

@@ -6,7 +6,11 @@ fi
 
 q() {
     if [ $# -eq 1 ]; then
-        $EDITOR "$@"
+        if command -v code &>/dev/null; then
+            code -r "$@"
+        else
+            ${EDITOR} "$@"
+        fi
     elif [ $# -eq 0 ]; then
         if command -v code &>/dev/null; then
             code -r .

@@ -1,5 +1,3 @@
-alias pubkey="more ~/.ssh/id_rsa.pub | pbcopy | echo '=> Public key copied to pasteboard.'"
-
 createTunnel() {
     # DESC:		Create a ssh tunnel with arguments.  Ask for args if none given.
     # ARGS:		None

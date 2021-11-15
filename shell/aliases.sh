@@ -11,13 +11,13 @@ alias .4='cd ../../../../'
 alias .5='cd ../../../../../'
 alias .6='cd ../../../../../../'
 alias ~="cd ~"
-alias path='echo -e ${PATH//:/\\n}' # system: Echo all executable Paths
-alias fix_stty='stty sane'          # system: Restore terminal settings when screwed up
 alias kill='kill -9'
 alias ax='chmod a+x'
 alias rm='rm -i'
 alias rmd='rm -rf'
-alias shfmt="shfmt -ci -bn -i 2" # dev: Preferred shellformat implementation
+alias path='echo -e ${PATH//:/\\n}'       # system: Echo all executable Paths
+alias shfmt="shfmt -ci -bn -i 2"          # dev: Preferred shellformat implementation
+alias sc='shellcheck --exclude=2001,2148' # dev: Preferred shellcheck implementation
 
 # Prefer `bat` over `cat`
 [[ "$(command -v bat)" ]] \
@@ -38,15 +38,6 @@ elif [[ ${SHELL##*/} == "zsh" ]]; then
     alias sourcea='source ${HOME}/.zshrc' # system: Source .bash_profile or .zshrc
 fi
 
-mine() {
-    # DESC:   Show your own processes
-    # ARGS:		None
-    # OUTS:		None
-    # USAGE:
-    # NOTE:
-    ps "$@" -u "${USER}" -o pid,%cpu,%mem,start,time,bsdtime,command
-}
-alias memHogs='ps wwaxm -o pid,stat,vsize,rss,time,command | head -10' # system: Show top 10 memory hogs
-alias cpuHogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'      # system: Show top 10 cpu hogs
-
-alias sc='shellcheck --exclude=2001,2148' # dev: Preferred shellcheck implementation
+alias memHogs='ps wwaxm -o pid,stat,vsize,rss,time,command | head -10'        # system: Show top 10 memory hogs
+alias cpuHogs='ps wwaxr -o pid,stat,%cpu,time,command | head -10'             # system: Show top 10 cpu hogs
+alias mine='ps "$@" -u "${USER}" -o pid,%cpu,%mem,start,time,bsdtime,command' # system: Show all processes owned by user

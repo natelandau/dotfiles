@@ -133,7 +133,7 @@ urlencode() {
     done
 }
 
-alias urldecode='python -c "import sys, urllib as ul; print ul.unquote_plus(sys.argv[1])"' # dev: Decode a URL
+alias urldecode='python -c "import sys, urllib as ul; print ul.unquote_plus(sys.argv[1])"' # dev: Decode a URL [ULR]
 
 lower() {
     # DESC:		Convert stdin to lowercase.
