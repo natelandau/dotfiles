@@ -5,8 +5,28 @@ if [[ ${OSTYPE} == "darwin"* ]]; then
     alias cl="fc -e -|pbcopy"                                     # Copy output of last command to clipboard
     alias caff="caffeinate -ism"                                  # Run command without letting mac sleep
     alias cleanDS="find . -type f -name '*.DS_Store' -ls -delete" # Delete .DS_Store files on Macs
-    alias finderShowHidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
-    alias finderHideHidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
+    alias showHidden='defaults write com.apple.finder AppleShowAllFiles TRUE'
+    alias hideHidden='defaults write com.apple.finder AppleShowAllFiles FALSE'
+    alias capc="screencapture -c"
+    alias capic="screencapture -i -c"
+    alias capiwc="screencapture -i -w -c"
+
+    CAPTURE_FOLDER="${HOME}/Desktop"
+
+    function cap() {
+        # DESC: Capture the screen to the desktop
+        screencapture "${CAPTURE_FOLDER}/capture-$(date +%Y%m%d_%H%M%S).png"
+    }
+
+    function capi() {
+        # DESC: Capture the selected screen area to the desktop
+        screencapture -i "${CAPTURE_FOLDER}/capture-$(date +%Y%m%d_%H%M%S).png"
+    }
+
+    function capiw() {
+        # DESC: Capture the selected window to the desktop
+        screencapture -i -w "${CAPTURE_FOLDER}/capture-$(date +%Y%m%d_%H%M%S).png"
+    }
 
     # Open the finder to a specified path or to current directory.
     f() {

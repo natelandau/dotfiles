@@ -41,9 +41,6 @@ fi
 # [[ "$(command -v docker-machine)" ]] \
 #   && eval "$(docker-machine env default)"
 
-[ -e "${HOME}/.local/bin" ] \
-    && PATH="${HOME}/.local/bin:${PATH}"
-
 # Git-Friendly Auto Completions
 # https://github.com/jamiew/git-friendly
 if [[ ${SHELL##*/} == "bash" ]]; then

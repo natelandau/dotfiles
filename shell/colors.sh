@@ -1,18 +1,8 @@
 # shellcheck disable=SC2154
 
-showcolors() {
+colors() {
     # will print all tput colors to terminal
-    local x y i o
-    (
-        x=$(tput op) y=$(printf %$((COLUMNS - 6))s)
-        for i in {0..256}; do
-            o=00$i
-            echo -e ${o:${#o}-3:3} "$(
-                tput setaf "$i"
-                tput setab "$i"
-            )"${y// /=}$x
-        done
-    )
+    for i in {0..255}; do print -Pn "%K{$i}  %k%F{$i}${(l:3::0:)i}%f " ${${(M)$((i%6)):#3}:+$'\n'}; done
 }
 
 mycolors() {
@@ -77,7 +67,7 @@ _setColors_() {
             blue=$(tput setaf 38)
             yellow=$(tput setaf 11)
             green=$(tput setaf 82)
-            red=$(tput setaf 1)
+            red=$(tput setaf 9)
             purple=$(tput setaf 171)
             gray=$(tput setaf 250)
         else
@@ -85,7 +75,7 @@ _setColors_() {
             blue=$(tput setaf 38)
             yellow=$(tput setaf 3)
             green=$(tput setaf 2)
-            red=$(tput setaf 1)
+            red=$(tput setaf 9)
             purple=$(tput setaf 13)
             gray=$(tput setaf 7)
         fi

@@ -7,6 +7,7 @@ if [ -e "/Applications/iTerm.app" ]; then
         else
             curl -L https://iterm2.com/shell_integration/bash \
                 -o ~/.iterm2_shell_integration.bash &>/dev/null
+            source ~/.iterm2_shell_integration.bash
         fi
     elif [[ -n ${ZSH_NAME} ]]; then
         if [[ -f ~/.iterm2_shell_integration.zsh ]]; then
@@ -15,6 +16,7 @@ if [ -e "/Applications/iTerm.app" ]; then
         else
             curl -L https://iterm2.com/shell_integration/zsh \
                 -o ~/.iterm2_shell_integration.zsh &>/dev/null
+            source ~/.iterm2_shell_integration.zsh
         fi
     fi
 fi
