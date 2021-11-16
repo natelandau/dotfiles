@@ -2,15 +2,15 @@
 # flags for colors.  Also, prefer gem colorls or exa when available.
 
 if command -v exa &>/dev/null; then
-    alias ls='exa --git --group-directories-first --time-style=long-iso'
-    alias LS='exa -1'
-    alias l='ls -lbF'
-    alias ll='ls -lah'
-    alias lll="exa -alh --git"
+    alias ls='exa --git --icons'
+    alias l='exa --git --icons -lF'
+    alias ll='exa -lahF --git'
+    alias lll="exa -1F --git --icons"
     alias llm='ll --sort=modified'
     alias la='ls -lbhHigUmuSa --color-scale'
     alias lx='ls -lbhHigUmuSa@ --color-scale'
     alias lt='exa --tree --level=2'
+    alias llt='exa -lahF --tree --level=2'
 elif
     command -v colorls &>/dev/null
 then
