@@ -7,6 +7,9 @@ alias lsockT='sudo /usr/sbin/lsof -nP | grep TCP' # Display only open TCP socket
 alias ipinfo0='ipconfig getpacket en0'            # Get info on connections for en0
 alias ipinfo1='ipconfig getpacket en1'            # Get info on connections for en1
 alias openports='sudo lsof -i | grep LISTEN'      # All listening connections
+alias myip="curl icanhazip.com"                   # public IP from icanhazip
+alias myip2="curl api.ipify.org"                  # public IP from ipify (Firwall always routs through VPN)
+alias myip3="curl checkip.amazonaws.com"          # public IP from AWS
 
 if command -v ipfw &>/dev/null; then
     alias showblocked='sudo ipfw list' # linux: All ipfw rules inc/ blocked IPs
