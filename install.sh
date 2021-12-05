@@ -17,6 +17,7 @@ _mainScript_() {
         -iregex '^/.*/\..*$' \
         -not -name '.vscode' \
         -not -name '.git' \
+        -not -name '.gitmodules' \
         -not -name '.DS_Store' \
         -not -name '.yamllint.yml' \
         -not -name '.ansible-lint.yml' \
