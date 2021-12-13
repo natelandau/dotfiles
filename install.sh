@@ -6,7 +6,7 @@ _mainScript_() {
     _setPATH_ "/usr/local/bin" "/opt/homebrew/bin"
 
     REPOS=(
-        "\"git@github.com:scopatz/nanorc\" \"${HOME}/.nano/\""
+        "\"https://github.com/scopatz/nanorc.git\" \"${HOME}/.nano/\""
     )
 
     i=0
