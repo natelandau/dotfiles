@@ -256,3 +256,8 @@ _atuin_() {
     fi
 }
 _atuin_
+
+# Shell completions for 1password CLI
+if command -v op &>/dev/null; then
+    eval "$(op completion zsh)"; compdef _op op
+fi

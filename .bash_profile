@@ -56,3 +56,8 @@ cd() {
     builtin cd "$@"
     ll
 }
+
+# Shell completions for 1password CLI
+if command -v op &>/dev/null; then
+    source <(op completion bash)
+fi
