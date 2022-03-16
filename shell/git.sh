@@ -8,7 +8,7 @@ alias gcl='git clone --recursive'                          # Clone with all subm
 alias gcm="git --no-pager commit -m"                       # Commit w/ message from the command line [commit message]
 alias gcv="git --no-pager commit --no-verify"              # Commit without verification
 alias ginitsubs='git submodule update --init --recursive'  # Init and update all submodules
-alias gitundo="git reset --soft HEAD^"                     # Undo last commit
+alias gundo="git reset --soft HEAD^"                       # Undo last commit
 alias gs='git --no-pager status -s --untracked-files=all'  # Git status
 alias gsearch='git rev-list --all | xargs git grep -F'     # Find a string in Git History [search string]
 alias gss='git remote update && git status -uno'           # Are we behind remote?
