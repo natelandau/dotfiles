@@ -17,6 +17,7 @@ if command -v brew &>/dev/null; then
         "/usr/local/opt/gnu-sed/libexec/gnubin"
         "/usr/local/opt/gnu-tar/libexec/gnubin"
         "/usr/local/opt/grep/libexec/gnubin"
+        "/usr/local/sbin"
     )
 
     for _path in "${_homebrewPaths[@]}"; do
@@ -34,6 +35,7 @@ if command -v brew &>/dev/null; then
     # if [[ -s /usr/local/etc/profile.d/autojump.sh ]]; then
     #     source "/usr/local/etc/profile.d/autojump.sh"
     # fi
+    # shellcheck disable=SC1091
     if [[ ${SHELL##*/} == "bash" ]] && [ -f "/usr/local/etc/profile.d/bash_completion.sh" ]; then
         source "/usr/local/etc/profile.d/bash_completion.sh"
     fi
