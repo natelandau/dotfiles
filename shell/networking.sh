@@ -7,9 +7,38 @@ alias lsockT='sudo /usr/sbin/lsof -nP | grep TCP' # Display only open TCP socket
 alias ipinfo0='ipconfig getpacket en0'            # Get info on connections for en0
 alias ipinfo1='ipconfig getpacket en1'            # Get info on connections for en1
 alias openports='sudo lsof -i | grep LISTEN'      # All listening connections
-alias myip="curl icanhazip.com"                   # public IP from icanhazip
-alias myip2="curl api.ipify.org"                  # public IP from ipify (Firwall always routs through VPN)
-alias myip3="curl checkip.amazonaws.com"          # public IP from AWS
+
+myip() {
+    # DESC:   Checks external IP address and displays it.  A menu is shown to select a source.
+    # ARGS:   None
+    # USAGE:  myip
+
+    PS3="Enter a number: "
+    COLUMNS=12
+    select REPLY in "icanhazip (Default gateway)" "AWS (Default gateway)" "ipify (VPN)" "ipecho (Bypass VPN)" Quit; do
+        case $REPLY in
+            "icanhazip (Default gateway)")
+                printf "%s\n" "$(curl -s icanhazip.com)"
+                ;;
+            "AWS (Default gateway)")
+                printf "%s\n" "$(curl -s checkip.amazonaws.com)"
+                ;;
+            "ipify (VPN)")
+                printf "%s\n" "$(curl -s api.ipify.org)"
+                ;;
+            "ipecho (Bypass VPN)")
+                printf "%s\n" "$(curl -s ipecho.net/plain)"
+                ;;
+            Quit)
+                break
+                ;;
+            *)
+                printf "Invalid option %s" "${REPLY}"
+                ;;
+        esac
+    done
+
+}
 
 if command -v ipfw &>/dev/null; then
     alias showblocked='sudo ipfw list' # linux: All ipfw rules inc/ blocked IPs
