@@ -18,16 +18,16 @@ myip() {
     select REPLY in "icanhazip (Default gateway)" "AWS (Default gateway)" "ipify (VPN)" "ipecho (Bypass VPN)" Quit; do
         case $REPLY in
             "icanhazip (Default gateway)")
-                printf "%s\n" "$(curl -s icanhazip.com)"
+                printf "%s\n" "$(curl -s https://icanhazip.com)"
                 ;;
             "AWS (Default gateway)")
-                printf "%s\n" "$(curl -s checkip.amazonaws.com)"
+                printf "%s\n" "$(curl -s https://checkip.amazonaws.com)"
                 ;;
             "ipify (VPN)")
-                printf "%s\n" "$(curl -s api.ipify.org)"
+                printf "%s\n" "$(curl -s https://api.ipify.org)"
                 ;;
             "ipecho (Bypass VPN)")
-                printf "%s\n" "$(curl -s ipecho.net/plain)"
+                printf "%s\n" "$(curl -s https://ipecho.net/plain)"
                 ;;
             Quit)
                 break
