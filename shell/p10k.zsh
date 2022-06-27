@@ -502,7 +502,7 @@
 
   # Show status of repositories of these types. You can add svn and/or hg if you are
   # using them. If you do, your prompt may become slow even when your current directory
-  # isn't in an svn or hg reposotiry.
+  # isn't in an svn or hg repository.
   typeset -g POWERLEVEL9K_VCS_BACKENDS=(git)
 
   # These settings are used for repositories other than Git or when gitstatusd fails and
@@ -581,7 +581,7 @@
   typeset -g POWERLEVEL9K_ASDF_FOREGROUND=66
 
   # There are four parameters that can be used to hide asdf tools. Each parameter describes
-  # conditions under which a tool gets hidden. Parameters can hide tools but not unhide them. If at
+  # conditions under which a tool gets hidden. Parameters can hide tools but not un hide them. If at
   # least one parameter decides to hide a tool, that tool gets hidden. If no parameter decides to
   # hide a tool, it gets shown.
   #

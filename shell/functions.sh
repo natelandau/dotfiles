@@ -74,8 +74,9 @@ if ! command -v help &>/dev/null; then
         fi
 
         local cmd="${1}"
-        [[ ${SHELL##*/} == "zsh" ]] && local cmdtest="$(type -w "${cmd}" | awk -F': ' '{print $2}')"
-        [[ ${SHELL##*/} == "bash" ]] && local cmdtest=$(type -t "${cmd}")
+        local cmdtest
+        [[ ${SHELL##*/} == "zsh" ]] && cmdtest="$(type -w "${cmd}" | awk -F': ' '{print $2}')"
+        [[ ${SHELL##*/} == "bash" ]] && cmdtest=$(type -t "${cmd}")
 
         if [ -z "${cmdtest}" ]; then
             echo -e "${yellow}'${cmd}' is not a known command${reset}"
@@ -87,7 +88,8 @@ if ! command -v help &>/dev/null; then
         fi
 
         if [[ ${cmdtest} == "command" || ${cmdtest} == "file" ]]; then
-            local location=$(command -v "${cmd}")
+            local location
+            location=$(command -v "${cmd}")
             local bindir="${HOME}/bin/${cmd}"
             if [[ ${location} == "${bindir}" ]]; then
                 echo -e "${yellow}${cmd} is a custom script${reset}\n"
