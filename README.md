@@ -12,7 +12,7 @@ My bash scripting templates and utilities now have their own repo. You can acces
 
 ## macOS specific tweaks
 
-I customized [Jeff Geerling's macOS configuration script](https://github.com/geerlingguy/dotfiles/blob/master/.osx) to set my macOS defaults. Run this script with sudo privs.
+I customized [Jeff Geerling's macOS configuration script](https://github.com/geerlingguy/dotfiles/blob/master/.osx) to set my macOS defaults. Run this script with sudo privileges.
 
 ```bash
 sudo ./osx.sh

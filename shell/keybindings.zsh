@@ -1,4 +1,4 @@
-# alt-x : insert last command resultwhic
+# alt-x : insert last command result
 zmodload -i zsh/parameter
 insert-last-command-output() {
     LBUFFER+="$(eval ${history[$((HISTCMD - 1))]})"
@@ -17,7 +17,7 @@ bindkey '^r' history-incremental-search-backward
 bindkey "^[^[[C" forward-word
 bindkey "^[^[[D" backward-word
 
-# History Search with alt+up/down arros
+# History Search with alt+up/down arrows
 bindkey '^[^[[A' history-substring-search-up
 bindkey '^[^[[B' history-substring-search-down
 
