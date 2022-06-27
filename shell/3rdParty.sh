@@ -1,6 +1,3 @@
-# Make 'less' more with lesspipe
-[[ "$(command -v lesspipe.sh)" ]] && eval "$(lesspipe.sh)"
-
 # RVM complains if it's not here
 [[ -s "${HOME}/.rvm/scripts/rvm" ]] && source "${HOME}/.rvm/scripts/rvm"
 
