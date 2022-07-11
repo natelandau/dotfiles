@@ -33,3 +33,12 @@ zstyle -e ':completion:*:(ssh|scp|sftp|rsh|rsync):hosts' hosts 'reply=(${=${${(f
 setopt auto_menu # show completion menu on successive tab press
 setopt complete_in_word
 setopt always_to_end
+
+if command -v poetry &>/dev/null; then
+    if [ ! -d "${HOME}/.zfunc" ]; then
+        mkdir -p "${HOME}/.zfunc"
+    fi
+    if [ ! -f "${HOME}/.zfunc/poetry" ]; then
+        poetry completions zsh >"${HOME}/.zfunc/poetry"
+    fi
+fi
