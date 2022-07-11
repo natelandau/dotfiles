@@ -1,4 +1,7 @@
+# Fig pre block. Keep at the top of this file.
+[[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && . "$HOME/.fig/shell/zshrc.pre.zsh"
 #!/usr/bin/env zsh
+
 # This zshrc file uses zinit as a zsh plugin manager.
 # More information: https://github.com/zdharma-continuum/zinit
 
@@ -144,6 +147,10 @@ function zshup () {
   done
 }
 
+if [ -d "${HOME}/.zfunc" ]; then
+  fpath+=${HOME}/.zfunc
+fi
+
 # Load Completions
 #############################################
 autoload -Uz compinit
@@ -261,3 +268,6 @@ _atuin_
 if command -v op &>/dev/null; then
     eval "$(op completion zsh)"; compdef _op op
 fi
+
+# Fig post block. Keep at the bottom of this file.
+[[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && . "$HOME/.fig/shell/zshrc.post.zsh"
