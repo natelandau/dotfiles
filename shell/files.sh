@@ -37,10 +37,8 @@ md5Check() {
 zipf() { zip -r "$1".zip "$1"; }       # Create a ZIP archive of a folder or file
 alias numFiles='echo $(ls -1 | wc -l)' # Count of non-hidden files in current dir
 alias make1mb='mkfile 1m ./1MB.dat'    # Creates a file of 1mb size (all zeros)
-# Creates a file of 5mb size (all zeros)
-alias make5mb='mkfile 5m ./5MB.dat'
-# Creates a file of 10mb size (all zeros)
-alias make10mb='mkfile 10m ./10MB.dat'
+alias make5mb='mkfile 5m ./5MB.dat'    # Creates a file of 5mb size (all zeros)
+alias make10mb='mkfile 10m ./10MB.dat' # Creates a file of 10mb size (all zeros)
 
 copyfile() (
     # DESC: Copy contents of a file to the clipboard

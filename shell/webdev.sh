@@ -5,22 +5,7 @@
 alias npm-exec='PATH=$(npm bin):$PATH'
 alias grunt="npm-exec grunt"
 
-# `ghi` is a gem that creates and reads github issues
-# https://github.com/stephencelis/ghi
-if command -v ghi &>/dev/null; then
-    alias issue='ghi'
-    alias task='ghi'
-fi
-
 httpheaders() { http -h "$@"; } # network: Grabs headers from web page
-
-# Apache specific commands
-if command -v apache &>/dev/null; then
-    alias apacheLogs='less +F /var/log/apache2/error_log'
-    alias apacheEdit='sudo edit /etc/httpd/httpd.conf'
-    alias apacheRestart='sudo apachectl graceful'
-    alias herr='tail /var/log/httpd/error_log'
-fi
 
 httpstatus() {
     # -----------------------------------

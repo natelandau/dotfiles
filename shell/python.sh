@@ -5,7 +5,7 @@ if [ -d "${HOME}/.pyenv" ]; then
     eval "$(pyenv init -)"
 fi
 
-function wrapper_no_poetry() {
+function with_no_poetry() {
     # Prefixing any command with wnp runs it outside the virtualenv if a virtualenv is active.
     local last_env
     if [[ -v VIRTUAL_ENV ]]; then
@@ -21,4 +21,4 @@ function wrapper_no_poetry() {
     return ${ret}
 }
 
-alias wnp='wrapper_no_poetry'
+alias wnp='with_no_poetry' # dev: Run a command outside the virtualenv
