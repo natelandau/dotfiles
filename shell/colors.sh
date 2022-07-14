@@ -1,11 +1,12 @@
 # shellcheck disable=SC2154
 
 colors() {
-    # will print all tput colors to terminal
+    # Prints all tput colors to terminal
     for i in {0..255}; do print -Pn "%K{$i}  %k%F{$i}${(l:3::0:)i}%f " ${${(M)$((i%6)):#3}:+$'\n'}; done
 }
 
 mycolors() {
+    # Prints my own color scheme to terminal
     printf "%s\n" "${underline} This is underlined text ${reset}"
     printf "%s\n" "${reverse} This is reversed text ${reset}"
     printf "%s\n" "${gray} This is gray text${reset}"

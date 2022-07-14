@@ -1,20 +1,20 @@
-alias diff="git difftool"                                  # Open file in git's default diff tool [file]
+alias diff="git difftool"                                  # Open file in git's default diff tool <file>
 alias fetch="git fetch origin"                             # Fetch from origin
 alias gamend='git commit --amend'                          # Add more changes to the commit
 alias gap='git add -p'                                     # Step through each change
 alias gba='git branch -a'                                  # Lists local and remote branches
 alias gc="git --no-pager commit"                           # Commit w/ message written in EDITOR
 alias gcl='git clone --recursive'                          # Clone with all submodules
-alias gcm="git --no-pager commit -m"                       # Commit w/ message from the command line [commit message]
+alias gcm="git --no-pager commit -m"                       # Commit w/ message from the command line <commit message>
 alias gcv="git --no-pager commit --no-verify"              # Commit without verification
 alias ginitsubs='git submodule update --init --recursive'  # Init and update all submodules
 alias gundo="git reset --soft HEAD^"                       # Undo last commit
 alias gs='git --no-pager status -s --untracked-files=all'  # Git status
-alias gsearch='git rev-list --all | xargs git grep -F'     # Find a string in Git History [search string]
+alias gsearch='git rev-list --all | xargs git grep -F'     # Find a string in Git History <search string>
 alias gss='git remote update && git status -uno'           # Are we behind remote?
 alias gsubs='git submodule update --recursive --remote'    # Update all submodules
 alias gup="git remote update -p; git merge --ff-only @{u}" # Update & Merge
-alias undopush="git push -f origin HEAD^:master"           # Undo a `git push`
+alias undopush="git push -f origin HEAD^:master"           # Undo a git push
 alias unstage='git reset HEAD'                             # Unstage a file
 
 ga() { git add "${@:-.}"; } # Add file (default: all)
@@ -119,17 +119,17 @@ gurl() (
 )
 
 # From Git-Extras (https://github.com/tj/git-extras)
-alias obliterate='git obliterate'       # Completely remove a file from the repository, including past commits and tags. [file]b
+alias obliterate='git obliterate'       # Completely remove a file from the repository, including past commits and tags
 alias release='git-release'             # Create release commit with the given <tag> and other options
-alias rename-branch='git rename-branch' # Rename a branch and sync with remote. [old name] [new name]
-alias rename-tag='git rename-tag'       # Rename a tag (locally and remotely). [old name] [new name]
+alias rename-branch='git rename-branch' # Rename a branch and sync with remote. <old name> <new name>
+alias rename-tag='git rename-tag'       # Rename a tag (locally and remotely). <old name> <new name>
 alias ignore='git ignore'               # Add files to .gitignore. Run without arguments to list ignored files.
 alias ginfo='git info --no-config'      # Show information about the current repository.
-alias del-sub='git delete-submodule'    # Delete a submodule. [name]
-alias del-tag='git delete-tag'          # Delete a tag. [name]
+alias del-sub='git delete-submodule'    # Delete a submodule. <name>
+alias del-tag='git delete-tag'          # Delete a tag. <name>
 alias changelog='git changelog'         # Generate a Changelog from tags and commit messages. -h for help.
 alias garchive='git archive'            # Creates a zip archive of the current git repository. The name of the archive will depend on the current HEAD of your git repository.
-alias greset='git reset'                # Reset one file to HEAD or certain commit. [file] [commit (optional)]
+alias greset='git reset'                # Reset one file to HEAD or certain commit. <file> <commit (optional)>
 alias gclear='git clear-soft'           # Does a hard reset and deletes all untracked files from the working directory, excluding those in .gitignore.
 alias gbrowse='git browse'              # Opens the current git repository website in your default web browser.
 alias gtimes='git utimes'               # Change files modification time to their last commit date.
