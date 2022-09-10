@@ -117,7 +117,6 @@ plugins=(
     reegnz/jq-zsh-plugin                # Write interactive jq queries (Requires jq and fzf)
     MichaelAquilina/zsh-you-should-use  # Recommends aliases when typed
     rupa/z                              # Tracks your most used directories, based on 'frequency'
-    ellie/atuin                         # Replace history search with a sqlite database
 
     # Additional completions
     sudosubin/zsh-github-cli
@@ -133,11 +132,22 @@ plugins=(
     zsh-users/zsh-history-substring-search
 )
 
+mac_plugins=(
+      ellie/atuin                         # Replace history search with a sqlite database
+)
+
 # load your plugins (clone, source, and add to fpath)
 for repo in ${plugins[@]}; do
   _pluginload_ https://github.com/${repo}.git
 done
 unset repo
+
+if [[ ${OSTYPE} == "darwin"* ]]; then
+  for mac_repo in ${mac_plugins[@]}; do
+    _pluginload_ https://github.com/${mac_repo}.git
+  done
+  unset mac_repo
+fi
 
 function zshup () {
   local plugindir="${ZPLUGINDIR:-$HOME/.zsh/plugins}"
