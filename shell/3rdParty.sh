@@ -16,6 +16,11 @@ if [ -e "${HOME}/.nvm" ]; then
     nvm use 8.6.0
 fi
 
+# # Default to use python 2.7 with npm
+# if command -v npm &>/dev/null; then
+#   npm config set python python2.7
+# fi
+
 # Use Java JDK 1.8
 if [[ "$(java -version &>/dev/null)" ]] && [[ -e "/usr/libexec/java_home" ]]; then
     JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
