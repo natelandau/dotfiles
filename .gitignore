@@ -24,7 +24,6 @@ test.java
 *.tgz
 *.rar
 .exercism/
-*.lock
 *~
 
 # macOS
