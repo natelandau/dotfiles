@@ -2,10 +2,10 @@ SPACESHIP_PROMPT_ORDER=(
     user # Username section
     host # Hostname section
     dir  # Current directory section
-    git  # Git section (git_branch + git_status)
-    ruby
+    pyenv
+    package
+    git       # Git section (git_branch + git_status)
     exec_time # Execution time
-
     line_sep  # Line break
     exit_code # Exit code section
     char      # Prompt character
