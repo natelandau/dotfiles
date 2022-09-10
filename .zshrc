@@ -1,5 +1,5 @@
 # Fig pre block. Keep at the top of this file.
-[[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && . "$HOME/.fig/shell/zshrc.pre.zsh"
+[[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
 #!/usr/bin/env zsh
 
 # This zshrc file uses zinit as a zsh plugin manager.
@@ -272,7 +272,10 @@ _atuin_() {
         fi
     fi
 }
-_atuin_
+if [[ ${OSTYPE} == "darwin"* ]]; then
+    _atuin_
+fi
+
 
 # Shell completions for 1password CLI
 if command -v op &>/dev/null; then
@@ -280,4 +283,4 @@ if command -v op &>/dev/null; then
 fi
 
 # Fig post block. Keep at the bottom of this file.
-[[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && . "$HOME/.fig/shell/zshrc.post.zsh"
+[[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"
