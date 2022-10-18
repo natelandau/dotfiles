@@ -1,218 +1,207 @@
 [alias]
-	up = "!git remote update -p; git merge --ff-only @{u}"
 
-	# View abbreviated SHA, description, and history graph of the latest 20 commits
-	ls = log --color --pretty=oneline -n 20 --graph --abbrev-commit
+# Human Git Aliases
+tags = tag -l
+branches = branch -a
+remotes = remote -v
+stashes = stash list
+discard = checkout --
+amend = commit --amend
+oops = git commit --amend --no-edit
+nevermind = !git reset --hard HEAD && git clean -d -f
+forgot = "!f() { git checkout -b \"$1\" 2> /dev/null || git checkout \"$1\"; }; f"
+unstage = reset HEAD --
+unadd = reset HEAD --
 
-  # List commits showing changed files
-  ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat -n 10
+# View abbreviated SHA, description, and history graph of the latest 20 commits
+ls = log --color --pretty=oneline -n 20 --graph --abbrev-commit
 
-  # List with no colors if you need to chain the out put with Unix pipes
-  lnc = log --pretty=format:"%h\\ %s\\ [%cn]"
+# List commits showing changed files
+ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat -n 10
 
-  # list aliases
-  la = "!git config -l | grep alias | cut -c 7-"
+# List with no colors if you need to chain the out put with Unix pipes
+lnc = log --pretty=format:"%h\\ %s\\ [%cn]"
 
-  # All the commits related to a file, with the diff of the changes
-  filelog = log -u
-  fl = log -u
+# list aliases
+la = "!git config -l | grep alias | cut -c 7-"
 
-	# View the current working tree status using the short format
-	s = --no-pager status -s --untracked-files=all
+# All the commits related to a file, with the diff of the changes
+filelog = log -u
+fl = log -u
 
-	# Show the diff between the latest commit and the current state
-	d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
+# View the current working tree status using the short format
+s = --no-pager status -s --untracked-files=all
 
-	# Pull in remote changes for the current repository and all its submodules
-	#p = !"git pull; git submodule foreach git pull origin master"
+# Show the diff between the latest commit and the current state
+d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
 
-	# Clone a repository including all submodules
-	cl = clone --recursive
+# Pull in remote changes for the current repository and all its submodules
+#p = !"git pull; git submodule foreach git pull origin master"
 
-	# Commit all changes
-	ca = !git add -A && git commit -av
+# Switch to a branch, creating it if necessary
 
-	# Switch to a branch, creating it if necessary
-	go = "!f() { git checkout -b \"$1\" 2> /dev/null || git checkout \"$1\"; }; f"
+# Submodules Update
+subpl = submodule update --init --recursive
 
-	# Show verbose output about tags, branches or remotes
-	tags = tag -l
-	branches = branch -a
-	remotes = remote -v
+# Interactive rebase with the given number of latest commits
+reb = "!r() { git rebase -i HEAD~$1; }; r"
 
-	# Submodules Update
-  subpl = submodule update --init --recursive
-
-	# Mixed reset (affects HEAD and Index)
-	unstage = reset HEAD --
-
-	# Amend the currently staged files to the latest commit
-	amend = commit --amend --reuse-message=HEAD
-
-	# Interactive rebase with the given number of latest commits
-	reb = "!r() { git rebase -i HEAD~$1; }; r"
-
-	# Remove the old tag with this name and tag the latest commit with it.
-	retag = "!r() { git tag -d $1 && git push origin :refs/tags/$1 && git tag $1; }; r"
-
-	# Remove branches that have already been merged with master
-	# a.k.a. ‘delete merged’
-	dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
+# Remove the old tag with this name and tag the latest commit with it.
+retag = "!r() { git tag -d $1 && git push origin :refs/tags/$1 && git tag $1; }; r"
 
 [apply]
 
-	# Detect whitespace errors when applying a patch
-	 whitespace = fix
+# Detect whitespace errors when applying a patch
+whitespace = fix
 
 [commit]
 
-	# https://help.github.com/articles/signing-commits-using-gpg/
-	# gpgsign = true
+# https://help.github.com/articles/signing-commits-using-gpg/
+# gpgsign = true
 
 [core]
 
-	# Use custom `.gitignore` and `.gitattributes`
-	excludesfile = ~/.gitignore
-	attributesfile = ~/.gitattributes
+# Use custom `.gitignore` and `.gitattributes`
+excludesfile = ~/.gitignore
+attributesfile = ~/.gitattributes
 
-	# Treat spaces before tabs and all kinds of trailing whitespace as an error
-	# [default] trailing-space: looks for spaces at the end of a line
-	# [default] space-before-tab: looks for spaces before tabs at the beginning of a line
-	whitespace = space-before-tab,-indent-with-non-tab,trailing-space
+# Treat spaces before tabs and all kinds of trailing whitespace as an error
+# [default] trailing-space: looks for spaces at the end of a line
+# [default] space-before-tab: looks for spaces before tabs at the beginning of a line
+whitespace = space-before-tab,-indent-with-non-tab,trailing-space
 
-	# Make `git rebase` safer on OS X
-	# More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
-	trustctime = false
+# Make `git rebase` safer on OS X
+# More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
+trustctime = false
 
-	# Prevent showing files whose names contain non-ASCII symbols as unversioned.
-	# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
-	precomposeunicode = false
+# Prevent showing files whose names contain non-ASCII symbols as unversioned.
+# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
+precomposeunicode = false
 
-	# Set default editor to use VisualCode
-	editor = code -w
-	# pager = diff-so-fancy | less --tabs=4 -RFX
+# Set default editor to use VisualCode
+editor = code -w
+# pager = diff-so-fancy | less --tabs=4 -RFX
 
 [color]
 
-	# Use colors in Git commands that are capable of colored output when
-	# outputting to the terminal. (This is the default setting in Git ≥ 1.8.4.)
-	ui = true
+# Use colors in Git commands that are capable of colored output when
+# outputting to the terminal. (This is the default setting in Git ≥ 1.8.4.)
+ui = true
 
 [color "branch"]
 
-	current = yellow reverse
-	local = yellow
-	remote = green
+current = yellow reverse
+local = yellow
+remote = green
 
 [color "diff"]
 
-	meta = yellow
-	frag = magenta bold
-	old = red bold
-	new = green bold
-	commit = yellow bold
-	whitespace = red reverse
+meta = yellow
+frag = magenta bold
+old = red bold
+new = green bold
+commit = yellow bold
+whitespace = red reverse
 
 [color "status"]
 
-	added = yellow
-	changed = green
-	untracked = cyan
+added = yellow
+changed = green
+untracked = cyan
 
 [diff "bin"]
 
-    # Use `hexdump` to diff binary files
-    textconv = hexdump -v -C
+# Use `hexdump` to diff binary files
+textconv = hexdump -v -C
 
 [difftool "Kaleidoscope"]
 
-	cmd = ksdiff --partial-changeset --relative-path \"$MERGED\" -- \"$LOCAL\" \"$REMOTE\"
+cmd = ksdiff --partial-changeset --relative-path \"$MERGED\" -- \"$LOCAL\" \"$REMOTE\"
 
 [diff]
 
-	# Detect copies as well as renames
-	renames = copies
-	tool = Kaleidoscope
+# Detect copies as well as renames
+renames = copies
+tool = Kaleidoscope
 
 [difftool]
 
-	prompt = false
+prompt = false
 
 [help]
 
-	# Automatically correct and execute mistyped commands
-	autocorrect = 1
+# Automatically correct and execute mistyped commands
+autocorrect = 1
 
 # Use separate file for username / github token / etc
 [include]
-  path = ~/.gitconfig.local
+path = ~/.gitconfig.local
 
 [log]
 
-  decorate = short
+decorate = short
 
 [mergetool "Kaleidoscope"]
 
-	cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
-	trustExitCode = true
-	keepBackup = true
-	prompt = false
+cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
+trustExitCode = true
+keepBackup = true
+prompt = false
 
 [merge]
 
-	tool = Kaleidoscope
-	# Include summaries of merged commits in newly created merge commit messages
-	log = true
+tool = Kaleidoscope
+# Include summaries of merged commits in newly created merge commit messages
+log = true
 
 [pretty]
 
-    custom = "%C(magenta)%h%C(red)%d %C(yellow)%ar %C(green)%s %C(yellow)(%an)"
-    #                     │        │            │            │             └─ author name
-    #                     │        │            │            └─ message
-    #                     │        │            └─ date (relative)
-    #                     │        └─ decorations (branch, heads or tags)
-    #                     └─ hash (abbreviated)
+custom = "%C(magenta)%h%C(red)%d %C(yellow)%ar %C(green)%s %C(yellow)(%an)"
+#                     │        │            │            │             └─ author name
+#                     │        │            │            └─ message
+#                     │        │            └─ date (relative)
+#                     │        └─ decorations (branch, heads or tags)
+#                     └─ hash (abbreviated)
 
 [pull]
-  rebase = true
+rebase = true
 
 [push]
 
-	default = simple
+default = simple
 
-	# Make `git push` push relevant annotated tags when pushing branches out.
-	followTags = true
+# Make `git push` push relevant annotated tags when pushing branches out.
+followTags = true
 
 [pager]
 
-  status = true
-  show-branch = true
-  # diff = diff-so-fancy | less --tabs=1,5 -RFX
-  # show = diff-so-fancy | less --tabs=1,5 -RFX
+status = true
+show-branch = true
+# diff = diff-so-fancy | less --tabs=1,5 -RFX
+# show = diff-so-fancy | less --tabs=1,5 -RFX
 
 # Rewrites of repo paths
 [url "git@github.com:"]
-  insteadOf = "gh:"
-  insteadOf = "git://github.com"
-  pushInsteadOf = "github:"
-  pushInsteadOf = "git://github.com/"
-  pushInsteadOf = "https://github.com/"
+insteadOf = "gh:"
+insteadOf = "git://github.com"
+pushInsteadOf = "github:"
+pushInsteadOf = "git://github.com/"
+pushInsteadOf = "https://github.com/"
 
 [url "git://github.com/"]
-  insteadOf = "github:"
+insteadOf = "github:"
 
 [url "git@gist.github.com:"]
-  insteadOf = "gst:"
-  pushInsteadOf = "gist:"
-  pushInsteadOf = "git://gist.github.com/"
-  pushInsteadOf = "https://gist.github.com/"
+insteadOf = "gst:"
+pushInsteadOf = "gist:"
+pushInsteadOf = "git://gist.github.com/"
+pushInsteadOf = "https://gist.github.com/"
 
 [url "git://gist.github.com/"]
-  insteadOf = "gist:"
+insteadOf = "gist:"
+
 [color "diff-highlight"]
-	oldNormal = red bold
-	oldHighlight = red bold 52
-	newNormal = green bold
-	newHighlight = green bold 22
-[diff-so-fancy]
-	first-run = false
+oldNormal = red bold
+oldHighlight = red bold 52
+newNormal = green bold
+newHighlight = green bold 22
