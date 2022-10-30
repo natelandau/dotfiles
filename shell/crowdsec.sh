@@ -6,7 +6,7 @@ if [[ $(command -v crowdsec &>/dev/null) || -e /usr/bin/crowdsec ]]; then
                 sudo cscli hub update
                 sudo cscli hub upgrade
                 ;;
-            dash | decisions)
+            bans | decisions)
                 sudo cscli decisions list
                 ;;
             alerts)
@@ -28,21 +28,35 @@ if [[ $(command -v crowdsec &>/dev/null) || -e /usr/bin/crowdsec ]]; then
             status)
                 sudo systemctl status crowdsec
                 ;;
+            metrics)
+                sudo cscli metrics
+                ;;
             list)
                 sudo cscli hub list
+                ;;
+            inspect)
+                if [ -n "${2}" ]; then
+                    sudo cscli alert inspect "${2}"
+                else
+                    echo "Please provide a collection name"
+                fi
                 ;;
             *)
                 printf "Usage: csec [command]\n\n"
                 printf "Run crowdsec -h for more information\n\n"
                 printf "Available commands:\n"
                 printf "  alerts\t\tShow crowdsec alerts (All alerts)\n"
-                printf "  dash\t\t\tShow crowdsec decisions (Current bans)\n"
+                printf "  bans\t\t\tShow crowdsec decisions (Current bans)\n"
                 printf "  delete [ID]\t\tDelete a decision by ID or IP Address\n"
+                printf "  inspect [collection]\tInspect an alert [number]\n"
                 printf "  journal\t\tTail crowdsec journal\n"
                 printf "  list\t\t\tList installed collections, parsers, scenarios, etc\n"
                 printf "  logs\t\t\tTail crowdsec logs\n"
+                printf "  metrics\t\tShow crowdsec metrics\n"
                 printf "  status\t\tShow crowdsec service status\n"
                 printf "  update\t\tUpdate crowdsec hub\n"
+                printf "\n"
+                printf "For more information, see https://docs.crowdsec.net/docs/cscli/cscli\n"
                 ;;
         esac
 
