@@ -1,5 +1,3 @@
-# Fig pre block. Keep at the top of this file.
-[[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
 #!/usr/bin/env zsh
 
 # This zshrc file uses zinit as a zsh plugin manager.
@@ -133,7 +131,7 @@ plugins=(
 )
 
 mac_plugins=(
-      ellie/atuin                         # Replace history search with a sqlite database
+      ellie/atuin     # Replace history search with a sqlite database
 )
 
 # load your plugins (clone, source, and add to fpath)
@@ -180,7 +178,7 @@ setopt auto_cd                # cd by typing directory name if it's not a comman
 setopt auto_list              # automatically list choices on ambiguous completion
 setopt auto_menu              # automatically use menu completion
 setopt auto_pushd             # Make cd push each old directory onto the stack
-setopt completeinword         # not just at the end
+setopt completeinword         # If unset, the cursor is set to the end of the word
 setopt correct_all            # autocorrect commands
 setopt extended_glob          # treat #, ~, and ^ as part of patterns for filename generation
 setopt extended_history       # save each command's beginning timestamp and duration to the history file
@@ -281,6 +279,3 @@ fi
 if command -v op &>/dev/null; then
     eval "$(op completion zsh)"; compdef _op op
 fi
-
-# Fig post block. Keep at the bottom of this file.
-[[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"

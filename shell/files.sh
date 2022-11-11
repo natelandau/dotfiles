@@ -1,8 +1,8 @@
 md5Check() {
-    # DESC:		Compares an md5 hash to the md5 hash of a file
-    # ARGS:		None
-    # OUTS:		None
-    # USAGE:	md5Check <md5> <filename>
+    # DESC:	 Compares an md5 hash to the md5 hash of a file
+    # ARGS:	 None
+    # OUTS:	 None
+    # USAGE: md5Check <md5> <filename>
 
     local opt
     local OPTIND=1
@@ -54,7 +54,7 @@ copyfile() (
 )
 
 buf() {
-    # buf :  Backup file with time stamp
+    # buf:  Backup file with time stamp
     local filename
     local filetime
 
@@ -64,11 +64,10 @@ buf() {
 }
 
 extract() {
-    # DESC:		Extracts a compressed file from multiple formats
-    # ARGS:		None
-    # OUTS:		None
+    # DESC:	  Extracts a compressed file from multiple formats
+    # ARGS:	  None
+    # OUTS:	  None
     # USAGE:  extract -v <file>
-    # NOTE:
 
     local opt
     local OPTIND=1
@@ -144,7 +143,7 @@ chgext() {
     #         into PHP files.
 
     local f
-    for f in *."$1"; do mv "$f" "${f%.$1}.$2"; done
+    for f in *."$1"; do mv "$f" "${f%."$1"}.$2"; done
 }
 
 j2y() {
