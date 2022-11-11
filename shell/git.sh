@@ -1,21 +1,15 @@
-alias diff="git difftool"                                  # Open file in git's default diff tool <file>
-alias fetch="git fetch origin"                             # Fetch from origin
-alias gamend='git commit --amend'                          # Add more changes to the commit
-alias gap='git add -p'                                     # Step through each change
-alias gba='git branch -a'                                  # Lists local and remote branches
-alias gc="git --no-pager commit"                           # Commit w/ message written in EDITOR
-alias gcl='git clone --recursive'                          # Clone with all submodules
-alias gcm="git --no-pager commit -m"                       # Commit w/ message from the command line <commit message>
-alias gcv="git --no-pager commit --no-verify"              # Commit without verification
-alias ginitsubs='git submodule update --init --recursive'  # Init and update all submodules
-alias gundo="git reset --soft HEAD^"                       # Undo last commit
-alias gs='git --no-pager status -s --untracked-files=all'  # Git status
-alias gsearch='git rev-list --all | xargs git grep -F'     # Find a string in Git History <search string>
-alias gss='git remote update && git status -uno'           # Are we behind remote?
-alias gsubs='git submodule update --recursive --remote'    # Update all submodules
-alias gup="git remote update -p; git merge --ff-only @{u}" # Update & Merge
-alias undopush="git push -f origin HEAD^:master"           # Undo a git push
-alias unstage='git reset HEAD'                             # Unstage a file
+alias diff="git difftool"                                 # Open file in git's default diff tool <file>
+alias fetch="git fetch origin"                            # Fetch from origin
+alias gc="git --no-pager commit"                          # Commit w/ message written in EDITOR
+alias gcl='git clone --recursive'                         # Clone with all submodules
+alias gcm="git --no-pager commit -m"                      # Commit w/ message from the command line <commit message>
+alias gcv="git --no-pager commit --no-verify"             # Commit without verification
+alias ginitsubs='git submodule update --init --recursive' # Init and update all submodules
+alias gundo="git reset --soft HEAD^"                      # Undo last commit
+alias gs='git --no-pager status -s --untracked-files=all' # Git status
+alias gss='git remote update && git status -uno'          # Are we behind remote?
+alias gsubs='git submodule update --recursive --remote'   # Update all submodules
+alias undopush="git push -f origin HEAD^:master"          # Undo a git push
 
 ga() { git add "${@:-.}"; } # Add file (default: all)
 
