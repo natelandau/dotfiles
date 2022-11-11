@@ -38,6 +38,7 @@ else
 fi
 
 cd() {
+    # Always print contents of directory when entering
     builtin cd "$@" || return 1
     ll
 }
