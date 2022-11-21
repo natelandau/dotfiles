@@ -6,6 +6,10 @@ In `.zshrc` and `.bash_profile` ensure the correct directory is used for the `DO
 
 Symlink the dotfiles from this repository to your user directory. To avoid doing this manually file-by-file, run the `install.sh` script.
 
+## Option per-computer overrides
+
+Place any computer specific bash or zsh aliases, functions, or settings in `~/.dotfiles.local`. Anything within that file will be sourced into your environment.
+
 ## Shell Scripting Templates
 
 My bash scripting templates and utilities now have their own repo. You can access them at [natelandau/shell-scripting-templates](https://github.com/natelandau/shell-scripting-templates)
