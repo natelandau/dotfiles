@@ -40,6 +40,7 @@ configFileLocations=(
 for configFileLocation in "${configFileLocations[@]}"; do
     if [ -d "${configFileLocation}" ]; then
         while read -r configFile; do
+            # shellcheck disable=SC1090
             source "${configFile}"
         done < <(find "${configFileLocation}" \
             -maxdepth 1 \
@@ -53,11 +54,17 @@ done
 # Always list directory contents upon 'cd'.
 # (Somehow this always failed when I put it in a sourced file)
 cd() {
-    builtin cd "$@"
+    builtin cd "$@" || return
     ll
 }
 
 # Shell completions for 1password CLI
 if command -v op &>/dev/null; then
+    # shellcheck disable=SC1090
     source <(op completion bash)
+fi
+
+if [ -f "${HOME}/.dotfiles.local" ]; then
+    # shellcheck disable=SC1091
+    source "${HOME}/.dotfiles.local"
 fi

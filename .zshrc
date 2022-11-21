@@ -279,3 +279,7 @@ fi
 if command -v op &>/dev/null; then
     eval "$(op completion zsh)"; compdef _op op
 fi
+
+if [ -f "${HOME}/.dotfiles.local" ]; then
+    source "${HOME}/.dotfiles.local"
+fi
