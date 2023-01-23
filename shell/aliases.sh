@@ -12,8 +12,6 @@ alias .5='cd ../../../../../'
 alias .6='cd ../../../../../../'
 alias ~="cd ~"
 alias kill='kill -9'
-alias rm='rm -i'
-alias rmd='rm -rf'
 alias ax='chmod a+x'                      # system: make file executable
 alias path='echo -e ${PATH//:/\\n}'       # system: Echo all executable Paths
 alias shfmt="shfmt -ci -bn -i 2"          # dev: Preferred shellformat implementation
@@ -22,10 +20,6 @@ alias sc='shellcheck --exclude=2001,2148' # dev: Preferred shellcheck implementa
 # Prefer `bat` over `cat` when installed
 [[ "$(command -v bat)" ]] \
     && alias cat="bat"
-
-# Prefer `prettyping` over `ping` when installed
-[[ "$(command -v prettyping)" ]] \
-    && alias ping="prettyping --nolegend"
 
 # Prefer `htop` over `top` when installed
 [[ "$(command -v htop)" ]] \
