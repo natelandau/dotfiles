@@ -1,3 +1,11 @@
+if command -v rip &>/dev/null; then
+    alias rm='rip'
+    alias rmd='rip -i'
+else
+    alias rm='rm -i'
+    alias rmd='rm -rf'
+fi
+
 md5Check() {
     # DESC:	 Compares an md5 hash to the md5 hash of a file
     # ARGS:	 None
@@ -99,7 +107,7 @@ End-Of-Usage
         if [ -f "$1" ]; then
             case "$1" in
                 *.tar.bz2 | *.tbz | *.tbz2) tar "x${verbose}jf" "$1" ;;
-                *.tar.gz | *.tgz) tar "x${verbose}zf" "$1" ;;
+                *.tar.gz | *.tgz) tar x"${verbose}zf" "$1" ;;
                 *.tar.xz)
                     xz --decompress "$1"
                     set -- "$@" "${1:0:-3}"
@@ -109,7 +117,7 @@ End-Of-Usage
                     set -- "$@" "${1:0:-2}"
                     ;;
                 *.bz2) bunzip2 "$1" ;;
-                *.deb) dpkg-deb -x${verbose} "$1" "${1:0:-4}" ;;
+                *.deb) dpkg-deb -x"${verbose}" "$1" "${1:0:-4}" ;;
                 *.pax.gz)
                     gunzip "$1"
                     set -- "$@" "${1:0:-3}"
@@ -118,7 +126,7 @@ End-Of-Usage
                 *.pax) pax -r -f "$1" ;;
                 *.pkg) pkgutil --expand "$1" "${1:0:-4}" ;;
                 *.rar) unrar x "$1" ;;
-                *.rpm) rpm2cpio "$1" | cpio -idm${verbose} ;;
+                *.rpm) rpm2cpio "$1" | cpio -idm"${verbose}" ;;
                 *.tar) tar "x${verbose}f" "$1" ;;
                 *.txz)
                     mv "$1" "${1:0:-4}.tar.xz"

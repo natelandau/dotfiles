@@ -1,5 +1,12 @@
 # shellcheck disable=SC2154
 
+# Prefer `prettyping` over `ping` when installed
+[[ "$(command -v prettyping)" ]] \
+    && alias ping="prettyping --nolegend"
+
+[[ "$(command -v gping)" ]] \
+    && alias ping="gping"
+
 alias netCons='lsof -i'                           # Show all open TCP/IP sockets
 alias lsock='sudo /usr/sbin/lsof -i -P'           # Display open sockets
 alias lsockU='sudo /usr/sbin/lsof -nP | grep UDP' # Display only open UDP sockets
@@ -87,7 +94,7 @@ newMAC() {
 
     NEW_MAC_ADDRESS=$(openssl rand -hex 6 | sed 's/\(..\)/\1:/g; s/.$//')
     echo "${NEW_MAC_ADDRESS}"
-    sudo ifconfig ${INTERFACE} ether "${NEW_MAC_ADDRESS}"
+    sudo ifconfig "${INTERFACE}" ether "${NEW_MAC_ADDRESS}"
     echo "New MAC Address set"
 }
 
