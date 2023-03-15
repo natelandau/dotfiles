@@ -19,4 +19,16 @@ if [[ $OSTYPE == "linux-gnu"* ]]; then
         PATH="/snap/bin:${PATH}"
     fi
 
+    ntpup() {
+        # DESC:		Confirm that ntp is running
+        # ARGS:		None
+        # OUTS:		None
+        # USAGE:
+
+        if ! sudo service ntp status &>/dev/null; then
+            sudo service ntp start
+        fi
+        sudo service ntp status
+    }
+
 fi
