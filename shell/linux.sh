@@ -28,6 +28,7 @@ if [[ $OSTYPE == "linux-gnu"* ]]; then
         if ! sudo service ntp status &>/dev/null; then
             sudo service ntp start
         fi
+
         sudo service ntp status
     }
 
