@@ -3,9 +3,9 @@ segmentPath() {
   local bground="$back_blu2"
   local invertedBckgrnd="$fore_blu2" # Foreground of the current background
   local settings_path_max_length=40
-  local segment_seperator="" # ❱/
+  local segment_separator="" # ❱/
   local enabled=true            # If false, this segment will be ignored
-  local seperator=""
+  local separator=""
   local promptSegment
 
   _segmentLockedDir() {
@@ -16,7 +16,7 @@ segmentPath() {
     local enabled=true
 
     local promptSegment=""
-    _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${invertedBckgrnd}" "${enabled}" "${seperator}"
+    _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${invertedBckgrnd}" "${enabled}" "${separator}"
   }
 
   # if directory is locked, put a padlock in front of path
@@ -26,7 +26,7 @@ segmentPath() {
   local path_value
   local i
   local wdir="$PWD"
-  
+
   if [[ "$OSTYPE" == "darwin"* && -e "${HOME}/Library/Fonts/Meslo LG S DZ Regular Nerd Font Complete.otf" ]]; then
     wdir="${wdir/$HOME/\ﱮ }"
   else
@@ -42,8 +42,8 @@ segmentPath() {
     for i in "${!wdir_array[@]}"; do
       dir=${wdir_array["$i"]}
       segment_value=" $dir "
-      [[ "$((i + 1))" -eq "${#wdir_array[@]}" ]] && unset segment_seperator
-      path_value="${path_value}${segment_value}${segment_seperator}"
+      [[ "$((i + 1))" -eq "${#wdir_array[@]}" ]] && unset segment_separator
+      path_value="${path_value}${segment_value}${segment_separator}"
     done
     promptSegment="${path_value}"
   else
@@ -51,7 +51,7 @@ segmentPath() {
   fi
 
   # Output to prompt
-  _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${invertedBckgrnd}" "${enabled}" "${seperator}"
+  _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${invertedBckgrnd}" "${enabled}" "${separator}"
 
 
   unset path_value

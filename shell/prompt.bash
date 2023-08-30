@@ -77,13 +77,13 @@ export PS2="\[$white\]→ $reset"
 #     #   local bground               # The background color
 #     #   local invertedBckgrnd       # Color to be used in the next plugin for the powerline fine
 #     #   local enabled=true          # If false, this segment will be ignored
-#     #   local seperator=""         # Optional, the seperator character between prompt elements
+#     #   local separator=""         # Optional, the separator character between prompt elements
 #     #
 #     # ####################################################
 
 #     _setPrompt_() {
 #         local lastExit=$?
-#         local reset seperator oldBG ii iii
+#         local reset separator oldBG ii iii
 #         divider=""
 #         topPluginLocation="${DOTFILES_LOCATION}/shell/prompt-plugins-bash/top"
 #         bottomPluginLocation="${DOTFILES_LOCATION}/shell/prompt-plugins-bash/bottom"
@@ -163,7 +163,7 @@ export PS2="\[$white\]→ $reset"
 #             done
 #         fi
 
-#         # Add a seperator at the end of the line
+#         # Add a separator at the end of the line
 #         PS1+="${oldBG}${divider} ${reset}"
 
 #         # ########
@@ -185,7 +185,7 @@ export PS2="\[$white\]→ $reset"
 #         # If we don't have any bottom plugins, add a simple prompt
 #         [ "$ii" -eq 0 ] && PS1+="${back_gry}${fore_whi}  ${reset}" && oldBG="${back_gry}"
 
-#         # Add a seperator at the end of the line
+#         # Add a separator at the end of the line
 #         PS1+="${oldBG}${divider} ${reset}"
 
 #         export PS2="${fore_whi}→ ${reset}"
