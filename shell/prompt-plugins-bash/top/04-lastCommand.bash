@@ -3,7 +3,7 @@ segmentLastCommand() {
   local timerS=0
   local commandExitCode="${lastExit}"
   local enabled=true # If false, this segment will be ignored
-  local seperator=""
+  local separator=""
 
   local commandEnded=$(date +'%s')
   local lastHistory="$(HISTTIMEFORMAT='%s ' history 1)"
@@ -32,6 +32,6 @@ segmentLastCommand() {
   fi
 
   # Output to prompt
-  _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${invertedBckgrnd}" "${enabled}" "${seperator}"
+  _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${invertedBckgrnd}" "${enabled}" "${separator}"
 }
 segmentLastCommand

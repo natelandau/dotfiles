@@ -4,7 +4,7 @@ _printHost_() {
   local bground="$back_gry2"
   local invertedBckgrnd="$fore_gry2" # Foreground of the current background
   local enabled=true
-  local seperator=""
+  local separator=""
 
   # If we are SSH'ed into a client, print the hostname
   if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
@@ -15,7 +15,7 @@ _printHost_() {
     promptSegment=" \h"
   fi
 
-    _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${invertedBckgrnd}" "${enabled}" "${seperator}"
+    _parseSegments_ "${promptSegment}" "${fground}" "${bground}" "${invertedBckgrnd}" "${enabled}" "${separator}"
 
 }
 _printHost_

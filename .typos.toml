@@ -1,0 +1,12 @@
+[default]
+    default.locale = "en_us"
+
+    [default.extend-words]
+        Enabledi = "Enabledi" # Used in the context of com.apple.metadata
+        Froms    = "Froms"    # Used in the context of export LESS_TERMCAP_us=
+        curren   = "curren"   # Used in the context of '¤100'
+        iterm    = "iterm"    # iTerm2
+        ue       = "ue"       # Used in the context of com.apple.metadata
+
+        # [files]
+        #     extend-exclude = ["test/test_helper"]

@@ -1,0 +1,71 @@
+---
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+default_install_hook_types: [commit-msg, pre-commit]
+default_stages: [commit, manual]
+fail_fast: true
+repos:
+    - repo: "https://github.com/commitizen-tools/commitizen"
+      rev: 3.7.0
+      hooks:
+          - id: commitizen
+          - id: commitizen-branch
+            stages:
+                - post-commit
+                - push
+    - repo: "https://github.com/pre-commit/pre-commit-hooks"
+      rev: v4.4.0
+      hooks:
+          - id: check-added-large-files
+          - id: check-byte-order-marker
+          - id: check-case-conflict
+          - id: check-json
+          - id: check-merge-conflict
+          - id: check-symlinks
+          - id: check-xml
+          - id: check-yaml
+          - id: destroyed-symlinks
+          - id: detect-aws-credentials
+          - id: detect-private-key
+          - id: end-of-file-fixer
+          - id: fix-byte-order-marker
+          - id: mixed-line-ending
+          - id: trailing-whitespace
+
+    - repo: "https://github.com/adrienverge/yamllint.git"
+      rev: v1.32.0
+      hooks:
+          - id: yamllint
+            files: \.(yaml|yml)$
+            entry: yamllint --strict --config-file .yamllint.yml
+
+    - repo: "https://github.com/crate-ci/typos"
+      rev: v1.16.8
+      hooks:
+          - id: typos
+
+    - repo: local
+      hooks:
+          - id: poetry-check
+            name: poetry check
+            entry: poetry check
+            language: system
+            files: pyproject.toml
+            pass_filenames: false
+
+            # This calls a personal pre-commit script.
+            # Disable if you don't have it.
+          - id: stopwords
+            name: stopwords
+            entry: bash -c '~/bin/git-stopwords ${PWD}/"$@"'
+            language: system
+            pass_filenames: true
+            types: [text]
+
+          - id: shellcheck
+            name: shellcheck
+            entry: shellcheck
+            language: system
+            types: [shell, bash, sh]
+            exclude: '.*\.bats'
