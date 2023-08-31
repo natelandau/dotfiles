@@ -9,22 +9,19 @@ _mainScript_() {
         "\"https://github.com/scopatz/nanorc.git\" \"${HOME}/.nano/\""
     )
 
+    # Create symlinks
+    makesymlink_args=("-c")
+    if ${SKIP_BACKUP}; then
+        makesymlink_args+=("-n")
+    fi
+
     i=0
     while read -r f; do
-        _makeSymlink_ -c "${f}" "${USER_HOME}/$(basename "${f}")"
+        _makeSymlink_ "${makesymlink_args[@]}" "${f}" "${USER_HOME}/$(basename "${f}")"
         ((i = i + 1))
-    done < <(find "$(_findBaseDir_)" -maxdepth 1 \
+    done < <(find "$(_findBaseDir_)/dotfiles" -maxdepth 1 \
         -iregex '^/.*/\..*$' \
-        -not -name '.vscode' \
-        -not -name '.git' \
-        -not -name '.gitmodules' \
-        -not -name '.DS_Store' \
-        -not -name '.yamllint.yml' \
-        -not -name '.ansible-lint.yml' \
-        -not -name '.pre-commit-config.yaml' \
-        -not -name '.typos.toml' \
-        -not -name '.yamllint.yml' \
-        -not -name 'pyproject.toml')
+        -not -name '.DS_Store')
     notice "Symlinks confirmed: ${i}"
 
     i=0
@@ -54,6 +51,7 @@ declare -a ARGS=()
 
 # Script specific
 USER_HOME="${HOME}"
+SKIP_BACKUP=false
 
 # ################################## Custom utility functions (Pasted from repository)
 _execute_() {
@@ -984,7 +982,9 @@ _parseOptions_() {
                 shift
                 USER_HOME="$1"
                 ;;
-
+            --skip-backup)
+                SKIP_BACKUP=true
+                ;;
             # Common options
             -h | --help)
                 _usage_
@@ -1038,6 +1038,9 @@ _usage_() {
 
   ${bold}Options:${reset}
     --user-home [DIR]       Set user home directory to symlink dotfiles to (Defaults to '~/')
+    --skip-backup           Skip backing up existing dotfiles. Default will create a backup of
+                            existing dotfiles in the user's home directory which are modified by
+                            this script.
     -h, --help              Display this help and exit
     --loglevel [LEVEL]      One of: FATAL, ERROR, WARN, INFO, NOTICE, DEBUG, ALL, OFF
                             (Default is 'ERROR')

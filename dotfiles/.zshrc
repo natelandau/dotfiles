@@ -1,3 +1,10 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 #!/usr/bin/env zsh
 
 # This zshrc file uses zinit as a zsh plugin manager.
@@ -69,9 +76,9 @@ _pluginload_() {
     local plugindir="${ZPLUGINDIR:-$HOME/.zsh/plugins}/$plugin_name"
 
     # clone if the plugin isn't there already
-    if [[ ! -d $plugindir ]]; then
-        command git clone --depth 1 --recursive --shallow-submodules $giturl $plugindir
-        [[ $? -eq 0 ]] || { >&2 echo "plugin-load: git clone failed; $1" && return 1 }
+    if [[ ! -d "${plugindir}" ]]; then
+        command git clone --depth 1 --recursive --shallow-submodules "${giturl}" "${plugindir}"
+        [[ $? -eq 0 ]] || { echo "plugin-load: git clone failed $1" && return 1; }
     fi
 
     # symlink an init.zsh if there isn't one so the plugin is easy to source
@@ -88,7 +95,7 @@ _pluginload_() {
           $plugindir/*.zsh-theme(N)
           $plugindir/*.sh(N)
         )
-        [[ ${#initfiles[@]} -gt 0 ]] || { >&2 echo "plugin-load: no plugin init file found" && return 1 }
+        [[ ${#initfiles[@]} -gt 0 ]] || { >&2 echo "plugin-load: no plugin init file found" && return 1; }
         command ln -s ${initfiles[1]} $plugindir/init.zsh
     fi
 
@@ -147,6 +154,7 @@ if [[ ${OSTYPE} == "darwin"* ]]; then
   unset mac_repo
 fi
 
+# Update ZSH Plugins
 function zshup () {
   local plugindir="${ZPLUGINDIR:-$HOME/.zsh/plugins}"
   for d in $plugindir/*/.git(/); do
@@ -222,8 +230,8 @@ DOTFILES_LOCATION="${HOME}/repos/dotfiles"
 
 # Locations containing files *.bash to be sourced to your environment
 configFileLocations=(
-    "${DOTFILES_LOCATION}/shell"
-    "${HOME}/repos/dotfiles-private/shell"
+    "${DOTFILES_LOCATION}/dotfiles/shell"
+    "${HOME}/repos/dotfiles-private/dotfiles/shell"
 )
 
 for configFileLocation in "${configFileLocations[@]}"; do
