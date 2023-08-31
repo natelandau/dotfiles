@@ -7,7 +7,7 @@ default_stages: [commit, manual]
 fail_fast: true
 repos:
     - repo: "https://github.com/commitizen-tools/commitizen"
-      rev: 3.7.0
+      rev: 3.10.0
       hooks:
           - id: commitizen
           - id: commitizen-branch
@@ -41,7 +41,7 @@ repos:
             entry: yamllint --strict --config-file .yamllint.yml
 
     - repo: "https://github.com/crate-ci/typos"
-      rev: v1.16.8
+      rev: v1.16.15
       hooks:
           - id: typos
 
@@ -54,11 +54,12 @@ repos:
             files: pyproject.toml
             pass_filenames: false
 
-            # This calls a personal pre-commit script.
-            # Disable if you don't have it.
+          # This calls a custom pre-commit script.
+          # Disable if you don't have it.
           - id: stopwords
             name: stopwords
-            entry: bash -c '~/bin/git-stopwords ${PWD}/"$@"'
+            entry: git-stopwords
+            # args: ["-v"]
             language: system
             pass_filenames: true
             types: [text]
@@ -68,4 +69,4 @@ repos:
             entry: shellcheck
             language: system
             types: [shell]
-            exclude: '.*\.bats'
+            exclude: '.*\.bats|dotfiles/shell|dotfiles/\.zshrc'

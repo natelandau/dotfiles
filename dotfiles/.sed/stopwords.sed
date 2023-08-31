@@ -257,7 +257,6 @@ s/\bdont\b//gI
 s/\bdoubtful\b//gI
 s/\bdown\b//gI
 s/\bdowned\b//gI
-s/\bdowning\b//gI
 s/\bdowns\b//gI
 s/\bdownwards\b//gI
 s/\bdue\b//gI

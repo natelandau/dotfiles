@@ -7,9 +7,6 @@ case $- in
 esac
 [ -z "$PS1" ] && return
 
-# IMPORTANT: Edit this to reflect the location of this repository
-DOTFILES_LOCATION="${HOME}/repos/dotfiles"
-
 # set default umask
 umask 002
 
@@ -30,11 +27,13 @@ for _path in "${_myPaths[@]}"; do
 done
 
 ### SOURCE BASH PLUGINS ###
+# IMPORTANT: Edit this to reflect the location of this repository
+DOTFILES_LOCATION="${HOME}/repos/dotfiles"
 
 # Locations containing files *.bash to be sourced to your environment
 configFileLocations=(
-    "${DOTFILES_LOCATION}/shell"
-    "${HOME}/repos/dotfiles-private/shell"
+    "${DOTFILES_LOCATION}/dotfiles/shell"
+    "${HOME}/repos/dotfiles-private/dotfiles/shell"
 )
 
 for configFileLocation in "${configFileLocations[@]}"; do
