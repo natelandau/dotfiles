@@ -22,9 +22,3 @@ function with_no_poetry() {
 }
 
 alias wnp='with_no_poetry' # dev: Run a command outside the virtualenv
-
-if [ -d "/opt/homebrew/anaconda3/bin" ]; then
-    export PATH="/opt/homebrew/anaconda3/bin:${PATH}"
-elif [ -d "/usr/local/anaconda3/bin" ]; then
-    export PATH="/opt/homebrew/anaconda3/condabin:${PATH}"
-fi

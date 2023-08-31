@@ -67,5 +67,5 @@ repos:
             name: shellcheck
             entry: shellcheck
             language: system
-            types: [shell, bash, sh]
+            types: [shell]
             exclude: '.*\.bats'
