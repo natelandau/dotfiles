@@ -1,28 +1,28 @@
 # Different sets of LS aliases because Gnu LS and macOS LS use different
-# flags for colors.  Also, prefer gem colorls or exa when available.
+# flags for colors.  Also, prefer gem colorls or eza when available.
 
-if exa --icons &>/dev/null; then
-    alias ls='exa --git --icons'                             # system: List filenames on one line
-    alias l='exa --git --icons -lF'                          # system: List filenames with long format
-    alias ll='exa -lahF --git'                               # system: List all files
-    alias lll="exa -1F --git --icons"                        # system: List files with one line per file
+if eza --icons &>/dev/null; then
+    alias ls='eza --git --icons'                             # system: List filenames on one line
+    alias l='eza --git --icons -lF'                          # system: List filenames with long format
+    alias ll='eza -lahF --git'                               # system: List all files
+    alias lll="eza -1F --git --icons"                        # system: List files with one line per file
     alias llm='ll --sort=modified'                           # system: List files by last modified date
-    alias la='exa -lbhHigUmuSa --color-scale --git --icons'  # system: List files with attributes
-    alias lx='exa -lbhHigUmuSa@ --color-scale --git --icons' # system: List files with extended attributes
-    alias lt='exa --tree --level=2'                          # system: List files in a tree view
-    alias llt='exa -lahF --tree --level=2'                   # system: List files in a tree view with long format
-    alias ltt='exa -lahF | grep "$(date +"%d %b")"'          # system: List files modified today
-elif command -v exa &>/dev/null; then
-    alias ls='exa --git'
-    alias l='exa --git -lF'
-    alias ll='exa -lahF --git'
-    alias lll="exa -1F --git"
+    alias la='eza -lbhHigUmuSa --color-scale --git --icons'  # system: List files with attributes
+    alias lx='eza -lbhHigUmuSa@ --color-scale --git --icons' # system: List files with extended attributes
+    alias lt='eza --tree --level=2'                          # system: List files in a tree view
+    alias llt='eza -lahF --tree --level=2'                   # system: List files in a tree view with long format
+    alias ltt='eza -lahF | grep "$(date +"%d %b")"'          # system: List files modified today
+elif command -v eza &>/dev/null; then
+    alias ls='eza --git'
+    alias l='eza --git -lF'
+    alias ll='eza -lahF --git'
+    alias lll="eza -1F --git"
     alias llm='ll --sort=modified'
-    alias la='exa -lbhHigUmuSa --color-scale --git'
-    alias lx='exa -lbhHigUmuSa@ --color-scale --git'
-    alias lt='exa --tree --level=2'
-    alias llt='exa -lahF --tree --level=2'
-    alias ltt='exa -lahF | grep "$(date +"%d %b")"'
+    alias la='eza -lbhHigUmuSa --color-scale --git'
+    alias lx='eza -lbhHigUmuSa@ --color-scale --git'
+    alias lt='eza --tree --level=2'
+    alias llt='eza -lahF --tree --level=2'
+    alias ltt='eza -lahF | grep "$(date +"%d %b")"'
 elif command -v colorls &>/dev/null; then
     alias ll="colorls -1A --git-status"
     alias ls="colorls -A"
