@@ -6,7 +6,7 @@ if [ -d "${HOME}/.pyenv" ]; then
 fi
 
 function with_no_poetry() {
-    # Prefixing any command with wnp runs it outside the virtualenv if a virtualenv is active.
+    # Prefixing any command with `wnp` runs it outside the virtualenv if a virtualenv is active.
     local last_env
     if [[ -v VIRTUAL_ENV ]]; then
         last_env="${VIRTUAL_ENV}"
