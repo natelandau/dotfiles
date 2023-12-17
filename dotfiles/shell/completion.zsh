@@ -19,7 +19,7 @@ zstyle ':completion:*' menu select=2                                            
 zstyle ':completion:*' special-dirs true                                         # Show dotfiles in completions
 
 zstyle ':completion:*:functions' ignored-patterns '_*' #Ignore completion functions for commands you don’t have
-zstyle ':completion:*' squeeze-slashes true            #f you end up using a directory as argument, this will remove the trailing slash (usefull in ln)
+zstyle ':completion:*' squeeze-slashes true            #f you end up using a directory as argument, this will remove the trailing slash (useful in ln)
 
 # Tweak the UX of the autocompletion menu to match even if we made a typo and enable navigation using the arrow keys
 zstyle ':completion:*' menu select   # select completions with arrow keys
