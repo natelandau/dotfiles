@@ -24,7 +24,7 @@ applyignore() {
     git ls-files -ci --exclude-standard -z | xargs -0 git rm --cached
 }
 
-rollback() (
+rollback() {
     # DESC:		Resets the current HEAD to specified commit
     # ARGS:		$1 (Required): Commit to revert to
     # OUTS:		None
@@ -95,9 +95,9 @@ rollback() (
     else
         echo "you're currently not in a git repository"
     fi
-)
+}
 
-gurl() (
+gurl() {
     # DESC:		Prints URL of current git repository
     # ARGS:		None
     # OUTS:		None
@@ -110,7 +110,7 @@ gurl() (
     host="$(echo "${remote}" | perl -pe 's/.*@//;s/:.*//')"
     user_repo="$(echo "${remote}" | perl -pe 's/.*://;s/\.git$//')"
     echo "https://${host}/${user_repo}"
-)
+}
 
 # From Git-Extras (https://github.com/tj/git-extras)
 alias obliterate='git obliterate'       # Completely remove a file from the repository, including past commits and tags

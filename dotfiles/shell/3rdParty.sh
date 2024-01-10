@@ -5,38 +5,14 @@
 [[ -s "${HOME}/.asdf/asdf.sh" ]] && source "$HOME/.asdf/asdf.sh"
 [[ -s "${HOME}/.asdf/completions/asdf.bash" ]] && source "$HOME/.asdf/completions/asdf.bash"
 
-#nvm (node version manager)
-if [ -e "${HOME}/.nvm" ]; then
-    export NVM_DIR="${HOME}/.nvm"
-    [ -s "${NVM_DIR}/nvm.sh" ] && source "${NVM_DIR}/nvm.sh"
-    # suorce completions with bash
-    if [[ ${SHELL##*/} == "bash" ]]; then
-        [ -s "${NVM_DIR}/bash_completion" ] && source "${NVM_DIR}/bash_completion"
-    fi
-    nvm use 8.6.0
-fi
-
-# # Default to use python 2.7 with npm
-# if command -v npm &>/dev/null; then
-#   npm config set python python2.7
-# fi
-
 # Use Java JDK 1.8
 if [[ "$(java -version &>/dev/null)" ]] && [[ -e "/usr/libexec/java_home" ]]; then
     JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
     export JAVA_HOME
 fi
 
-# Path for Ruby (installed by Homebrew)
-#export PATH="$PATH:/usr/local/opt/ruby/bin"
-
 [[ "$(command -v thefuck)" ]] \
     && eval "$(thefuck --alias)"
-
-# [[ "$(command -v archey)" ]] && archey
-
-# [[ "$(command -v docker-machine)" ]] \
-#   && eval "$(docker-machine env default)"
 
 # Git-Friendly Auto Completions
 # https://github.com/jamiew/git-friendly
