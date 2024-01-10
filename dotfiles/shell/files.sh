@@ -48,7 +48,7 @@ alias make1mb='mkfile 1m ./1MB.dat'    # Creates a file of 1mb size (all zeros)
 alias make5mb='mkfile 5m ./5MB.dat'    # Creates a file of 5mb size (all zeros)
 alias make10mb='mkfile 10m ./10MB.dat' # Creates a file of 10mb size (all zeros)
 
-copyfile() (
+copyfile() {
     # DESC: Copy contents of a file to the clipboard
     # ARGS: 1 (Required) - Path to file
 
@@ -59,7 +59,7 @@ copyfile() (
         printf "File not found: %s\n" "$1"
         return 1
     fi
-)
+}
 
 buf() {
     # buf:  Backup file with time stamp

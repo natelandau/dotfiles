@@ -8,7 +8,7 @@ alias grunt="npm-exec grunt"
 httpheaders() { http -h "$@"; } # network: Grabs headers from web page
 
 httpstatus() {
-    # -----------------------------------
+    # DESC:		HTTP status code checker
     # Shamelessly taken from: https://gist.github.com/rsvp/1171304
     #
     # Use:  httpStatus URL [timeout] [--code or --status] [see 4.]
