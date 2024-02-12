@@ -22,4 +22,5 @@ function with_no_poetry() {
     return ${ret}
 }
 
-alias wnp='with_no_poetry' # dev: Run a command outside the virtualenv
+alias pshell='poetry shell' # dev: Activate the virtualenv
+alias wnp='with_no_poetry'  # dev: Run a command outside the virtualenv
