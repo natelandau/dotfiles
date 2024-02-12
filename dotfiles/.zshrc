@@ -180,7 +180,7 @@ setopt auto_list              # automatically list choices on ambiguous completi
 setopt auto_menu              # automatically use menu completion
 setopt auto_pushd             # Make cd push each old directory onto the stack
 setopt completeinword         # If unset, the cursor is set to the end of the word
-setopt correct_all            # autocorrect commands
+# setopt correct_all            # autocorrect commands
 setopt extended_glob          # treat #, ~, and ^ as part of patterns for filename generation
 setopt extended_history       # save each command's beginning timestamp and duration to the history file
 setopt glob_dots              # dot files included in regular globs
@@ -207,6 +207,11 @@ setopt share_history          # share history between different instances of the
 HISTFILE=${HOME}/.zsh_history
 HISTSIZE=100000
 SAVEHIST=${HISTSIZE}
+
+#Disable autocorrect
+unsetopt correct_all
+unsetopt correct
+DISABLE_CORRECTION="true"
 
 # automatically remove duplicates from these arrays
 #############################################
