@@ -4,13 +4,13 @@
 if eza --icons &>/dev/null; then
     alias ls='eza --git --icons'                             # system: List filenames on one line
     alias l='eza --git --icons -lF'                          # system: List filenames with long format
-    alias ll='eza -lahF --git'                               # system: List all files
-    alias llm='ll --sort=modified'                           # system: List files by last modified date
+    alias ll='eza -lahF --git --icons'                       # system: List all files
+    alias llm='ll --sort=modified'                           # system: List files by last modified
     alias la='eza -lbhHigUmuSa --color-scale --git --icons'  # system: List files with attributes
     alias lx='eza -lbhHigUmuSa@ --color-scale --git --icons' # system: List files with extended attributes
-    alias lt='eza --tree --level=2'                          # system: List files in a tree view
-    alias llt='eza -lahF --tree --level=2'                   # system: List files in a tree view with long format
-    alias ltt='eza -lahF | grep "$(date +"%d %b")"'          # system: List files modified today
+    alias lt='eza --tree --level=2 --icons'                  # system: List files in a tree view
+    alias llt='eza -lahF --tree --level=2 --icons'           # system: List files in a tree view with long format
+    alias ltt='eza -lahF --icons | grep "$(date +"%d %b")"'  # system: List files modified today
 elif command -v eza &>/dev/null; then
     alias ls='eza --git'
     alias l='eza --git -lF'
@@ -32,7 +32,7 @@ elif [[ $(command -v ls) =~ gnubin || $OSTYPE =~ linux ]]; then
 else
     alias ls="ls -G"
     alias ll='ls -FGlAhpv'
-    alias ltt='ls -FlAhpv| grep "$(date +"%d %b")"' # system: List files modified today
+    alias ltt='ls -FlAhpv| grep "$(date +"%d %b")"' # system: List files modified this day
 fi
 
 cd() {
