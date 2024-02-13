@@ -49,7 +49,11 @@ if command -v brew &>/dev/null; then
     # /Applications is now the default but leaving this for posterity
     export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 
-    # Fix common typo
-    alias brwe='brew'
+    # Aliases
+
+    alias brwe='brew'                   # Fix common typo
+    alias btop="brew leaves -r"         # Show only top-level manually installed packages
+    alias buses="brew uses --installed" # Show all packages depending on a [package]
+    alias bdeps="brew deps --tree"      # Show all dependencies of a [package]
 
 fi
