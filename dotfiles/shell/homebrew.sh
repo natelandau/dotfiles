@@ -48,6 +48,7 @@ if command -v brew &>/dev/null; then
 
     # /Applications is now the default but leaving this for posterity
     export HOMEBREW_CASK_OPTS="--appdir=/Applications"
+    export HOMEBREW_NO_INSTALL_CLEANUP=FALSE
 
     # Aliases
 
