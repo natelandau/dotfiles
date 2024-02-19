@@ -73,6 +73,7 @@ untracked = cyan
 [diff "bin"]
 # Use `hexdump` to diff binary files
 textconv = hexdump -v -C
+algorithm = histogram
 
 [diff]
 renames = copies # Detect copies as well as renames
@@ -111,15 +112,20 @@ custom = "%C(magenta)%h%C(red)%d %C(yellow)%ar %C(green)%s %C(yellow)(%an)"
 defaultBranch = main
 
 [pull]
+# avoid accidentally creating a merge commit when you run git pull on a branch where the upstream branch has diverged
 rebase = true
 
 [push]
-default = simple
+default = current # Always push the local branch to a remote branch with the same name
 followTags = true
 
 [pager]
 status = true
 show-branch = true
+
+[rebase]
+autosquash = true
+autostash = true
 
 [color "diff-highlight"]
 oldNormal = red bold
