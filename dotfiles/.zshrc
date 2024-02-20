@@ -229,7 +229,7 @@ DOTFILES_LOCATION="${HOME}/repos/dotfiles"
 # Locations containing files *.bash to be sourced to your environment
 configFileLocations=(
     "${DOTFILES_LOCATION}/dotfiles/shell"
-    "${HOME}/repos/dotfiles-private/dotfiles/shell"
+    "${HOME}/repos/dotfiles-private/assets/shell"
 )
 
 for configFileLocation in "${configFileLocations[@]}"; do
