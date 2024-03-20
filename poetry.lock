@@ -2,13 +2,13 @@
 
 [[package]]
 name = "argcomplete"
-version = "3.2.2"
+version = "3.2.3"
 description = "Bash tab completion for argparse"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "argcomplete-3.2.2-py3-none-any.whl", hash = "sha256:e44f4e7985883ab3e73a103ef0acd27299dbfe2dfed00142c35d4ddd3005901d"},
-    {file = "argcomplete-3.2.2.tar.gz", hash = "sha256:f3e49e8ea59b4026ee29548e24488af46e30c9de57d48638e24f54a1ea1000a2"},
+    {file = "argcomplete-3.2.3-py3-none-any.whl", hash = "sha256:c12355e0494c76a2a7b73e3a59b09024ca0ba1e279fb9ed6c1b82d5b74b6a70c"},
+    {file = "argcomplete-3.2.3.tar.gz", hash = "sha256:bf7900329262e481be5a15f56f19736b376df6f82ed27576fa893652c5de6c23"},
 ]
 
 [package.extras]
@@ -137,13 +137,13 @@ files = [
 
 [[package]]
 name = "commitizen"
-version = "3.14.1"
+version = "3.20.0"
 description = "Python commitizen client tool"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "commitizen-3.14.1-py3-none-any.whl", hash = "sha256:e0f0bb2eb19a6bcc540902d32e5e3b53c2f7636e888bb1894f83efb416af8762"},
-    {file = "commitizen-3.14.1.tar.gz", hash = "sha256:21e19143d209fd6b1feb6332430ad91cf5d37ba09990c74d1f941ef1e9087898"},
+    {file = "commitizen-3.20.0-py3-none-any.whl", hash = "sha256:f079d9642347d314afae75664d289b0de80cf0343c99c3dcfa85782f164333f3"},
+    {file = "commitizen-3.20.0.tar.gz", hash = "sha256:17aebc8f36326fa3e65dcc08195303579e356be84b0d65c3c4bfed85b8822411"},
 ]
 
 [package.dependencies]
@@ -199,13 +199,13 @@ typing = ["typing-extensions (>=4.8)"]
 
 [[package]]
 name = "identify"
-version = "2.5.34"
+version = "2.5.35"
 description = "File identification library for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "identify-2.5.34-py2.py3-none-any.whl", hash = "sha256:a4316013779e433d08b96e5eabb7f641e6c7942e4ab5d4c509ebd2e7a8994aed"},
-    {file = "identify-2.5.34.tar.gz", hash = "sha256:ee17bc9d499899bc9eaec1ac7bf2dc9eedd480db9d88b96d123d3b64a9d34f5d"},
+    {file = "identify-2.5.35-py2.py3-none-any.whl", hash = "sha256:c4de0081837b211594f8e877a6b4fad7ca32bbfc1a9307fdd61c28bfe923f13e"},
+    {file = "identify-2.5.35.tar.gz", hash = "sha256:10a7ca245cfcd756a554a7288159f72ff105ad233c7c4b9c6f0f4d108f5f6791"},
 ]
 
 [package.extras]
@@ -213,22 +213,22 @@ license = ["ukkonen"]
 
 [[package]]
 name = "importlib-metadata"
-version = "7.0.1"
+version = "7.0.2"
 description = "Read metadata from Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "importlib_metadata-7.0.1-py3-none-any.whl", hash = "sha256:4805911c3a4ec7c3966410053e9ec6a1fecd629117df5adee56dfc9432a1081e"},
-    {file = "importlib_metadata-7.0.1.tar.gz", hash = "sha256:f238736bb06590ae52ac1fab06a3a9ef1d8dce2b7a35b5ab329371d6c8f5d2cc"},
+    {file = "importlib_metadata-7.0.2-py3-none-any.whl", hash = "sha256:f4bc4c0c070c490abf4ce96d715f68e95923320370efb66143df00199bb6c100"},
+    {file = "importlib_metadata-7.0.2.tar.gz", hash = "sha256:198f568f3230878cb1b44fbd7975f87906c22336dba2e4a7f05278c281fbd792"},
 ]
 
 [package.dependencies]
 zipp = ">=0.5"
 
 [package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
+docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
 perf = ["ipython"]
-testing = ["flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-perf (>=0.9.2)", "pytest-ruff"]
+testing = ["flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs", "pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy", "pytest-perf (>=0.9.2)", "pytest-ruff (>=0.2.1)"]
 
 [[package]]
 name = "jinja2"
@@ -332,13 +332,13 @@ setuptools = "*"
 
 [[package]]
 name = "packaging"
-version = "23.2"
+version = "24.0"
 description = "Core utilities for Python packages"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "packaging-23.2-py3-none-any.whl", hash = "sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7"},
-    {file = "packaging-23.2.tar.gz", hash = "sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5"},
+    {file = "packaging-24.0-py3-none-any.whl", hash = "sha256:2ddfb553fdf02fb784c234c7ba6ccc288296ceabec964ad2eae3777778130bc5"},
+    {file = "packaging-24.0.tar.gz", hash = "sha256:eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9"},
 ]
 
 [[package]]
@@ -398,13 +398,13 @@ poetry-plugin = ["poetry (>=1.0,<2.0)"]
 
 [[package]]
 name = "pre-commit"
-version = "3.6.1"
+version = "3.6.2"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "pre_commit-3.6.1-py2.py3-none-any.whl", hash = "sha256:9fe989afcf095d2c4796ce7c553cf28d4d4a9b9346de3cda079bcf40748454a4"},
-    {file = "pre_commit-3.6.1.tar.gz", hash = "sha256:c90961d8aa706f75d60935aba09469a6b0bcb8345f127c3fbee4bdc5f114cf4b"},
+    {file = "pre_commit-3.6.2-py2.py3-none-any.whl", hash = "sha256:ba637c2d7a670c10daedc059f5c49b5bd0aadbccfcd7ec15592cf9665117532c"},
+    {file = "pre_commit-3.6.2.tar.gz", hash = "sha256:c3ef34f463045c88658c5b99f38c1e297abdcc0ff13f98d3370055fbbfabc67e"},
 ]
 
 [package.dependencies]
@@ -493,19 +493,19 @@ prompt_toolkit = ">=2.0,<=3.0.36"
 
 [[package]]
 name = "setuptools"
-version = "69.1.0"
+version = "69.2.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "setuptools-69.1.0-py3-none-any.whl", hash = "sha256:c054629b81b946d63a9c6e732bc8b2513a7c3ea645f11d0139a2191d735c60c6"},
-    {file = "setuptools-69.1.0.tar.gz", hash = "sha256:850894c4195f09c4ed30dba56213bf7c3f21d86ed6bdaafb5df5972593bfc401"},
+    {file = "setuptools-69.2.0-py3-none-any.whl", hash = "sha256:c21c49fb1042386df081cb5d86759792ab89efca84cf114889191cd09aacc80c"},
+    {file = "setuptools-69.2.0.tar.gz", hash = "sha256:0ff4183f8f42cd8fa3acea16c45205521a4ef28f73c6391d8a25e92893134f2e"},
 ]
 
 [package.extras]
 docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "pygments-github-lexers (==0.0.5)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-favicon", "sphinx-inline-tabs", "sphinx-lint", "sphinx-notfound-page (>=1,<2)", "sphinx-reredirects", "sphinxcontrib-towncrier"]
-testing = ["build[virtualenv]", "filelock (>=3.4.0)", "flake8-2020", "ini2toml[lite] (>=0.9)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "pip (>=19.1)", "pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-home (>=0.5)", "pytest-mypy (>=0.9.1)", "pytest-perf", "pytest-ruff (>=0.2.1)", "pytest-timeout", "pytest-xdist", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
-testing-integration = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "packaging (>=23.1)", "pytest", "pytest-enabler", "pytest-xdist", "tomli", "virtualenv (>=13.0.0)", "wheel"]
+testing = ["build[virtualenv]", "filelock (>=3.4.0)", "importlib-metadata", "ini2toml[lite] (>=0.9)", "jaraco.develop (>=7.21)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "mypy (==1.9)", "packaging (>=23.2)", "pip (>=19.1)", "pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-home (>=0.5)", "pytest-mypy (>=0.9.1)", "pytest-perf", "pytest-ruff (>=0.2.1)", "pytest-timeout", "pytest-xdist (>=3)", "tomli", "tomli-w (>=1.0.0)", "virtualenv (>=13.0.0)", "wheel"]
+testing-integration = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "jaraco.envs (>=2.2)", "jaraco.path (>=3.2.0)", "packaging (>=23.2)", "pytest", "pytest-enabler", "pytest-xdist", "tomli", "virtualenv (>=13.0.0)", "wheel"]
 
 [[package]]
 name = "termcolor"
@@ -534,43 +534,43 @@ files = [
 
 [[package]]
 name = "tomlkit"
-version = "0.12.3"
+version = "0.12.4"
 description = "Style preserving TOML library"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "tomlkit-0.12.3-py3-none-any.whl", hash = "sha256:b0a645a9156dc7cb5d3a1f0d4bab66db287fcb8e0430bdd4664a095ea16414ba"},
-    {file = "tomlkit-0.12.3.tar.gz", hash = "sha256:75baf5012d06501f07bee5bf8e801b9f343e7aac5a92581f20f80ce632e6b5a4"},
+    {file = "tomlkit-0.12.4-py3-none-any.whl", hash = "sha256:5cd82d48a3dd89dee1f9d64420aa20ae65cfbd00668d6f094d7578a78efbb77b"},
+    {file = "tomlkit-0.12.4.tar.gz", hash = "sha256:7ca1cfc12232806517a8515047ba66a19369e71edf2439d0f5824f91032b6cc3"},
 ]
 
 [[package]]
 name = "typos"
-version = "1.18.2"
+version = "1.19.0"
 description = "Source Code Spelling Correction"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "typos-1.18.2-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:dbfa8637fcc530b57890a40ced904edba643cf07334e7cc7e34a4ceaeb2fd13a"},
-    {file = "typos-1.18.2-py3-none-macosx_11_0_arm64.whl", hash = "sha256:e442333b7d09002d4cc34946c120757f7af6ecda55270ce574f552dd8758b1eb"},
-    {file = "typos-1.18.2-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:190132183a1dce4c3a5990bf383c893bf95871f8feb122fccf9ef6b0dba3a422"},
-    {file = "typos-1.18.2-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:608d5d30c0fe9d1b2b007fc8924e791cf7be4750dc1ef0cd0a2d41688c849155"},
-    {file = "typos-1.18.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8241c6a5f6a77937badf23fe318d3dcdf36c46c97f1cf8b73a4158c7e3414d9a"},
-    {file = "typos-1.18.2-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:75e2097be128e73f465741e337b2a3fae7a8b5cddd7f30abaec7f9f92c9e8863"},
-    {file = "typos-1.18.2-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:32f42c035161810b3e279f23715408b5421e2fadc491fe32e5f4c7ee7ea8881a"},
-    {file = "typos-1.18.2-py3-none-win32.whl", hash = "sha256:b3efa4a9fe7e434df751355cb18bcee00dbacf75eb4608d99ceefe2ef9d0c5f4"},
-    {file = "typos-1.18.2-py3-none-win_amd64.whl", hash = "sha256:28a583aeb65031f74f0e6d139956930161e3c4b73510478898b251c808d82706"},
-    {file = "typos-1.18.2.tar.gz", hash = "sha256:5ac8fd37f892bb74de5acb44bde3338cbb2eca44b406f24cdecc76a81edd1676"},
+    {file = "typos-1.19.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:c7d5eb8847905883f84f1ef9c268edc9b160b9fa58f58e1184f92761d8209835"},
+    {file = "typos-1.19.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:fd0cc8ba47ad1182bf5c91ec89ebe196833a753b0a50c8e2327c81a385a12693"},
+    {file = "typos-1.19.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:710b1ed145a310cf9a47de2105c1b72d2bc6e92f93337b0cd558d6798d4e187d"},
+    {file = "typos-1.19.0-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:b2c4d92ab5dbe4e5c330e9e2bbe15d056aaba6e44a9a1c311552f15684b2f8f2"},
+    {file = "typos-1.19.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:28014a6d7b4069d9ed580b5731a0d6b255e29fd3bcca29c79a9de5dcde57c7ae"},
+    {file = "typos-1.19.0-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:54e360126e0f9dd52f1c46ccee2100ceadf898cfad3fddc5b676d3a97092d357"},
+    {file = "typos-1.19.0-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:1af999492ec569bafd968231069adaeaa826aea0e3d7d5db581e78e1713726f5"},
+    {file = "typos-1.19.0-py3-none-win32.whl", hash = "sha256:d0bd18b3f01546f61f9d87c35b89a59aec4e60831b7a5f121872b8993f14236a"},
+    {file = "typos-1.19.0-py3-none-win_amd64.whl", hash = "sha256:d61861926562a7028ddf059aeb3bcdee34d8f1cbe2363a53333ae5c53d074f9d"},
+    {file = "typos-1.19.0.tar.gz", hash = "sha256:d1f81a925fbeee975465154f83838673b2e6afbbda370a1bf74a7c6b69f2a6ec"},
 ]
 
 [[package]]
 name = "virtualenv"
-version = "20.25.0"
+version = "20.25.1"
 description = "Virtual Python Environment builder"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "virtualenv-20.25.0-py3-none-any.whl", hash = "sha256:4238949c5ffe6876362d9c0180fc6c3a824a7b12b80604eeb8085f2ed7460de3"},
-    {file = "virtualenv-20.25.0.tar.gz", hash = "sha256:bf51c0d9c7dd63ea8e44086fa1e4fb1093a31e963b86959257378aef020e1f1b"},
+    {file = "virtualenv-20.25.1-py3-none-any.whl", hash = "sha256:961c026ac520bac5f69acb8ea063e8a4f071bcc9457b9c1f28f6b085c511583a"},
+    {file = "virtualenv-20.25.1.tar.gz", hash = "sha256:e08e13ecdca7a0bd53798f356d5831434afa5b07b93f0abdf0797b7a06ffe197"},
 ]
 
 [package.dependencies]
@@ -595,13 +595,13 @@ files = [
 
 [[package]]
 name = "yamllint"
-version = "1.34.0"
+version = "1.35.1"
 description = "A linter for YAML files."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "yamllint-1.34.0-py3-none-any.whl", hash = "sha256:33b813f6ff2ffad2e57a288281098392b85f7463ce1f3d5cd45aa848b916a806"},
-    {file = "yamllint-1.34.0.tar.gz", hash = "sha256:7f0a6a41e8aab3904878da4ae34b6248b6bc74634e0d3a90f0fb2d7e723a3d4f"},
+    {file = "yamllint-1.35.1-py3-none-any.whl", hash = "sha256:2e16e504bb129ff515b37823b472750b36b6de07963bd74b307341ef5ad8bdc3"},
+    {file = "yamllint-1.35.1.tar.gz", hash = "sha256:7a003809f88324fd2c877734f2d575ee7881dd9043360657cc8049c809eba6cd"},
 ]
 
 [package.dependencies]
@@ -613,18 +613,18 @@ dev = ["doc8", "flake8", "flake8-import-order", "rstcheck[sphinx]", "sphinx"]
 
 [[package]]
 name = "zipp"
-version = "3.17.0"
+version = "3.18.1"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "zipp-3.17.0-py3-none-any.whl", hash = "sha256:0e923e726174922dce09c53c59ad483ff7bbb8e572e00c7f7c46b88556409f31"},
-    {file = "zipp-3.17.0.tar.gz", hash = "sha256:84e64a1c28cf7e91ed2078bb8cc8c259cb19b76942096c8d7b84947690cabaf0"},
+    {file = "zipp-3.18.1-py3-none-any.whl", hash = "sha256:206f5a15f2af3dbaee80769fb7dc6f249695e940acca08dfb2a4769fe61e538b"},
+    {file = "zipp-3.18.1.tar.gz", hash = "sha256:2884ed22e7d8961de1c9a05142eb69a247f120291bc0206a00a7642f09b5b715"},
 ]
 
 [package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
+docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
+testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
 [metadata]
 lock-version = "2.0"

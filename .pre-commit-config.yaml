@@ -7,7 +7,7 @@ default_stages: [commit, manual]
 fail_fast: true
 repos:
     - repo: "https://github.com/commitizen-tools/commitizen"
-      rev: v3.14.1
+      rev: v3.20.0
       hooks:
           - id: commitizen
           - id: commitizen-branch
@@ -34,14 +34,14 @@ repos:
           - id: trailing-whitespace
 
     - repo: "https://github.com/adrienverge/yamllint.git"
-      rev: v1.34.0
+      rev: v1.35.1
       hooks:
           - id: yamllint
             files: \.(yaml|yml)$
             entry: yamllint --strict --config-file .yamllint.yml
 
     - repo: "https://github.com/crate-ci/typos"
-      rev: v1.18.2
+      rev: v1.19.0
       hooks:
           - id: typos
 

@@ -13,7 +13,7 @@ case "$1" in
         elif command -v code &>/dev/null; then
             code -wr "${1}"
         else
-            editorCommand="$(command -v code micro nano pico | head -n 1)"
+            editorCommand="$(command -v code nano pico | head -n 1)"
             "${editorCommand}" "${1}"
         fi
         ;;
