@@ -6,8 +6,6 @@ fi
 
 [[ "$(command -v most)" ]] && alias less="most"
 
-[[ "$(command -v micro)" ]] && alias nano="micro"
-
 # shellcheck disable=SC2016
 escape() {
     # DESC:		Escape special characters in a string

@@ -11,16 +11,6 @@ if eza --icons &>/dev/null; then
     alias lt='eza --tree --level=2 --icons'                  # system: List files in a tree view
     alias llt='eza -lahF --tree --level=2 --icons'           # system: List files in a tree view with long format
     alias ltt='eza -lahF --icons | grep "$(date +"%d %b")"'  # system: List files modified today
-elif command -v eza &>/dev/null; then
-    alias ls='eza --git'
-    alias l='eza --git -lF'
-    alias ll='eza -lahF --git'     # system: List all files
-    alias llm='ll --sort=modified' # system: List files by last modified date
-    alias la='eza -lbhHigUmuSa --color-scale --git'
-    alias lx='eza -lbhHigUmuSa@ --color-scale --git'
-    alias lt='eza --tree --level=2'                 # system: List files in a tree view
-    alias llt='eza -lahF --tree --level=2'          # system: List files in a tree view with long format
-    alias ltt='eza -lahF | grep "$(date +"%d %b")"' # system: List files modified today
 elif command -v colorls &>/dev/null; then
     alias ll="colorls -1A --git-status"
     alias ls="colorls -A"
