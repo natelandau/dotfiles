@@ -1,12 +1,13 @@
 [tool.poetry]
-    authors     = ["Nathaniel Landau <nate@natelandau.com>"]
-    description = "Home for my bootstrap script, dotfiles, and configuration files"
-    homepage    = "https://github.com/natelandau/dotfiles"
-    license     = "MIT"
-    name        = "dotfiles"
-    readme      = "README.md"
-    repository  = "https://github.com/natelandau/dotfiles"
-    version     = "0.1.0"
+    authors      = ["Nathaniel Landau <nate@natelandau.com>"]
+    description  = "Home for my bootstrap script, dotfiles, and configuration files"
+    homepage     = "https://github.com/natelandau/dotfiles"
+    license      = "MIT"
+    name         = "dotfiles"
+    package-mode = false
+    readme       = "README.md"
+    repository   = "https://github.com/natelandau/dotfiles"
+    version      = "0.1.0"
 
     [tool.poetry.dependencies]
         commitizen = "^3.7.0"
