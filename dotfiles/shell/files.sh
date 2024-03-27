@@ -6,6 +6,9 @@ else
     alias rmd='rm -rf'
 fi
 
+alias untar='tar -zxvf' # Extract tar.gz file
+alias mktar='tar -cvzf' # Create a tar.gz file
+
 md5Check() {
     # DESC:	 Compares an md5 hash to the md5 hash of a file
     # ARGS:	 None
