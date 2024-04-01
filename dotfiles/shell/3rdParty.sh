@@ -34,3 +34,7 @@ if [[ ${SHELL##*/} == "bash" ]]; then
 #     autoload -Uz _git && _git
 #     compdef __git_branch_names branch
 fi
+
+if [[ -e "${HOME}/.cargo/env" ]]; then
+    . "$HOME/.cargo/env"
+fi
