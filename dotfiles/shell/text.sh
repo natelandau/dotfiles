@@ -4,7 +4,11 @@ if command -v less &>/dev/null; then
     alias more='less -RXqeNF'
 fi
 
-[[ "$(command -v most)" ]] && alias less="most"
+if [[ "$(command -v most)" ]]; then
+    alias less="most"
+    PAGER="most"
+    MANPAGER="most"
+fi
 
 # shellcheck disable=SC2016
 escape() {

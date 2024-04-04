@@ -246,10 +246,6 @@ done
 
 unset DOTFILES_LOCATION configFileLocations configFileLocation
 
-# Set man pager
-#############################################
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-#man 2 select
 
 # Install/Configure atuin (https://github.com/ellie/atuin)
 #############################################
