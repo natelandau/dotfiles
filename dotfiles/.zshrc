@@ -272,9 +272,7 @@ _atuin_() {
         fi
     fi
 }
-if [[ ${OSTYPE} == "darwin"* ]]; then
-    _atuin_
-fi
+_atuin_
 
 
 # Shell completions for 1password CLI
