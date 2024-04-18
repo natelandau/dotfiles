@@ -7,7 +7,7 @@ default_stages: [commit, manual]
 fail_fast: true
 repos:
     - repo: "https://github.com/commitizen-tools/commitizen"
-      rev: v3.21.3
+      rev: v3.24.0
       hooks:
           - id: commitizen
           - id: commitizen-branch
@@ -15,7 +15,7 @@ repos:
                 - post-commit
                 - push
     - repo: "https://github.com/pre-commit/pre-commit-hooks"
-      rev: v4.5.0
+      rev: v4.6.0
       hooks:
           - id: check-added-large-files
           - id: check-byte-order-marker
@@ -41,7 +41,7 @@ repos:
             entry: yamllint --strict --config-file .yamllint.yml
 
     - repo: "https://github.com/crate-ci/typos"
-      rev: v1.20.4
+      rev: v1.20.9
       hooks:
           - id: typos
 
