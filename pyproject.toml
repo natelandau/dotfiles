@@ -10,11 +10,11 @@
     version      = "0.1.0"
 
     [tool.poetry.dependencies]
-        commitizen = "^3.7.0"
-        poethepoet = "^0.22.0"
-        pre-commit = "^3.3.3"
+        commitizen = "^3.25.0"
+        poethepoet = "^0.26.1"
+        pre-commit = "^3.7.0"
         python     = "^3.11"
-        typos      = "^1.16.8"
+        typos      = "^1.21.0"
 
 [build-system]
     build-backend = "poetry.core.masonry.api"

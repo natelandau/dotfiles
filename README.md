@@ -19,7 +19,7 @@ After Chezmoi is installed, use the following commands.
 
 ```bash
 # Initialize chezmoi configuration and apply the dotfiles (first run)
-chezmoi init https://github.com/natelandau/dotfiles.git
+chezmoi init natelandau
 
 # Check for common problems.
 chezmoi doctor
