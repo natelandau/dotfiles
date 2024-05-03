@@ -5,10 +5,10 @@
 
 if current=$(defaults read com.googlecode.iterm2 PrefsCustomFolder 2>/dev/null); then
 
-    if [[ $current != "${HOME}/.config/applications/iterm2" ]]; then
+    if [[ ${current} != "${HOME}/.config/applications/iterm2" ]]; then
 
         # Specify the preferences directory
-        defaults write com.googlecode.iterm2 PrefsCustomFolder -string "~/.config/applications/iterm2"
+        defaults write com.googlecode.iterm2 PrefsCustomFolder -string "${HOME}/.config/applications/iterm2"
 
         # Tell iTerm2 to use the custom preferences in the directory
         defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true

@@ -1,0 +1,5 @@
+{{- if lookPath "nomad" -}}
+file_ignore_strings = ["template"]
+job_file_locations  = ['~/homelab/nomad', "~/homelab/nomad-csi"]
+nomad_address = 'http://127.0.0.1:4646'
+{{- end }}
