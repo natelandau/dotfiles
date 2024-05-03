@@ -1,5 +1,3 @@
-Dotfiles for BASH and ZSH, and MacOS specific settings and preferences.
-
 # Usage
 
 ## Requirements
