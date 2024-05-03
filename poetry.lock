@@ -137,13 +137,13 @@ files = [
 
 [[package]]
 name = "commitizen"
-version = "3.24.0"
+version = "3.25.0"
 description = "Python commitizen client tool"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "commitizen-3.24.0-py3-none-any.whl", hash = "sha256:d9e28b1dcd97cea64dcb50be25292ceb730470d933f1da37131f9540f762df36"},
-    {file = "commitizen-3.24.0.tar.gz", hash = "sha256:088e01ae8265f1d6fa5a4d11a05e4fd7092d958c881837c35f6c65aad27331a9"},
+    {file = "commitizen-3.25.0-py3-none-any.whl", hash = "sha256:46b7f2a5a846df7414440d069aaa43b5d6c5a7f8840e68ae4c541492e93cd086"},
+    {file = "commitizen-3.25.0.tar.gz", hash = "sha256:65c9c5114ac2ded5ab1e1a75c2540adc27ae7291ed2db9290f9ed208178d1e99"},
 ]
 
 [package.dependencies]
@@ -161,13 +161,13 @@ tomlkit = ">=0.5.3,<1.0.0"
 
 [[package]]
 name = "decli"
-version = "0.6.1"
+version = "0.6.2"
 description = "Minimal, easy-to-use, declarative cli tool"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "decli-0.6.1-py3-none-any.whl", hash = "sha256:7815ac58617764e1a200d7cadac6315fcaacc24d727d182f9878dd6378ccf869"},
-    {file = "decli-0.6.1.tar.gz", hash = "sha256:ed88ccb947701e8e5509b7945fda56e150e2ac74a69f25d47ac85ef30ab0c0f0"},
+    {file = "decli-0.6.2-py3-none-any.whl", hash = "sha256:2fc84106ce9a8f523ed501ca543bdb7e416c064917c12a59ebdc7f311a97b7ed"},
+    {file = "decli-0.6.2.tar.gz", hash = "sha256:36f71eb55fd0093895efb4f416ec32b7f6e00147dda448e3365cf73ceab42d6f"},
 ]
 
 [[package]]
@@ -183,13 +183,13 @@ files = [
 
 [[package]]
 name = "filelock"
-version = "3.13.4"
+version = "3.14.0"
 description = "A platform independent file lock."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "filelock-3.13.4-py3-none-any.whl", hash = "sha256:404e5e9253aa60ad457cae1be07c0f0ca90a63931200a47d9b6a6af84fd7b45f"},
-    {file = "filelock-3.13.4.tar.gz", hash = "sha256:d13f466618bfde72bd2c18255e269f72542c6e70e7bac83a0232d6b1cc5c8cf4"},
+    {file = "filelock-3.14.0-py3-none-any.whl", hash = "sha256:43339835842f110ca7ae60f1e1c160714c5a6afd15a2873419ab185334975c0f"},
+    {file = "filelock-3.14.0.tar.gz", hash = "sha256:6ea72da3be9b8c82afd3edcf99f2fffbb5076335a5ae4d03248bb5b6c3eae78a"},
 ]
 
 [package.extras]
@@ -199,13 +199,13 @@ typing = ["typing-extensions (>=4.8)"]
 
 [[package]]
 name = "identify"
-version = "2.5.35"
+version = "2.5.36"
 description = "File identification library for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "identify-2.5.35-py2.py3-none-any.whl", hash = "sha256:c4de0081837b211594f8e877a6b4fad7ca32bbfc1a9307fdd61c28bfe923f13e"},
-    {file = "identify-2.5.35.tar.gz", hash = "sha256:10a7ca245cfcd756a554a7288159f72ff105ad233c7c4b9c6f0f4d108f5f6791"},
+    {file = "identify-2.5.36-py2.py3-none-any.whl", hash = "sha256:37d93f380f4de590500d9dba7db359d0d3da95ffe7f9de1753faa159e71e7dfa"},
+    {file = "identify-2.5.36.tar.gz", hash = "sha256:e5e00f54165f9047fbebeb4a560f9acfb8af4c88232be60a488e9b68d122745d"},
 ]
 
 [package.extras]
@@ -353,30 +353,20 @@ files = [
 ]
 
 [[package]]
-name = "pathspec"
-version = "0.12.1"
-description = "Utility library for gitignore style pattern matching of file paths."
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "pathspec-0.12.1-py3-none-any.whl", hash = "sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08"},
-    {file = "pathspec-0.12.1.tar.gz", hash = "sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712"},
-]
-
-[[package]]
 name = "platformdirs"
-version = "4.2.0"
-description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
+version = "4.2.1"
+description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "platformdirs-4.2.0-py3-none-any.whl", hash = "sha256:0614df2a2f37e1a662acbd8e2b25b92ccf8632929bc6d43467e17fe89c75e068"},
-    {file = "platformdirs-4.2.0.tar.gz", hash = "sha256:ef0cc731df711022c174543cb70a9b5bd22e5a9337c8624ef2c2ceb8ddad8768"},
+    {file = "platformdirs-4.2.1-py3-none-any.whl", hash = "sha256:17d5a1161b3fd67b390023cb2d3b026bbd40abde6fdb052dfbd3a29c3ba22ee1"},
+    {file = "platformdirs-4.2.1.tar.gz", hash = "sha256:031cd18d4ec63ec53e82dceaac0417d218a6863f7745dfcc9efe7793b7039bdf"},
 ]
 
 [package.extras]
 docs = ["furo (>=2023.9.10)", "proselint (>=0.13)", "sphinx (>=7.2.6)", "sphinx-autodoc-typehints (>=1.25.2)"]
 test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4.3)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)"]
+type = ["mypy (>=1.8)"]
 
 [[package]]
 name = "poethepoet"
@@ -545,32 +535,32 @@ files = [
 
 [[package]]
 name = "typos"
-version = "1.20.9"
+version = "1.21.0"
 description = "Source Code Spelling Correction"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "typos-1.20.9-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:9e71765ab2687cf090dc19e60c66b339ce6d490d58554aaa14be69d330b43379"},
-    {file = "typos-1.20.9-py3-none-macosx_11_0_arm64.whl", hash = "sha256:f836bebbbe8cb5ab1341c27e0a2f0d3874eb0b642feb74ecc839516c8aafd13a"},
-    {file = "typos-1.20.9-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:fa8e89a0b3352d3237f0eeb98be00534cb0ad00f2538b723bb42e830104aefc8"},
-    {file = "typos-1.20.9-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:7d2d6575c8915560c58dd52655148f5b4bdf5d2bb0382ca8fb60c74305c82ff6"},
-    {file = "typos-1.20.9-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f2d600ec011fcced146949fe6982a7dcc82b542de9645272f8fb9e0153688443"},
-    {file = "typos-1.20.9-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:8fbd5710d3ea38a71cdef568624c5eab8ae996aac033c1d5bee77aa0cbe5df8e"},
-    {file = "typos-1.20.9-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:9663f06abe03beea8fe4d38ad8b9ee21ee25c16300e71122732027040f4a069b"},
-    {file = "typos-1.20.9-py3-none-win32.whl", hash = "sha256:6d638148252c1bb1d91171ad73b4d145d5c5834b7e33c294092ab79ae9afa511"},
-    {file = "typos-1.20.9-py3-none-win_amd64.whl", hash = "sha256:1336f04ecf496c9a9365ba0edaf6e52d712de56f20f1cdd95ae2eee0f41b7780"},
-    {file = "typos-1.20.9.tar.gz", hash = "sha256:608a76a0cb163f0090d80c0b2fb2689d09c13ecf63154b611015713704021a79"},
+    {file = "typos-1.21.0-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:9b592145137a113cf5b631ddca55944405441a43fedb0fb3332ddfdba5d0040c"},
+    {file = "typos-1.21.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:e159df29a5af13cb42e2f0d0c61356c9ed68999a15682447d183ee0a5c1faa24"},
+    {file = "typos-1.21.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5e7ef2dde5ae496f145bc1d0c2b4380dbc5410d0be083ff5cd7136d00eeb9a69"},
+    {file = "typos-1.21.0-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3806c3e8f11b0e9734491ce656597cd06ad11847c4cecada2a1781a71319a753"},
+    {file = "typos-1.21.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:56859b6938c970cdbf9f168189665a1459ab9813c40bbba7a9183b5d0643f949"},
+    {file = "typos-1.21.0-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:ebeac8b75e226354920567026cd45c4926dcf01d6d6def2b88fba5d3e4ae838a"},
+    {file = "typos-1.21.0-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:326eeaf541d5dc9097e3550a52c1bc814ea2b0315f1b83a96ff5665b941742fc"},
+    {file = "typos-1.21.0-py3-none-win32.whl", hash = "sha256:9e05ac854507b121921e242db0b8b80eb7d2968fa5f1ad1be507941627a95c71"},
+    {file = "typos-1.21.0-py3-none-win_amd64.whl", hash = "sha256:f576f250e6e8dc8d4c65e74502fdaa3dff0877ae3e1713b45d0f96a141d1d906"},
+    {file = "typos-1.21.0.tar.gz", hash = "sha256:8955e93edf9b901a8821840c19c17adc77611eeb9623ab6158126b193f5452b8"},
 ]
 
 [[package]]
 name = "virtualenv"
-version = "20.25.3"
+version = "20.26.1"
 description = "Virtual Python Environment builder"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "virtualenv-20.25.3-py3-none-any.whl", hash = "sha256:8aac4332f2ea6ef519c648d0bc48a5b1d324994753519919bddbb1aff25a104e"},
-    {file = "virtualenv-20.25.3.tar.gz", hash = "sha256:7bb554bbdfeaacc3349fa614ea5bff6ac300fc7c335e9facf3a3bcfc703f45be"},
+    {file = "virtualenv-20.26.1-py3-none-any.whl", hash = "sha256:7aa9982a728ae5892558bff6a2839c00b9ed145523ece2274fad6f414690ae75"},
+    {file = "virtualenv-20.26.1.tar.gz", hash = "sha256:604bfdceaeece392802e6ae48e69cec49168b9c5f4a44e483963f9242eb0e78b"},
 ]
 
 [package.dependencies]
@@ -594,24 +584,6 @@ files = [
 ]
 
 [[package]]
-name = "yamllint"
-version = "1.35.1"
-description = "A linter for YAML files."
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "yamllint-1.35.1-py3-none-any.whl", hash = "sha256:2e16e504bb129ff515b37823b472750b36b6de07963bd74b307341ef5ad8bdc3"},
-    {file = "yamllint-1.35.1.tar.gz", hash = "sha256:7a003809f88324fd2c877734f2d575ee7881dd9043360657cc8049c809eba6cd"},
-]
-
-[package.dependencies]
-pathspec = ">=0.5.3"
-pyyaml = "*"
-
-[package.extras]
-dev = ["doc8", "flake8", "flake8-import-order", "rstcheck[sphinx]", "sphinx"]
-
-[[package]]
 name = "zipp"
 version = "3.18.1"
 description = "Backport of pathlib-compatible object wrapper for zip files"
@@ -629,4 +601,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "ef6f88c4eb4131c2bc51eee77b4d0d10fc0a806fc4d4cb172af7b8b3dddcf3cb"
+content-hash = "3e164c4c8fbc02183d4c74e737a86cc478cd987abc6ed8ce65874d6030023534"

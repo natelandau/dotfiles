@@ -1,0 +1,19 @@
+{{- if eq .chezmoi.os "linux" }}
+
+alias sag='sudo apt-get'
+
+aup() {
+    # List available updated from apt-get
+
+    sudo apt update
+    apt list --upgradable
+}
+
+# Fix potential locale issues
+export LC_ALL=C
+
+if [ -e "/usr/bin/snap" ]; then
+    PATH="/snap/bin:${PATH}"
+fi
+
+{{- end }}

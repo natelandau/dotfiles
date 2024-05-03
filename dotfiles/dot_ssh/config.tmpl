@@ -1,0 +1,37 @@
+# Create a new key with:
+# ssh-keygen -f [filename] -t ed25519 -C "[comment]"
+# ssh-keygen -f [filename] -t rsa -b 4096 -C "[comment]"
+
+# ##### Chezmoi Managed #############
+{{- if .use_secrets}}
+{{- range .remote_servers }}
+{{-     if .add_to_ssh_config }}
+
+Host {{ .name }}
+    User {{ range (onepassword .op_id).fields }}{{ if eq .label "user" }}{{ .value }}{{ end }}{{ end }}
+    Hostname {{ range (onepassword .op_id).fields }}{{ if eq .label "hostname" }}{{ .value }}{{ end }}{{ end }}
+    Port {{ range (onepassword .op_id).fields }}{{ if eq .label "port" }}{{ .value }}{{ end }}{{ end }}
+    IdentityFile ~/.ssh_keys/{{ .name }}
+    IdentitiesOnly yes
+{{-         if .tailscale_ip}}
+
+Host t{{ .name }}
+    User {{ range (onepassword .op_id).fields }}{{ if eq .label "user" }}{{ .value }}{{ end }}{{ end }}
+    Hostname {{ range (onepassword .op_id).fields }}{{ if eq .label "tailscale_ip" }}{{ .value }}{{ end }}{{ end }}
+    Port {{ range (onepassword .op_id).fields }}{{ if eq .label "port" }}{{ .value }}{{ end }}{{ end }}
+    IdentityFile ~/.ssh_keys/{{ .name }}
+    IdentitiesOnly yes
+{{-         end }}
+{{-     end }}
+{{- end }}
+{{- end }}
+
+# ##### End Chezmoi Managed #############
+
+Host *
+	IdentityFile ~/.ssh/id_ed25519
+	ServerAliveInterval 30
+	ServerAliveCountMax 120
+	StrictHostKeyChecking no
+	Protocol 2
+	IdentitiesOnly yes

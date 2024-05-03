@@ -1,56 +1,83 @@
-This repository contains my dotfiles for BASH and ZSH. They are opinionated and based on my own work flows. I highly recommend that you read through the files and customize them for your own purposes.
+Dotfiles for BASH and ZSH, and MacOS specific settings and preferences.
 
-# Installation
+# Usage
 
-In `.zshrc` and `.bash_profile` ensure the correct directory is used for the `DOTFILES_LOCATION` variable.
+## Requirements
 
-Symlink the dotfiles from this repository to your user directory. To avoid doing this manually file-by-file, run the `install.sh` script.
+-   [Chezmoi](https://www.chezmoi.io/)
+-   [1Password CLI](https://developer.1password.com/docs/cli/) (Optional, for secrets management)
 
-## Option per-computer overrides
-
-Place any computer specific bash or zsh aliases, functions, or settings in `~/.dotfiles.local`. Anything within that file will be sourced into your environment.
-
-## Shell Scripting Templates
-
-My bash scripting templates and utilities now have their own repo. You can access them at [natelandau/shell-scripting-templates](https://github.com/natelandau/shell-scripting-templates)
-
-## macOS specific tweaks
-
-I customized [Jeff Geerling's macOS configuration script](https://github.com/geerlingguy/dotfiles/blob/master/.osx) to set my macOS defaults. Run this script with sudo privileges.
+**Ensure required software is installed before proceeding.** There are many ways to install Chezmoi. Check the [official documentation](https://www.chezmoi.io/install/) for the most up-to-date instructions. To install chezmoi and these dotfiles in a single command run the following:
 
 ```bash
-sudo ./osx.sh
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply natelandau
 ```
 
-## lessfilter.sh
+## Daily Usage
 
-In the `bin/` directory is a script to help colorize files using `less`. To use this script, make sure that `shell/text.sh` points to the correct location for the file.
+After Chezmoi is installed, use the following commands.
 
-## A Note on Code Reuse
+```bash
+# Initialize chezmoi configuration and apply the dotfiles (first run)
+chezmoi init https://github.com/natelandau/dotfiles.git
 
-I compiled these scripting utilities over many years without ever having an intention to make them public. As a novice programmer, I have Googled, GitHubbed, and StackExchanged a path to solve my own scripting needs. I often lift a function whole-cloth from a GitHub repo don't keep track of its original location. I have done my best within these files to recreate my footsteps and give credit to the original creators of the code when possible. I fear that I missed as many as I found. My goal in making this repository public is not to take credit for the code written by others. If you recognize something that I didn't credit, please let me know.
+# Check for common problems.
+chezmoi doctor
 
-## Contributing
+# Update dotfiles from the source directory.
+chezmoi apply
 
-### Setup
+# Pull the latest changes from your remote repo and runs chezmoi apply.
+chezmoi update
 
-1. Install Python 3.11 and [Poetry](https://python-poetry.org)
-2. Clone this repository. `git clone https://github.com/natelandau/dotfiles.git`
-3. Install the Poetry environment with `poetry install`.
-4. Activate your Poetry environment with `poetry shell`.
-5. Install the pre-commit hooks with `pre-commit install --install-hooks`.
+```
 
-### Developing
+## Managing Secrets
 
--   Activate your Poetry environment with `poetry shell`.
--   This project follows the [Conventional Commits](https://www.conventionalcommits.org/) standard to automate [Semantic Versioning](https://semver.org/) and [Keep A Changelog](https://keepachangelog.com/) with [Commitizen](https://github.com/commitizen-tools/commitizen).
-    -   When you're ready to commit changes run `cz c`
--   Run `poe` from within the development environment to print a list of [Poe the Poet](https://github.com/nat-n/poethepoet) tasks available to run on this project. Common commands:
-    -   `poe lint` runs all linters and tests
--   Run `poetry add {package}` from within the development environment to install a runtime dependency and add it to `pyproject.toml` and `poetry.lock`.
--   Run `poetry remove {package}` from within the development environment to uninstall a runtime dependency and remove it from `pyproject.toml` and `poetry.lock`.
--   Run `poetry update` from within the development environment to upgrade all dependencies to the latest versions allowed by `pyproject.toml`.
+Secrets are managed in [1Password](https://developer.1password.com/docs/cli/). 1Password is not needed if Chezmoi is set to `use_secrets = false` in the `~/.config/chezmoi/chezmoi.toml` file.
 
-## License
+### SSH Configuration
 
-MIT
+Adding and removing ssh configurations can be managed with 1Password. To add a new ssh configuration, follow these steps:
+
+1. Add an SSH Key to 1Password and add the following fields:
+    - `ssh_key`: The private key
+    - `ssh_key.pub`: The public key
+    - `user`: The username for the ssh connection
+    - `hostname`: The hostname for the ssh connection
+    - `port`: The port for the ssh connection (optional)
+2. Copy the UUID of the new 1Password item.
+3. Add the server's configuration to `.../dotfiles/.chezmoidata/remote_servers.toml`
+
+To remove an ssh configuration, delete the server's configuration from `.../dotfiles/.chezmoidata/remote_servers.toml` and delete the 1Password item.
+
+### MacOS Application Preferences
+
+Certain MacOS applications need manual configuration.
+
+#### iTerm2
+
+iTerm2 Configurations and profiles are synced to `~/.config/applications/iterm2`.
+
+The configuration file should be synced automatically. If it is not, `Preferences > General > Preferences` and select the `Load preferences from a custom folder or URL` option. Then select the `~/.config/applications/iterm2` directory.
+
+Profiles are not synced automatically. Import the profiles by going to `Profiles > Other Actions > Import JSON Profiles` and import them from `~/.config/applications/iterm2/`.
+
+### Terminal
+
+Custom terminal configurations are stored in `~/.config/applications/terminal`. Import them with `Terminal > Preferences > Profiles > Import`.
+
+## Editing Dotfiles
+
+## Setup
+
+1. Install Python and [Poetry](https://python-poetry.org)
+2. Run `poetry install` to install the development dependencies
+3. Activate your Poetry environment with `poetry shell`.
+4. Install the pre-commit hooks with `pre-commit install --install-hooks`.
+
+## Committing changes
+
+1. Activate your Poetry environment with `poetry shell`
+2. Add changed files to the staging area with `git add .`
+3. Run `cz c` to commit changes

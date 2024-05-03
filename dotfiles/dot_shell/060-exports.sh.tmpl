@@ -1,0 +1,30 @@
+{{ if .use_secrets }}
+
+export HOMEBREW_GITHUB_API_TOKEN="{{ range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{ if eq .label "HOMEBREW_GITHUB_API_TOKEN" }}{{ .value }}{{ end }}{{ end }}"
+export GITHUB_TOKEN="{{ range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{ if eq .label "PERSONAL_GITHUB_TOKEN" }}{{ .value }}{{ end }}{{ end }}"
+
+# Valentina env variables for local development on natenate test server
+# natenate-test-bot
+export VALENTINA_DISCORD_TOKEN="{{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "dev_discord_token" }}{{- .value }}{{- end }}{{- end }}"
+# valentina production
+# export VALENTINA_DISCORD_TOKEN={{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "prod_discord_token" }}{{- .value }}{{- end }}{{- end }}
+export VALENTINA_GUILDS="{{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "VALENTINA_GUILDS" }}{{- .value }}{{- end }}{{- end }}"
+export VALENTINA_OWNER_IDS="{{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "VALENTINA_OWNER_IDS" }}{{- .value }}{{- end }}{{- end }}"
+export VALENTINA_OWNER_CHANNELS="{{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "VALENTINA_OWNER_CHANNELS" }}{{- .value }}{{- end }}{{- end }}"
+export VALENTINA_LOG_FILE="valentina.log"
+export VALENTINA_DB_PATH="${HOME}/repos/valentina/valentina.sqlite"
+export VALENTINA_BACKUP_PATH="${HOME}/tmp/valentina-backup"
+export VALENTINA_LOG_LEVEL="DEBUG"
+export VALENTINA_AWS_ACCESS_KEY_ID="{{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "VALENTINA_AWS_ACCESS_KEY_ID" }}{{- .value }}{{- end }}{{- end }}"
+export VALENTINA_AWS_SECRET_ACCESS_KEY="{{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "VALENTINA_AWS_SECRET_ACCESS_KEY" }}{{- .value }}{{- end }}{{- end }}"
+export VALENTINA_LOG_LEVEL_AWS="INFO"
+export VALENTINA_LOG_LEVEL_HTTP="WARNING"
+export VALENTINA_S3_BUCKET_NAME="{{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "VALENTINA_S3_BUCKET_NAME" }}{{- .value }}{{- end }}{{- end }}"
+export VALENTINA_MONGO_URI="mongodb://localhost:27017"      # MongoDB URI
+export VALENTINA_MONGO_DATABASE_NAME="valentina"            # Database name
+export VALENTINA_TEST_MONGO_URI="mongodb://localhost:27017" # Test MongoDB URI
+export VALENTINA_TEST_MONGO_DATABASE_NAME="valentina-test"  # Test Database name
+export VALENTINA_GITHUB_TOKEN="{{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "VALENTINA_GITHUB_TOKEN" }}{{- .value }}{{- end }}{{- end }}"
+export VALENTINA_GITHUB_REPO="natelandau/valentina"
+
+{{- end }}

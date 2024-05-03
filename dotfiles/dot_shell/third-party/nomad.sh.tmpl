@@ -1,0 +1,33 @@
+{{- if (and (.home_network) (lookPath "nomad")) -}}
+
+nomadExecutable="$(command -v nomad)"
+if [[ -n ${BASH} ]]; then
+    complete -C "${nomadExecutable}" nomad
+elif [[ -n ${ZSH_NAME} ]]; then
+    autoload -U +X bashcompinit && bashcompinit
+    complete -o nospace -C "${nomadExecutable}" nomad
+fi
+
+if ! pgrep nomad &>/dev/null; then
+    # Allow Nomad CLI to access cluster on non-cluster computers
+    export NOMAD_ADDR=http://nomad-servers.service.consul:4646
+fi
+
+{{ if eq .chezmoi.os "darwin" -}}
+if [ -e "${HOME}/Library/LaunchAgents/nomad.plist" ]; then
+
+    loadcluster() {
+        # Loads launchctl plist for Nomad and Consul
+        launchctl load -w ~/Library/LaunchAgents/consul.plist
+        launchctl load -w ~/Library/LaunchAgents/nomad.plist
+    }
+
+    unloadcluster() {
+        # Unloads launchctl plist for Nomad and Consul
+        launchctl unload -w ~/Library/LaunchAgents/consul.plist
+        launchctl unload -w ~/Library/LaunchAgents/nomad.plist
+    }
+fi
+
+{{- end }}
+{{- end }}

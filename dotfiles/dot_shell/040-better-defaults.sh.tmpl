@@ -1,0 +1,52 @@
+export EDITOR="$(command -v code nano | head -n 1)"
+
+alias cp='cp -iv'
+alias grep='grep --color=always'
+alias mkdir='mkdir -pv'
+alias mv='mv -iv'
+alias shfmt="shfmt -ci -bn -i 2"       # dev: Preferred shellformat implementation
+alias visudo="EDITOR=nano sudo visudo" # system: visudo with nano
+
+{{- if lookPath "most" }}
+alias less="most"
+alias more="most"
+PAGER="most"
+MANPAGER="most"
+{{- else }}
+[ -e "${HOME}/bin/lessfilter.sh" ] && export LESSOPEN="|${HOME}/bin/lessfilter.sh %s"
+alias less='less -RXqeF'
+alias more='less -RXqeNF'
+{{- end -}}
+
+{{- if lookPath "gping" }}
+alias ping="gping"
+{{- else if lookPath "prettyping" }}
+alias ping="prettyping --nolegend"
+{{- end }}
+
+{{- if lookPath "htop" }}
+alias top="htop" # Prefer `htop` over `top`
+{{- end }}
+
+{{- if lookPath "bat" }}
+alias cat="bat" # Prefer `bat` over `cat`
+{{- end }}
+
+{{- if lookPath "rip" }}
+alias rm='rip'
+alias rmd='rip -i'
+{{- else }}
+alias rm='rm -i'
+alias rmd='rm -rf'
+{{- end }}
+
+{{- if lookPath "dig" }}
+{{- else if lookPath "drill" }}
+alias dig='drill'
+{{ end }}
+
+cd() {
+    # Always print contents of directory when entering
+    builtin cd "$@" || return 1
+    ll
+}

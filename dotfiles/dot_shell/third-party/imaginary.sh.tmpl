@@ -1,0 +1,4 @@
+{{- if lookPath "imagine" }}
+export IMAGINAIRY_SAFETY_MODE=disabled
+alias upscale="imagine --init-image-strength 1 --upscale --init-image"
+{{- end }}

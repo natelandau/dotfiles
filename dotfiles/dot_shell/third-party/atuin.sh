@@ -1,0 +1,16 @@
+if [ "$(command -v atuin)" ]; then
+    if [[ -n ${ZSH_NAME} ]]; then
+        export ATUIN_NOBIND="true"
+        eval "$(atuin init zsh)"
+        bindkey '^r' _atuin_search_widget
+        bindkey '^[[A' atuin-up-search
+        bindkey '^[OA' atuin-up-search
+    elif [[ -n ${BASH} ]]; then
+        # shellcheck disable=SC1091
+        [[ -f ~/.bash-preexec.sh ]] && source "${HOME}/.bash-preexec.sh"
+        eval "$(atuin init bash)"
+        bind -x '"\C-r": __atuin_history'
+        bind -x '"\e[A": __atuin_history --shell-up-key-binding'
+        bind -x '"\eOA": __atuin_history --shell-up-key-binding'
+    fi
+fi
