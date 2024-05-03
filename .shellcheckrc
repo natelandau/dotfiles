@@ -8,3 +8,12 @@ disable=SC2236 # Allow [ ! -z foo ] instead of suggesting -n
 disable=SC2001 # Allow string="string" ; echo "$string" | sed -e "s/ir/ri/"
 disable=SC2317 # Allow Command appears to be unreachable
 disable=SC2034 # Allow unused variables
+
+# Go templates in shell scripts
+disable=SC1036
+disable=SC1056
+disable=SC1072
+disable=SC1054
+disable=SC1073
+disable=SC1009
+disable=SC1083

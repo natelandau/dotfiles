@@ -1,0 +1,39 @@
+alias cd..='cd ../'
+alias ..='cd ../'
+alias ...='cd ../../'
+alias .3='cd ../../../'
+alias .4='cd ../../../../'
+alias .5='cd ../../../../../'
+alias .6='cd ../../../../../../'
+alias ~="cd ~"
+alias kill='kill -9'
+alias ax='chmod a+x'                   # system: make file executable
+alias path='echo -e ${PATH//:/\\n}'    # system: Echo all executable Paths
+alias untar='tar -zxvf'                # Extract tar.gz file
+alias mktar='tar -cvzf'                # Create a tar.gz file
+alias numfiles='echo $(ls -1 | wc -l)' # Count of non-hidden files in current dir
+
+####################### LIST DIRECTORY CONTENTS #######################
+{{- if lookPath "eza" }}
+alias ls='eza --git --icons'                             # system: List filenames on one line
+alias l='eza --git --icons -lF'                          # system: List filenames with long format
+alias ll='eza -lahF --git --icons'                       # system: List all files
+alias llm='ll --sort=modified'                           # system: List files by last modified
+alias la='eza -lbhHigUmuSa --color-scale --git --icons'  # system: List files with attributes
+alias lx='eza -lbhHigUmuSa@ --color-scale --git --icons' # system: List files with extended attributes
+alias lt='eza --tree --level=2 --icons'                  # system: List files in a tree view
+alias llt='eza -lahF --tree --level=2 --icons'           # system: List files in a tree view with long format
+alias ltt='eza -lahF --icons | grep "$(date +"%d %b")"'  # system: List files modified today
+{{- else if lookPath "colorls" }}
+alias ll="colorls -1A --git-status"
+alias ls="colorls -A"
+alias ltt='colorls -A | grep "$(date +"%d %b")"'
+{{- else if .chezmoi.os "darwin" }}
+alias ls="ls -G"
+alias ll='ls -FGlAhpv'
+alias ltt='ls -FlAhpv| grep "$(date +"%d %b")"' # system: List files modified this day
+{{- else }}
+alias ls="ls --color=auto"
+alias ll='ls -FlAhpv --color=auto'
+alias ltt='ls -FlAhpv| grep "$(date +"%d %b")"' # system: List files modified today
+{{- end }}

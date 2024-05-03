@@ -1,0 +1,73 @@
+## where to store your database.
+db_path = "~/.local/share/atuin/history.db"
+
+## where to store your encryption key, default is your system data directory
+# key_path = "~/.key"
+
+## where to store your auth session token, default is your system data directory
+# session_path = "~/.key"
+
+## date format used, either "us" or "uk"
+dialect = "us"
+
+## enable or disable automatic sync
+# auto_sync = true
+
+## how often to sync history. note that this is only triggered when a command
+## is ran, so sync intervals may well be longer
+## set it to 0 to sync after every command
+# sync_frequency = "5m"
+
+## address of the sync server
+# sync_address = "https://api.atuin.sh"
+
+## which search mode to use
+## possible values: "prefix", "fulltext", "fuzzy", or "skim"
+## Defaults to "fuzzy"
+# search_mode = "prefix"
+
+## whether or not to automatically check for updates. Defaults to true.
+update_check = true
+
+## Note that these regular expressions are unanchored, i.e. if they don't start
+## with ^ or end with $, they'll match anywhere in the command.
+## Supports regular expressions
+## Remove matching entries with `atuin history prune`
+history_filter = [
+    '^(rpi|mf)\d$',
+    '^\.\.$',
+    '^\w+ --help$',
+    '^cz c$',
+    '^emulate bash',
+    '^exit$',
+    '^fork$',
+    '^ga \.$',
+    '^gs$',
+    '^ll$',
+    '^mini$',
+    '^poe \w+',
+    '^pull$',
+    '^push$',
+    '^rmd$',
+    '^valentina$',
+    '^~$',
+]
+
+[stats]
+    ## Configures commands where we should consider the subcommand as part of the statistics.
+    ## For example, consider kubectl get rather than just kubectl.
+    common_subcommands = [
+        "brew",
+        "cd",
+        "git",
+        "halp",
+        "nd",
+        "nomad",
+        "poetry",
+        "pre-commit",
+        "source",
+    ]
+
+    ## Configures commands that should be totally stripped from stats calculations.
+    ## For example, 'sudo' should be ignored and only the following command should be used.
+    common_prefix = ["sudo"]

@@ -1,0 +1,16 @@
+.DS_Store
+README.md
+.assets # used to save symlink destinations files
+
+# Manage files that have different locations on different machines
+# https://www.chezmoi.io/user-guide/manage-machine-to-machine-differences/#ignore-files-or-a-directory-on-different-machines
+
+{{ if ne .chezmoi.os "darwin" }}
+Library/Application Support
+.librewolf
+.vscode
+{{ end }}
+{{ if ne .chezmoi.os "linux" }}
+.config/halp
+.config/vid-cleaner
+{{ end }}

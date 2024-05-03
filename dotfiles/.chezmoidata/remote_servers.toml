@@ -1,0 +1,91 @@
+[remote_servers]
+
+    [remote_servers.bso]
+        add_to_ssh_config = true
+        name              = "bso"
+        op_id             = "urcyjy4hxj6js5lnuplbx4iaem"
+        tailscale_ip      = false
+
+    [remote_servers.git]
+        add_to_ssh_config = false
+        name              = "git"
+        op_id             = "jrfjs6mzlrm2jq5242td4li3u4"
+        tailscale_ip      = false
+
+    [remote_servers.imac]
+        add_to_ssh_config = true
+        name              = "imac"
+        op_id             = "3s3duty7rdoh6pvwljgod3tpfm"
+        tailscale_ip      = false
+
+    [remote_servers.macmini]
+        add_to_ssh_config = true
+        name              = "mini"
+        op_id             = "ptff236gzxt5w4zsenpxjfrv3i"
+        tailscale_ip      = true
+
+    [remote_servers.mf1]
+        add_to_ssh_config = true
+        name              = "mf1"
+        op_id             = "kqwlkq6yaoarvhwacd7vpll3ei"
+        tailscale_ip      = false
+
+    [remote_servers.opnsense]
+        add_to_ssh_config = true
+        name              = "opnsense"
+        op_id             = "guqi3eab5xe6zgvkx4ajb6he3a"
+        tailscale_ip      = false
+
+    [remote_servers.natenate]
+        add_to_ssh_config = true
+        name              = "natenate"
+        op_id             = "zoda4scdiwqnp7zyauzobyljma"
+        tailscale_ip      = false
+
+    [remote_servers.rpi1]
+        add_to_ssh_config = true
+        name              = "rpi1"
+        op_id             = "n4wjzkpynpuknnzh3usulhojta"
+        tailscale_ip      = false
+
+    [remote_servers.rpi2]
+        add_to_ssh_config = true
+        name              = "rpi2"
+        op_id             = "bjvjxdr7jcs5o65mxa3tds7xiu"
+        tailscale_ip      = false
+
+    [remote_servers.rpi3]
+        add_to_ssh_config = true
+        name              = "rpi3"
+        op_id             = "iv2pobevosbt46rfqnwmf3o43i"
+        tailscale_ip      = false
+
+    [remote_servers.rpi4]
+        add_to_ssh_config = true
+        name              = "rpi4"
+        op_id             = "kdplq54dlr3wzbwnatdmwwpmmq"
+        tailscale_ip      = false
+
+    [remote_servers.skimmbook]
+        add_to_ssh_config = true
+        name              = "skimmbook"
+        op_id             = "ncpzbk6whr543poozyfomebgle"
+        tailscale_ip      = true
+
+    [remote_servers.sosb-old]
+        add_to_ssh_config = true
+        name              = "sosb-old"
+        op_id             = "2gjp4p2yz5mnwkqwz4bsrko2tq"
+        tailscale_ip      = false
+
+    [remote_servers.stacy]
+        add_to_ssh_config = true
+        name              = "stacy"
+        op_id             = "o7r2ya3l3b2qeqxbhjnhvm2sp4"
+        tailscale_ip      = false
+
+    [remote_servers.synology]
+        add_to_ssh_config = true
+        name              = "synology"
+        op_id             = "u4jors52vyhwhs5ab24otdyrmq"
+        tailscale_ip      = false

@@ -1,0 +1,18 @@
+{{ $use_secrets := promptBoolOnce . "use_secrets" "Use secrets from 1Password? (true/false)" }}
+{{ $home_network := promptBoolOnce . "home_network" "Is this computer in the home network? (true/false)" }}
+{{- $email := promptStringOnce . "email" "Email address" -}}
+
+[data]
+    email        = {{ $email | quote }}
+    github_user  = "natelandau"
+    home_network = {{ $home_network }}
+    use_secrets  = {{ $use_secrets }}
+
+[diff]
+    exclude = ["scripts"]
+
+{{ if lookPath "code" -}}
+[edit]
+    args    = ["-r", "--wait"]
+    command = "code"
+{{ end -}}
