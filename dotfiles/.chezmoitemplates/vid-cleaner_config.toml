@@ -1,0 +1,19 @@
+{{- if .use_secrets }}
+
+# Default TOML configuration file
+
+# Whether to log to a file or not
+log_to_file = false
+
+# Languages to keep (list of ISO 639-1 codes)
+keep_languages = ["en"]
+
+# External services used to determine the original language of a movie or TV show
+
+radarr_api_key = "{{- range (onepassword "yevda4magqej3yawqf573rijd4").fields }}{{- if eq .label "api_key" }}{{ .value }}{{- end }}{{- end }}"
+radarr_url     = "{{- range (onepassword "yevda4magqej3yawqf573rijd4").urls }}{{- if eq .label "website" }}{{- .href }}{{- end }}{{- end }}"
+sonarr_api_key = "{{- range (onepassword "5zk3pkmm2wbk73ss4dlli6dvz4").fields }}{{- if eq .label "api_key" }}{{ .value }}{{- end }}{{- end }}"
+sonarr_url     = "{{- range (onepassword "5zk3pkmm2wbk73ss4dlli6dvz4").urls }}{{- if eq .label "website" }}{{- .href }}{{- end }}{{- end }}"
+tmdb_api_key   = "{{- range (onepassword "42el6epcf5c55hi2kyn2kmwwxq").fields }}{{- if eq .label "api_key" }}{{ .value }}{{- end }}{{- end }}"
+
+{{- end }}

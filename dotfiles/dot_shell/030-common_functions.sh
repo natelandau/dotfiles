@@ -1,0 +1,325 @@
+# shellcheck disable=SC2154,SC2016
+
+ff() { find . -name "$1"; }     # Find file under the current directory
+ffs() { find . -name "$1"'*'; } # Find file whose name starts with a given string
+ffe() { find . -name '*'"$1"; } # Find file whose name ends with a given string
+
+mcd() {
+    # Create a directory and enter it
+    mkdir -pv "$1"
+    cd "$1" || exit
+}
+
+su() {
+    # su: Do sudo to a command, or do sudo to the last typed command if no argument given
+    if [[ $# == 0 ]]; then
+        sudo "$(history -p '!!')"
+    else
+        sudo "$@"
+    fi
+}
+
+sshlist() {
+    # List all hosts defined in ssh config file
+    awk '$1 ~ /Host$/ {for (i=2; i<=NF; i++) print $i}' ~/.ssh/config
+}
+
+explain() {
+    # DESC:		Explain any bash command with options via mankier.com manpage API
+    # USAGE:	explain ls -al
+
+    if [ "$#" -eq 0 ]; then
+        while read -r -p "Command: " cmd; do
+            curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=${cmd}"
+        done
+        echo "Bye!"
+    else
+        curl -Gs "https://www.mankier.com/api/explain/?cols=$(tput cols)" --data-urlencode "q=$*"
+    fi
+}
+
+md5Check() {
+    # DESC:	 Compares an md5 hash to the md5 hash of a file
+    # ARGS:	 None
+    # OUTS:	 None
+    # USAGE: md5Check <md5> <filename>
+
+    local opt
+    local OPTIND=1
+    local md5="$1"
+    local file="$2"
+
+    if ! command -v md5sum &>/dev/null; then
+        echo "Can not find 'md5sum' utility"
+        return 1
+    fi
+
+    [ ! -e "${file}" ] \
+        && {
+            echo "Can not find ${file}"
+            return 1
+        }
+
+    # Get md5 has of file
+    local filemd5
+    filemd5="$(md5sum "${file}" | awk '{ print $1 }')"
+
+    if [[ $filemd5 == "$md5" ]]; then
+        success "The two md5 hashes match"
+        return 0
+    else
+        warning "The two md5 hashes do not match"
+        return 1
+    fi
+
+}
+
+myip() {
+    # DESC:   Checks external IP address and displays it.  A menu is shown to select a source.
+    # ARGS:   None
+    # USAGE:  myip
+
+    PS3="Enter a number: "
+    COLUMNS=12
+    select REPLY in "icanhazip (Default gateway)" "AWS (Default gateway)" "ipify (VPN)" "ipecho (Bypass VPN)" Quit; do
+        case $REPLY in
+            "icanhazip (Default gateway)")
+                printf "%s\n" "$(curl -s https://icanhazip.com)"
+                ;;
+            "AWS (Default gateway)")
+                printf "%s\n" "$(curl -s https://checkip.amazonaws.com)"
+                ;;
+            "ipify (VPN)")
+                printf "%s\n" "$(curl -s https://api.ipify.org)"
+                ;;
+            "ipecho (Bypass VPN)")
+                printf "%s\n" "$(curl -s https://ipecho.net/plain)"
+                ;;
+            Quit)
+                break
+                ;;
+            *)
+                printf "Invalid option %s" "${REPLY}"
+                ;;
+        esac
+    done
+
+}
+
+buf() {
+    # buf:  Backup file with time stamp
+    local filename
+    local filetime
+
+    filename="${1}"
+    filetime=$(date +%Y%m%d_%H%M%S)
+    cp -a "${filename}" "${filename}_${filetime}"
+}
+
+extract() {
+    # DESC:	  Extracts a compressed file from multiple formats
+    # ARGS:	  None
+    # OUTS:	  None
+    # USAGE:  extract -v <file>
+
+    local opt
+    local OPTIND=1
+
+    while getopts "hv" opt; do
+        case "$opt" in
+            h)
+                cat <<End-Of-Usage
+  $ ${FUNCNAME[0]} [option] <archives>
+  options:
+    -h  show this message and exit
+    -v  verbosely list files processed
+End-Of-Usage
+                return
+                ;;
+            v)
+                local -r verbose='v'
+                ;;
+            ?)
+                extract -h >&2
+                return 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [ $# -eq 0 ] && extract -h && return 1
+    while [ $# -gt 0 ]; do
+        if [ -f "$1" ]; then
+            case "$1" in
+                *.tar.bz2 | *.tbz | *.tbz2) tar "x${verbose}jf" "$1" ;;
+                *.tar.gz | *.tgz) tar x"${verbose}zf" "$1" ;;
+                *.tar.xz)
+                    xz --decompress "$1"
+                    set -- "$@" "${1:0:-3}"
+                    ;;
+                *.tar.Z)
+                    uncompress "$1"
+                    set -- "$@" "${1:0:-2}"
+                    ;;
+                *.bz2) bunzip2 "$1" ;;
+                *.deb) dpkg-deb -x"${verbose}" "$1" "${1:0:-4}" ;;
+                *.pax.gz)
+                    gunzip "$1"
+                    set -- "$@" "${1:0:-3}"
+                    ;;
+                *.gz) gunzip "$1" ;;
+                *.pax) pax -r -f "$1" ;;
+                *.pkg) pkgutil --expand "$1" "${1:0:-4}" ;;
+                *.rar) unrar x "$1" ;;
+                *.rpm) rpm2cpio "$1" | cpio -idm"${verbose}" ;;
+                *.tar) tar "x${verbose}f" "$1" ;;
+                *.txz)
+                    mv "$1" "${1:0:-4}.tar.xz"
+                    set -- "$@" "${1:0:-4}.tar.xz"
+                    ;;
+                *.xz) xz --decompress "$1" ;;
+                *.zip | *.war | *.jar) unzip "$1" ;;
+                *.Z) uncompress "$1" ;;
+                *.7z) 7za x "$1" ;;
+                *) echo "'$1' cannot be extracted via extract" >&2 ;;
+            esac
+        else
+            echo "extract: '$1' is not a valid file" >&2
+        fi
+        shift
+    done
+}
+
+chgext() {
+    # chgext: Batch change extension
+    # USAGE: 'chgext html php' # Changes all html files to php
+
+    local f
+    for f in *."$1"; do mv "$f" "${f%."$1"}.$2"; done
+}
+
+if ! command -v help &>/dev/null; then
+    help() {
+        # DESC:		A little helper for man/alias/function info
+        # ARGS:		$1 - Command
+        # NOTE:	  http://brettterpstra.com/2016/05/18/shell-tricks-halp-a-universal-help-tool/
+
+        local apro=0
+        local helpstring="Use: help COMMAND"
+        local opt OPTIND
+
+        OPTIND=1
+        while getopts "kh" opt; do
+            case ${opt} in
+                k) apro=1 ;;
+                h)
+                    echo -e "${helpstring}"
+                    return
+                    ;;
+                *) return 1 ;;
+            esac
+        done
+        shift $((OPTIND - 1))
+
+        if [ $# -ne 1 ]; then
+            echo -e "${helpstring}"
+            return 1
+        fi
+
+        local cmd="${1}"
+        local cmdtest
+        [[ -n ${ZSH_NAME} ]] && cmdtest="$(type -w "${cmd}" | awk -F': ' '{print $2}')"
+        [[ -n ${BASH} ]] && cmdtest=$(type -t "${cmd}")
+
+        if [ -z "${cmdtest}" ]; then
+            echo -e "${yellow}'${cmd}' is not a known command${reset}"
+            if [[ ${apro} == 1 ]]; then
+                man -k "${cmd}"
+            else
+                return 1
+            fi
+        fi
+
+        if [[ ${cmdtest} == "command" || ${cmdtest} == "file" ]]; then
+            local location
+            location=$(command -v "${cmd}")
+            local bindir="${HOME}/bin/${cmd}"
+            if [[ ${location} == "${bindir}" ]]; then
+                echo -e "${yellow}${cmd} is a custom script${reset}\n"
+                "${bindir}" -h
+            else
+                if tldr "${cmd}" &>/dev/null; then
+                    tldr "${cmd}"
+                else
+                    man "${cmd}"
+                fi
+            fi
+        elif [[ ${cmdtest} == "alias" ]]; then
+            echo -ne "${yellow}${cmd} is an alias:  ${reset}"
+            alias "${cmd}" | sed -E "s/alias $cmd='(.*)'/\1/"
+        elif [[ ${cmdtest} == "builtin" ]]; then
+            echo -ne "${yellow}${cmd} is a builtin command${reset}"
+            if tldr "${cmd}" &>/dev/null; then
+                tldr "${cmd}"
+            else
+                man "${cmd}"
+            fi
+        elif [[ ${cmdtest} == "function" ]]; then
+            echo -e "${yellow}${cmd} is a function${reset}"
+            [[ -n ${ZSH_NAME} ]] && type -f "${cmd}" | tail -n +1
+            [[ -n ${BASH} ]] && type "${cmd}" | tail -n +2
+        fi
+    }
+fi
+
+escape() {
+    # DESC:		Escape special characters in a string
+    printf "%s" "${@}" | sed 's/[]\.|$(){}?+*^]/\\&/g'
+}
+
+htmldecode() {
+    # DESC:		Decode HTML entities in a string
+    # USAGE:	htmlDecode <string>
+
+    local sedLocation
+    sedLocation="${HOME}/.sed/htmlDecode.sed"
+    if [ -f "${sedLocation}" ]; then
+        echo "${1}" | sed -f "${sedLocation}"
+    else
+        echo "error. Could not find sed translation file"
+    fi
+}
+
+htmlencode() {
+    # DESC:		Encode characters in a string to HTML
+    # USAGE:	htmlEncode <string>
+
+    local sedLocation
+    sedLocation="${HOME}/.sed/htmlEncode.sed"
+    if [ -f "${sedLocation}" ]; then
+        echo "${1}" | sed -f "${sedLocation}"
+    else
+        echo "error. Could not find sed translation file"
+    fi
+}
+
+urlencode() {
+    # DESC:		Encode a URL
+    #         from: https://gist.github.com/cdown/1163649
+    # ARGS:		None
+    # OUTS:		None
+    # USAGE:	urlencode <string>
+
+    local i
+    local LANG=C
+    local length="${#1}"
+    for ((i = 0; i < length; i++)); do
+        local c="${1:i:1}"
+        case ${c} in
+            [a-zA-Z0-9.~_-]) printf "%s" "${c}" ;;
+            *) printf '%%%02X' "'${c}" ;;
+        esac
+    done
+}
+
+alias urldecode='python -c "import sys, urllib as ul; print ul.unquote_plus(sys.argv[1])"' # dev: Decode a URL [ULR]

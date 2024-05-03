@@ -1,0 +1,75 @@
+{{- if (and (eq .chezmoi.os "darwin") (lookPath "brew")) }}
+
+# Don't send analytics data
+export HOMEBREW_NO_ANALYTICS=1
+
+# Set homebrew paths for GNU utilities
+_homebrewPaths=(
+    "$(brew --prefix)/opt/coreutils/libexec/gnubin"
+    "$(brew --prefix)/opt/findutils/libexec/gnubin"
+    "$(brew --prefix)/opt/gnu-getopt/bin"
+    "$(brew --prefix)/opt/gnu-sed/libexec/gnubin"
+    "$(brew --prefix)/opt/gnu-tar/libexec/gnubin"
+    "$(brew --prefix)/opt/grep/libexec/gnubin"
+    "$(brew --prefix)/sbin"
+)
+
+for _path in "${_homebrewPaths[@]}"; do
+    if [[ -d ${_path} ]]; then
+        if ! printf "%s" "${_path}" | grep -q "${PATH}"; then
+            PATH="${_path}:${PATH}"
+        fi
+    fi
+done
+
+eval "$($(brew --prefix)/bin/brew shellenv)"
+
+# if [[ -s /usr/local/etc/profile.d/autojump.sh ]]; then
+#     source "/usr/local/etc/profile.d/autojump.sh"
+# fi
+# shellcheck disable=SC1091
+if [[ -n ${BASH} ]] && [ -f "/usr/local/etc/profile.d/bash_completion.sh" ]; then
+    source "/usr/local/etc/profile.d/bash_completion.sh"
+fi
+
+if [ -f "$(brew --repository)/bin/src-hilite-lesspipe.sh" ]; then
+    export LESSOPEN
+    LESSOPEN="| $(brew --repository)/bin/src-hilite-lesspipe.sh %s"
+    export LESS=' -R -z-4'
+fi
+
+# /Applications is now the default but leaving this for posterity
+export HOMEBREW_CASK_OPTS="--appdir=/Applications"
+export HOMEBREW_NO_INSTALL_CLEANUP=FALSE
+
+# Aliases
+
+alias brwe='brew'                   # Fix common typo
+alias btop="brew leaves -r"         # Show only top-level manually installed packages
+alias buses="brew uses --installed" # Show all packages depending on a [package]
+alias bdeps="brew deps --tree"      # Show all dependencies of a [package]
+
+bup() {
+    if command -v brewup >/dev/null 2>&1; then
+        args="$*"
+        if (("${#args[@]}" == 0)); then
+            brewup
+        else
+            # shellcheck disable=SC2048,SC2086
+            brewup $*
+        fi
+    elif command -v brew >/dev/null 2>&1; then
+        local brewScript="${HOME}/bin/updateHomebrew"
+        if [ -e "${brewScript}" ]; then
+            "${brewScript}" "$*"
+        else
+            brew update
+            brew upgrade
+            brew cleanup
+            brew autoremove
+        fi
+    else
+        echo "brew not found"
+    fi
+}
+{{- end }}

@@ -1,0 +1,34 @@
+{{- if .use_secrets -}}
+#!/usr/bin/env bash
+
+set -o nounset             # Disallow expansion of unset variables
+set -o errtrace            # Trap errors in subshells and functions
+set -o errexit             # Exit on error. Append '||true' if you expect an error
+set -o pipefail            # Use last non-zero exit code in a pipeline
+shopt -s nullglob globstar # Make `for f in *.txt` work when `*.txt` matches zero files
+IFS=$' \n\t'               # Set IFS to preferred implementation
+
+if [ ! -d "${HOME}/.ssh_keys" ]; then
+    mkdir -p "${HOME}/.ssh_keys"
+    echo "[notice] Created directory: ${HOME}/.ssh_keys"
+fi
+
+{{ range .remote_servers -}}
+updated=false
+if [ ! -f "${HOME}/.ssh_keys/{{ .name }}" ]; then
+    echo "{{ range (onepassword .op_id).fields }}{{ if eq .label "privkey" }}{{ .value }}{{ end }}{{ end }}" >"${HOME}/.ssh_keys/{{ .name }}"
+    chmod 600 "${HOME}/.ssh_keys/{{ .name }}"
+    updated=true
+fi
+if [ ! -f "${HOME}/.ssh_keys/{{ .name }}.pub" ]; then
+    echo "{{ range (onepassword .op_id).fields }}{{ if eq .label "pubkey" }}{{ .value }}{{ end }}{{ end }}" >"${HOME}/.ssh_keys/{{ .name }}.pub"
+    chmod 644 "${HOME}/.ssh_keys/{{ .name }}.pub"
+    updated=true
+fi
+
+if [ "${updated}" = true ]; then
+    echo "[notice] Created SSH key pair for: {{ .name }}"
+fi
+
+{{ end -}}
+{{ end -}}

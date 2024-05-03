@@ -1,3 +1,0 @@
-set completion-ignore-case on
-"\e[1;5C": forward-word
-"\e[1;5D": backward-word

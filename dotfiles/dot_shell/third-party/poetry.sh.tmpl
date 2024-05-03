@@ -1,0 +1,32 @@
+{{- if lookPath "poetry" -}}
+
+# Poetry completions for zsh
+if [[ -n ${ZSH_NAME} ]]; then
+    if [ ! -d "${HOME}/.zfunc" ]; then
+        mkdir -p "${HOME}/.zfunc"
+    fi
+    if [ ! -f "${HOME}/.zfunc/poetry" ]; then
+        poetry completions zsh >"${HOME}/.zfunc/poetry"
+    fi
+fi
+
+function with_no_poetry() {
+    # Prefixing any command with `wnp` runs it outside the virtualenv if a virtualenv is active.
+    local last_env
+    if [[ -v VIRTUAL_ENV ]]; then
+        last_env="${VIRTUAL_ENV}"
+        deactivate
+    fi
+    "$@"
+    ret=$?
+    # shellcheck disable=SC1091
+    if [[ -v last_env ]]; then
+        . "${last_env}/bin/activate"
+    fi
+    return ${ret}
+}
+
+alias pshell='poetry shell' # dev: Activate the virtualenv
+alias wnp='with_no_poetry'  # dev: Run a command outside the virtualenv
+
+{{- end }}

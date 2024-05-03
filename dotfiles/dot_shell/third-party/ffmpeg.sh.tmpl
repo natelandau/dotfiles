@@ -1,0 +1,3 @@
+{{- if lookPath "ffprobe" }}
+alias ffjson="ffprobe -v quiet -print_format json -show_format -show_streams" # ffprobe streams in json format
+{{- end }}

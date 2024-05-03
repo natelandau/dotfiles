@@ -1,0 +1,22 @@
+{
+    "name": "nate",
+    "displayName": "natelandauTheme",
+    "description": "My Custom Theme",
+    "version": "0.0.1",
+    "publisher": "natenate",
+    "engines": {
+        "vscode": "^1.19.0"
+    },
+    "categories": [
+        "Themes"
+    ],
+    "contributes": {
+        "themes": [
+            {
+                "label": "natelandauTheme",
+                "uiTheme": "vs-dark",
+                "path": "./themes/natelandauTheme-color-theme.json"
+            }
+        ]
+    }
+}

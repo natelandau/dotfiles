@@ -1,0 +1,57 @@
+clean_filenames = true
+date_format = "%Y-%m-%d"
+format_dates = true
+ignore_dotfiles = true
+ignore_file_regex = ''
+ignored_files = []
+match_case_list = [
+    "BWS",
+    "CEO",
+    "CPO",
+    "CPTO",
+    "CTO",
+    "CapEx",
+    "DD",
+    "DEI",
+    "DEIJ",
+    "EULA",
+    "HQ",
+    "HQ",
+    "MM",
+    "NDA",
+    "NPR",
+    "NY",
+    "NYC",
+    "NYPR",
+    "OKR",
+    "OKRs",
+    "PDDE",
+    "PRFAQ",
+    "PRFAQs",
+    "QuickBrownFox",
+    "README",
+    "SVP",
+    "VP",
+    "YY",
+    "YYYY",
+    "theSkimm",
+]
+overwrite_existing = false
+separator = "space"
+split_words = true
+stopwords = []
+strip_stopwords = true
+transform_case = "title"
+use_synonyms = true
+
+[projects]
+    [projects.personal]
+        ignore_file_regex = '(\.(mov|MOV|ttf|TTF|sh|png|key|pub|jpg|jpeg|svg|heic|otf|thmx|zip|JPG|JPEG|HEIC|OTF)$|photo-\\d+)'
+        path              = "~/personal-docs"
+        project_depth     = 0
+        project_type      = "jd"
+
+    [projects.work]
+        path          = "~/work-docs/theskimm"
+        project_depth = 1
+        project_type  = "jd"
