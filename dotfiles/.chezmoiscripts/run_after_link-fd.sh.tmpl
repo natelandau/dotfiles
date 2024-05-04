@@ -1,0 +1,15 @@
+{{- if (and (lookPath "fdfind") (ne .chezmoi.os "darwin")) -}}
+#!/usr/bin/env bash
+
+# https://github.com/sharkdp/fd
+# On debian, note that the binary is called fdfind as the binary name fd is already used by another
+# package. It is recommended that after installation, you add a link to fd by executing
+# command ln -s $(which fdfind) ~/.local/bin/fd, in order to use fd in the same way as in
+# this documentation. Make sure that $HOME/.local/bin is in your $PATH.
+
+if [ ! -e "${HOME}/.local/bin/fd" ]; then
+    ln -s $(which fdfind) "${HOME}/.local/bin/fd"
+
+    echo "[notice] Linked fd binary"
+fi
+{{- end }}
