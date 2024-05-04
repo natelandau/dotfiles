@@ -17,3 +17,4 @@ disable=SC1054
 disable=SC1073
 disable=SC1009
 disable=SC1083
+disable=SC1091

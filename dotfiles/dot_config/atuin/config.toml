@@ -37,25 +37,31 @@ history_filter = [
     '^(rpi|mf)\d$',
     '^\.\.$',
     '^\w+ --help$',
+    '^bup$',
     '^cz c$',
     '^emulate bash',
     '^exit$',
     '^fork$',
-    '^ga \.$',
+    '^ga .*$',
+    '^gcm ',
+    '^git amend',
     '^gs$',
     '^ll$',
     '^mini$',
-    '^poe \w+',
+    '^pshell$',
     '^pull$',
     '^push$',
-    '^rmd$',
-    '^valentina$',
+    '^source ',
+    '^sourcea$',
+    '^synology$',
+    '^vnc$',
     '^~$',
+    'cd \.\.',
 ]
 
 [stats]
     ## Configures commands where we should consider the subcommand as part of the statistics.
-    ## For example, consider kubectl get rather than just kubectl.
+    ## For example, consider 'kubectl get' rather than just kubectl.
     common_subcommands = [
         "brew",
         "cd",
