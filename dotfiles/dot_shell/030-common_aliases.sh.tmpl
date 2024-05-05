@@ -24,11 +24,7 @@ alias lx='eza -lbhHigUmuSa@ --color-scale --git --icons' # system: List files wi
 alias lt='eza --tree --level=2 --icons'                  # system: List files in a tree view
 alias llt='eza -lahF --tree --level=2 --icons'           # system: List files in a tree view with long format
 alias ltt='eza -lahF --icons | grep "$(date +"%d %b")"'  # system: List files modified today
-{{- else if lookPath "colorls" }}
-alias ll="colorls -1A --git-status"
-alias ls="colorls -A"
-alias ltt='colorls -A | grep "$(date +"%d %b")"'
-{{- else if .chezmoi.os "darwin" }}
+{{- else if eq .chezmoi.os "darwin" }}
 alias ls="ls -G"
 alias ll='ls -FGlAhpv'
 alias ltt='ls -FlAhpv| grep "$(date +"%d %b")"' # system: List files modified this day

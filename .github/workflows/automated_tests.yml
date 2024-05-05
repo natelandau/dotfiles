@@ -1,0 +1,134 @@
+---
+name: "Automated Tests"
+
+on:
+    workflow_dispatch:
+    push:
+        paths:
+            - ".github/workflows/automated-tests.yml"
+            - ".github/actions/**"
+            - "dotfiles/**"
+        branches:
+            - master
+            - main
+    pull_request:
+        types:
+            - opened
+            - reopened
+            - synchronize
+        paths:
+            - ".github/workflows/automated-tests.yml"
+            - ".github/actions/**"
+            - "dotfiles/**"
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    test-dotfiles:
+        # runs-on: ubuntu-latest
+        strategy:
+            fail-fast: true
+            matrix:
+                os: ["ubuntu-latest", "macos-latest"]
+        runs-on: ${{ matrix.os }}
+        steps:
+            # - name: Install APT dependencies
+            #   if: startsWith(matrix.os, 'ubuntu')
+            #   run: |
+            #       apt-get update
+            #       apt-get install -y git zsh
+
+            # ----------------------------------------------
+            #    Checkout repository
+            # ----------------------------------------------
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Copy repository to /home/runner/
+              run: |
+                  if [ -d /home/runner ]; then homedir="/home/runner"; else homedir="/Users/runner"; fi
+
+                  mkdir -p ${homedir}/.local/share/chezmoi
+                  cp -a . ${homedir}/.local/share/chezmoi
+
+            # ----------------------------------------------
+            # Create config file
+            # ----------------------------------------------
+            - name: Create config file
+              run: |
+                  if [ -d /home/runner ]; then homedir="/home/runner"; else homedir="/Users/runner"; fi
+
+                  mkdir -p ${homedir}/.config/chezmoi
+                  echo '[data]' > ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    email        = "test@test.com"' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    github_user  = "natelandau"' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    home_network = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    use_secrets  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
+
+            # ----------------------------------------------
+            # Install chezmoi
+            # ----------------------------------------------
+            - name: Install chezmoi
+              run: |
+                  sh -c "$(curl -fsLS get.chezmoi.io)"
+
+            # ----------------------------------------------
+            # Run chezmoi apply
+            # ----------------------------------------------
+            - name: Run chezmoi apply
+              run: |
+                  ./bin/chezmoi apply
+
+            # ----------------------------------------------
+            # UBUNTU: Confirm dotfiles are installed
+            # ----------------------------------------------
+            - name: Confirm dotfiles are installed
+              if: startsWith(matrix.os, 'ubuntu')
+              run: |
+                  echo "------- Testing files -------"
+                  cd /home/runner
+                  # echo "pwd: $(pwd)"
+                  # ls -al
+
+                  # Confirm files exist
+                  for file in .zshrc .bashrc .gitconfig .shell .ssh/config .shell/050-linux.sh; do
+                    if [ ! -e $file ]; then
+                        echo "$file not found"
+                        exit 1
+                    fi
+                  done
+
+                  # Confirm files don't exist
+                  for file in Library .shell/050-macos.sh; do
+                    if [ -e $file ]; then
+                        echo "$file found"
+                        exit 1
+                    fi
+                  done
+
+            # ----------------------------------------------
+            # MACOS: Confirm dotfiles are installed
+            # ----------------------------------------------
+            - name: Confirm dotfiles are installed
+              if: startsWith(matrix.os, 'macos')
+              run: |
+                  echo "------- Testing files -------"
+                  cd /Users/runner
+
+                  # Confirm files exist
+                  for file in .zshrc .bashrc .gitconfig .shell .ssh/config Library .shell/050-macos.sh; do
+                    if [ ! -e $file ]; then
+                        echo "$file not found"
+                        exit 1
+                    fi
+                  done
+
+                  # Confirm files don't exist
+                  for file in .shell/050-linux.sh; do
+                    if [ -e $file ]; then
+                        echo "$file found"
+                        exit 1
+                    fi
+                  done

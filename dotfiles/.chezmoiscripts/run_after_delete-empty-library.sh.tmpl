@@ -1,0 +1,14 @@
+{{- if ne .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+
+shopt -s nullglob
+shopt -s dotglob
+
+found=
+for i in "${HOME}/Library"/*; do
+    found=: && break
+done
+
+[[ -n $found ]] || rmdir "${HOME}/Library"
+
+{{- end }}
