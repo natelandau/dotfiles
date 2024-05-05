@@ -1,3 +1,4 @@
+{{- if lookPath "nano" -}}
 #!/usr/bin/env bash
 
 # This script installs nano syntax highlighting for various languages.
@@ -28,3 +29,5 @@ if [ ! -d "${HOME}/.nano" ]; then
     rm -rf nanorc-master
     rm /tmp/nanorc.zip
 fi
+
+{{- end }}
