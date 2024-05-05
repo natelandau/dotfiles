@@ -9,11 +9,17 @@ aup() {
     apt list --upgradable
 }
 
-# Fix potential locale issues
-export LC_ALL=C
-
 if [ -e "/usr/bin/snap" ]; then
     PATH="/snap/bin:${PATH}"
+fi
+
+alias logs='journalctl -fu'
+alias logs-all='journalctl -u'
+alias ctl='systemctl'
+
+# Show banner on terminal startup
+if [[ -f "${HOME}/.shell/scripts/debian-startup.sh" ]]; then
+    ${HOME}/.shell/scripts/debian-startup.sh
 fi
 
 {{- end }}

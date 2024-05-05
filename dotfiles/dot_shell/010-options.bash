@@ -44,8 +44,6 @@ bind '"\e[D": backward-char'
 ####################### GENERAL #######################
 
 export BLOCKSIZE=1k
-export LANG="en_US"
-export LC_ALL="en_US.UTF-8"
 export LESS_TERMCAP_md="${yellow}" # Highlight section titles in manual pages
 set -o noclobber                   # Prevent file overwrite on stdout redirection
 shopt -s checkwinsize              # Update window size after every command
