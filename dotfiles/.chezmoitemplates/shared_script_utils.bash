@@ -10,12 +10,12 @@ DRYRUN=false
 # Set Options
 # ######################
 trap '_trapCleanup_ ${LINENO} ${BASH_LINENO} "${BASH_COMMAND}" "${FUNCNAME[*]}" "${0}" "${BASH_SOURCE[0]}"' EXIT INT TERM SIGINT SIGQUIT SIGTERM
-set -o errtrace            # Trap errors in subshells and functions
-set -o errexit             # Exit on error. Append '||true' if you expect an error
-set -o pipefail            # Use last non-zero exit code in a pipeline
-shopt -s nullglob globstar # Make `for f in *.txt` work when `*.txt` matches zero files
-IFS=$' \n\t'               # Set IFS to preferred implementation
-set -o nounset             # Disallow expansion of unset variables
+set -o errtrace # Trap errors in subshells and functions
+set -o errexit  # Exit on error. Append '||true' if you expect an error
+set -o pipefail # Use last non-zero exit code in a pipeline
+IFS=$' \n\t'    # Set IFS to preferred implementation
+set -o nounset  # Disallow expansion of unset variables
+# shopt -s nullglob globstar # Make `for f in *.txt` work when `*.txt` matches zero files
 
 # Import functions
 # ######################
