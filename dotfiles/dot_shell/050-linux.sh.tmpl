@@ -18,8 +18,8 @@ alias logs-all='journalctl -u'
 alias ctl='systemctl'
 
 # Show banner on terminal startup
-if [[ -f "${HOME}/.shell/scripts/debian-startup.sh" ]]; then
-    ${HOME}/.shell/scripts/debian-startup.sh
+if [[ -f "${HOME}/.local/scripts/debian-startup.sh" ]]; then
+    ${HOME}/.local/scripts/debian-startup.sh
 fi
 
 {{- end }}
