@@ -9,6 +9,7 @@ README.md
 Library/Application Support
 .librewolf
 .vscode
+Library
 {{ end }}
 {{ if ne .chezmoi.os "linux" }}
 .config/halp
