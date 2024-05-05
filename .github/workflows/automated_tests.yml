@@ -123,8 +123,8 @@ jobs:
               run: |
                   echo "------- Testing files -------"
                   cd /Users/runner
-                  # echo "pwd: $(pwd)"
-                  # ls -al
+                  echo "pwd: $(pwd)"
+                  ls -al
 
                   # Confirm files exist
                   for file in .zshrc .bashrc .gitconfig .shell .ssh/config Library .shell/050-macos.sh; do
