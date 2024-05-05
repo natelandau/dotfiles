@@ -1,4 +1,5 @@
-{{- if eq .chezmoi.os "darwin" -}}
+{{- /* Don't run this script in CI, ci username is runner */ -}}
+{{- if (and (eq .chezmoi.os "darwin") (ne .chezmoi.username "runner")) -}}
 #!/usr/bin/env bash
 
 {{ template "shared_script_utils.bash" }}
