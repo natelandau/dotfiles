@@ -1,0 +1,87 @@
+---
+name: "Automated Tests"
+
+on:
+    workflow_dispatch:
+    push:
+        paths:
+            - ".github/workflows/automated-tests.yml"
+            - ".github/actions/**"
+            - "dotfiles/**"
+        branches:
+            - master
+            - main
+    pull_request:
+        types:
+            - opened
+            - reopened
+            - synchronize
+        paths:
+            - ".github/workflows/automated-tests.yml"
+            - ".github/actions/**"
+            - "dotfiles/**"
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    test-dotfiles:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: true
+            matrix:
+                include:
+                    - name: ubuntu
+                      os: ubuntu-latest
+                    - name: macOS
+                      os: macos-latest
+        steps:
+            - name: Install APT dependencies
+              if: matrix.name == 'ubuntu'
+              run: |
+                  sudo apt-get install -y git build-essential
+
+            # ----------------------------------------------
+            #    Checkout repository
+            # ----------------------------------------------
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  path: .local/share/chezmoi
+
+            # ----------------------------------------------
+            # Create config file
+            # ----------------------------------------------
+            - name: Create config file
+              run: |
+                  mkdir -p .config/chezmoi
+                  echo '[data]' > .config/chezmoi/chezmoi.toml
+                  echo '    email        = "test@test.com"' >> .config/chezmoi/chezmoi.toml
+                  echo '    github_user  = "natelandau"' >> .config/chezmoi/chezmoi.toml
+                  echo '    home_network = false' >> .config/chezmoi/chezmoi.toml
+                  echo '    use_secrets  = false' >> .config/chezmoi/chezmoi.toml
+
+            # ----------------------------------------------
+            # Install chezmoi
+            # ----------------------------------------------
+            - name: Install chezmoi
+              run: |
+                  sh -c "$(curl -fsLS get.chezmoi.io)"
+
+            # ----------------------------------------------
+            # Run chezmoi apply
+            # ----------------------------------------------
+            - name: Run chezmoi apply
+              run: |
+                  chezmoi apply --verbose
+
+            # ----------------------------------------------
+            # Confirm dotfiles are installed
+            # ----------------------------------------------
+            - name: Confirm dotfiles are installed
+              run: |
+                  echo "------ ls -la ~ ------"
+                  ls -la ~
+                  echo "------ ls -la ~/.shell ------"
+                  ls -la ~/.shell
