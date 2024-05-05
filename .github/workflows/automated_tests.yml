@@ -46,26 +46,26 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Copy repository to /runner/
+            - name: Copy repository to /home/runner/
               run: |
                   echo "whoami: $(whoami)"
                   echo "pwd: $(pwd)"
                   echo "home: $(echo $HOME)"
                   ls -al
-                  mkdir -p /runner/.local/share/chezmoi
-                  cp -a . /runner/.local/share/chezmoi
+                  mkdir -p /home/runner/.local/share/chezmoi
+                  cp -a . /home/runner/.local/share/chezmoi
 
             # ----------------------------------------------
             # Create config file
             # ----------------------------------------------
             - name: Create config file
               run: |
-                  mkdir -p /runner/.config/chezmoi
-                  echo '[data]' > /runner/.config/chezmoi/chezmoi.toml
-                  echo '    email        = "test@test.com"' >> /runner/.config/chezmoi/chezmoi.toml
-                  echo '    github_user  = "natelandau"' >> /runner/.config/chezmoi/chezmoi.toml
-                  echo '    home_network = false' >> /runner/.config/chezmoi/chezmoi.toml
-                  echo '    use_secrets  = false' >> /runner/.config/chezmoi/chezmoi.toml
+                  mkdir -p /home/runner/.config/chezmoi
+                  echo '[data]' > /home/runner/.config/chezmoi/chezmoi.toml
+                  echo '    email        = "test@test.com"' >> /home/runner/.config/chezmoi/chezmoi.toml
+                  echo '    github_user  = "natelandau"' >> /home/runner/.config/chezmoi/chezmoi.toml
+                  echo '    home_network = false' >> /home/runner/.config/chezmoi/chezmoi.toml
+                  echo '    use_secrets  = false' >> /home/runner/.config/chezmoi/chezmoi.toml
 
             # ----------------------------------------------
             # Install chezmoi
