@@ -50,6 +50,7 @@ jobs:
               run: |
                   echo "whoami: $(whoami)"
                   echo "pwd: $(pwd)"
+                  echo "home: $(echo $HOME)"
                   ls -al
                   mkdir -p /runner/.local/share/chezmoi
                   cp -a . /runner/.local/share/chezmoi
