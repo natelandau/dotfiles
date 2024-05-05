@@ -52,20 +52,25 @@ jobs:
                   echo "pwd: $(pwd)"
                   echo "home: $(echo $HOME)"
                   ls -al
-                  mkdir -p /home/runner/.local/share/chezmoi
-                  cp -a . /home/runner/.local/share/chezmoi
+
+                  if [ -d /home/runner ]; then homdir="/home/runner"; else homdir="/Users/runner"; fi
+
+                  mkdir -p ${homdir}/.local/share/chezmoi
+                  cp -a . ${homdir}/.local/share/chezmoi
 
             # ----------------------------------------------
             # Create config file
             # ----------------------------------------------
             - name: Create config file
               run: |
-                  mkdir -p /home/runner/.config/chezmoi
-                  echo '[data]' > /home/runner/.config/chezmoi/chezmoi.toml
-                  echo '    email        = "test@test.com"' >> /home/runner/.config/chezmoi/chezmoi.toml
-                  echo '    github_user  = "natelandau"' >> /home/runner/.config/chezmoi/chezmoi.toml
-                  echo '    home_network = false' >> /home/runner/.config/chezmoi/chezmoi.toml
-                  echo '    use_secrets  = false' >> /home/runner/.config/chezmoi/chezmoi.toml
+                  if [ -d /home/runner ]; then homdir="/home/runner"; else homdir="/Users/runner"; fi
+
+                  mkdir -p ${homedir}/.config/chezmoi
+                  echo '[data]' > ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    email        = "test@test.com"' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    github_user  = "natelandau"' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    home_network = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    use_secrets  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
 
             # ----------------------------------------------
             # Install chezmoi
@@ -115,7 +120,7 @@ jobs:
               if: startsWith(matrix.os, 'macos')
               run: |
                   echo "------- Testing files -------"
-                  cd /home/runner
+                  cd /Users/runner
                   # echo "pwd: $(pwd)"
                   # ls -al
 
