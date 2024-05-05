@@ -42,7 +42,6 @@ history_filter = [
     '^emulate bash',
     '^exit$',
     '^fork$',
-    '^ga .*$',
     '^gcm ',
     '^git amend',
     '^gs$',

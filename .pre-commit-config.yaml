@@ -26,7 +26,6 @@ repos:
           - id: check-xml
           - id: check-yaml
           - id: destroyed-symlinks
-          - id: detect-aws-credentials
           - id: detect-private-key
           - id: end-of-file-fixer
           - id: fix-byte-order-marker
@@ -62,4 +61,4 @@ repos:
             entry: shellcheck
             language: system
             types: [shell]
-            exclude: '.*\.bats|dotfiles/shell|dotfiles/\.zshrc'
+            exclude: "dotfiles/dot_zshrc|.*\\.zsh$"

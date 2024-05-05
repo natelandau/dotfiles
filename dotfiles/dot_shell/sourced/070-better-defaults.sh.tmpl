@@ -1,5 +1,3 @@
-export EDITOR="$(command -v code nano | head -n 1)"
-
 alias cp='cp -iv'
 alias grep='grep --color=always'
 alias mkdir='mkdir -pv'
@@ -33,10 +31,9 @@ alias cat="bat" # Prefer `bat` over `cat`
 {{- end }}
 
 {{- if lookPath "rip" }}
-alias rm='rip'
-alias rmd='rip -i'
+alias rmd='rip'
 {{- else }}
-alias rm='rm -i'
+alias rm='rm'
 alias rmd='rm -rf'
 {{- end }}
 

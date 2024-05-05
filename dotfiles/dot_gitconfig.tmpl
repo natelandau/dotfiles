@@ -1,6 +1,10 @@
 [alias]
     aliases = "!if command -v pygmentize &>/dev/null; then git config -l | grep alias | cut -c 7- | pygmentize -l ini -O style=nord; else git config -l | grep alias | cut -c 7-; fi"
     amend = commit --amend
+
+	# Switch to a branch, creating it if necessary.
+	go = "!f() { git checkout -b \"$1\" 2> /dev/null || git checkout \"$1\"; }; f"
+
     branches = branch -a
     discard = checkout --
     filelog = log -u # All the commits related to a file
