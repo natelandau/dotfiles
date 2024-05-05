@@ -35,7 +35,7 @@ jobs:
         runs-on: ${{ matrix.os }}
         steps:
             # - name: Install APT dependencies
-            #   if: matrix.name == 'ubuntu'
+            #   if: startsWith(matrix.os, 'ubuntu')
             #   run: |
             #       apt-get update
             #       apt-get install -y git zsh
@@ -48,6 +48,9 @@ jobs:
 
             - name: Copy repository to /root/
               run: |
+                  echo "whoami: $(whoami)"
+                  echo "pwd: $(pwd)"
+                  ls -al
                   mkdir -p /root/.local/share/chezmoi
                   cp -a . /root/.local/share/chezmoi
 
