@@ -1,4 +1,10 @@
-{{ if .use_secrets }}
+# Prefer US English and use UTF-8.
+export LANG='en_US.UTF-8'
+export LC_ALL='en_US.UTF-8'
+
+export EDITOR="$(command -v code nano | head -n 1)"
+
+{{ if .use_secrets -}}
 
 export HOMEBREW_GITHUB_API_TOKEN="{{ range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{ if eq .label "HOMEBREW_GITHUB_API_TOKEN" }}{{ .value }}{{ end }}{{ end }}"
 export GITHUB_TOKEN="{{ range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{ if eq .label "PERSONAL_GITHUB_TOKEN" }}{{ .value }}{{ end }}{{ end }}"
