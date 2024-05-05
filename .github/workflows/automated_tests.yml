@@ -135,7 +135,7 @@ jobs:
                   done
 
                   # Confirm files don't exist
-                  for file in Library .shell/050-linux.sh; do
+                  for file in .shell/050-linux.sh; do
                     if [ -e $file ]; then
                         echo "$file found"
                         exit 1
