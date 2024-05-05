@@ -1,3 +1,4 @@
+{{- if eq .chezmoi.os "darwin" -}}
 #!/usr/bin/env bash
 
 # Mac OS X configuration
@@ -18,11 +19,326 @@
 #   3. Make a change to your system.
 #   4. Store new defaults in file: `defaults read > after`
 #   5. Diff the files: `diff before after`
-#
-# @see: http://secrets.blacktree.com/?showapp=com.apple.finder
-# @see: https://github.com/herrbischoff/awesome-macos-command-line
-#
-# @author Jeff Geerling
+
+# Set Defaults
+# ######################
+LOGFILE="${HOME}/logs/$(basename "$0").log"
+QUIET=false
+LOGLEVEL=ERROR
+VERBOSE=false
+FORCE=false
+DRYRUN=false
+
+# Set Options
+# ######################
+trap '_trapCleanup_ ${LINENO} ${BASH_LINENO} "${BASH_COMMAND}" "${FUNCNAME[*]}" "${0}" "${BASH_SOURCE[0]}"' EXIT INT TERM SIGINT SIGQUIT SIGTERM
+set -o errtrace            # Trap errors in subshells and functions
+set -o errexit             # Exit on error. Append '||true' if you expect an error
+set -o pipefail            # Use last non-zero exit code in a pipeline
+shopt -s nullglob globstar # Make `for f in *.txt` work when `*.txt` matches zero files
+IFS=$' \n\t'               # Set IFS to preferred implementation
+set -o nounset             # Disallow expansion of unset variables
+
+# Import functions
+# ######################
+_setColors_() {
+    # DESC:
+    #         Sets colors use for alerts.
+    # ARGS:
+    #         None
+    # OUTS:
+    #         None
+    # USAGE:
+    #         printf "%s\n" "${blue}Some text${reset}"
+
+    if tput setaf 1 >/dev/null 2>&1; then
+        bold=$(tput bold)
+        underline=$(tput smul)
+        reverse=$(tput rev)
+        reset=$(tput sgr0)
+
+        if [[ $(tput colors) -ge 256 ]] >/dev/null 2>&1; then
+            white=$(tput setaf 231)
+            blue=$(tput setaf 38)
+            yellow=$(tput setaf 11)
+            green=$(tput setaf 82)
+            red=$(tput setaf 9)
+            purple=$(tput setaf 171)
+            gray=$(tput setaf 250)
+        else
+            white=$(tput setaf 7)
+            blue=$(tput setaf 38)
+            yellow=$(tput setaf 3)
+            green=$(tput setaf 2)
+            red=$(tput setaf 9)
+            purple=$(tput setaf 13)
+            gray=$(tput setaf 7)
+        fi
+    else
+        bold="\033[4;37m"
+        reset="\033[0m"
+        underline="\033[4;37m"
+        # shellcheck disable=SC2034
+        reverse=""
+        white="\033[0;37m"
+        blue="\033[0;34m"
+        yellow="\033[0;33m"
+        green="\033[1;32m"
+        red="\033[0;31m"
+        purple="\033[0;35m"
+        gray="\033[0;37m"
+    fi
+}
+_setColors_
+
+_alert_() {
+    # DESC:
+    #         Controls all printing of messages to log files and stdout.
+    # ARGS:
+    #         $1 (required) - The type of alert to print
+    #                         (success, header, notice, dryrun, debug, warning, error,
+    #                         fatal, info, input)
+    #         $2 (required) - The message to be printed to stdout and/or a log file
+    #         $3 (optional) - Pass '${LINENO}' to print the line number where the _alert_ was triggered
+    # OUTS:
+    #         stdout: The message is printed to stdout
+    #         log file: The message is printed to a log file
+    # USAGE:
+    #         [_alertType] "[MESSAGE]" "${LINENO}"
+    # NOTES:
+    #         - The colors of each alert type are set in this function
+    #         - For specified alert types, the funcstac will be printed
+
+    local _color
+    local _alertType="${1}"
+    local _message="${2}"
+    local _line="${3:-}" # Optional line number
+
+    [[ $# -lt 2 ]] && fatal 'Missing required argument to _alert_'
+
+    if [[ -n ${_line} && ${_alertType} =~ ^(fatal|error) && ${FUNCNAME[2]} != "_trapCleanup_" ]]; then
+        _message="${_message} ${gray}(line: ${_line}) $(_printFuncStack_)"
+    elif [[ -n ${_line} && ${FUNCNAME[2]} != "_trapCleanup_" ]]; then
+        _message="${_message} ${gray}(line: ${_line})"
+    elif [[ -z ${_line} && ${_alertType} =~ ^(fatal|error) && ${FUNCNAME[2]} != "_trapCleanup_" ]]; then
+        _message="${_message} ${gray}$(_printFuncStack_)"
+    fi
+
+    if [[ ${_alertType} =~ ^(error|fatal) ]]; then
+        _color="${bold}${red}"
+    elif [ "${_alertType}" == "info" ]; then
+        _color="${gray}"
+    elif [ "${_alertType}" == "warning" ]; then
+        _color="${red}"
+    elif [ "${_alertType}" == "success" ]; then
+        _color="${green}"
+    elif [ "${_alertType}" == "debug" ]; then
+        _color="${purple}"
+    elif [ "${_alertType}" == "header" ]; then
+        _color="${bold}${white}${underline}"
+    elif [ "${_alertType}" == "notice" ]; then
+        _color="${bold}"
+    elif [ "${_alertType}" == "input" ]; then
+        _color="${bold}${underline}"
+    elif [ "${_alertType}" = "dryrun" ]; then
+        _color="${blue}"
+    else
+        _color=""
+    fi
+
+    _writeToScreen_() {
+        ("${QUIET}") && return 0 # Print to console when script is not 'quiet'
+        [[ ${VERBOSE} == false && ${_alertType} =~ ^(debug|verbose) ]] && return 0
+
+        if ! [[ -t 1 || -z ${TERM:-} ]]; then # Don't use colors on non-recognized terminals
+            _color=""
+            reset=""
+        fi
+
+        if [[ ${_alertType} == header ]]; then
+            printf "${_color}%s${reset}\n" "${_message}"
+        else
+            printf "${_color}[%7s] %s${reset}\n" "${_alertType}" "${_message}"
+        fi
+    }
+    _writeToScreen_
+
+    _writeToLog_() {
+        [[ ${_alertType} == "input" ]] && return 0
+        [[ ${LOGLEVEL} =~ (off|OFF|Off) ]] && return 0
+        if [ -z "${LOGFILE:-}" ]; then
+            LOGFILE="$(pwd)/$(basename "$0").log"
+        fi
+        [ ! -d "$(dirname "${LOGFILE}")" ] && mkdir -p "$(dirname "${LOGFILE}")"
+        [[ ! -f ${LOGFILE} ]] && touch "${LOGFILE}"
+
+        # Don't use colors in logs
+        local _cleanmessage
+        _cleanmessage="$(printf "%s" "${_message}" | sed -E 's/(\x1b)?\[(([0-9]{1,2})(;[0-9]{1,3}){0,2})?[mGK]//g')"
+        # Print message to log file
+        printf "%s [%7s] %s %s\n" "$(date +"%b %d %R:%S")" "${_alertType}" "[$(/bin/hostname)]" "${_cleanmessage}" >>"${LOGFILE}"
+    }
+
+    # Write specified log level data to logfile
+    case "${LOGLEVEL:-ERROR}" in
+        ALL | all | All)
+            _writeToLog_
+            ;;
+        DEBUG | debug | Debug)
+            _writeToLog_
+            ;;
+        INFO | info | Info)
+            if [[ ${_alertType} =~ ^(error|fatal|warning|info|notice|success) ]]; then
+                _writeToLog_
+            fi
+            ;;
+        NOTICE | notice | Notice)
+            if [[ ${_alertType} =~ ^(error|fatal|warning|notice|success) ]]; then
+                _writeToLog_
+            fi
+            ;;
+        WARN | warn | Warn)
+            if [[ ${_alertType} =~ ^(error|fatal|warning) ]]; then
+                _writeToLog_
+            fi
+            ;;
+        ERROR | error | Error)
+            if [[ ${_alertType} =~ ^(error|fatal) ]]; then
+                _writeToLog_
+            fi
+            ;;
+        FATAL | fatal | Fatal)
+            if [[ ${_alertType} =~ ^fatal ]]; then
+                _writeToLog_
+            fi
+            ;;
+        OFF | off)
+            return 0
+            ;;
+        *)
+            if [[ ${_alertType} =~ ^(error|fatal) ]]; then
+                _writeToLog_
+            fi
+            ;;
+    esac
+
+} # /_alert_
+
+error() { _alert_ error "${1}" "${2:-}"; }
+warning() { _alert_ warning "${1}" "${2:-}"; }
+notice() { _alert_ notice "${1}" "${2:-}"; }
+info() { _alert_ info "${1}" "${2:-}"; }
+success() { _alert_ success "${1}" "${2:-}"; }
+dryrun() { _alert_ dryrun "${1}" "${2:-}"; }
+input() { _alert_ input "${1}" "${2:-}"; }
+header() { _alert_ header "${1}" "${2:-}"; }
+debug() { _alert_ debug "${1}" "${2:-}"; }
+fatal() {
+    _alert_ fatal "${1}" "${2:-}"
+    _safeExit_ "1"
+}
+
+_printFuncStack_() {
+    # DESC:
+    #         Prints the function stack in use. Used for debugging, and error reporting.
+    # ARGS:
+    #         None
+    # OUTS:
+    #         stdout: Prints [function]:[file]:[line]
+    # NOTE:
+    #         Does not print functions from the alert class
+    local _i
+    declare -a _funcStackResponse=()
+    for ((_i = 1; _i < ${#BASH_SOURCE[@]}; _i++)); do
+        case "${FUNCNAME[${_i}]}" in
+            _alert_ | _trapCleanup_ | fatal | error | warning | notice | info | debug | dryrun | header | success)
+                continue
+                ;;
+            *)
+                _funcStackResponse+=("${FUNCNAME[${_i}]}:$(basename "${BASH_SOURCE[${_i}]}"):${BASH_LINENO[_i - 1]}")
+                ;;
+        esac
+
+    done
+    printf "( "
+    printf %s "${_funcStackResponse[0]}"
+    printf ' < %s' "${_funcStackResponse[@]:1}"
+    printf ' )\n'
+}
+
+_safeExit_() {
+    # DESC:
+    #       Cleanup and exit from a script
+    # ARGS:
+    #       $1 (optional) - Exit code (defaults to 0)
+    # OUTS:
+    #       None
+
+    if [[ -d ${SCRIPT_LOCK:-} ]]; then
+        if command rm -rf "${SCRIPT_LOCK}"; then
+            debug "Removing script lock"
+        else
+            warning "Script lock could not be removed. Try manually deleting ${yellow}'${SCRIPT_LOCK}'"
+        fi
+    fi
+
+    if [[ -n ${TMP_DIR:-} && -d ${TMP_DIR:-} ]]; then
+        if [[ ${1:-} == 1 && -n "$(ls "${TMP_DIR}")" ]]; then
+            command rm -r "${TMP_DIR}"
+        else
+            command rm -r "${TMP_DIR}"
+            debug "Removing temp directory"
+        fi
+    fi
+
+    trap - INT TERM EXIT
+    exit "${1:-0}"
+}
+
+_trapCleanup_() {
+    # DESC:
+    #         Log errors and cleanup from script when an error is trapped.  Called by 'trap'
+    # ARGS:
+    #         $1:  Line number where error was trapped
+    #         $2:  Line number in function
+    #         $3:  Command executing at the time of the trap
+    #         $4:  Names of all shell functions currently in the execution call stack
+    #         $5:  Scriptname
+    #         $6:  $BASH_SOURCE
+    # USAGE:
+    #         trap '_trapCleanup_ ${LINENO} ${BASH_LINENO} "${BASH_COMMAND}" "${FUNCNAME[*]}" "${0}" "${BASH_SOURCE[0]}"' EXIT INT TERM SIGINT SIGQUIT SIGTERM ERR
+    # OUTS:
+    #         Exits script with error code 1
+
+    local _line=${1:-} # LINENO
+    local _linecallfunc=${2:-}
+    local _command="${3:-}"
+    local _funcstack="${4:-}"
+    local _script="${5:-}"
+    local _sourced="${6:-}"
+
+    # Replace the cursor in-case 'tput civis' has been used
+    tput cnorm
+
+    if declare -f "fatal" &>/dev/null && declare -f "_printFuncStack_" &>/dev/null; then
+
+        _funcstack="'$(printf "%s" "${_funcstack}" | sed -E 's/ / < /g')'"
+
+        if [[ ${_script##*/} == "${_sourced##*/}" ]]; then
+            fatal "${7:-} command: '${_command}' (line: ${_line}) [func: $(_printFuncStack_)]"
+        else
+            fatal "${7:-} command: '${_command}' (func: ${_funcstack} called at line ${_linecallfunc} of '${_script##*/}') (line: ${_line} of '${_sourced##*/}') "
+        fi
+    else
+        printf "%s\n" "Fatal error trapped. Exiting..."
+    fi
+
+    if declare -f _safeExit_ &>/dev/null; then
+        _safeExit_ 1
+    else
+        exit 1
+    fi
+}
 
 # Warn that some commands will not be run if the script is not run as root.
 if [[ $EUID -ne 0 ]]; then
@@ -34,16 +350,18 @@ else
     # while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 fi
 
+info "If you see errors you may safely ignore them."
+
 ###############################################################################
 # General UI/UX                                                               #
 ###############################################################################
 
 # Set the timezone to New York
 # See `systemsetup -listtimezones` for other values
-systemsetup -settimezone "America/New_York" >/dev/null
+systemsetup -settimezone "America/New_York" 2>/dev/null 1>&2
 
 # Set language and text formats
-# Note: if you’re in the US, replace `EUR` with `USD`, `Centimeters` with
+# Note: if you're in the US, replace `EUR` with `USD`, `Centimeters` with
 # `Inches`, `en_GB` with `en_US`, and `true` with `false`.
 defaults write NSGlobalDomain AppleLanguages "(en-US)"
 defaults write NSGlobalDomain AppleLocale -string "en_US@currency=USD"
@@ -65,18 +383,22 @@ defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
 defaults write com.apple.print.PrintingPrefs "Quit When Finished" -bool true
 
 # Restart automatically if the computer freezes
-if [[ ${RUN_AS_ROOT} == true ]]; then
-    systemsetup -setrestartfreeze on
-fi
+systemsetup -setrestartfreeze on 2>/dev/null 1>&2
 
-# Disable smart quotes as they’re annoying when typing code
+# Disable smart quotes as they're annoying when typing code
 defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
 
-# Disable smart dashes as they’re annoying when typing code
+# Disable smart dashes as they're annoying when typing code
 defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
 
-# Set background to dark-grey color
-osascript -e 'tell application "Finder" to set desktop picture to POSIX file "/System/Library/Desktop Pictures/Solid Colors/Stone.png"'
+# Disable automatic capitalization as it's annoying when typing code
+defaults write NSGlobalDomain NSAutomaticCapitalizationEnabled -bool false
+
+# Disable automatic period substitution as it's annoying when typing code
+defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
+
+# # Set background to dark-grey color
+# osascript -e 'tell application "Finder" to set desktop picture to POSIX file "/System/Library/Desktop Pictures/Solid Colors/Stone.png"'
 
 # Disable Sound Effects on Boot
 sudo nvram SystemAudioVolume=' '
@@ -120,8 +442,33 @@ defaults write com.apple.helpviewer DevMode -bool true
 defaults write com.apple.SoftwareUpdate ScheduleFrequency -int 1
 
 ###############################################################################
+# Energy Saving                                                               #
+###############################################################################
+
+# Enable lid wakeup
+sudo pmset -a lidwake 1
+
+# Restart automatically on power loss
+sudo pmset -a autorestart 1
+
+# Sleep the display after 4 minutes
+sudo pmset -a displaysleep 4
+
+# Disable machine sleep while charging
+sudo pmset -c sleep 0
+
+# Set machine sleep to 5 minutes on battery
+sudo pmset -b sleep 5
+
+###############################################################################
 # Trackpad, mouse, keyboard, Bluetooth accessories, and input                 #
 ###############################################################################
+
+# Trackpad: map bottom right corner to right-click
+# defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadCornerSecondaryClick -int 2
+# defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadRightClick -bool true
+# defaults -currentHost write NSGlobalDomain com.apple.trackpad.trackpadCornerClickBehavior -int 1
+# defaults -currentHost write NSGlobalDomain com.apple.trackpad.enableSecondaryClick -bool true
 
 # Trackpad: Haptic feedback (light, silent clicking)
 defaults write com.apple.AppleMultitouchTrackpad FirstClickThreshold -int 0
@@ -139,14 +486,12 @@ defaults write -g com.apple.trackpad.scaling 2
 defaults write -g com.apple.mouse.scaling 2.5
 
 # Enable full keyboard access for all controls"
+# (e.g. enable Tab in modal dialogs)
 defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
 
 # Use scroll gesture with the Ctrl (^) modifier key to zoom
 defaults write com.apple.universalaccess closeViewScrollWheelToggle -bool true
-
-# Use scroll gesture with the Ctrl (^) modifier key to zoom
 defaults write com.apple.universalaccess HIDScrollZoomModifierMask -int 262144
-
 # Follow the keyboard focus while zoomed in
 defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool true
 
@@ -162,6 +507,9 @@ launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist 2>/dev/null
 # Disable spelling auto-correct
 #defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
 
+# Increase sound quality for Bluetooth headphones/headsets
+defaults write com.apple.BluetoothAudioAgent "Apple Bitpool Min (editable)" -int 40
+
 ###############################################################################
 # Screen                                                                      #
 ###############################################################################
@@ -173,7 +521,8 @@ defaults write com.apple.screencapture location -string "${HOME}/Desktop"
 defaults write com.apple.screencapture type -string "png"
 
 # Enable subpixel font rendering on non-Apple LCDs
-defaults write NSGlobalDomain AppleFontSmoothing -int 2
+# https://github.com/kevinSuttle/macOS-Defaults/issues/17#issuecomment-266633501
+defaults write NSGlobalDomain AppleFontSmoothing -int 1
 
 # Enabling HiDPI display modes (requires restart)
 sudo defaults write /Library/Preferences/com.apple.windowserver DisplayResolutionEnabled -bool true
@@ -189,7 +538,7 @@ defaults write com.apple.screensaver askForPasswordDelay -int 0
 # Finder                                                                      #
 ###############################################################################
 
-# Finder: allow quitting via ⌘ + Q"
+# Finder: allow quitting via ⌘ + Q". Hides desktop icons
 defaults write com.apple.finder QuitMenuItem -bool true
 
 # Finder: disable window animations and Get Info animations"
@@ -272,7 +621,7 @@ sudo chflags nohidden /Volumes
 defaults write com.apple.finder WarnOnEmptyTrash -bool false
 
 # Expand File Info panes
-# “General”, “Open with”, and “Sharing & Permissions”
+# "General", "Open with", and "Sharing & Permissions"
 defaults write com.apple.finder FXInfoPanesExpanded -dict \
     General -bool true \
     MetaData -bool true \
@@ -301,7 +650,7 @@ defaults write com.apple.dock mineffect -string "genie"
 # Show only open applications in the Dock
 defaults write com.apple.dock static-only -bool true
 
-# Minimize windows into their application’s icon
+# Minimize windows into their application's icon
 defaults write com.apple.dock minimize-to-application -bool true
 
 # Enable spring loading for all Dock items
@@ -313,7 +662,7 @@ defaults write com.apple.dock show-process-indicators -bool true
 # Disable App Persistence (re-opening apps on login)
 defaults write -g ApplePersistence -bool no
 
-# Don’t animate opening applications from the Dock
+# Don't animate opening applications from the Dock
 defaults write com.apple.dock launchanim -bool false
 
 # Speed up Mission Control animations
@@ -322,8 +671,11 @@ defaults write com.apple.dock expose-animation-duration -float 0.1
 # Disable Dashboard
 defaults write com.apple.dashboard mcx-disabled -bool true
 
-# Don’t show Dashboard as a Space
+# Don't show Dashboard as a Space
 defaults write com.apple.dock dashboard-in-overlay -bool true
+
+# Don't automatically rearrange Spaces based on most recent use
+defaults write com.apple.dock mru-spaces -bool false
 
 # Remove the auto-hiding Dock delay
 defaults write com.apple.dock autohide-delay -float 0
@@ -334,8 +686,11 @@ defaults write com.apple.dock autohide-time-modifier -float 0
 # Automatically hide and show the Dock
 defaults write com.apple.dock autohide -bool true
 
+# Disable the Launchpad gesture (pinch with thumb and three fingers)
+defaults write com.apple.dock showLaunchpadGestureEnabled -int 0
+
 # Wipe all (default) app icons from the Dock
-# This is only really useful when setting up a new Mac, or if you don’t use
+# This is only really useful when setting up a new Mac, or if you don't use
 # the Dock to launch apps.
 defaults write com.apple.dock persistent-apps -array
 
@@ -377,27 +732,39 @@ defaults write com.apple.Safari ShowOverlayStatusBar -bool true
 # Add a context menu item for showing the Web Inspector in web views
 defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
 
-# Make Safari’s search banners default to Contains instead of Starts With
+# Make Safari's search banners default to Contains instead of Starts With
 defaults write com.apple.Safari FindOnPageMatchesWordStartsOnly -bool false
 
-# Privacy: don’t send search queries to Apple
+# Privacy: don't send search queries to Apple
 defaults write com.apple.Safari UniversalSearchEnabled -bool false
 defaults write com.apple.Safari SuppressSearchSuggestions -bool true
 
 # Show the full URL in the address bar (note: this still hides the scheme)
 defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true
 
-# Set Safari’s home page to about:blank for faster loading
+# Set Safari's home page to about:blank for faster loading
 defaults write com.apple.Safari HomePage -string "about:blank"
 
 # Prevent Safari from opening safe files automatically after downloading
 defaults write com.apple.Safari AutoOpenSafeDownloads -bool false
 
-# Remove useless icons from Safari’s bookmarks bar
+# Remove useless icons from Safari's bookmarks bar
 # defaults write com.apple.Safari ProxiesInBookmarksBar "()"
 
 # Show favorites bar in Safari by default:
 defaults write com.apple.Safari ShowFavoritesBar -bool true
+
+# Disable AutoFill
+defaults write com.apple.Safari AutoFillFromAddressBook -bool false
+defaults write com.apple.Safari AutoFillPasswords -bool false
+defaults write com.apple.Safari AutoFillCreditCardData -bool false
+defaults write com.apple.Safari AutoFillMiscellaneousForms -bool false
+
+# Warn about fraudulent websites
+defaults write com.apple.Safari WarnAboutFraudulentWebsites -bool true
+
+# Enable "Do Not Track"
+defaults write com.apple.Safari SendDoNotTrackHTTPHeader -bool true
 
 ###############################################################################
 # Mail                                                                        #
@@ -415,8 +782,31 @@ defaults write com.apple.mail DraftsViewerAttributes -dict-add "DisplayInThreade
 defaults write com.apple.mail DraftsViewerAttributes -dict-add "SortedDescending" -string "no"
 defaults write com.apple.mail DraftsViewerAttributes -dict-add "SortOrder" -string "received-date"
 
-# Don;t load external content by default
+# Don't load external content by default
 defaults write com.apple.mail-shared DisableURLLoading -bool true
+
+# Disable inline attachments (just show the icons)
+defaults write com.apple.mail DisableInlineAttachmentViewing -bool true
+
+# Add the keyboard shortcut ⌘ + Enter to send an email in Mail.app
+defaults write com.apple.mail NSUserKeyEquivalents -dict-add "Send" "@\U21a9"
+
+# Disable automatic spell checking
+# defaults write com.apple.mail SpellCheckingBehavior -string "NoSpellCheckingEnabled"
+
+###############################################################################
+# Terminal & iTerm 2                                                          #
+###############################################################################
+
+# Only use UTF-8 in Terminal.app
+defaults write com.apple.terminal StringEncodings -array 4
+
+# Enable Secure Keyboard Entry in Terminal.app
+# See: https://security.stackexchange.com/a/47786/8918
+defaults write com.apple.terminal SecureKeyboardEntry -bool true
+
+# Disable the annoying line marks
+defaults write com.apple.Terminal ShowLineMarks -int 0
 
 ###############################################################################
 # Activity Monitor                                                            #
@@ -436,10 +826,19 @@ defaults write com.apple.ActivityMonitor SortColumn -string "CPUUsage"
 defaults write com.apple.ActivityMonitor SortDirection -int 0
 
 ###############################################################################
+# Mac App Store                                                               #
+###############################################################################
+
+# Enable the WebKit Developer Tools in the Mac App Store
+defaults write com.apple.appstore WebKitDeveloperExtras -bool true
+
+# Enable Debug Menu in the Mac App Store
+defaults write com.apple.appstore ShowDebugMenu -bool true
+###############################################################################
 # Messages                                                                    #
 ###############################################################################
 
-# Disable smart quotes as it’s annoying for messages that contain code
+# Disable smart quotes as it's annoying for messages that contain code
 defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticQuoteSubstitutionEnabled" -bool false
 
 # Disable continuous spell checking
@@ -486,10 +885,13 @@ defaults write com.apple.addressbook ABShowDebugMenu -bool true
 ###############################################################################
 
 # Restart affected applications if `--no-restart` flag is not present.
-if [[ ! ($* == *--no-restart*) ]]; then
-    for app in "cfprefsd" "Dock" "Finder" "Mail" "SystemUIServer" "Terminal"; do
-        killall "${app}" >/dev/null 2>&1
-    done
-fi
+# if [[ ! ($* == *--no-restart*) ]]; then
+#     for app in "cfprefsd" "Dock" "Finder" "Mail" "Messages" "Safari" "SystemUIServer" "Terminal"; do
+#         killall "${app}" >/dev/null 2>&1
+#     done
+# fi
 
-printf "Please log out and log back in to make all settings take effect.\n"
+notice "osx-defaults: Done. Note that some of these changes require a logout/restart to take effect."
+_safeExit_
+
+{{- end }}

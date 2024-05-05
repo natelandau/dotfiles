@@ -3,16 +3,12 @@
 
 # This script installs nano syntax highlighting for various languages.
 
-# Check if nano is installed
-if ! command -v nano &>/dev/null; then
-    echo "nano is not installed. Please install nano first."
-    exit 1
-fi
+{{ template "shared_script_utils.bash" }}
 
 # check for unzip before we continue
 if [ ! "$(command -v unzip)" ]; then
-    echo 'unzip is required but was not found. Install unzip first and then run this script again.' >&2
-    exit 1
+    error 'install_nanorc: unzip is required but was not found. Install unzip first and then run this script again.' >&2
+    _safeExit_ 1
 fi
 
 # Check if the nano syntax highlighting directory exists
@@ -28,6 +24,10 @@ if [ ! -d "${HOME}/.nano" ]; then
     mv nanorc-master/* ./
     rm -rf nanorc-master
     rm /tmp/nanorc.zip
+
+    notice 'nano syntax highlighting installed successfully.'
 fi
+
+_safeExit_
 
 {{- end }}
