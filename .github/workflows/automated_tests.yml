@@ -49,13 +49,6 @@ jobs:
             - name: Copy repository to /home/runner/
               run: |
                   if [ -d /home/runner ]; then homedir="/home/runner"; else homedir="/Users/runner"; fi
-                  echo "whoami: $(whoami)"
-                  echo "pwd: $(pwd)"
-                  echo "home: $(echo $HOME)"
-                  echo "homedir: $homedir"
-                  ls -al
-
-
 
                   mkdir -p ${homedir}/.local/share/chezmoi
                   cp -a . ${homedir}/.local/share/chezmoi
@@ -123,8 +116,6 @@ jobs:
               run: |
                   echo "------- Testing files -------"
                   cd /Users/runner
-                  echo "pwd: $(pwd)"
-                  ls -al
 
                   # Confirm files exist
                   for file in .zshrc .bashrc .gitconfig .shell .ssh/config Library .shell/050-macos.sh; do
@@ -141,4 +132,3 @@ jobs:
                         exit 1
                     fi
                   done
-                  zsh
