@@ -61,4 +61,4 @@ repos:
             entry: shellcheck
             language: system
             types: [shell]
-            exclude: '.*\.bats|dotfiles/shell|dotfiles/\.zshrc'
+            exclude: "dotfiles/dot_zshrc|.*\\.zsh$"

@@ -7,7 +7,6 @@ export EDITOR="$(command -v code nano | head -n 1)"
 {{ if .use_secrets -}}
 
 export HOMEBREW_GITHUB_API_TOKEN="{{ range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{ if eq .label "HOMEBREW_GITHUB_API_TOKEN" }}{{ .value }}{{ end }}{{ end }}"
-export GITHUB_TOKEN="{{ range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{ if eq .label "PERSONAL_GITHUB_TOKEN" }}{{ .value }}{{ end }}{{ end }}"
 
 # Valentina env variables for local development on natenate test server
 # natenate-test-bot

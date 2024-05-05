@@ -28,7 +28,8 @@ f() {
 
 flushdns() {
     # Clears the DNS cache to help fix networking errors
-    sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder
+    sudo killall -HUP mDNSResponder
+    sudo dscacheutil -flushcache
 }
 
 ql() {
