@@ -13,12 +13,12 @@ fi
 {{ range .remote_servers -}}
 updated=false
 if [ ! -f "${HOME}/.ssh_keys/{{ .name }}" ]; then
-    echo "{{ range (onepassword .op_id).fields }}{{ if eq .label "privkey" }}{{ .value }}{{ end }}{{ end }}" >"${HOME}/.ssh_keys/{{ .name }}"
+    echo "{{ range (onepassword .op_id).fields }}{{ if or (eq .label "privkey") (eq .label "private key") }}{{ .value }}{{ end }}{{ end }}" >"${HOME}/.ssh_keys/{{ .name }}"
     chmod 600 "${HOME}/.ssh_keys/{{ .name }}"
     updated=true
 fi
 if [ ! -f "${HOME}/.ssh_keys/{{ .name }}.pub" ]; then
-    echo "{{ range (onepassword .op_id).fields }}{{ if eq .label "pubkey" }}{{ .value }}{{ end }}{{ end }}" >"${HOME}/.ssh_keys/{{ .name }}.pub"
+    echo "{{ range (onepassword .op_id).fields }}{{ if or (eq .label "pubkey") (eq .label "public key") }}{{ .value }}{{ end }}{{ end }}" >"${HOME}/.ssh_keys/{{ .name }}.pub"
     chmod 644 "${HOME}/.ssh_keys/{{ .name }}.pub"
     updated=true
 fi
@@ -27,6 +27,6 @@ if [ "${updated}" = true ]; then
     notice "Created SSH key pair for: {{ .name }}"
 fi
 
-_safeExit_
 {{ end -}}
+_safeExit_
 {{ end -}}
