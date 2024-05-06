@@ -12,24 +12,10 @@ alias repos='cd ${HOME}/repos'
 
 {{ if .use_secrets -}}
 # SSH Shortcuts
-{{- range .remote_servers }}
+{{ range .remote_servers -}}
 {{- if lookPath .name }}
 {{- else }}
 alias {{ .name }}="ssh {{ .name }}"
 {{- end }}
 {{- end }}
 {{- end }}
-
-if [[ $(hostname) == "Synology" ]]; then
-    PATH=/opt/bin:${PATH}
-    alias sablog="multitail -i /volume1/docker/sabnzbd/logs/preProcessing.log -i /volume1/docker/sabnzbd/logs/postProcessing.log -i ~/logs/removeNZBs.log" # sabnzbd logs
-
-    # Because I installed sudo with ipkg I need to force using built-in sudo
-    alias sudo="/bin/sudo"
-
-    alias dcp='dcp --dir=${HOME}/homelab/docker_compose' # Shorthand for 'dcp' with compose file dir specified
-    if [[ -e "/usr/local/bin/python3.11" ]]; then
-        alias python="/usr/local/bin/python3.11"
-        alias pip="/usr/local/bin/python3.11 -m pip"
-    fi
-fi

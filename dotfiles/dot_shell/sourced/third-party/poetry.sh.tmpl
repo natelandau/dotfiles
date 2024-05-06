@@ -11,7 +11,7 @@ if [[ -n ${ZSH_NAME} ]]; then
 fi
 
 function with_no_poetry() {
-    # Prefixing any command with `wnp` runs it outside the virtualenv if a virtualenv is active.
+    # Prefixing any command with 'wnp' runs it outside the virtualenv if a virtualenv is active.
     local last_env
     if [[ -v VIRTUAL_ENV ]]; then
         last_env="${VIRTUAL_ENV}"
@@ -26,7 +26,7 @@ function with_no_poetry() {
     return ${ret}
 }
 
-alias pshell='poetry shell' # dev: Activate the virtualenv
-alias wnp='with_no_poetry'  # dev: Run a command outside the virtualenv
+alias pshell='poetry shell' # Activate the virtualenv
+alias wnp='with_no_poetry'  # Run a command outside the virtualenv
 
 {{- end }}

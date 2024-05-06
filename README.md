@@ -1,6 +1,17 @@
-# Usage
+Dotfiles, managed with [Chezmoi](https://www.chezmoi.io/).
 
-## Requirements
+-   zsh and bash configurations, aliases, and functions
+-   Configuration for common command-line tools
+-   Integrations for Python tooling such as [Pyenv](https://github.com/pyenv/pyenv), [Poetry](https://python-poetry.org/), and [Pipx](https://pipx.pypa.io/stable/)
+-   Configurations and integrations for MacOS applications
+-   Secrets management with [1Password CLI](https://developer.1password.com/docs/cli/)
+-   ssh configuration and key management with 1Password
+-   OSX defaults management
+-   Custom [vscode](https://code.visualstudio.com/) theme
+-   Configuration for my CLI scripts [halp](https://github.com/natelandau/halp),[vid-cleaner](https://github.com/natelandau/vid-cleaner), [jdfile](https://github.com/natelandau/jdfile), and [brewup](https://github.com/natelandau/brewup)
+-   and more...
+
+## Install
 
 -   [Chezmoi](https://www.chezmoi.io/)
 -   [1Password CLI](https://developer.1password.com/docs/cli/) (Optional, for secrets management)
@@ -30,6 +41,8 @@ chezmoi update
 
 ```
 
+Note that if chezmoi hangs waiting for user input, you will need to kill the process (`killall chezmoi`) and run `apply` manually, because chezmoi locks the database.
+
 ## Managing Secrets
 
 Secrets are managed in [1Password](https://developer.1password.com/docs/cli/). 1Password is not needed if Chezmoi is set to `use_secrets = false` in the `~/.config/chezmoi/chezmoi.toml` file.
@@ -49,7 +62,7 @@ Adding and removing ssh configurations can be managed with 1Password. To add a n
 
 To remove an ssh configuration, delete the server's configuration from `.../dotfiles/.chezmoidata/remote_servers.toml` and delete the 1Password item.
 
-### MacOS Application Preferences
+## MacOS Application Preferences
 
 Certain MacOS applications need manual configuration.
 
@@ -70,12 +83,18 @@ Custom terminal configurations are stored in `~/.config/applications/terminal`. 
 ## Setup
 
 1. Install Python and [Poetry](https://python-poetry.org)
-2. Run `poetry install` to install the development dependencies
-3. Activate your Poetry environment with `poetry shell`.
-4. Install the pre-commit hooks with `pre-commit install --install-hooks`.
+2. cd into the dotfiles directory with `chezmoi cd`
+3. Run `poetry install` to install the development dependencies
+4. Activate the Poetry virtual environment with `poetry shell`.
+5. Install the pre-commit hooks with `pre-commit install --install-hooks`.
 
 ## Committing changes
 
 1. Activate your Poetry environment with `poetry shell`
 2. Add changed files to the staging area with `git add .`
 3. Run `cz c` to commit changes
+4. Push to remote repository
+
+## Updating dotfiles
+
+Run `chezmoi update` to apply changes to the dotfiles on other machines.
