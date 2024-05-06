@@ -17,17 +17,11 @@ alias gl='git log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\
 
 applyignore() {
     # DESC:   Applies changes to the git .ignorefile after the files mentioned were already committed to the repo
-    # ARGS:		None
-    # OUTS:		None
-    # USAGE:
-
     git ls-files -ci --exclude-standard -z | xargs -0 git rm --cached
 }
 
 rollback() {
-    # DESC:		Resets the current HEAD to specified commit
-    # ARGS:		$1 (Required): Commit to revert to
-    # OUTS:		None
+    # DESC:	  Resets the current HEAD to specified commit
     # USAGE:  gitRollback <commit>
 
     _is_clean_() {
@@ -99,9 +93,6 @@ rollback() {
 
 gurl() {
     # DESC:		Prints URL of current git repository
-    # ARGS:		None
-    # OUTS:		None
-
     local remote remotename host user_repo
 
     remotename="${*:-origin}"
