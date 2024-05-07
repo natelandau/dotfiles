@@ -1,0 +1,12 @@
+{{- if lookPath "code" -}}
+
+# https://code.visualstudio.com/docs/terminal/shell-integration#_automatic-script-injection
+
+if [[ -n ${ZSH_NAME} ]]; then
+    [[ $TERM_PROGRAM == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"
+fi
+if [[ -n ${BASH} ]]; then
+    [[ $TERM_PROGRAM == "vscode" ]] && . "$(code --locate-shell-integration-path bash)"
+fi
+
+{{- end }}
