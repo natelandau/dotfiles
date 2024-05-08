@@ -90,7 +90,8 @@
 
 [diff]
     renames = copies # Detect copies as well as renames
-    tool = vscode
+    # tool = vscode
+    colorMoved = default
 
 [difftool "vscode"]
     cmd = code --wait --diff $LOCAL $REMOTE
@@ -103,10 +104,36 @@
   email = {{ .email }}
 
 [github]
-  user = {{ .github_user }}
+   user = {{ .github_user }}
 
 [core]
-   sshCommand = ssh -i ~/.ssh_keys/git
+    sshCommand = ssh -i ~/.ssh_keys/git
+    pager = delta
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    features = side-by-side line-numbers decorations
+    hyperlinks = true
+    hyperlinks-file-link-format = "vscode://file/{path}:{line}"
+    minus-style = syntax "#3f0001"
+    navigate = true    # use n and N to move between diff sections
+    plus-style = syntax "#003800"
+    side-by-side = true
+    syntax-theme = "DarkNeon"
+
+[delta "decorations"]
+    commit-decoration-style = bold yellow box ul
+    file-style = bold yellow ul
+    file-decoration-style = none
+    hunk-header-decoration-style = cyan box ul
+
+[delta "line-numbers"]
+    line-numbers-left-style = cyan
+    line-numbers-right-style = cyan
+    line-numbers-minus-style = 124
+    line-numbers-plus-style = 28
 
 [log]
     decorate = short

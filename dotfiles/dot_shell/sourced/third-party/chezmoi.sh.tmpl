@@ -2,10 +2,9 @@
 
 alias chez='chezmoi'
 
-if command -v code &>/dev/null; then
-    alias cdot='code ${HOME}/.local/share/chezmoi/.'
-else
-    alias cdot='cd ${HOME}/.local/share/chezmoi'
-fi
-
+{{- if lookPath "code" }}
+alias cdot='code ${HOME}/.local/share/chezmoi/.'
+{{- else }}
+alias cdot='cd ${HOME}/.local/share/chezmoi'
+{{- end }}
 {{- end }}
