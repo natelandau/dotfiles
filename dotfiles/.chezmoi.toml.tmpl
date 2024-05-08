@@ -9,10 +9,15 @@
     use_secrets  = {{ $use_secrets }}
 
 [diff]
+    {{ if lookPath "delta" -}}command = "delta"{{ end }}
     exclude = ["scripts"]
 
 {{ if lookPath "code" -}}
 [edit]
     args    = ["-r", "--wait"]
+    command = "code"
+
+[merge]
+    args = ["--merge", "{{ "{{" }} .Destination }}", "{{ "{{" }} .Source }}", "{{ "{{" }} .Target }}"]
     command = "code"
 {{ end -}}
