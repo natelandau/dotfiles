@@ -4,7 +4,7 @@ alias chez='chezmoi'
 
 {{- if lookPath "code" }}
 alias cdot='code ${HOME}/.local/share/chezmoi/.'
-{{- else -}}
+{{- else }}
 alias cdot='cd ${HOME}/.local/share/chezmoi'
 {{- end }}
 {{- end }}
