@@ -34,19 +34,10 @@ update_check = true
 ## Supports regular expressions
 ## Remove matching entries with `atuin history prune`
 history_filter = [
-    '^(rpi|mf)\d$',
-    '^\.\.$',
-    '^\w+ --help$',
-    '^bup$',
-    '^cz c$',
     '^emulate bash',
     '^exit$',
-    '^fork$',
-    '^gcm ',
-    '^git amend',
     '^gs$',
     '^ll$',
-    '^mini$',
     '^pshell$',
     '^pull$',
     '^push$',

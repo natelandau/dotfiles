@@ -28,7 +28,7 @@
         add_to_ssh_config = true
         name              = "mf1"
         op_id             = "kqwlkq6yaoarvhwacd7vpll3ei"
-        tailscale_ip      = false
+        tailscale_ip      = true
 
     [remote_servers.opnsense]
         add_to_ssh_config = true
@@ -46,25 +46,25 @@
         add_to_ssh_config = true
         name              = "rpi1"
         op_id             = "n4wjzkpynpuknnzh3usulhojta"
-        tailscale_ip      = false
+        tailscale_ip      = true
 
     [remote_servers.rpi2]
         add_to_ssh_config = true
         name              = "rpi2"
         op_id             = "bjvjxdr7jcs5o65mxa3tds7xiu"
-        tailscale_ip      = false
+        tailscale_ip      = true
 
     [remote_servers.rpi3]
         add_to_ssh_config = true
         name              = "rpi3"
         op_id             = "iv2pobevosbt46rfqnwmf3o43i"
-        tailscale_ip      = false
+        tailscale_ip      = true
 
     [remote_servers.rpi4]
         add_to_ssh_config = true
         name              = "rpi4"
         op_id             = "kdplq54dlr3wzbwnatdmwwpmmq"
-        tailscale_ip      = false
+        tailscale_ip      = true
 
     [remote_servers.skimmbook]
         add_to_ssh_config = true
