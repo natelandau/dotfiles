@@ -2,3 +2,4 @@
 .zsh/plugins/zsh-github-cli
 .zsh/plugins/up.zsh
 .local/scripts
+.nd.toml
