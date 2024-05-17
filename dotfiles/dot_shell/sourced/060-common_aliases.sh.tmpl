@@ -18,19 +18,19 @@ alias numfiles='echo $(ls -1 | wc -l)' # Count of non-hidden files in current di
 alias ls='eza --git --icons=auto'
 
 # List filenames with long format
-alias l='eza -l --classify=auto --icon=autos {{- if not (and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arch64")) }} --git{{ end }}'
+alias l='eza -l --classify=auto --icon=autos {{- if not (and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arm64")) }} --git{{ end }}'
 
 # List all files
-alias ll='eza -lah --classify=auto --icons=auto {{- if not (and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arch64")) }} --git{{ end }}'
+alias ll='eza -lah --classify=auto --icons=auto {{- if not (and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arm64")) }} --git{{ end }}'
 
 # List files by last modified
 alias llm='ll --sort=modified'
 
 # List files with attributes
-alias la='eza -lbhHigUmuSa --icons=auto {{- if not (and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arch64")) }} --git{{ end }}'
+alias la='eza -lbhHigUmuSa --icons=auto {{- if not (and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arm64")) }} --git{{ end }}'
 
 # List files with extended attributes
-alias lx='eza -lbhHigUmuSa@ --icons=auto {{- if not (and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arch64")) }} --git{{ end }}'
+alias lx='eza -lbhHigUmuSa@ --icons=auto {{- if not (and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arm64")) }} --git{{ end }}'
 
 # List files in a tree view
 alias lt='eza --tree --level=2 --icons=auto'
