@@ -14,4 +14,5 @@ Library
 {{ if ne .chezmoi.os "linux" }}
 .config/halp
 .config/vid-cleaner
+.config/usrbin
 {{ end }}
