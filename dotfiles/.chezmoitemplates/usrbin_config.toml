@@ -1,4 +1,22 @@
 # Configuration for usrbin scripts.
 
 [dcp]
+    # List of directories to search for compose files.
     compose_dir_paths = ["~/homelab/docker_compose"]
+
+{{- if (and (lookPath "nomad") (lookPath "nd")) }}
+
+[nd]
+    # String to ignore when searching for job files.
+    file_ignore_strings = ["template"]
+
+    # List of directories to search for job files.
+    job_file_locations = ["~/homelab/nomad", "~/homelab/nomad-csi"]
+
+    # Address of the Nomad server
+{{- if "/etc/nomad.d" | lstat }}
+    nomad_address = "http://127.0.0.1:4646"
+{{- else if .use_secrets }}
+    nomad_address = "http://{{ onepasswordRead "op://yc7nim47s6rch4ehrvfsz5icei/kqwlkq6yaoarvhwacd7vpll3ei/hostname" }}:4646"
+{{- end }}
+{{- end }}
