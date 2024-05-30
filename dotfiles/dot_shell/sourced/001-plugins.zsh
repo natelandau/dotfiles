@@ -53,7 +53,6 @@ plugins=(
     marlonrichert/zsh-hist              # Run hist -h for help
     reegnz/jq-zsh-plugin                # Write interactive jq queries (Requires jq and fzf)
     MichaelAquilina/zsh-you-should-use  # Recommends aliases when typed
-    rupa/z                              # Tracks your most used directories, based on 'frequency'
     darvid/zsh-poetry                   # activates poetry venvs
 
     # Additional completions

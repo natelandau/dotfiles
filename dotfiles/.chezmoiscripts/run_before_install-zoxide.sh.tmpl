@@ -2,17 +2,17 @@
 
 {{ template "shared_script_utils.bash" }}
 
-# This script installs the Atuin binary for better history browsing
-# https://docs.atuin.sh/
+# This script installs the zoxide binary for better cd command
+# https://github.com/ajeetdsouza/zoxide
 
-if [ ! "$(command -v atuin)" ]; then
+if [ ! "$(command -v zoxide)" ]; then
     if [ ! "$(command -v curl)" ]; then
         error 'curl is required but was not found. Install curl first and then run this script again.' >&2
         _safeExit_ 1
     fi
 
-    # Install Atuin
-    curl --proto '=https' --tlsv1.2 -sSf https://setup.atuin.sh | bash
+    # Install zoxide
+    curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
 fi
 
 _safeExit_
