@@ -3,3 +3,6 @@
 .zsh/plugins/up.zsh
 .local/scripts
 .nd.toml
+
+# Migrate to zoxide
+.z
