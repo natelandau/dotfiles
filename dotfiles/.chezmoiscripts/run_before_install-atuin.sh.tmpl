@@ -1,3 +1,4 @@
+{{- if and (not (lookPath "atuin")) (ne .chezmoi.arch "arm64") (ne .chezmoi.os "darwin") -}}
 #!/usr/bin/env bash
 
 {{ template "shared_script_utils.bash" }}
@@ -16,3 +17,4 @@ if [ ! "$(command -v atuin)" ]; then
 fi
 
 _safeExit_
+{{- end }}
