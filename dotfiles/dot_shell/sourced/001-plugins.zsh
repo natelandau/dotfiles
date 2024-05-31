@@ -54,6 +54,7 @@ plugins=(
     reegnz/jq-zsh-plugin                # Write interactive jq queries (Requires jq and fzf)
     MichaelAquilina/zsh-you-should-use  # Recommends aliases when typed
     darvid/zsh-poetry                   # activates poetry venvs
+    Aloxaf/fzf-tab                      # fzf tab completion
 
     # Additional completions
     zpm-zsh/ssh
