@@ -1,5 +1,13 @@
 {{- if eq .chezmoi.os "linux" }}
 
+# Run startup scripts
+
+if [[ -f "${HOME}/.shell/scripts/debian-startup.sh" ]]; then
+    "${HOME}"/.shell/scripts/debian-startup.sh
+fi
+
+# Aliases and Functions
+
 alias sag='sudo apt-get'
 
 aup() {
@@ -13,14 +21,27 @@ if [ -e "/usr/bin/snap" ]; then
     PATH="/snap/bin:${PATH}"
 fi
 
-alias logs='journalctl -fu'
-alias logs-all='journalctl -u'
+# Systemctl aliases
+
 alias ctl='systemctl'
+alias reboot="sudo systemctl reboot"
+alias sstop="sudo systemctl stop"
+alias sstatus="sudo systemctl status"
 
-# Run startup scripts
+# Start and then view status of service
+sstart() {
+    sstart systemctl start "$1"
+    sudo systemctl status "$1"
+}
 
-if [[ -f "${HOME}/.shell/scripts/debian-startup.sh" ]]; then
-    "${HOME}"/.shell/scripts/debian-startup.sh
-fi
+# Restart and then view status of service
+srestart() {
+    sudo systemctl restart "$1"
+    sudo systemctl status "$1"
+}
+
+# Journalctl aliases
+alias logs='sudo journalctl -fu'
+alias logs-all='sudo journalctl -u'
 
 {{- end }}
