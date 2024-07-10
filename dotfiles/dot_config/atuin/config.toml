@@ -33,21 +33,7 @@ update_check = true
 ## with ^ or end with $, they'll match anywhere in the command.
 ## Supports regular expressions
 ## Remove matching entries with `atuin history prune`
-history_filter = [
-    '^emulate bash',
-    '^exit$',
-    '^gs$',
-    '^ll$',
-    '^pshell$',
-    '^pull$',
-    '^push$',
-    '^source ',
-    '^sourcea$',
-    '^synology$',
-    '^vnc$',
-    '^~$',
-    'cd \.\.',
-]
+history_filter = ['^~$']
 
 [stats]
     ## Configures commands where we should consider the subcommand as part of the statistics.
