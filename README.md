@@ -38,7 +38,6 @@ chezmoi apply
 
 # Pull the latest changes from your remote repo and runs chezmoi apply.
 chezmoi update
-
 ```
 
 Note that if chezmoi hangs waiting for user input, you will need to kill the process (`killall chezmoi`) and run `apply` manually, because chezmoi locks the database.
@@ -46,6 +45,8 @@ Note that if chezmoi hangs waiting for user input, you will need to kill the pro
 ## Managing Secrets
 
 Secrets are managed in [1Password](https://developer.1password.com/docs/cli/). 1Password is not needed if Chezmoi is set to `use_secrets = false` in the `~/.config/chezmoi/chezmoi.toml` file.
+
+**IMPORTANT:** The 1Password CLI must be installed and configured before using chezmoi secrets. Follow the [official documentation](https://developer.1password.com/docs/cli/) to install and configure the 1Password CLI.
 
 ### SSH Configuration
 

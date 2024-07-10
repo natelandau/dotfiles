@@ -66,10 +66,10 @@
         op_id             = "kdplq54dlr3wzbwnatdmwwpmmq"
         tailscale_ip      = true
 
-    [remote_servers.skimmbook]
+    [remote_servers.skimmbook2]
         add_to_ssh_config = true
-        name              = "skimmbook"
-        op_id             = "ncpzbk6whr543poozyfomebgle"
+        name              = "skimmbook2"
+        op_id             = "2seakr2b2lezvfvtajwswtls5e"
         tailscale_ip      = true
 
     [remote_servers.sosb-old]
