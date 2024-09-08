@@ -4,8 +4,6 @@
     # List of directories to search for compose files.
     compose_dir_paths = ["~/homelab/docker_compose"]
 
-{{- if (and (lookPath "nomad") (lookPath "nd")) }}
-
 [nd]
     # String to ignore when searching for job files.
     file_ignore_strings = ["template"]
@@ -19,4 +17,35 @@
 {{- else if .use_secrets }}
     nomad_address = "http://{{ onepasswordRead "op://yc7nim47s6rch4ehrvfsz5icei/kqwlkq6yaoarvhwacd7vpll3ei/hostname" }}:4646"
 {{- end }}
-{{- end }}
+
+[brewup]
+    # Target location for Applications, mimics --appdird.
+    # app_dir          = ""
+
+    exclude_updades = [
+        "1password",
+        "arq",
+        "discord",
+        "docker",
+        "docker-compose",
+        "fmail2",
+        "fork",
+        "mongodb-compass",
+        "raycast",
+        "syncthing",
+        "visual-studio-code",
+        "zoom",
+    ]
+
+    # List of packages to exclude from updates
+    # Update all casks, even if they auto-update
+    greedy_casks = false
+
+    # Full path to `brew` if not in $PATH
+    # homebrew_command = ""
+
+    # List of casks to open after updating
+    reopen_casks = ["iterm2", "raycast", "slack", "syncthing"]
+
+    # List of casks to unquarantine after updating
+    no_quarantine = ["librewolf"]

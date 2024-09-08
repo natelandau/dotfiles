@@ -50,10 +50,10 @@ plugins=(
     zsh-users/zsh-completions
 
     # # user plugins
+    linnnus/autovenv                    # Automatically (de)activate python virtualenvs
     marlonrichert/zsh-hist              # Run hist -h for help
     reegnz/jq-zsh-plugin                # Write interactive jq queries (Requires jq and fzf)
     MichaelAquilina/zsh-you-should-use  # Recommends aliases when typed
-    darvid/zsh-poetry                   # activates poetry venvs
     Aloxaf/fzf-tab                      # fzf tab completion
 
     # Additional completions
