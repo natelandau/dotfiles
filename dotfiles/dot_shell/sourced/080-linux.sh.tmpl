@@ -17,10 +17,6 @@ aup() {
     apt list --upgradable
 }
 
-if [ -e "/usr/bin/snap" ]; then
-    PATH="/snap/bin:${PATH}"
-fi
-
 # Systemctl aliases
 
 alias ctl='systemctl'

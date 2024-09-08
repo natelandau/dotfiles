@@ -1,4 +1,5 @@
 {{- if eq .chezmoi.os "darwin" }}
+
 alias cpwd="pwd | tr -d '\n' | pbcopy" # Copy the working path to clipboard
 alias cl="fc -e -|pbcopy"              # Copy output of last command to clipboard
 alias caff="caffeinate -ism"           # Run command without letting mac sleep
@@ -13,8 +14,14 @@ alias spot-file="lsof -c '/mds$/'"
 
 alias cleanupLS="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder" # Clean up LaunchServices to remove duplicates in the "Open With" menu
 
-listdsstore() { echo "Listing .DS_Store files..."; find "${@:-.}" -type f -name .DS_Store -print; } #list the .DS_Store files in the current directory and subdirectories
-rmdsstore() { echo "Removing .DS_Store files..."; find "${@:-.}" -type f -name .DS_Store -delete -print; } # Recursively delete .DS_Store files, verbosely outputting what is being deleted.
+listdsstore() {
+    echo "Listing .DS_Store files..."
+    find "${@:-.}" -type f -name .DS_Store -print
+} #list the .DS_Store files in the current directory and subdirectories
+rmdsstore() {
+    echo "Removing .DS_Store files..."
+    find "${@:-.}" -type f -name .DS_Store -delete -print
+} # Recursively delete .DS_Store files, verbosely outputting what is being deleted.
 
 # Search for a file using MacOS Spotlight's metadata
 spotlight() { mdfind "kMDItemDisplayName == '${1}'wc"; }
