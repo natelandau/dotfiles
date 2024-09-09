@@ -45,8 +45,6 @@ regex_pattern=".*GITEA_ADDRESS.*"
 for i in ${!packages[@]}; do
     if [[ ${packages[$i]} =~ ${regex_pattern} ]]; then
         unset packages[$i]
-    else
-        warning "No match in ${packages[$i]}"
     fi
 done
 

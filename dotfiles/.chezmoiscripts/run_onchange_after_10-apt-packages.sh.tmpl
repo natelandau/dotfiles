@@ -26,7 +26,13 @@ packages=(
 )
 
 header "Installing packages with apt"
+sudo apt-get update
+
 for package in "${packages[@]}"; do
+    if sudo dpkg-query -l | awk {'print $2'} | grep -E "^${package}$" &>/dev/null; then
+        info "Package ${package} is already installed"
+        continue
+    fi
     sudo apt-get install -y --no-upgrade $package
 done
 

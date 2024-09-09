@@ -5,28 +5,23 @@
 
 # This script installs the uv binary for better cd command
 
-{{- if eq .chezmoi.os "darwin" -}}
+{{ if eq .chezmoi.os "darwin" }}
+
 if [ ! "$(command -v brew)" ]; then
     error 'uv: brew is required but was not found. Install brew first and then run this script again.' >&2
     _safeExit_ 1
 fi
-install_command="brew install uv"
-{{- else -}}
-if [ ! "$(command -v curl)" ]; then
-    error 'uv: curl is required but was not found. Install curl first and then run this script again.' >&2
-    _safeExit_ 1
-fi
-install_command="curl -LsSf https://astral.sh/uv/install.sh | sh"
-{{- end }}
 
+header "Installing uv"
+brew install uv
 
-# Install uv
-if $(eval "${install_command}") ; then
-    success "uv installed successfully"
-    _safeExit_
-else
-    error "Failed to install uv"
-    _safeExit_ 1
-fi
+{{ else }}
 
-{{- end }}
+header "Installing uv"
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+{{ end }}
+
+_safeExit_
+
+{{ end }}
