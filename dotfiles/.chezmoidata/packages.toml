@@ -126,8 +126,8 @@
             "shfmt",
         ]
     [packages.homebrew.homelab_member]
-        casks    = ["syncthing", "tailspin", "whatsapp"]
-        formulae = ["ffmpeg", "iperf", "nmap"]
+        casks    = ["syncthing", "whatsapp"]
+        formulae = ["ffmpeg", "iperf", "nmap", "tailspin"]
     [packages.homebrew.personal_computer]
         casks = [
             "arc",
