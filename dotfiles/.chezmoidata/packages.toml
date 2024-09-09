@@ -1,0 +1,164 @@
+[packages]
+    [packages.apt]
+        to_remove = []
+        [packages.apt.common]
+            packages = [
+                "apt-transport-https",
+                "bat",
+                "btop",
+                "curl",
+                "dnsutils",
+                "fd-find",
+                "figlet",
+                "fzf",
+                "git",
+                "git-extras",
+                "gnupg",
+                "gpg",
+                "htop",
+                "jq",
+                "logrotate",
+                "lolcat",
+                "mc",                  # Midnight Commander
+                "nano",
+                "ncdu",                # NCurses Disk Usage
+                "needrestart",
+                "net-tools",
+                "openssh-server",
+                "p7zip-full",
+                "ripgrep",
+                "sudo",
+                "tzdata",
+                "unzip",
+                "wget",
+                "zsh",
+            ]
+        [packages.apt.dev_computer]
+            packages = []
+        [packages.apt.homelab_member]
+            packages = ["iperf"]
+        [packages.apt.personal_computer]
+            packages = []
+[packages.python]
+    to_remove = []
+    [packages.python.common]
+        packages = ["git+GITEA_ADDRESS/natelandau/usrbin", "halper", "pygments"]
+    [packages.python.dev_computer]
+        packages = ["ansible-core", "cookiecutter", "poetry"]
+    [packages.python.homelab_member]
+        packages = []
+    [packages.python.personal_computer]
+        packages = ["jdfile", "trash-cli", "vid-cleaner"]
+[packages.homebrew]
+    to_remove = ["istat-menus", "rocket", "shotrr"]
+    [packages.homebrew.common]
+        casks = [
+            "1password",
+            "1password-cli",
+            "font-departure-mono",
+            "font-jetbrains-mono-nerd-font",
+            "font-meslo-lg-dz",
+            "font-meslo-lg-nerd-font",
+            "git-credential-manager",
+            "grandperspective",
+            "iterm2",
+            "lingon-x",
+            "orbstack",
+            "tailscale",
+            "visual-studio-code",
+        ]
+        formulae = [
+            "atuin",
+            "bash",
+            "bash-completion",
+            "bat",
+            "btop",
+            "chezmoi",
+            "coreutils",
+            "eza",
+            "fd",
+            "findutils",
+            "fzf",
+            "gawk",
+            "git",
+            "git-delta",       # https://github.com/dandavison/delta
+            "gnu-sed",
+            "gnu-tar",
+            "gnutls",
+            "gping",
+            "grep",
+            "htop",
+            "jq",
+            "mc",              # Midnight Commander
+            "most",
+            "ncdu",            # NCurses Disk Usage
+            "ncurses",
+            "openssl",
+            "ripgrep",
+            "sqlite3",
+            "ssh-copy-id",
+            "tealdeer",
+            "tree",
+            "uv",
+            "vivid",           # https://github.com/sharkdp/vivid
+            "wget",
+            "zoxide",
+            "zsh",
+        ]
+    [packages.homebrew.dev_computer]
+        casks = [
+            "bruno",
+            "dbeaver-community",
+            "fork",
+            # "sourcetree", # Alternative to fork
+            "lingon-x",
+        ]
+        formulae = [
+            "act",
+            "bats-core",
+            "gh",
+            "git-delta",
+            "git-extras",
+            "goaccess",
+            "gpg",
+            "redis",
+            "shellcheck",
+            "shfmt",
+        ]
+    [packages.homebrew.homelab_member]
+        casks    = ["syncthing", "tailspin", "whatsapp"]
+        formulae = ["ffmpeg", "iperf", "nmap"]
+    [packages.homebrew.personal_computer]
+        casks = [
+            "arc",
+            "brave-browser",
+            "discord",
+            "firefox",
+            "fmail2",
+            "google-chrome",
+            "iina",
+            "kap",
+            "librewolf",
+            "mimestream",
+            "obsidian",
+            "plex",
+            "raycast",
+            "roon",
+            "slack",
+            "stats",
+            "steam",
+            "tripmode",
+            "whatsapp",
+            "zoom",
+            # Quick Look plugins
+            "qlcolorcode",
+            "qlimagesize",
+            "qlmarkdown",
+            "qlprettypatch",
+            "qlstephen",
+            "qlvideo",
+            "quicklook-csv",
+            "quicklook-json",
+            "webpquicklook",
+        ]
+        formulae = []

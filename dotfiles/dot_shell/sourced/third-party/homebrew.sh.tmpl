@@ -45,9 +45,9 @@ export HOMEBREW_NO_INSTALL_CLEANUP=FALSE
 # Aliases
 
 alias brwe='brew'                   # Fix common typo
-alias btop="brew leaves -r"         # Show only top-level manually installed packages
-alias buses="brew uses --installed" # Show all packages depending on a [package]
-alias bdeps="brew deps --tree"      # Show all dependencies of a [package]
+alias brewtop="brew leaves -r"         # Show only top-level manually installed packages
+alias brewuses="brew uses --installed" # Show all packages depending on a [package]
+alias brewdeps="brew deps --tree"      # Show all dependencies of a [package]
 
 bup() {
     if command -v brewup >/dev/null 2>&1; then

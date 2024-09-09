@@ -1,0 +1,73 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+export HOMEBREW_NO_INSTALL_UPGRADE=TRUE
+export HOMEBREW_CASK_OPTS="--appdir=/Applications"
+export HOMEBREW_NO_INSTALL_CLEANUP=FALSE
+
+formulae=(
+    {{ range $package := .packages.homebrew.common.formulae }}
+    "{{ $package }}"
+    {{ end }}
+
+    {{ if .dev_computer }}
+    {{ range $package := .packages.homebrew.dev_computer.formulae }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+
+    {{ if .homelab_member }}
+    {{ range $package := .packages.homebrew.homelab_member.formulae }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+
+    {{ if .personal_computer }}
+    {{ range $package := .packages.homebrew.personal_computer.formulae }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+)
+
+casks=(
+    {{ range $package := .packages.homebrew.common.casks }}
+    "{{ $package }}"
+    {{ end }}
+
+    {{ if .dev_computer }}
+    {{ range $package := .packages.homebrew.dev_computer.casks }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+
+    {{ if .homelab_member }}
+    {{ range $package := .packages.homebrew.homelab_member.casks }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+
+    {{ if .personal_computer }}
+    {{ range $package := .packages.homebrew.personal_computer.casks }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+)
+
+header "Installing Homebrew packages"
+# Debug
+# echo "formulae: ${formulae[@]}"
+# echo "casks: ${casks[@]}"
+
+brew update
+
+brew install -q --formula ${formulae[@]}
+brew install -q --cask ${casks[@]}
+
+brew cleanup
+info "Homebrew packages installed successfully"
+
+_safeExit_
+
+{{- end }}

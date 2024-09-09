@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+
+did_remove_package=false
+
+{{ if and (eq .chezmoi.os "darwin") (lookPath "brew") }}
+
+
+    {{ range $package := .packages.homebrew.to_remove }}
+    if brew list | grep "{{ $package }}" &> /dev/null; then
+        did_remove_package=true
+        brew uninstall "{{ $package }}"
+    fi
+
+    {{ end }}
+{{ end }}
+
+{{- if lookPath "uv" -}}
+    # header "removing python packages with uv"
+    {{ range $package := .packages.python.to_remove }}
+    if uv tool list | grep "{{ $package }}" &> /dev/null; then
+        did_remove_package=true
+        uv tool uninstall "{{ $package }}"
+    fi
+    {{ end }}
+{{ end }}
+
+{{- if eq .chezmoi.os "linux" -}}
+    # header "removing python packages with uv"
+    {{ range $package := .packages.python.to_remove }}
+    if apt search "{{ $package }}" | grep "installed" &> /dev/null; then
+        did_remove_package=true
+        sudo apt remove package_to_remove"{{ $package }}"
+    fi
+    {{ end }}
+{{ end }}
+
+if ${did_remove_package}; then
+    info "Removed packages successfully"
+fi
+
+_safeExit_
