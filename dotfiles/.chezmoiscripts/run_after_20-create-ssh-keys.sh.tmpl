@@ -3,6 +3,8 @@
 
 {{ template "shared_script_utils.bash" }}
 
+header "Creating SSH keys"
+
 if [ ! -d "${HOME}/.ssh_keys" ]; then
     mkdir -p "${HOME}/.ssh_keys"
     echo "[notice] Created directory: ${HOME}/.ssh_keys"

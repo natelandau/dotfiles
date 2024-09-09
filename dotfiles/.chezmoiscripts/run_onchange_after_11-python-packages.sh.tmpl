@@ -1,0 +1,62 @@
+{{- if lookPath "uv" -}}
+
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+header "Installing python packages with uv"
+
+packages=(
+    {{ range $package := .packages.python.common.packages }}
+    "{{ $package }}"
+    {{ end }}
+
+    {{ if .dev_computer }}
+    {{ range $package := .packages.python.dev_computer.packages }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+
+    {{ if .homelab_member }}
+    {{ range $package := .packages.python.homelab_member.packages }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+
+    {{ if .personal_computer }}
+    {{ range $package := .packages.python.personal_computer.packages }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+)
+
+{{ if .use_secrets }}
+
+# Replace GITEA_ADDRESS with the actual value
+gitea_address_secret="{{- onepasswordRead .secrets.gitea_address }}"
+for i in "${!packages[@]}"; do
+    packages[$i]="${packages[$i]/GITEA_ADDRESS/$gitea_address_secret}"
+done
+
+{{ else }}
+
+# remove any array items which contain the string "GITEA_ADDRESS"
+regex_pattern=".*GITEA_ADDRESS.*"
+for i in ${!packages[@]}; do
+    if [[ ${packages[$i]} =~ ${regex_pattern} ]]; then
+        unset packages[$i]
+    fi
+done
+
+{{ end }}
+
+# Install the packages with uv
+for package in "${packages[@]}"; do
+    uv tool install "${package}"
+done
+
+info "Python packages installed successfully"
+
+_safeExit_
+
+{{- end }}

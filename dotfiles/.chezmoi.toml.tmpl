@@ -1,12 +1,16 @@
 {{ $use_secrets := promptBoolOnce . "use_secrets" "Use secrets from 1Password? (true/false)" }}
-{{ $home_network := promptBoolOnce . "home_network" "Is this computer in the home network? (true/false)" }}
+{{ $personal_computer := promptBoolOnce . "personal_computer" "Is this a personal computer for daily driving? (true/false)" }}
+{{ $homelab_member := promptBoolOnce . "homelab_member" "Is this computer in the homelab? (true/false)" }}
+{{ $dev_computer := promptBoolOnce . "dev_computer" "Do you do development on this computer? (true/false)" }}
 {{- $email := promptStringOnce . "email" "Email address" -}}
 
 [data]
     email        = {{ $email | quote }}
     github_user  = "natelandau"
-    home_network = {{ $home_network }}
     use_secrets  = {{ $use_secrets }}
+    dev_computer = {{ $dev_computer }}
+    personal_computer = {{ $personal_computer }}
+    homelab_member    = {{ $homelab_member }}
 
 [diff]
     {{ if lookPath "delta" -}}command = "delta"{{ end }}

@@ -1,0 +1,42 @@
+{{- if eq .chezmoi.os "linux" -}}
+
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+packages=(
+    {{ range $package := .packages.apt.common.packages }}
+    "{{ $package }}"
+    {{ end }}
+    {{ if .dev_computer }}
+    {{ range $package := .packages.apt.dev_computer.packages }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+    {{ if .homelab_member }}
+    {{ range $package := .packages.apt.homelab_member.packages }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+    {{ if .personal_computer }}
+    {{ range $package := .packages.apt.personal_computer.packages }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+)
+
+header "Installing packages with apt"
+sudo apt-get update
+
+for package in "${packages[@]}"; do
+    if sudo dpkg-query -l | awk {'print $2'} | grep -E "^${package}$" &>/dev/null; then
+        info "Package ${package} is already installed"
+        continue
+    fi
+    sudo apt-get install -y --no-upgrade $package
+done
+
+info "Apt packages installed successfully"
+_safeExit_
+
+{{- end }}

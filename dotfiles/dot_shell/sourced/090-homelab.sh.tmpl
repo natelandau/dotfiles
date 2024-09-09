@@ -1,5 +1,7 @@
-{{- if .home_network -}}
+{{- if .personal_computer -}}
 alias vnc="open vnc://10.0.0.4"
+{{ end }}
+{{- if and (.homelab_member) (not (.personal_computer)) -}}
 
 {{- if "/mnt/pi-cluster" | lstat }}
 alias cluster="cd /mnt/pi-cluster/"
