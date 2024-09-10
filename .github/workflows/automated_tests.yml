@@ -5,7 +5,7 @@ on:
     workflow_dispatch:
     push:
         paths:
-            - ".github/workflows/automated-tests.yml"
+            - ".github/workflows/automated_tests.yml"
             - ".github/actions/**"
             - "dotfiles/**"
             - "pyproject.toml"
@@ -19,7 +19,7 @@ on:
             - reopened
             - synchronize
         paths:
-            - ".github/workflows/automated-tests.yml"
+            - ".github/workflows/automated_tests.yml"
             - ".github/actions/**"
             - "dotfiles/**"
             - "pyproject.toml"
