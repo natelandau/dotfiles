@@ -1,0 +1,20 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+# This script installs the git delta binary
+
+VERSION="0.18.1"
+ARCH={{ .chezmoi.arch }}
+DEB="git-delta_${VERSION}_${ARCH}.deb"
+
+if [[ ! $(command -v delta) ]] || [[ $(delta --version | awk '{print $2}') != "${VERSION}" ]]; then
+    header "Installing git-delta"
+    wget "https://github.com/dandavison/delta/releases/download/${VERSION}/${DEB}"
+    sudo dpkg -i git-delta_${VERSION}_${ARCH}.deb
+    rm "${DEB}"
+fi
+
+_safeExit_
+{{ end }}

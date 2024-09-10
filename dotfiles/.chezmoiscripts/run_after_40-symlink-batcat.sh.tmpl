@@ -1,0 +1,18 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+# Bat is installed as batcat due to a name collision in Debian. Here we fix it with a symlink.
+# https://github.com/sharkdp/bat?tab=readme-ov-file#installation
+
+TARGET_DIR="${HOME}/.local/bin"
+
+if [[ -e "/usr/bin/batcat" ]] && [[ ! -L "${TARGET_DIR}/bat" ]]; then
+    mkdir -p "${TARGET_DIR}"
+    ln -s /usr/bin/batcat "${TARGET_DIR}/bat"
+    notice "Symlink batcat -> bat"
+fi
+
+_safeExit_
+{{ end }}

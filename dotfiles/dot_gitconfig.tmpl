@@ -191,3 +191,7 @@
 {{- end }}
 [credential "https://dev.azure.com"]
     useHttpPath = true
+{{- if .use_secrets }}
+[credential "{{ onepasswordRead .secrets.gitea_address }}"]
+    provider = generic
+{{- end }}

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+# This script installs or updates the uv binary for better cd command
+
+{{ if eq .chezmoi.os "darwin" }}
+
+if [[ ! $(command -v uv) ]]; then
+    header "Installing uv"
+    brew install uv
+else
+    brew upgrade uv
+fi
+
+{{ else }}
+
+if [[ ! $(command -v uv) ]]; then
+    header "Installing uv"
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
+
+{{ end }}
+
+_safeExit_

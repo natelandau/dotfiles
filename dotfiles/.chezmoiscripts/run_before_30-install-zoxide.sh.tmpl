@@ -1,0 +1,15 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+# This script installs the zoxide binary for better cd command
+# https://github.com/ajeetdsouza/zoxide
+
+if [[ ! "$(command -v zoxide)" ]]; then
+    header "Install zoxide"
+    curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+fi
+
+_safeExit_
+{{- end }}

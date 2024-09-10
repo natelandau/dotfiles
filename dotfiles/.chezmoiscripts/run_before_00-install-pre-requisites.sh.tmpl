@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+{{ if eq .chezmoi.os "darwin" }}
+
+if [[ ! $(command -v brew) ]]; then
+    header "🍺  Installing Homebrew"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+{{ end }}
+
+{{ if eq .chezmoi.os "linux" }}
+
+install=false
+
+# Declare a regular array for the package names
+declare -a packages=(
+    "curl"
+    "unzip"
+    "wget"
+)
+
+to_install=()
+
+# Loop through the commands to check if they're installed
+for cmd in "${packages[@]}"; do
+    if ! command -v "${cmd}" &>/dev/null; then
+        install=true
+        to_install+=("${cmd}")
+    fi
+done
+
+# Install missing packages
+if ${install}; then
+    header "Updating package list"
+    sudo apt update
+
+    for pkg in "${to_install[@]}"; do
+        header "Installing ${pkg}"
+        sudo apt install -y "${pkg}"
+    done
+fi
+
+{{ end }}
+
+_safeExit_

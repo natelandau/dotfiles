@@ -1,7 +1,8 @@
 Dotfiles, managed with [Chezmoi](https://www.chezmoi.io/).
 
+-   Support for MacOS, Debian, and Ubuntu
 -   ZSH and BASH configurations, aliases, and functions
--   Configuration for common command-line tools
+-   Configurations for common command-line tools
 -   Integrations for Python tooling from [uv](https://docs.astral.sh/uv/)
 -   Package management with [Homebrew](https://brew.sh/), APT, and [uv](https://docs.astral.sh/uv/)
 -   Configurations and integrations for MacOS applications
@@ -12,6 +13,8 @@ Dotfiles, managed with [Chezmoi](https://www.chezmoi.io/).
 -   Configuration for CLI scripts and packages including [halp](https://github.com/natelandau/halp), [vid-cleaner](https://github.com/natelandau/vid-cleaner), [jdfile](https://github.com/natelandau/jdfile), and others.
 -   and more...
 
+**IMPORTANT:** While many dotfile repositories are designed to be forked, mine are not. These are heavily customized for my personal use and likely contain many things you won't need or want to use. Posting publicly so you can see how I manage my dotfiles and maybe get some ideas for how to manage your own.
+
 ## Install
 
 -   [Chezmoi](https://www.chezmoi.io/)
@@ -19,9 +22,13 @@ Dotfiles, managed with [Chezmoi](https://www.chezmoi.io/).
 
 **Ensure required software is installed before proceeding.** There are many ways to install Chezmoi. Check the [official documentation](https://www.chezmoi.io/install/) for the most up-to-date instructions. To install chezmoi and these dotfiles in a single command run the following:
 
+## First Run
+
 ```bash
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply natelandau
 ```
+
+Depending on the options selected during the installation, you may encounter errors on the first run. If you encounter an error, run `chezmoi apply`.
 
 ## Daily Usage
 

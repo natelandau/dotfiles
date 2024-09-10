@@ -1,44 +1,43 @@
-[packages]
-    [packages.apt]
-        to_remove = []
-        [packages.apt.common]
-            packages = [
-                "apt-transport-https",
-                "bat",
-                "btop",
-                "curl",
-                "dnsutils",
-                "fd-find",
-                "figlet",
-                "fzf",
-                "git",
-                "git-extras",
-                "gnupg",
-                "gpg",
-                "htop",
-                "jq",
-                "logrotate",
-                "lolcat",
-                "mc",                  # Midnight Commander
-                "nano",
-                "ncdu",                # NCurses Disk Usage
-                "needrestart",
-                "net-tools",
-                "openssh-server",
-                "p7zip-full",
-                "ripgrep",
-                "sudo",
-                "tzdata",
-                "unzip",
-                "wget",
-                "zsh",
-            ]
-        [packages.apt.dev_computer]
-            packages = []
-        [packages.apt.homelab_member]
-            packages = ["iperf"]
-        [packages.apt.personal_computer]
-            packages = []
+[packages.apt]
+    to_remove = []
+    [packages.apt.common]
+        packages = [
+            "apt-transport-https",
+            "bat",
+            "btop",
+            "curl",
+            "dnsutils",
+            "fd-find",
+            "figlet",
+            "fzf",
+            "git",
+            "git-extras",
+            "gnupg",
+            "gpg",
+            "htop",
+            "jq",
+            "logrotate",
+            "lolcat",
+            "mc",                  # Midnight Commander
+            "nano",
+            "ncdu",                # NCurses Disk Usage
+            "needrestart",
+            "net-tools",
+            "openssh-server",
+            "p7zip-full",
+            "ripgrep",
+            "sudo",
+            "tzdata",
+            "unzip",
+            "wget",
+            "zsh",
+        ]
+    [packages.apt.dev_computer]
+        packages = []
+    [packages.apt.homelab_member]
+        packages = ["iperf"]
+    [packages.apt.personal_computer]
+        packages = []
 [packages.python]
     to_remove = []
     [packages.python.common]
@@ -89,6 +88,7 @@
             "grep",
             "htop",
             "jq",
+            "mas",
             "mc",              # Midnight Commander
             "most",
             "ncdu",            # NCurses Disk Usage
@@ -134,11 +134,13 @@
             "brave-browser",
             "discord",
             "firefox",
+            "flux",          # Night Shift
             "fmail2",
             "google-chrome",
             "iina",
             "kap",
             "librewolf",
+            "lulu",          # Firewall
             "mimestream",
             "obsidian",
             "plex",
@@ -162,3 +164,18 @@
             "webpquicklook",
         ]
         formulae = []
+[packages.mas]
+    [packages.mas.common]
+        apps = []
+    [packages.mas.dev_computer]
+        apps = []
+    [packages.mas.homelab_member]
+        apps = []
+    [packages.mas.personal_computer]
+        apps = [
+            "1091189122", # Bear
+            "1136220934", # Infuse
+            "1532597159", # MP3tag
+            "696977615",  # Capo
+            "975937182",  # Fantastical
+        ]

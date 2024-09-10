@@ -1,0 +1,15 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+# This script installs the Atuin binary for better history browsing
+# https://docs.atuin.sh/
+
+if [[ ! $(command -v atuin) ]]; then
+    header "Installing Atuin"
+    curl --proto '=https' --tlsv1.2 -sSf https://setup.atuin.sh | bash
+fi
+
+_safeExit_
+{{- end }}

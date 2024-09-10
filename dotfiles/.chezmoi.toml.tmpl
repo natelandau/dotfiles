@@ -13,7 +13,8 @@
     homelab_member    = {{ $homelab_member }}
 
 [diff]
-    {{ if lookPath "delta" -}}command = "delta"{{ end }}
+    {{ if lookPath "delta" -}}command = "delta"
+    {{ end -}}
     exclude = ["scripts"]
 
 {{ if lookPath "code" -}}

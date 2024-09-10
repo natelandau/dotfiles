@@ -1,4 +1,4 @@
-{{- if (and (lookPath "fdfind") (ne .chezmoi.os "darwin")) -}}
+{{- if eq .chezmoi.os "linux" -}}
 #!/usr/bin/env bash
 
 {{ template "shared_script_utils.bash" }}
@@ -9,10 +9,9 @@
 # command ln -s $(which fdfind) ~/.local/bin/fd, in order to use fd in the same way as in
 # this documentation. Make sure that $HOME/.local/bin is in your $PATH.
 
-if [ ! -e "${HOME}/.local/bin/fd" ]; then
+if [[ $(command -v fdfind) ]] && [ ! -e "${HOME}/.local/bin/fd" ]; then
     ln -s $(which fdfind) "${HOME}/.local/bin/fd"
-
-    notice "Linked fd binary"
+    notice "Symlink fdfind -> fd"
 fi
 
 _safeExit_

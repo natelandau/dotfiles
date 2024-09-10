@@ -1,0 +1,20 @@
+{{- if eq .chezmoi.os "linux" -}}
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+# This script installs the vivid binary
+
+VERSION="0.10.1"
+ARCH={{ .chezmoi.arch }}
+DEB="vivid_${VERSION}_${ARCH}.deb"
+
+if [[ ! $(command -v vivid) ]] || [[ $(vivid --version | awk '{print $2}') != "${VERSION}" ]]; then
+    header "Installing vivid"
+    wget "https://github.com/sharkdp/vivid/releases/download/v${VERSION}/${DEB}"
+    sudo dpkg -i vivid_${VERSION}_${ARCH}.deb
+    rm "${DEB}"
+fi
+
+_safeExit_
+{{ end }}

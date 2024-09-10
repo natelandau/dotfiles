@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# The following line will force this script to run monthly
+# https://www.chezmoi.io/user-guide/frequently-asked-questions/usage/#how-do-i-run-a-script-periodically
+# {{ output "date" "+%m" | trim }}
+
+{{ template "shared_script_utils.bash" }}
+
+UPDATE_SCRIPT="${HOME}/.shell/scripts/chezmoi_binary_update.py"
+
+{{ if eq .chezmoi.os "darwin" }}
+{{ end }}
+
+{{ if eq .chezmoi.os "linux" }}
+
+if [[ -e ${UPDATE_SCRIPT} ]] && [[ $(command -v uv) ]]; then
+    # Use custom update script to update binaries
+    command="zoxide"
+    github="ajeetdsouza/zoxide"
+    update_url="https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh"
+
+    uv run ${UPDATE_SCRIPT} --command ${command} --github ${github} --update-url ${update_url} --log-level INFO
+fi
+
+if [[ $(command -v atuin-update) ]]; then
+    header "Updating Atuin"
+    atuin-update
+fi
+
+if [[ $(command -v uv) ]] && [[ -e "${HOME}/.cargo/bin/uv" ]]; then
+    uv self update
+fi
+{{ end }}
+
+_safeExit_

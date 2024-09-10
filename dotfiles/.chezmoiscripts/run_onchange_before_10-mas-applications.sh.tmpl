@@ -1,0 +1,42 @@
+{{- if eq .chezmoi.os "darwin" -}}
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+apps=(
+    {{ range $package := .packages.mas.common.apps }}
+    "{{ $package }}"
+    {{ end }}
+
+    {{ if .dev_computer }}
+    {{ range $package := .packages.mas.dev_computer.apps }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+
+    {{ if .homelab_member }}
+    {{ range $package := .packages.mas.homelab_member.apps }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+
+    {{ if .personal_computer }}
+    {{ range $package := .packages.mas.personal_computer.apps }}
+    "{{ $package }}"
+    {{ end }}
+    {{ end }}
+)
+
+if [[ $(command -v mas) ]]; then
+    header "Installing Applications from mas"
+
+    for app in "${apps[@]}"; do
+        if mas list | awk '{print $1}' | grep -E "^${app}$" &>/dev/null; then
+            continue
+        fi
+        mas install ${app}
+    done
+fi
+_safeExit_
+
+{{- end }}

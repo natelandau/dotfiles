@@ -6,6 +6,7 @@ _myPaths=(
     "${HOME}/bin"
     "${HOME}/.cargo/bin"
     "/usr/bin/snap"
+    "${HOME}.atuin/bin"
 )
 
 for _path in "${_myPaths[@]}"; do
