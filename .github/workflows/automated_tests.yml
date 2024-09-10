@@ -5,9 +5,11 @@ on:
     workflow_dispatch:
     push:
         paths:
-            - ".github/workflows/automated-tests.yml"
+            - ".github/workflows/automated_tests.yml"
             - ".github/actions/**"
             - "dotfiles/**"
+            - "pyproject.toml"
+            - "uv.lock"
         branches:
             - master
             - main
@@ -17,9 +19,11 @@ on:
             - reopened
             - synchronize
         paths:
-            - ".github/workflows/automated-tests.yml"
+            - ".github/workflows/automated_tests.yml"
             - ".github/actions/**"
             - "dotfiles/**"
+            - "pyproject.toml"
+            - "uv.lock"
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -64,8 +68,10 @@ jobs:
                   echo '[data]' > ${homedir}/.config/chezmoi/chezmoi.toml
                   echo '    email        = "test@test.com"' >> ${homedir}/.config/chezmoi/chezmoi.toml
                   echo '    github_user  = "natelandau"' >> ${homedir}/.config/chezmoi/chezmoi.toml
-                  echo '    home_network = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    dev_computer = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
                   echo '    use_secrets  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    personal_computer  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    homelab_member  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
 
             # ----------------------------------------------
             # Install chezmoi
@@ -108,6 +114,12 @@ jobs:
                     fi
                   done
 
+                  # Check apt packages
+                  command -v htop 2>&1 >/dev/null || { echo "htop not found"; exit 1; }
+
+                  # Confirm python packages
+                  command -v pygmentize 2>&1 >/dev/null || { echo "pygmentize not found"; exit 1; }
+
             # ----------------------------------------------
             # MACOS: Confirm dotfiles are installed
             # ----------------------------------------------
@@ -132,3 +144,9 @@ jobs:
                         exit 1
                     fi
                   done
+
+                  # Check homebrew packages
+                  command -v htop 2>&1 >/dev/null || { echo "htop not found"; exit 1; }
+
+                  # Confirm python packages
+                  command -v pygmentize 2>&1 >/dev/null || { echo "pygmentize not found"; exit 1; }
