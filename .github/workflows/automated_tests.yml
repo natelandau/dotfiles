@@ -8,6 +8,8 @@ on:
             - ".github/workflows/automated-tests.yml"
             - ".github/actions/**"
             - "dotfiles/**"
+            - "pyproject.toml"
+            - "uv.lock"
         branches:
             - master
             - main
@@ -20,6 +22,8 @@ on:
             - ".github/workflows/automated-tests.yml"
             - ".github/actions/**"
             - "dotfiles/**"
+            - "pyproject.toml"
+            - "uv.lock"
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
