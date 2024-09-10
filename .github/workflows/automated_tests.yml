@@ -114,6 +114,12 @@ jobs:
                     fi
                   done
 
+                  # Check apt packages
+                  command -v htop 2>&1 >/dev/null || { echo "htop not found"; exit 1; }
+
+                  # Confirm python packages
+                  command -v pygmentize 2>&1 >/dev/null || { echo "pygmentize not found"; exit 1; }
+
             # ----------------------------------------------
             # MACOS: Confirm dotfiles are installed
             # ----------------------------------------------
@@ -138,3 +144,9 @@ jobs:
                         exit 1
                     fi
                   done
+
+                  # Check homebrew packages
+                  command -v htop 2>&1 >/dev/null || { echo "htop not found"; exit 1; }
+
+                  # Confirm python packages
+                  command -v pygmentize 2>&1 >/dev/null || { echo "pygmentize not found"; exit 1; }
