@@ -64,8 +64,10 @@ jobs:
                   echo '[data]' > ${homedir}/.config/chezmoi/chezmoi.toml
                   echo '    email        = "test@test.com"' >> ${homedir}/.config/chezmoi/chezmoi.toml
                   echo '    github_user  = "natelandau"' >> ${homedir}/.config/chezmoi/chezmoi.toml
-                  echo '    home_network = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    dev_computer = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
                   echo '    use_secrets  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    personal_computer  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    homelab_member  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
 
             # ----------------------------------------------
             # Install chezmoi

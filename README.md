@@ -1,14 +1,15 @@
 Dotfiles, managed with [Chezmoi](https://www.chezmoi.io/).
 
--   zsh and bash configurations, aliases, and functions
+-   ZSH and BASH configurations, aliases, and functions
 -   Configuration for common command-line tools
--   Integrations for Python tooling such as [Pyenv](https://github.com/pyenv/pyenv), [Poetry](https://python-poetry.org/), and [Pipx](https://pipx.pypa.io/stable/)
+-   Integrations for Python tooling from [uv](https://docs.astral.sh/uv/)
+-   Package management with [Homebrew](https://brew.sh/), APT, and [uv](https://docs.astral.sh/uv/)
 -   Configurations and integrations for MacOS applications
 -   Secrets management with [1Password CLI](https://developer.1password.com/docs/cli/)
--   ssh configuration and key management with 1Password
+-   SSH configuration and key management with 1Password
 -   OSX defaults management
 -   Custom [vscode](https://code.visualstudio.com/) theme
--   Configuration for my CLI scripts [halp](https://github.com/natelandau/halp),[vid-cleaner](https://github.com/natelandau/vid-cleaner), [jdfile](https://github.com/natelandau/jdfile), and [brewup](https://github.com/natelandau/brewup)
+-   Configuration for CLI scripts and packages including [halp](https://github.com/natelandau/halp), [vid-cleaner](https://github.com/natelandau/vid-cleaner), [jdfile](https://github.com/natelandau/jdfile), and others.
 -   and more...
 
 ## Install
@@ -41,6 +42,16 @@ chezmoi update
 ```
 
 Note that if chezmoi hangs waiting for user input, you will need to kill the process (`killall chezmoi`) and run `apply` manually, because chezmoi locks the database.
+
+## Package management
+
+Packages are managed with the appropriate tools:
+
+-   [Homebrew](https://brew.sh/) for MacOS
+-   APT for Debian-based systems
+-   [uv](https://docs.astral.sh/uv/) for Python packages
+
+To configure the packages to be installed or removed on a system, edit the `dotfiles/.chezmoidata/packages.toml` file.
 
 ## Managing Secrets
 
@@ -83,19 +94,14 @@ Custom terminal configurations are stored in `~/.config/applications/terminal`. 
 
 ## Setup
 
-1. Install Python and [Poetry](https://python-poetry.org)
-2. cd into the dotfiles directory with `chezmoi cd`
-3. Run `poetry install` to install the development dependencies
-4. Activate the Poetry virtual environment with `poetry shell`.
-5. Install the pre-commit hooks with `pre-commit install --install-hooks`.
+1. Install [uv](https://docs.astral.sh/uv/) to enable integration with Python tooling.
+2. Install the virtual environment with `uv sync`
+3. Activate the virtual environment with `source .venv/bin/activate`
+4. Install the pre-commit hooks with `pre-commit install --install-hooks`
 
 ## Committing changes
 
-1. Activate your Poetry environment with `poetry shell`
+1. Activate the virtual environment with `source .venv/bin/activate`
 2. Add changed files to the staging area with `git add .`
 3. Run `cz c` to commit changes
 4. Push to remote repository
-
-## Updating dotfiles
-
-Run `chezmoi update` to apply changes to the dotfiles on other machines.
