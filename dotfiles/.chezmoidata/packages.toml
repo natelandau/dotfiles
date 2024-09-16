@@ -122,6 +122,7 @@
             "git-extras",
             "goaccess",
             "gpg",
+            "lazygit",    # simple terminal UI for git commands
             "redis",
             "shellcheck",
             "shfmt",

@@ -220,6 +220,29 @@ fatal() {
     _safeExit_ "1"
 }
 
+_makeTempDir_() {
+    # DESC:
+    #         Creates a temp directory to house temporary files
+    # ARGS:
+    #         $1 (Optional) - First characters/word of directory name
+    # OUTS:
+    #         Sets $TMP_DIR variable to the path of the temp directory
+    # USAGE:
+    #         _makeTempDir_ "$(basename "$0")"
+
+    [ -d "${TMP_DIR:-}" ] && return 0
+
+    if [ -n "${1:-}" ]; then
+        TMP_DIR="${TMPDIR:-/tmp/}${1}.${RANDOM}.${RANDOM}.$$"
+    else
+        TMP_DIR="${TMPDIR:-/tmp/}$(basename "$0").${RANDOM}.${RANDOM}.${RANDOM}.$$"
+    fi
+    (umask 077 && mkdir "${TMP_DIR}") || {
+        fatal "Could not create temporary directory! Exiting."
+    }
+    debug "\$TMP_DIR=${TMP_DIR}"
+}
+
 _printFuncStack_() {
     # DESC:
     #         Prints the function stack in use. Used for debugging, and error reporting.

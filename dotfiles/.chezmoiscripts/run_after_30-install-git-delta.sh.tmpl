@@ -5,16 +5,45 @@
 
 # This script installs the git delta binary
 
-VERSION="0.18.1"
-ARCH={{ .chezmoi.arch }}
-DEB="git-delta_${VERSION}_${ARCH}.deb"
+header "Verify git-delta installation and check for updates"
 
-if [[ ! $(command -v delta) ]] || [[ $(delta --version | awk '{print $2}') != "${VERSION}" ]]; then
-    header "Installing git-delta"
-    wget "https://github.com/dandavison/delta/releases/download/${VERSION}/${DEB}"
-    sudo dpkg -i git-delta_${VERSION}_${ARCH}.deb
-    rm "${DEB}"
+# Fetch the API response once and store it in a variable
+API_RESPONSE=$(curl -s "https://api.github.com/repos/dandavison/delta/releases/latest")
+
+# Extract the required information from the stored API response
+LATEST_VERSION=$(echo "$API_RESPONSE" | grep -Po '"tag_name": "\K[^"]*')
+IS_PRE_RELEASE=$(echo "$API_RESPONSE" | grep -Po '"prerelease":\s*\K[^,]*')
+IS_DRAFT=$(echo "$API_RESPONSE" | grep -Po '"draft":\s*\K[^,]*')
+
+info "Latest delta version is: ${LATEST_VERSION}"
+
+if [[ $(command -v delta) ]]; then
+    CURRENT_VERSION=$(delta --version | awk '{print $2}')
+
+    info "Local delta version is: ${CURRENT_VERSION}"
+
+    if [[ ${CURRENT_VERSION} == "${LATEST_VERSION}" ]]; then
+        success "delta is already up to date"
+        _safeExit_ 0
+    fi
+
+    if [[ ${IS_PRE_RELEASE} == "true" ]] || [[ ${IS_DRAFT} == "true" ]]; then
+        notice "Latest delta version is a pre-release or draft"
+        _safeExit_ 0
+    fi
 fi
 
+ARCH={{ .chezmoi.arch }}
+DEB="git-delta_${LATEST_VERSION}_${ARCH}.deb"
+
+_makeTempDir_ "$(basename "$0")"
+pushd "${TMP_DIR}" &>/dev/null || exit
+
+info "Downloading delta version: ${LATEST_VERSION}"
+wget "https://github.com/dandavison/delta/releases/download/${LATEST_VERSION}/${DEB}"
+sudo dpkg -i git-delta_${LATEST_VERSION}_${ARCH}.deb
+rm "${DEB}"
+
+popd &>/dev/null || exit
 _safeExit_
 {{ end }}

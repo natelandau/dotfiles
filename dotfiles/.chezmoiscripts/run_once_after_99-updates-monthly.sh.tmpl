@@ -13,23 +13,15 @@ UPDATE_SCRIPT="${HOME}/.shell/scripts/chezmoi_binary_update.py"
 
 {{ if eq .chezmoi.os "linux" }}
 
-if [[ -e ${UPDATE_SCRIPT} ]] && [[ $(command -v uv) ]]; then
-    # Use custom update script to update binaries
-    command="zoxide"
-    github="ajeetdsouza/zoxide"
-    update_url="https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh"
-
-    uv run ${UPDATE_SCRIPT} --command ${command} --github ${github} --update-url ${update_url} --log-level INFO
-fi
-
-if [[ $(command -v atuin-update) ]]; then
-    header "Updating Atuin"
-    atuin-update
-fi
-
 if [[ $(command -v uv) ]] && [[ -e "${HOME}/.cargo/bin/uv" ]]; then
     uv self update
 fi
 {{ end }}
+
+# Run these commands on all systems
+if [[ $(command -v uv) ]]; then
+    header "Upgrading tools installed with uv"
+    uv tool upgrade --all
+fi
 
 _safeExit_

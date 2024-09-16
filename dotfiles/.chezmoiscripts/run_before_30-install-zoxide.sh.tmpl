@@ -6,10 +6,36 @@
 # This script installs the zoxide binary for better cd command
 # https://github.com/ajeetdsouza/zoxide
 
-if [[ ! "$(command -v zoxide)" ]]; then
-    header "Install zoxide"
-    curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+header "Verify zoxide installation and check for updates"
+
+# Fetch the API response once and store it in a variable
+API_RESPONSE=$(curl -s "https://api.github.com/repos/ajeetdsouza/zoxide/releases/latest")
+
+# Extract the required information from the stored API response
+LATEST_VERSION=$(echo "$API_RESPONSE" | grep -Po '"tag_name": "v\K[^"]*')
+IS_PRE_RELEASE=$(echo "$API_RESPONSE" | grep -Po '"prerelease":\s*\K[^,]*')
+IS_DRAFT=$(echo "$API_RESPONSE" | grep -Po '"draft":\s*\K[^,]*')
+
+info "Latest zoxide version is ${LATEST_VERSION}"
+
+if [[ $(command -v zoxide) ]]; then
+    CURRENT_VERSION=$(zoxide --version | grep -Po "zoxide \K(\d+\.\d+\.\d+)")
+
+    info "Current zoxide version is ${CURRENT_VERSION}"
+
+    if [[ ${CURRENT_VERSION} == "${LATEST_VERSION}" ]]; then
+        success "zoxide is already up to date"
+        _safeExit_ 0
+    fi
+
+    if [[ ${IS_PRE_RELEASE} == "true" ]] || [[ ${IS_DRAFT} == "true" ]]; then
+        notice "Latest zoxide version is a pre-release or draft version. Skipping..."
+        _safeExit_ 0
+    fi
 fi
+
+# Download and install the latest zoxide release
+curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
 
 _safeExit_
 {{- end }}

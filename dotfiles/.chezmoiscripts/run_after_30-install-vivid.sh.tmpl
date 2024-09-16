@@ -5,16 +5,45 @@
 
 # This script installs the vivid binary
 
-VERSION="0.10.1"
-ARCH={{ .chezmoi.arch }}
-DEB="vivid_${VERSION}_${ARCH}.deb"
+header "Verify vivid installation and check for updates"
 
-if [[ ! $(command -v vivid) ]] || [[ $(vivid --version | awk '{print $2}') != "${VERSION}" ]]; then
-    header "Installing vivid"
-    wget "https://github.com/sharkdp/vivid/releases/download/v${VERSION}/${DEB}"
-    sudo dpkg -i vivid_${VERSION}_${ARCH}.deb
-    rm "${DEB}"
+# Fetch the API response once and store it in a variable
+API_RESPONSE=$(curl -s "https://api.github.com/repos/sharkdp/vivid/releases/latest")
+
+# Extract the required information from the stored API response
+LATEST_VERSION=$(echo "$API_RESPONSE" | grep -Po '"tag_name": "v\K[^"]*')
+IS_PRE_RELEASE=$(echo "$API_RESPONSE" | grep -Po '"prerelease":\s*\K[^,]*')
+IS_DRAFT=$(echo "$API_RESPONSE" | grep -Po '"draft":\s*\K[^,]*')
+
+info "Latest delta version is: ${LATEST_VERSION}"
+
+if [[ $(command -v vivid) ]]; then
+    CURRENT_VERSION=$(vivid --version | awk '{print $2}')
+
+    info "Local vivid version is: ${CURRENT_VERSION}"
+
+    if [[ ${CURRENT_VERSION} == "${LATEST_VERSION}" ]]; then
+        success "vivid is already up to date"
+        _safeExit_ 0
+    fi
+
+    if [[ ${IS_PRE_RELEASE} == "true" ]] || [[ ${IS_DRAFT} == "true" ]]; then
+        notice "Latest vivid version is a pre-release or draft"
+        _safeExit_ 0
+    fi
 fi
+
+_makeTempDir_ "$(basename "$0")"
+pushd "${TMP_DIR}" &>/dev/null || exit
+
+DEB="vivid_${LATEST_VERSION}_{{ .chezmoi.arch }}.deb"
+
+info "Downloading vivid version: ${LATEST_VERSION}"
+wget "https://github.com/sharkdp/vivid/releases/download/v${LATEST_VERSION}/${DEB}"
+sudo dpkg -i "${DEB}"
+rm "${DEB}"
+
+popd &>/dev/null || exit
 
 _safeExit_
 {{ end }}

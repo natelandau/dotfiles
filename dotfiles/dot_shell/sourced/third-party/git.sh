@@ -103,6 +103,20 @@ gurl() {
     echo "https://${host}/${user_repo}"
 }
 
+gnuke() {
+    # DESC:		Nuke everything in local and reset from origin
+    git fetch --all
+    ORIGIN_HEAD=$(git remote show origin | grep -Po 'HEAD branch:\K[^"]*')
+    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+    if [[ ${ORIGIN_HEAD} == "${CURRENT_BRANCH}" ]]; then
+        git reset --hard origin/"${CURRENT_BRANCH}"
+    else
+        warning "Current brand ${CURRENT_BRANCH} is not the same as origin HEAD ${ORIGIN_HEAD}"
+        return 1
+    fi
+}
+
 # From Git-Extras (https://github.com/tj/git-extras)
 alias obliterate='git obliterate'       # Completely remove a file from the repository, including past commits and tags
 alias release='git-release'             # Create release commit with the given <tag> and other options

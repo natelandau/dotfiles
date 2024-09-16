@@ -1,0 +1,67 @@
+{{- if and (eq .chezmoi.os "linux") (.dev_computer) -}}
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" }}
+
+# This script installs lor updates lazygit
+
+header "Verify lazygit installation and check for updates"
+
+# Fetch the API response once and store it in a variable
+API_RESPONSE=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest")
+
+# Extract the required information from the stored API response
+LATEST_VERSION=$(echo "$API_RESPONSE" | grep -Po '"tag_name": "v\K[^"]*')
+IS_PRE_RELEASE=$(echo "$API_RESPONSE" | grep -Po '"prerelease":\s*\K[^,]*')
+IS_DRAFT=$(echo "$API_RESPONSE" | grep -Po '"draft":\s*\K[^,]*')
+
+info "Latest lazygit version is ${LATEST_VERSION}"
+
+if [[ $(command -v lazygit) ]]; then
+    CURRENT_VERSION=$(lazygit --version | grep -Po ", version=\K(\d+\.\d+\.\d+)")
+
+    info "local lazygit version is: ${CURRENT_VERSION}"
+
+    if [[ ${CURRENT_VERSION} == "${LATEST_VERSION}" ]]; then
+        success "lazygit is already up to date"
+        _safeExit_ 0
+    fi
+
+    if [[ ${IS_PRE_RELEASE} == "true" ]] || [[ ${IS_DRAFT} == "true" ]]; then
+        notice "Latest lazygit version is a pre-release or draft"
+        _safeExit_ 0
+    fi
+fi
+
+_makeTempDir_ "$(basename "$0")"
+pushd "${TMP_DIR}" &>/dev/null || exit
+
+info "Downloading lazygit version ${LATEST_VERSION}"
+
+if [[ {{ .chezmoi.arch }} == "amd64" ]]; then
+    curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LATEST_VERSION}_Linux_x86_64.tar.gz"
+elif [[ {{ .chezmoi.arch }} == "arm64" ]]; then
+    curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LATEST_VERSION}_Linux_arm64.tar.gz"
+else
+    error "Unsupported architecture: ${ARCH}"
+    _safeExit_ 1
+fi
+
+# Extract the binary
+tar xf lazygit.tar.gz lazygit
+
+# Move the binary to the local bin directory
+if [[ -d "${HOME}/.local/bin" ]]; then
+    mv lazygit "${HOME}/.local/bin"
+else
+    mkdir -p "${HOME}/.local/bin"
+    mv lazygit "${HOME}/.local/bin"
+fi
+
+success "lazygit version ${LAZYGIT_VERSION} installed successfully"
+info "lazygit is installed at ${HOME}/.local/bin/lazygit"
+
+popd &>/dev/null || exit
+
+_safeExit_
+{{ end }}
