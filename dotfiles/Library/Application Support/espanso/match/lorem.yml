@@ -1,0 +1,81 @@
+---
+matches:
+  # Sentence
+  - trigger: ".lorem"
+    replace: "{{output}}"
+    vars:
+      - name: output
+        type: random
+        params:
+          choices:
+            - "Lorem ipsum dolor sit amet, consectetur adipisici elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua."
+            - "Curabitur blandit tempus ardua ridiculous sed magna."
+            - "Inmensae subtilitatis, obscuris et malesuada fames."
+            - "Paullum deliquit, ponderibus modulisque suis ratio utitur."
+            - "Pellentesque habitant morbi tristique senectus et netus."
+            - "A communi observantia non est recedendum."
+            - "Unam incolunt Belgae, aliam Aquitani, tertiam."
+            - "Magna pars studiorum, prodita quaerimus."
+            - "Gallia est omnis divisa in partes tres, quarum."
+            - "Phasellus laoreet lorem vel dolor tempus vehicula."
+            - "Cras mattis iudicium purus sit amet fermentum."
+            - "Nec dubitamus multa iter quae et nos invenerat."
+            - "Quo usque tandem abutere, Catilina, patientia nostra?"
+            - "Curabitur est gravida et libero vitae dictum."
+            - "Quisque ut dolor gravida, placerat libero vel, euismod."
+            - "Ullamco laboris nisi ut aliquid ex ea commodi consequat."
+
+  # Multiples sentences
+  - trigger: ".2lorem"
+    replace: "{{one}} {{two}}"
+    vars:
+      - name: one
+        type: match
+        params:
+          trigger: ".lorem"
+      - name: two
+        type: match
+        params:
+          trigger: ".lorem"
+  - trigger: ".3lorem"
+    replace: "{{two}} {{three}}"
+    vars:
+      - name: two
+        type: match
+        params:
+          trigger: ".2lorem"
+      - name: three
+        type: match
+        params:
+          trigger: ".lorem"
+  - trigger: ".4lorem"
+    replace: "{{three}} {{four}}"
+    vars:
+      - name: three
+        type: match
+        params:
+          trigger: ".2lorem"
+      - name: four
+        type: match
+        params:
+          trigger: ".2lorem"
+
+  - trigger: ".plorem"
+    replace: "{{one}} {{two}} {{three}} {{four}}"
+    vars:
+      - name: one
+        type: match
+        params:
+          trigger: ".4lorem"
+      - name: two
+        type: match
+        params:
+          trigger: ".4lorem"
+      - name: three
+        type: match
+        params:
+          trigger: ".4lorem"
+      - name: four
+        type: match
+        params:
+          trigger: ".4lorem"

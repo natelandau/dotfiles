@@ -3,7 +3,7 @@
     [packages.apt.common]
         packages = [
             "apt-transport-https",
-            "bat",
+            "bat",                 # cat with syntax highlighting and Git integration
             "btop",
             "curl",
             "dnsutils",
@@ -25,7 +25,7 @@
             "net-tools",
             "openssh-server",
             "p7zip-full",
-            "ripgrep",
+            "ripgrep",             # search tool like grep and the silver searcher
             "sudo",
             "tzdata",
             "unzip",
@@ -41,11 +41,11 @@
 [packages.python]
     to_remove = []
     [packages.python.common]
-        packages = ["git+GITEA_ADDRESS/natelandau/usrbin", "halper", "pygments"]
+        packages = ["halper", "pygments"]
     [packages.python.dev_computer]
         packages = ["ansible-core", "cookiecutter", "poetry"]
     [packages.python.homelab_member]
-        packages = []
+        packages = ["git+GITEA_ADDRESS/natelandau/usrbin"]
     [packages.python.personal_computer]
         packages = ["jdfile", "trash-cli", "vid-cleaner"]
 [packages.homebrew]
@@ -54,55 +54,56 @@
         casks = [
             "1password",
             "1password-cli",
+            "espanso",                       # Text expander
             "font-departure-mono",
             "font-jetbrains-mono-nerd-font",
             "font-meslo-lg-dz",
             "font-meslo-lg-nerd-font",
             "git-credential-manager",
-            "grandperspective",
-            "iterm2",
+            "grandperspective",              # Disk usage visualizer
+            "iterm2",                        # Terminal emulator
             "lingon-x",
-            "orbstack",
+            "orbstack",                      # Docker replacement
             "tailscale",
             "visual-studio-code",
         ]
         formulae = [
-            "atuin",
+            "atuin",           # Better shell history
             "bash",
             "bash-completion",
-            "bat",
-            "btop",
-            "chezmoi",
+            "bat",             # cat with syntax highlighting and Git integration
+            "btop",            # top but better
+            "chezmoi",         # Dotfile manager
             "coreutils",
-            "eza",
-            "fd",
-            "findutils",
-            "fzf",
-            "gawk",
+            "eza",             # ls replacement
+            "fd",              # fd-find
+            "findutils",       # GNU find, locate, updatedb, and xargs
+            "fzf",             # Fuzzy finder
+            "gawk",            # GNU awk
             "git",
             "git-delta",       # https://github.com/dandavison/delta
-            "gnu-sed",
-            "gnu-tar",
-            "gnutls",
-            "gping",
+            "gnu-sed",         # GNU implementation of the famous stream editor
+            "gnu-tar",         # GNU version of the tar archiving utility
+            "gnutls",          # GNU Transport Layer Security (TLS) Library
+            "gping",           # Ping, but with a graph
             "grep",
-            "htop",
-            "jq",
-            "mas",
+            "htop",            # Improved top (interactive process viewer)
+            "jq",              # Lightweight and flexible command-line JSON processor
+            "mas",             # Mac App Store command-line interface
             "mc",              # Midnight Commander
-            "most",
+            "most",            # Pager
             "ncdu",            # NCurses Disk Usage
-            "ncurses",
-            "openssl",
-            "ripgrep",
+            "ncurses",         # Text-based UI library
+            "openssl",         # SSL/TLS cryptography library
+            "ripgrep",         # search tool like grep and the silver searcher
             "sqlite3",
-            "ssh-copy-id",
-            "tealdeer",
-            "tree",
-            "uv",
+            "ssh-copy-id",     # Add a public key to a remote machine's authorized_keys file
+            "tealdeer",        # TLDR man pages
+            "tree",            # Display directories as trees (with optional color/HTML output)
+            "uv",              # Python Pyenv, pipx, and packagging replacement
             "vivid",           # https://github.com/sharkdp/vivid
             "wget",
-            "zoxide",
+            "zoxide",          # A faster way to navigate your filesystem
             "zsh",
         ]
     [packages.homebrew.dev_computer]
@@ -114,7 +115,7 @@
             "lingon-x",
         ]
         formulae = [
-            "act",
+            "act",        # runs GitHub Actions locally
             "bats-core",
             "gh",
             "git-delta",

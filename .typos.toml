@@ -12,4 +12,7 @@
         ue       = "ue"       # Context: com.apple.metadata
 
 [files]
-    extend-exclude = ["dotfiles/.assets"]
+    extend-exclude = [
+        "dotfiles/.assets",
+        "dotfiles/Library/Application Support/espanso/match/misspellings.yml",
+    ]

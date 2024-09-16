@@ -1,0 +1,15 @@
+---
+matches:
+{{- if .use_secrets }}
+  - trigger: ".email"
+    replace: "{{ onepasswordRead .secrets.email_address }}"
+
+  - trigger: ".cal"
+    replace: "{{ onepasswordRead .secrets.calendly_address }}"
+
+  - trigger: ".zoom"
+    replace: "{{ onepasswordRead .secrets.zoom_address }}"
+
+  - trigger: ".bwszoom"
+    replace: "{{ onepasswordRead .secrets.bws_zoom_address }}"
+{{- end }}

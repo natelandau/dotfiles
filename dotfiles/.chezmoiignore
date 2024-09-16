@@ -11,6 +11,7 @@ Library/Application Support
 .vscode
 Library
 {{ end }}
+
 {{ if ne .chezmoi.os "linux" }}
 .config/halp
 .config/vid-cleaner
