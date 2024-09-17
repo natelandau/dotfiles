@@ -37,9 +37,15 @@ fi
 
 unset _myPaths _path
 
-if [ -d "${HOME}/.zfunc" ]; then
-  fpath+=${HOME}/.zfunc
+# Source completions
+if [ -d "{{ .zsh_dir }}/completions" ]; then
+  fpath=({{ .zsh_dir }}/completions $fpath)
 fi
+
+if [ -d "{{ .zsh_dir }}/zsh-completions/src" ]; then
+  fpath=({{ .zsh_dir }}/zsh-completions/src $fpath)
+fi
+
 
 # Load Completions
 #############################################

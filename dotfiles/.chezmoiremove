@@ -1,9 +1,9 @@
-.DS_Store
-.zsh/plugins/zsh-github-cli
-.zsh/plugins/up.zsh
-.local/scripts
-.nd.toml
 bin/pull_all_repos
 
 # Migrate to zoxide
 .z
+
+# Migrate zsh data to ~/.local/share/zsh
+.zsh_history
+.zfunc/_eza
+.zfunc/poetry

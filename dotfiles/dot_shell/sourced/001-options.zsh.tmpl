@@ -40,7 +40,7 @@ setopt share_history          # share history between different instances of the
 unsetopt correct_all
 unsetopt correct
 
-HISTFILE=${HOME}/.zsh_history
+HISTFILE={{ .zsh_dir }}/history
 HISTSIZE=100000
 SAVEHIST=${HISTSIZE}
 HISTDUP=erase
@@ -63,7 +63,7 @@ zstyle ':completion:*:match:*' original only
 zstyle ':completion:*:approximate:*' max-errors 1 numeric
 
 zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path "${HOME}/.zsh/cache"
+zstyle ':completion:*' cache-path "{{ .zsh_dir }}/cache"
 
 zstyle ':completion:*' list-colors ''
 zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#) ([0-9a-z-]#)*=01;34=0=01'

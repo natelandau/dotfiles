@@ -30,13 +30,6 @@ alias top="htop" # Prefer `htop` over `top`
 alias cat="bat" # Prefer `bat` over `cat`
 {{- end }}
 
-{{- if lookPath "rip" }}
-alias rmd='rip'
-{{- else }}
-alias rm='rm'
-alias rmd='rm -rf'
-{{- end }}
-
 {{- if lookPath "dig" }}
 {{- else if lookPath "drill" }}
 alias dig='drill'

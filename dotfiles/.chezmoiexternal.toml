@@ -1,4 +1,4 @@
-[".zfunc/_eza"]
+[".local/share/zsh/completions/_eza"]
     refreshPeriod = "168h"
     type          = "file"
     url           = "https://raw.githubusercontent.com/eza-community/eza/main/completions/zsh/_eza"

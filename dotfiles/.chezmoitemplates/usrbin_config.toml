@@ -16,6 +16,8 @@
     nomad_address = "http://127.0.0.1:4646"
 {{- else if .use_secrets }}
     nomad_address = "http://{{ onepasswordRead "op://yc7nim47s6rch4ehrvfsz5icei/kqwlkq6yaoarvhwacd7vpll3ei/hostname" }}:4646"
+{{- else }}
+    nomad_address = ""
 {{- end }}
 
 [brewup]
@@ -52,10 +54,9 @@
 
 [autopull]
 
-# Default directories to search for repositories
 repo_dirs = [
-    {{- if joinPath .chezmoi.homeDir ".zsh/plugins" | lstat }}
-    "~/.zsh/plugins",
+    {{- if joinPath .zsh_dir "plugins" | lstat }}
+    "{{ .zsh_dir }}/plugins",
     {{- end }}
     {{- if joinPath .chezmoi.homeDir "repos" | lstat }}
     "~/repos",

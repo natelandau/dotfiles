@@ -1,12 +1,12 @@
 {{- if lookPath "poetry" -}}
 
-# Poetry completions for zsh
+# Completions for zsh
 if [[ -n ${ZSH_NAME} ]]; then
-    if [ ! -d "${HOME}/.zfunc" ]; then
-        mkdir -p "${HOME}/.zfunc"
+    if [ ! -d "{{ .zsh_dir }}/completions" ]; then
+        mkdir -p "{{ .zsh_dir }}/completions"
     fi
-    if [ ! -f "${HOME}/.zfunc/poetry" ]; then
-        poetry completions zsh >"${HOME}/.zfunc/poetry"
+    if [ ! -f "{{ .zsh_dir }}/completions/_poetry" ]; then
+        poetry completions zsh >"{{ .zsh_dir }}/completions/_poetry"
     fi
 fi
 
