@@ -1,0 +1,22 @@
+{{- if lookPath "rip" }}
+# By default rip will move files to a tmp directory. To change this behavior, set RIP_GRAVEYARD to the desired directory.
+# export RIP_GRAVEYARD="${HOME}/.local/share/Trash"
+
+alias rm="echo Use 'rip' instead of rm."
+alias rmd='rip'
+
+# Completions for zsh
+if [[ -n ${ZSH_NAME} ]]; then
+    if [ ! -d "{{ .zsh_dir }}/completions" ]; then
+        mkdir -p "{{ .zsh_dir }}/completions"
+    fi
+    if [ ! -f "{{ .zsh_dir }}/completions/_rip" ]; then
+        rip completions zsh >"{{ .zsh_dir }}/completions/_rip"
+    fi
+fi
+
+{{- else }}
+
+alias rmd='rm -rf'
+
+{{- end }}

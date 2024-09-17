@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+
+# Install rip2: A safe and ergonomic alternative to rm
+# https://github.com/MilesCranmer/rip2
+
+{{ template "shared_script_utils.bash" }}
+
+header "Verify rip2 installation and check for updates"
+
+# Fetch the API response once and store it in a variable
+API_RESPONSE=$(curl -s "https://api.github.com/repos/MilesCranmer/rip2/releases/latest")
+
+# Extract the required information from the stored API response
+LATEST_VERSION=$(echo "$API_RESPONSE" | grep -Po '"tag_name": "v\K[^"]*')
+IS_PRE_RELEASE=$(echo "$API_RESPONSE" | grep -Po '"prerelease":\s*\K[^,]*')
+IS_DRAFT=$(echo "$API_RESPONSE" | grep -Po '"draft":\s*\K[^,]*')
+
+info "Latest rip2 version is: ${LATEST_VERSION}"
+
+if [[ $(command -v rip) ]]; then
+    CURRENT_VERSION=$(rip --version | awk '{print $2}')
+
+    info "Local rip2 version is: ${CURRENT_VERSION}"
+
+    if [[ ${CURRENT_VERSION} == "${LATEST_VERSION}" ]]; then
+        success "rip2 is already up to date"
+        _safeExit_ 0
+    fi
+
+    if [[ ${IS_PRE_RELEASE} == "true" ]] || [[ ${IS_DRAFT} == "true" ]]; then
+        notice "Latest rip2 version is a pre-release or draft"
+        _safeExit_ 0
+    fi
+fi
+
+case "{{ .chezmoi.os }}" in
+    "darwin")
+        OS="macOS-Darwin"
+        LIBC_VARIANT=""
+        ;;
+    "linux")
+        OS="Linux"
+        LIBC_VARIANT="-musl"
+        ;;
+    *)
+        warning "Unsupported OS: ${OS}"
+        _safeExit_
+        ;;
+esac
+
+case "{{ .chezmoi.arch }}" in
+    "amd64")
+        ARCH="x86_64"
+        ;;
+    "arm64")
+        ARCH="aarch64"
+        ;;
+    *)
+        warning "Unsupported architecture: ${ARCH}"
+        _safeExit_
+        ;;
+esac
+
+TARBALL="rip-${OS}-${ARCH}${LIBC_VARIANT}.tar.gz"
+DOWNLOAD_URL="https://github.com/MilesCranmer/rip2/releases/download/v${LATEST_VERSION}/${TARBALL}"
+
+_makeTempDir_ "$(basename "$0")"
+pushd "${TMP_DIR}" &>/dev/null || exit
+
+echo "TMPDIR: ${TMP_DIR}"
+echo "TARBALL: ${TARBALL}"
+
+# Download the binary
+curl -Lo "${TARBALL}" "${DOWNLOAD_URL}"
+
+# Extract the binary
+tar xf "${TARBALL}" rip
+
+# Move the binary to the local bin directory
+if [[ -d "${HOME}/.local/bin" ]]; then
+    mv rip "${HOME}/.local/bin"
+else
+    mkdir -p "${HOME}/.local/bin"
+    mv rip "${HOME}/.local/bin"
+fi
+
+success "rip2 version ${LATEST_VERSION} installed successfully"
+info "rip2 is installed at ${HOME}/.local/bin/rip"
+
+# rip-macOS-Darwin-x86_64.tar.gz
+# rip-macOS-Darwin-aarch64.tar.gz
+# rip-Linux-aarch64-musl.tar.gz
+# rip-Linux-x86_64-musl.tar.gz
+
+popd &>/dev/null || exit
+_safeExit_
