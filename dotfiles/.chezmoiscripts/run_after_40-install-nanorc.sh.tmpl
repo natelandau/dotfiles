@@ -2,7 +2,7 @@
 
 # This script installs nano syntax highlighting for various languages.
 
-{{ template "shared_script_utils.bash" }}
+{{ template "shared_script_utils.bash" . }}
 
 # check for unzip before we continue
 if [ ! "$(command -v unzip)" ]; then

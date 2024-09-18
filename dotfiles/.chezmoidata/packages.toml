@@ -62,6 +62,7 @@
             "git-credential-manager",
             "grandperspective",              # Disk usage visualizer
             "iterm2",                        # Terminal emulator
+            "jordanbaird-ice",               # Menu bar customization
             "lingon-x",
             "orbstack",                      # Docker replacement
             "tailscale",
@@ -95,6 +96,7 @@
             "ncdu",            # NCurses Disk Usage
             "ncurses",         # Text-based UI library
             "openssl",         # SSL/TLS cryptography library
+            "otree",           # View objects (JSON/YAML/TOML) in TUI tree widget
             "ripgrep",         # search tool like grep and the silver searcher
             "sqlite3",
             "ssh-copy-id",     # Add a public key to a remote machine's authorized_keys file

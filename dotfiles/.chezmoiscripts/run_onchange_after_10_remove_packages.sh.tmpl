@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
-{{ template "shared_script_utils.bash" }}
+{{ template "shared_script_utils.bash" . }}
 
+
+header "Checking for packages to remove"
 
 did_remove_package=false
 
 {{ if and (eq .chezmoi.os "darwin") (lookPath "brew") }}
-
 
     {{ range $package := .packages.homebrew.to_remove }}
     if brew list | grep "{{ $package }}" &> /dev/null; then
@@ -38,7 +39,7 @@ did_remove_package=false
 {{ end }}
 
 if ${did_remove_package}; then
-    info "Removed packages successfully"
+    success "Removed packages"
 fi
 
 _safeExit_

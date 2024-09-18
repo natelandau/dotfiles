@@ -1,7 +1,7 @@
 {{- if eq .chezmoi.os "linux" -}}
 #!/usr/bin/env bash
 
-{{ template "shared_script_utils.bash" }}
+{{ template "shared_script_utils.bash" . }}
 
 # Bat is installed as batcat due to a name collision in Debian. Here we fix it with a symlink.
 # https://github.com/sharkdp/bat?tab=readme-ov-file#installation

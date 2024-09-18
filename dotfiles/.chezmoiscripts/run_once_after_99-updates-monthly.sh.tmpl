@@ -4,19 +4,7 @@
 # https://www.chezmoi.io/user-guide/frequently-asked-questions/usage/#how-do-i-run-a-script-periodically
 # {{ output "date" "+%m" | trim }}
 
-{{ template "shared_script_utils.bash" }}
-
-UPDATE_SCRIPT="${HOME}/.shell/scripts/chezmoi_binary_update.py"
-
-{{ if eq .chezmoi.os "darwin" }}
-{{ end }}
-
-{{ if eq .chezmoi.os "linux" }}
-
-if [[ $(command -v uv) ]] && [[ -e "${HOME}/.cargo/bin/uv" ]]; then
-    uv self update
-fi
-{{ end }}
+{{ template "shared_script_utils.bash" . }}
 
 # Run these commands on all systems
 if [[ $(command -v uv) ]]; then

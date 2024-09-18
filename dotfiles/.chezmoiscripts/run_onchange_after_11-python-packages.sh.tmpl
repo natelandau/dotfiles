@@ -2,7 +2,7 @@
 
 #!/usr/bin/env bash
 
-{{ template "shared_script_utils.bash" }}
+{{ template "shared_script_utils.bash" . }}
 
 header "Installing python packages with uv"
 
@@ -55,7 +55,7 @@ for package in "${packages[@]}"; do
     uv tool install "${package}"
 done
 
-info "Python packages installed successfully"
+success "Python packages installed"
 
 _safeExit_
 

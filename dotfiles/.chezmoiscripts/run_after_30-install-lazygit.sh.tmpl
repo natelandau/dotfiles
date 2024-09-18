@@ -1,34 +1,42 @@
 {{- if and (eq .chezmoi.os "linux") (.dev_computer) -}}
 #!/usr/bin/env bash
 
-{{ template "shared_script_utils.bash" }}
+{{ template "shared_script_utils.bash" . }}
 
-# This script installs lor updates lazygit
+_hasJQ_ # Confirm we have jq installed
 
-header "Verify lazygit installation and check for updates"
+VERBOSE=false
+PACKAGE_NAME="lazygit"
+REPOSITORY="jesseduffield/lazygit"
+
+header "Verify ${PACKAGE_NAME} installation and check for updates"
 
 # Fetch the API response once and store it in a variable
-API_RESPONSE=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest")
+API_RESPONSE=$(curl -s "https://api.github.com/repos/${REPOSITORY}/releases/latest")
 
 # Extract the required information from the stored API response
-LATEST_VERSION=$(echo "$API_RESPONSE" | grep -Po '"tag_name": "v\K[^"]*')
-IS_PRE_RELEASE=$(echo "$API_RESPONSE" | grep -Po '"prerelease":\s*\K[^,]*')
-IS_DRAFT=$(echo "$API_RESPONSE" | grep -Po '"draft":\s*\K[^,]*')
+LATEST_VERSION=$(echo "${API_RESPONSE}" | jq -r .tag_name | sed 's/v//g')
+IS_PRE_RELEASE=$(echo "${API_RESPONSE}" | jq -r .prerelease)
+IS_DRAFT=$(echo "${API_RESPONSE}" | jq -r .draft)
+RELEASE_NOTES=$(echo "${API_RESPONSE}" | jq -r .html_url)
 
-info "Latest lazygit version is ${LATEST_VERSION}"
+info "Latest version is ${LATEST_VERSION}"
+debug "Is pre-release: ${IS_PRE_RELEASE}"
+debug "Is draft: ${IS_DRAFT}"
+debug "Release Notes: ${RELEASE_NOTES}"
 
-if [[ $(command -v lazygit) ]]; then
+if [[ $(command -v ${PACKAGE_NAME}) ]]; then
     CURRENT_VERSION=$(lazygit --version | grep -Po ", version=\K(\d+\.\d+\.\d+)")
 
-    info "local lazygit version is: ${CURRENT_VERSION}"
+    info "Local version: ${CURRENT_VERSION}"
 
     if [[ ${CURRENT_VERSION} == "${LATEST_VERSION}" ]]; then
-        success "lazygit is already up to date"
+        success "${PACKAGE_NAME} is already up to date"
         _safeExit_ 0
     fi
 
     if [[ ${IS_PRE_RELEASE} == "true" ]] || [[ ${IS_DRAFT} == "true" ]]; then
-        notice "Latest lazygit version is a pre-release or draft"
+        notice "Latest version is a pre-release or draft. Skipping update."
         _safeExit_ 0
     fi
 fi
@@ -58,8 +66,8 @@ else
     mv lazygit "${HOME}/.local/bin"
 fi
 
-success "lazygit version ${LATEST_VERSION} installed successfully"
-info "lazygit is installed at ${HOME}/.local/bin/lazygit"
+success "${PACKAGE_NAME} v${LATEST_VERSION} installed to ${HOME}/.local/bin/${PACKAGE_NAME}"
+info "Release notes: ${RELEASE_NOTES}"
 
 popd &>/dev/null || exit
 

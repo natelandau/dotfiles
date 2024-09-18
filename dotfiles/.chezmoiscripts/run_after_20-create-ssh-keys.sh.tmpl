@@ -1,7 +1,7 @@
 {{- if .use_secrets -}}
 #!/usr/bin/env bash
 
-{{ template "shared_script_utils.bash" }}
+{{ template "shared_script_utils.bash" . }}
 
 header "Creating SSH keys"
 

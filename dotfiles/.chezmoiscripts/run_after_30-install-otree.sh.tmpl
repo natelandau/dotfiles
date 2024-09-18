@@ -2,11 +2,12 @@
 #!/usr/bin/env bash
 
 {{ template "shared_script_utils.bash" . }}
+
 _hasJQ_ # Confirm we have jq installed
 
 VERBOSE=false
-PACKAGE_NAME="vivid"
-REPOSITORY="sharkdp/vivid"
+PACKAGE_NAME="otree"
+REPOSITORY="fioncat/otree"
 
 header "Verify ${PACKAGE_NAME} installation and check for updates"
 
@@ -40,20 +41,31 @@ if [[ $(command -v ${PACKAGE_NAME}) ]]; then
     fi
 fi
 
+{{ if not (eq .chezmoi.arch "amd64") }}
+warning "${PACKAGE_NAME} is not available on {{ .chezmoi.arch }} systems"
+_safeExit_ 0
+{{ end }}
+
 _makeTempDir_ "$(basename "$0")"
 pushd "${TMP_DIR}" &>/dev/null || exit
 
-DEB="vivid_${LATEST_VERSION}_{{ .chezmoi.arch }}.deb"
+info "Downloading ${PACKAGE_NAME} version ${LATEST_VERSION}"
 
-info "Downloading ${PACKAGE_NAME} version: ${LATEST_VERSION}"
-wget "https://github.com/sharkdp/vivid/releases/download/v${LATEST_VERSION}/${DEB}"
-sudo dpkg -i "${DEB}"
-rm "${DEB}"
+curl -Lo binary.tar.gz "https://github.com/fioncat/otree/releases/download/v${LATEST_VERSION}/otree-x86_64-unknown-linux-musl.tar.gz"
+
+tar xf binary.tar.gz ${PACKAGE_NAME}
+
+# Move the binary to the local bin directory
+if [[ -d "${HOME}/.local/bin" ]]; then
+    mv ${PACKAGE_NAME} "${HOME}/.local/bin"
+else
+    mkdir -p "${HOME}/.local/bin"
+    mv ${PACKAGE_NAME} "${HOME}/.local/bin"
+fi
 
 success "${PACKAGE_NAME} v${LATEST_VERSION} installed to ${HOME}/.local/bin/${PACKAGE_NAME}"
 info "Release notes: ${RELEASE_NOTES}"
 
 popd &>/dev/null || exit
-
 _safeExit_
 {{ end }}

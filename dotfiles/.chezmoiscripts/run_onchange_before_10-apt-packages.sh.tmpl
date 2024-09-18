@@ -2,7 +2,7 @@
 
 #!/usr/bin/env bash
 
-{{ template "shared_script_utils.bash" }}
+{{ template "shared_script_utils.bash" . }}
 
 packages=(
     {{ range $package := .packages.apt.common.packages }}
@@ -36,7 +36,7 @@ for package in "${packages[@]}"; do
     sudo apt-get install -y --no-upgrade $package
 done
 
-info "Apt packages installed successfully"
+success "Apt packages installed"
 _safeExit_
 
 {{- end }}

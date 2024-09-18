@@ -1,7 +1,7 @@
 {{- if eq .chezmoi.os "darwin" -}}
 #!/usr/bin/env bash
 
-{{ template "shared_script_utils.bash" }}
+{{ template "shared_script_utils.bash" . }}
 
 # Grab current setting
 if current=$(defaults read com.googlecode.iterm2 PrefsCustomFolder 2>/dev/null); then

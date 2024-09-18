@@ -1,49 +1,60 @@
 {{- if eq .chezmoi.os "linux" -}}
 #!/usr/bin/env bash
 
-{{ template "shared_script_utils.bash" }}
+{{ template "shared_script_utils.bash" . }}
 
 # This script installs the Atuin binary for better history browsing
 # https://docs.atuin.sh/
+_hasJQ_ # Confirm we have jq installed
 
-header "Verify atuin installation and check for updates"
+VERBOSE=false
+PACKAGE_NAME="atuin"
+REPOSITORY="atuinsh/atuin"
 
+header "Verify ${PACKAGE_NAME} installation and check for updates"
+
+# Fetch the API response once and store it in a variable
+API_RESPONSE=$(curl -s "https://api.github.com/repos/${REPOSITORY}/releases/latest")
+
+# Extract the required information from the stored API response
+LATEST_VERSION=$(echo "${API_RESPONSE}" | jq -r .tag_name | sed 's/v//g')
+IS_PRE_RELEASE=$(echo "${API_RESPONSE}" | jq -r .prerelease)
+IS_DRAFT=$(echo "${API_RESPONSE}" | jq -r .draft)
+RELEASE_NOTES=$(echo "${API_RESPONSE}" | jq -r .html_url)
+
+info "Latest version is ${LATEST_VERSION}"
+debug "Is pre-release: ${IS_PRE_RELEASE}"
+debug "Is draft: ${IS_DRAFT}"
+debug "Release Notes: ${RELEASE_NOTES}"
+
+if [[ $(command -v ${PACKAGE_NAME}) ]]; then
+    CURRENT_VERSION=$(${PACKAGE_NAME} --version | awk '{print $2}')
+
+    info "Local version: ${CURRENT_VERSION}"
+
+    if [[ ${CURRENT_VERSION} == "${LATEST_VERSION}" ]]; then
+        success "${PACKAGE_NAME} is already up to date"
+        _safeExit_ 0
+    fi
+
+    if [[ ${IS_PRE_RELEASE} == "true" ]] || [[ ${IS_DRAFT} == "true" ]]; then
+        notice "Latest version is a pre-release or draft. Skipping update."
+        _safeExit_ 0
+    fi
+fi
+
+# Install atuin
 if [[ ! -e "${HOME}/.atuin/bin/atuin" ]]; then
     notice "Installing Atuin"
     curl --proto '=https' --tlsv1.2 -sSf https://setup.atuin.sh | bash
     _safeExit_ 0
 fi
 
-# Fetch the API response once and store it in a variable
-API_RESPONSE=$(curl -s "https://api.github.com/repos/atuinsh/atuin/releases/latest")
-
-# Extract the required information from the stored API response
-LATEST_VERSION=$(echo "${API_RESPONSE}" | grep -Po '"tag_name": "v\K[^"]*')
-IS_PRE_RELEASE=$(echo "${API_RESPONSE}" | grep -Po '"prerelease":\s*\K[^,]*')
-IS_DRAFT=$(echo "${API_RESPONSE}" | grep -Po '"draft":\s*\K[^,]*')
-
-if [[ $(command -v atuin) ]]; then
-    CURRENT_VERSION=$(atuin --version | cut -d' ' -f2)
-
-    info "local atuin version: ${CURRENT_VERSION}"
-
-    if [[ ${CURRENT_VERSION} == "${LATEST_VERSION}" ]]; then
-        success "atuin is already up to date"
-        _safeExit_ 0
-    fi
-
-    if [[ ${IS_PRE_RELEASE} == "true" ]] || [[ ${IS_DRAFT} == "true" ]]; then
-        notice "Latest atuin version is a pre-release or draft"
-        _safeExit_ 0
-    fi
-fi
-
-
 if [[ $(command -v atuin-update) ]]; then
     notice "Updating Atuin"
     atuin-update
 else
-    notice "'atuin-update' not found. Upgrade atuin manually"
+    warning "atuin needs an update but'atuin-update' not found. Upgrade atuin manually"
 fi
 
 _safeExit_

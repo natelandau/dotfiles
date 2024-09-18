@@ -1,3 +1,7 @@
+{{- if eq .chezmoi.os "linux" -}}
+PATH="${HOME}/.atuin/bin/:${PATH}"
+{{- end }}
+
 if [ "$(command -v atuin)" ]; then
     if [[ -n ${ZSH_NAME} ]]; then
         export ATUIN_NOBIND="true"

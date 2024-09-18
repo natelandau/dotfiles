@@ -1,7 +1,7 @@
 {{- if eq .chezmoi.os "linux" -}}
 #!/usr/bin/env bash
 
-{{ template "shared_script_utils.bash" }}
+{{ template "shared_script_utils.bash" . }}
 
 # https://github.com/sharkdp/fd
 # On debian, note that the binary is called fdfind as the binary name fd is already used by another

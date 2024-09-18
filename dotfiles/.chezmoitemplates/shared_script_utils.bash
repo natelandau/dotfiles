@@ -111,7 +111,7 @@ _alert_() {
     elif [ "${_alertType}" == "info" ]; then
         _color="${gray}"
     elif [ "${_alertType}" == "warning" ]; then
-        _color="${red}"
+        _color="${yellow}"
     elif [ "${_alertType}" == "success" ]; then
         _color="${green}"
     elif [ "${_alertType}" == "debug" ]; then
@@ -138,7 +138,7 @@ _alert_() {
         fi
 
         if [[ ${_alertType} == header ]]; then
-            printf "✨ ${_color}%s${reset} ✨\n" "${_message}"
+            printf "\n✨ ${_color}%s${reset} ✨\n" "${_message}"
         else
             printf "${_color}[%7s] %s${reset}\n" "${_alertType}" "${_message}"
         fi
@@ -343,4 +343,19 @@ _trapCleanup_() {
     else
         exit 1
     fi
+}
+
+_hasJQ_() {
+
+    if [[ ! $(command -v jq) ]]; then
+        warning "Must instal jq prior to running script"
+
+        {{- if eq .chezmoi.os "linux" }}
+        sudo apt install -y jq
+        {{- else if eq .chezmoi.os "darwin" }}
+        brew install jq
+        {{ end }}
+
+    fi
+
 }

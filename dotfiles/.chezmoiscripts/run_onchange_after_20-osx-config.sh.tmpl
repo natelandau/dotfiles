@@ -2,7 +2,7 @@
 {{- if (and (eq .chezmoi.os "darwin") (ne .chezmoi.username "runner")) -}}
 #!/usr/bin/env bash
 
-{{ template "shared_script_utils.bash" }}
+{{ template "shared_script_utils.bash" . }}
 
 # Grab the hash of the osx-defaults.sh script to run it when changed
 # osx-defaults.sh hash: {{ include "dot_shell/scripts/executable_osx-defaults.sh.tmpl" | sha256sum }}
