@@ -1,6 +1,31 @@
 ---
 matches:
+    # Repository URLS
+  - trigger: "//gh"
+    replace: "https://github.com/natelandau"
+
+  - trigger: "//dot"
+    replace: "https://github.com/natelandau/dotfiles"
+
+  - trigger: "//val"
+    replace: "https://github.com/natelandau/valentina"
+
+  - trigger: "//halp"
+    replace: "https://github.com/natelandau/halp"
+
+  - trigger: "//vid"
+    replace: "https://github.com/natelandau/vid-cleaner"
+
+  - trigger: "//jd"
+    replace: "https://github.com/natelandau/jdfile"
+
 {{- if .use_secrets }}
+  - trigger: "//usr"
+    replace: "{{- onepasswordRead .secrets.gitea_address }}/natelandau/usrbin"
+
+  - trigger: "//aus"
+    replace: "{{- onepasswordRead .secrets.gitea_address }}/natelandau/ansible-server-update"
+
   - trigger: ".email"
     replace: "{{ onepasswordRead .secrets.email_address }}"
 

@@ -5,13 +5,13 @@
 {{- $email := promptStringOnce . "email" "Email address" -}}
 
 [data]
-    email        = {{ $email | quote }}
-    github_user  = "natelandau"
-    use_secrets  = {{ $use_secrets }}
-    dev_computer = {{ $dev_computer }}
-    personal_computer = {{ $personal_computer }}
+    dev_computer      = {{ $dev_computer }}
+    email             = {{ $email | quote }}
+    github_user       = "natelandau"
     homelab_member    = {{ $homelab_member }}
-    zsh_dir = "{{ .chezmoi.homeDir }}/.local/share/zsh"
+    personal_computer = {{ $personal_computer }}
+    use_secrets       = {{ $use_secrets }}
+    zsh_dir           = "{{ .chezmoi.homeDir }}/.local/share/zsh"
 
 [diff]
     {{ if lookPath "delta" -}}command = "delta"
@@ -24,6 +24,6 @@
     command = "code"
 
 [merge]
-    args = ["--merge", "{{ "{{" }} .Destination }}", "{{ "{{" }} .Source }}", "{{ "{{" }} .Target }}"]
+    args    = ["--merge", "{{ "{{" }} .Destination }}", "{{ "{{" }} .Source }}", "{{ "{{" }} .Target }}"]
     command = "code"
 {{ end -}}

@@ -106,13 +106,13 @@ gurl() {
 gnuke() {
     # DESC:		Nuke everything in local and reset from origin
     git fetch --all
-    ORIGIN_HEAD=$(git remote show origin | grep -Po 'HEAD branch:\K[^"]*')
-    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    ORIGIN_HEAD=$(git remote show origin | grep --color=never -Po 'HEAD branch:\K[^"]*' | sed 's/ //g')
+    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD | sed 's/ //g')
 
     if [[ ${ORIGIN_HEAD} == "${CURRENT_BRANCH}" ]]; then
         git reset --hard origin/"${CURRENT_BRANCH}"
     else
-        warning "Current brand ${CURRENT_BRANCH} is not the same as origin HEAD ${ORIGIN_HEAD}"
+        warning "Current branch '${CURRENT_BRANCH}' is not the same as origin HEAD '${ORIGIN_HEAD}'"
         return 1
     fi
 }

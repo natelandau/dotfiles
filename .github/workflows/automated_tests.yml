@@ -72,6 +72,7 @@ jobs:
                   echo '    use_secrets  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
                   echo '    personal_computer  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
                   echo '    homelab_member  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
+                  echo '    zsh_dir      = "${homedir}/.local/share/zsh"' >> ${homedir}/.config/chezmoi/chezmoi.toml
 
             # ----------------------------------------------
             # Install chezmoi

@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+{{ template "shared_script_utils.bash" . }}
+{{ $current_os := .chezmoi.os }}
+{{ $current_arch := .chezmoi.arch }}
+
+header "Non-package manager binary installation/update"
+echo ""
+{{ range $binary := .binaries}}
+
+{{ range $system := $binary.systems }}
+{{ if eq $system $current_os }}
+
+{{ if and $binary.required_architecture (ne $binary.required_architecture $current_arch) }}
+{{ continue }}
+{{ end }}
+
+
+INSTALL_SCRIPT="${HOME}/bin/install-binary.py"
+
+if [[ ! $(command -v uv) ]] then
+    warning "Please install 'uv' to run the binary installation script."
+    _safeExit_
+fi
+
+if [[ ! -e ${INSTALL_SCRIPT} ]] then
+    warning "The binary installation script is missing. Rerun chezmoi to generate it."
+    _safeExit_
+fi
+
+
+uv run -q "${INSTALL_SCRIPT}" --binary-name="{{ $binary.name }}" --repository="{{ $binary.repository }}" --version-regex="{{ $binary.version_regex }}"
+
+
+{{ end }}
+{{ end }}
+{{ end }}
+_safeExit_
