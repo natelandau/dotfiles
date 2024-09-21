@@ -1,10 +1,9 @@
 [packages.apt]
-    to_remove = []
+    to_remove = ["btop", "htop"]
     [packages.apt.common]
         packages = [
             "apt-transport-https",
             "bat",                 # cat with syntax highlighting and Git integration
-            "btop",
             "curl",
             "dnsutils",
             "fd-find",
@@ -14,7 +13,6 @@
             "git-extras",
             "gnupg",
             "gpg",
-            "htop",
             "jq",
             "logrotate",
             "lolcat",
@@ -49,7 +47,7 @@
     [packages.python.personal_computer]
         packages = ["jdfile", "trash-cli", "vid-cleaner"]
 [packages.homebrew]
-    to_remove = ["istat-menus", "rocket", "shotrr"]
+    to_remove = ["btop", "htop", "istat-menus", "rocket", "shotrr"]
     [packages.homebrew.common]
         casks = [
             "1password",
@@ -73,7 +71,7 @@
             "bash",
             "bash-completion",
             "bat",             # cat with syntax highlighting and Git integration
-            "btop",            # top but better
+            "bottom",          # Process/system monitor for the terminal.
             "chezmoi",         # Dotfile manager
             "coreutils",
             "eza",             # ls replacement
@@ -88,7 +86,6 @@
             "gnutls",          # GNU Transport Layer Security (TLS) Library
             "gping",           # Ping, but with a graph
             "grep",
-            "htop",            # Improved top (interactive process viewer)
             "jq",              # Lightweight and flexible command-line JSON processor
             "mas",             # Mac App Store command-line interface
             "mc",              # Midnight Commander

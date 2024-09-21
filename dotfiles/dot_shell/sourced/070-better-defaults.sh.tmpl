@@ -22,8 +22,8 @@ alias ping="gping"
 alias ping="prettyping --nolegend"
 {{- end }}
 
-{{- if lookPath "htop" }}
-alias top="htop" # Prefer `htop` over `top`
+{{- if lookPath "btm" }}
+alias top="btm" # Prefer `bottom` over `top`
 {{- end }}
 
 {{- if lookPath "bat" }}

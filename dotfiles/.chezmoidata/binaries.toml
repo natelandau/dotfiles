@@ -8,33 +8,44 @@
 #   required_architecture (optional): The architecture required for the binary. If the current architecture does not match, the binary will not be installed. Must match .chezmoi.arch.
 
 [binaries]
-    [binaries.rip2]
-        name                  = "rip"
-        repository            = "MilesCranmer/rip2"
-        required_architecture = ""
-        systems               = ["darwin", "linux"]
-        version_regex         = ""
-    [binaries.lazygit]
-        name                  = "lazygit"
-        repository            = "jesseduffield/lazygit"
+    [binaries.bottom]
+        name                  = "bottom"
+        repository            = "ClementTsang/bottom"
         required_architecture = ""
         systems               = ["linux"]
-        version_regex         = "version=(.*?),"
+        version_regex         = ""
+
     [binaries.git-delta]
         name                  = "delta"
         repository            = "dandavison/delta"
         required_architecture = ""
         systems               = ["linux"]
         version_regex         = ""
-    [binaries.zoxide]
-        name                  = "zoxide"
-        repository            = "ajeetdsouza/zoxide"
+
+    [binaries.lazygit]
+        name                  = "lazygit"
+        repository            = "jesseduffield/lazygit"
         required_architecture = ""
         systems               = ["linux"]
-        version_regex         = ""
+        version_regex         = "version=(.*?),"
+
     [binaries.otree]
         name                  = "otree"
         repository            = "fioncat/otree"
         required_architecture = "amd64"
+        systems               = ["linux"]
+        version_regex         = ""
+
+    [binaries.rip2]
+        name                  = "rip"
+        repository            = "MilesCranmer/rip2"
+        required_architecture = ""
+        systems               = ["darwin", "linux"]
+        version_regex         = ""
+
+    [binaries.zoxide]
+        name                  = "zoxide"
+        repository            = "ajeetdsouza/zoxide"
+        required_architecture = ""
         systems               = ["linux"]
         version_regex         = ""
