@@ -25,6 +25,7 @@ import platform
 import re
 import shutil
 import tarfile
+from collections.abc import Callable
 from enum import Enum
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -160,13 +161,22 @@ def instantiate_logger(
 class BinaryUpdater:
     """Class to check for updates to a binary and install the update if available."""
 
-    def __init__(self, binary_name: str, repository: str, version_regex: str = ""):
+    def __init__(
+        self,
+        binary_name: str,
+        repository: str,
+        version_regex: str = "",
+        remove_from_release: str = "",
+        executable_name: str = "",
+    ):
         """Initialize the BinaryUpdater class.
 
         Args:
             binary_name (str): Name of the binary available in the PATH
             repository (str): GitHub repository in the format 'owner/repo'
             version_regex (str): Custom regex to identify the version in the binary --version output
+            remove_from_release (str): Regex used to filter out releases. Useful when more than one release is available.
+            executable_name (str): Name of executable, if different from binary_name
         """
         # Initialize instance attributes
         self._release_info: dict = {}
@@ -181,9 +191,11 @@ class BinaryUpdater:
         self.binary_name = binary_name
         self.repository = repository
         self.version_regex = version_regex
+        self.remove_from_release = remove_from_release
+        self.executable_name = executable_name if executable_name else binary_name
 
         # Get the latest release information
-        self.latest_version: str = self.release_info["name"].replace("v", "").strip()
+        self.latest_version: str = re.search(r"(\d+\.\d+\.\d+)", self.release_info["name"]).group(1)
         self.is_draft: bool = self.release_info["draft"]
         self.is_prerelease: bool = self.release_info["prerelease"]
         self.assets: list = self.release_info["assets"]
@@ -203,7 +215,7 @@ class BinaryUpdater:
             return self._have_local_binary
 
         try:
-            self._cmd = sh.Command(self.binary_name)
+            self._cmd = sh.Command(self.executable_name)
         except sh.CommandNotFound:
             self._cmd = None
 
@@ -256,9 +268,7 @@ class BinaryUpdater:
                     self.version_regex, local_version, re.IGNORECASE
                 ).group(1)
             else:
-                self._local_version = re.sub(
-                    rf"{self.binary_name} ?v?", "", local_version, flags=re.IGNORECASE
-                )
+                self._local_version = re.search(r"(\d+\.\d+\.\d+)", local_version).group(1)
 
         return self._local_version
 
@@ -289,7 +299,7 @@ class BinaryUpdater:
             console.print(f"{self.latest_version=}")
             raise typer.Exit(1) from e
 
-    def _find_deb_release(self, architecture: str) -> list[dict]:
+    def _find_deb_release(self, architecture: str, remove_from_release: str) -> list[dict]:
         """Find a .deb release for the host system based on the specified architecture.
 
         This method searches through the available assets to find .deb packages that match
@@ -297,6 +307,7 @@ class BinaryUpdater:
 
         Args:
             architecture (str): The architecture of the host system (e.g., 'x86_64', 'arm64').
+            remove_from_release (str): A regex pattern to filter out releases.
 
         Returns:
             list[dict]: A list of dictionaries representing the .deb assets that match the specified architecture.
@@ -310,6 +321,9 @@ class BinaryUpdater:
         possible_assets = []
         for a in self.assets:
             if not a["name"].endswith(".deb"):
+                continue
+
+            if remove_from_release and re.search(remove_from_release, a["name"].lower()):
                 continue
 
             try:
@@ -335,7 +349,9 @@ class BinaryUpdater:
 
         return possible_assets
 
-    def _find_packaged_release(self, operating_system: str, architecture: str) -> list[dict]:
+    def _find_packaged_release(
+        self, operating_system: str, architecture: str, remove_from_release: str
+    ) -> list[dict]:
         """Find a packaged release for the host system based on the operating system and architecture.
 
         This method filters the available assets to find those that match the specified operating system
@@ -344,6 +360,7 @@ class BinaryUpdater:
         Args:
             operating_system (str): The operating system of the host (e.g., 'linux', 'windows').
             architecture (str): The architecture of the host (e.g., 'x86_64', 'arm').
+            remove_from_release (str): A regex pattern to filter out releases.
 
         Returns:
             list[dict]: A list of dictionaries representing the possible assets that match the criteria.
@@ -356,6 +373,9 @@ class BinaryUpdater:
         possible_assets = []
         for a in self.assets:
             if not a["name"].endswith(".tar.gz"):
+                continue
+
+            if remove_from_release and re.search(remove_from_release, a["name"].lower()):
                 continue
 
             if not re.search(operating_system.lower(), a["name"].lower()):
@@ -413,11 +433,13 @@ class BinaryUpdater:
 
             possible_releases = []
             if host_platform.system.lower() == "linux":
-                possible_releases = self._find_deb_release(host_platform.machine)
+                possible_releases = self._find_deb_release(
+                    host_platform.machine, self.remove_from_release
+                )
 
             if not possible_releases:
                 possible_releases = self._find_packaged_release(
-                    host_platform.system, host_platform.machine
+                    host_platform.system, host_platform.machine, self.remove_from_release
                 )
 
             if not possible_releases:
@@ -455,64 +477,79 @@ class BinaryUpdater:
         return self._download_asset_name
 
 
-def install_from_tarball(binary: BinaryUpdater, dry_run: bool) -> None:
+def install_from_tarball(binary: BinaryUpdater, dry_run: bool) -> None:  # noqa: C901
     """Download and install a binary from a tarball.
 
-    This function handles the process of downloading a tarball, extracting its contents,
-    and moving the binary to the appropriate directory. It supports dry-run mode to
-    simulate the actions without making any changes.
+    This function handles downloading a tarball, extracting its contents,
+    and moving the binary to the appropriate directory. Supports dry-run mode.
 
     Args:
-        binary (BinaryUpdater): An instance of the BinaryUpdater class containing information
-                                about the binary to be installed.
-        dry_run (bool): If True, the function will only log the actions that would be taken
-                        without actually performing them.
+        binary (BinaryUpdater): Contains binary info for installation.
+        dry_run (bool): If True, logs actions without performing them.
 
     Raises:
-        typer.Exit: If any step in the process fails, the function will log an error and exit.
+        typer.Exit: If any step fails.
     """
+
+    def find_unarchived_binary(possible_dirs: list[Path], binary_name: str) -> Path | None:
+        """Find the binary in one of the possible unarchived directories."""
+        for directory in possible_dirs:
+            if directory.exists() and directory.is_dir():
+                unarchive_path = directory / binary_name
+                if unarchive_path.exists() and unarchive_path.is_file():
+                    return unarchive_path
+        return None
+
     bin_dir = Path.home() / ".local" / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
-    tempdir = TemporaryDirectory(ignore_cleanup_errors=True)
-    work_dir = Path(tempdir.name)
-    download_path = work_dir / binary.download_asset_name
-    unarchive_path = work_dir / binary.binary_name
 
-    # Download the asset
-    msg = f"Download: {binary.download_url}"
-    if dry_run:
-        logger.log("DRYRUN", msg)
-    else:
-        logger.debug(msg)
-        with httpx.stream("GET", binary.download_url, follow_redirects=True) as r:
-            r.raise_for_status()
-            with download_path.open("wb") as f:
-                for chunk in r.iter_bytes():
-                    f.write(chunk)
+    with TemporaryDirectory() as tempdir:
+        work_dir = Path(tempdir)
+        download_path = work_dir / binary.download_asset_name
+        possible_unarchive_dirs = [
+            work_dir / binary.binary_name,
+            work_dir / download_path.name,
+            work_dir / download_path.stem,
+            work_dir / download_path.name.replace(".tar.gz", ""),
+        ]
 
-    # Unarchive the asset
-    msg = f"tar xf {download_path}"
-    if dry_run:
-        logger.log("DRYRUN", msg)
-    else:
-        logger.debug(msg)
-        with tarfile.open(download_path, "r:gz") as f:
-            f.extractall(path=work_dir, filter="data")
-
-    # Move the binary to the bin directory
-    msg = f"mv {unarchive_path} {bin_dir / binary.binary_name}"
-    if dry_run:
-        logger.log("DRYRUN", msg)
-    else:
-        logger.debug(msg)
-        if unarchive_path.exists():
-            logger.debug(f"Moving {unarchive_path} to {bin_dir / binary.binary_name}")
-            shutil.move(unarchive_path, bin_dir / binary.binary_name)
+        # Download the asset
+        download_msg = f"Download: {binary.download_url}"
+        if dry_run:
+            logger.log("DRYRUN", download_msg)
         else:
-            logger.error(f"Failed to find {binary.binary_name} in archive")
-            raise typer.Exit(1)
+            logger.debug(download_msg)
+            with httpx.stream("GET", binary.download_url, follow_redirects=True) as r:
+                r.raise_for_status()
+                with download_path.open("wb") as f:
+                    for chunk in r.iter_bytes():
+                        f.write(chunk)
 
-    tempdir.cleanup()
+        # Unarchive the asset
+        unarchive_msg = f"tar xf {download_path}"
+        if dry_run:
+            logger.log("DRYRUN", unarchive_msg)
+        else:
+            logger.debug(unarchive_msg)
+            with tarfile.open(download_path, "r:gz") as tar:
+                tar.extractall(path=work_dir, filter="data")
+
+        # Move the binary to the bin directory
+        unarchive_path = find_unarchived_binary(possible_unarchive_dirs, binary.binary_name)
+        if not unarchive_path:
+            error_msg = f"Failed to find {binary.binary_name} in archive"
+            if dry_run:
+                logger.log("DRYRUN", error_msg)
+            else:
+                logger.error(error_msg)
+                raise typer.Exit(1)
+        else:
+            move_msg = f"mv {unarchive_path} {bin_dir / binary.binary_name}"
+            if dry_run:
+                logger.log("DRYRUN", move_msg)
+            else:
+                logger.debug(move_msg)
+                shutil.move(unarchive_path, bin_dir / binary.binary_name)
 
 
 def install_deb_package(binary: BinaryUpdater, dry_run: bool) -> None:
@@ -605,6 +642,10 @@ def main(
     repository: Annotated[
         str, typer.Option(help="GitHub repository in the format 'owner/repo'", show_default=False)
     ],
+    executable_name: Annotated[
+        str,
+        typer.Option(help="Name of executable if different from binary_name", show_default=False),
+    ] = "",
     install_script: Annotated[
         str, typer.Option(help="URL for an install script to be piped to sh", show_default=False)
     ] = "",
@@ -612,6 +653,13 @@ def main(
         str,
         typer.Option(
             help="Custom regex to identify the version in the binary --version output",
+            show_default=False,
+        ),
+    ] = "",
+    remove_from_release: Annotated[
+        str,
+        typer.Option(
+            help="Regex used to filter out releases. Useful when more than one release is available.",
             show_default=False,
         ),
     ] = "",
@@ -663,7 +711,11 @@ def main(
     )
 
     binary = BinaryUpdater(
-        binary_name=binary_name, repository=repository, version_regex=version_regex
+        binary_name=binary_name,
+        repository=repository,
+        version_regex=version_regex,
+        remove_from_release=remove_from_release,
+        executable_name=executable_name,
     )
 
     logger.log("SECONDARY", f"Repository: https://github.com/{binary.repository}")

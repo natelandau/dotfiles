@@ -55,7 +55,7 @@ if [[ ! -e ${INSTALL_SCRIPT} ]] then
 fi
 
 
-uv run -q "${INSTALL_SCRIPT}" --binary-name="{{ $binary.name }}" --repository="{{ $binary.repository }}" --version-regex="{{ $binary.version_regex }}"
+uv run -q "${INSTALL_SCRIPT}" --binary-name="{{ $binary.name }}" --repository="{{ $binary.repository }}" --version-regex="{{ $binary.version_regex }}" --remove-from-release="{{ $binary.remove_from_release }}" --executable-name="{{ $binary.executable_name }}"
 
 
 {{ end }}
