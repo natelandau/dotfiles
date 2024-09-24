@@ -6,16 +6,27 @@
 #   systems: The operating systems on which the package should be installed. Must match .chezmoi.os.
 #   version_regex (optional): A custom regex to extract the version from `binary --version`.
 #   required_architecture (optional): The architecture required for the binary. If the current architecture does not match, the binary will not be installed. Must match .chezmoi.arch.
+#   install_filter (optional): Filters to use when installing the package. Must match the name of a filter in .chezmoi.data - ie "dev_computer", "personal_computer", "homelab_member".
 
 [binaries]
     [binaries.bottom]
+        install_filter        = ""
         name                  = "bottom"
         repository            = "ClementTsang/bottom"
         required_architecture = ""
         systems               = ["linux"]
         version_regex         = ""
 
+    [binaries.doggo]
+        install_filter        = ""
+        name                  = "doggo"
+        repository            = "mr-karan/doggo"
+        required_architecture = ""
+        systems               = ["linux"]
+        version_regex         = ""
+
     [binaries.git-delta]
+        install_filter        = ""
         name                  = "delta"
         repository            = "dandavison/delta"
         required_architecture = ""
@@ -23,6 +34,7 @@
         version_regex         = ""
 
     [binaries.lazygit]
+        install_filter        = "dev_computer"
         name                  = "lazygit"
         repository            = "jesseduffield/lazygit"
         required_architecture = ""
@@ -30,6 +42,7 @@
         version_regex         = "version=(.*?),"
 
     [binaries.otree]
+        install_filter        = ""
         name                  = "otree"
         repository            = "fioncat/otree"
         required_architecture = "amd64"
@@ -37,6 +50,7 @@
         version_regex         = ""
 
     [binaries.rip2]
+        install_filter        = ""
         name                  = "rip"
         repository            = "MilesCranmer/rip2"
         required_architecture = ""
@@ -44,6 +58,7 @@
         version_regex         = ""
 
     [binaries.zoxide]
+        install_filter        = ""
         name                  = "zoxide"
         repository            = "ajeetdsouza/zoxide"
         required_architecture = ""

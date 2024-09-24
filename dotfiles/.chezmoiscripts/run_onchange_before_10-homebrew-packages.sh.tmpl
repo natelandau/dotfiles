@@ -55,15 +55,32 @@ casks=(
     {{ end }}
 )
 
-header "Installing Homebrew packages"
-# Debug
-# echo "formulae: ${formulae[@]}"
-# echo "casks: ${casks[@]}"
+currently_installed_formulae=($(brew list --formula -1))
+currently_installed_casks=($(brew list --cask -1))
+
+header "Install Homebrew packages"
 
 brew update
 
-brew install -q --formula ${formulae[@]}
-brew install -q --cask ${casks[@]}
+BREW_DIR="$(brew --prefix)/bin/"
+
+for formula in ${formulae[@]}; do
+    if ! _inArray_ -i "${formula}" "${currently_installed_formulae[@]}"; then
+        if [[ ! -e "${BREW_DIR}/${formula}" ]]; then
+            brew install -q --formula ${formula}
+        fi
+
+    fi
+done
+
+for cask in ${casks[@]}; do
+    if ! _inArray_ -i "${cask}" "${currently_installed_casks[@]}"; then
+        brew install -q --cask ${cask}
+    fi
+
+done
+
+_safeExit_
 
 brew cleanup
 success "Homebrew packages installed"

@@ -59,7 +59,21 @@ class LogLevel(Enum):
 
 
 def log_formatter(record: dict) -> str:
-    """Use rich to style log messages."""
+    """Format log messages using rich for styling.
+
+    This function takes a log record dictionary and formats the log message
+    with appropriate colors and icons based on the log level. It uses the rich
+    library to apply the styles and colors to the log messages. The function
+    also includes additional context information such as the function name and
+    line number for TRACE level logs.
+
+    Args:
+        record (dict): A dictionary containing log record information, including
+                       the log level, message, function name, and line number.
+
+    Returns:
+        str: A formatted log message string with rich styling applied.
+    """
     color_map = {
         "TRACE": "turquoise4",
         "DEBUG": "cyan",
@@ -176,7 +190,15 @@ class BinaryUpdater:
 
     @property
     def have_local_binary(self) -> bool:
-        """Check if the binary is installed locally."""
+        """Determine if the binary is installed locally.
+
+        This method checks if the binary specified by `self.binary_name` is available
+        on the local system. It caches the result to avoid redundant checks on subsequent
+        calls.
+
+        Returns:
+            bool: True if the binary is installed locally, False otherwise.
+        """
         if self._have_checked_local_install:
             return self._have_local_binary
 
@@ -191,7 +213,18 @@ class BinaryUpdater:
 
     @property
     def release_info(self) -> dict:
-        """Return the latest release for the repository."""
+        """Fetch and return the latest release information for the repository.
+
+        This method sends a GET request to the GitHub API to retrieve the latest
+        release data for the specified repository. If the release information has
+        already been fetched and cached, it returns the cached data.
+
+        Returns:
+            dict: A dictionary containing the latest release information.
+
+        Raises:
+            typer.Exit: If the request to the GitHub API fails.
+        """
         if not self._release_info:
             url = f"https://api.github.com/repos/{self.repository}/releases/latest"
             r = httpx.get(url, follow_redirects=True)
@@ -207,7 +240,11 @@ class BinaryUpdater:
 
     @property
     def local_version(self) -> str:
-        """Return the local version of the binary."""
+        """Retrieve the local version of the binary.
+
+        Returns:
+            str: The local version string of the binary. If the binary is not present locally, returns an empty string.
+        """
         if not self.have_local_binary:
             return ""
 
@@ -226,7 +263,21 @@ class BinaryUpdater:
         return self._local_version
 
     def need_install(self) -> bool:
-        """Check if we will install or upgrade."""
+        """Determine if the binary needs to be installed or updated.
+
+        This method checks if the local binary is present and if its version
+        is up-to-date compared to the latest available version. If the local
+        binary is missing or its version is outdated, the method returns True,
+        indicating that an installation or update is needed.
+
+        Returns:
+            bool: True if the binary needs to be installed or updated, False otherwise.
+
+        Raises:
+            typer.Exit: If there is an error parsing the version strings,
+                indicating that the versions are not in a valid
+                semantic versioning (semver) format.
+        """
         if not self.have_local_binary or not self.local_version:
             return True
 
@@ -239,7 +290,23 @@ class BinaryUpdater:
             raise typer.Exit(1) from e
 
     def _find_deb_release(self, architecture: str) -> list[dict]:
-        """Find a .deb release for the host system."""
+        """Find a .deb release for the host system based on the specified architecture.
+
+        This method searches through the available assets to find .deb packages that match
+        the given architecture. It prioritizes non-MUSL builds over MUSL builds if both are available.
+
+        Args:
+            architecture (str): The architecture of the host system (e.g., 'x86_64', 'arm64').
+
+        Returns:
+            list[dict]: A list of dictionaries representing the .deb assets that match the specified architecture.
+                If both non-MUSL and MUSL builds are found, non-MUSL builds are returned first.
+                If no matching assets are found, an empty list is returned.
+
+        Raises:
+            KeyError: If the specified architecture is not supported.
+            typer.Exit: If an unsupported architecture is provided, the method logs an error and exits the program.
+        """
         possible_assets = []
         for a in self.assets:
             if not a["name"].endswith(".deb"):
@@ -269,7 +336,23 @@ class BinaryUpdater:
         return possible_assets
 
     def _find_packaged_release(self, operating_system: str, architecture: str) -> list[dict]:
-        """Find a packaged release for the host system."""
+        """Find a packaged release for the host system based on the operating system and architecture.
+
+        This method filters the available assets to find those that match the specified operating system
+        and architecture. It prioritizes non-MUSL builds over MUSL builds if both are available.
+
+        Args:
+            operating_system (str): The operating system of the host (e.g., 'linux', 'windows').
+            architecture (str): The architecture of the host (e.g., 'x86_64', 'arm').
+
+        Returns:
+            list[dict]: A list of dictionaries representing the possible assets that match the criteria.
+                        The list is prioritized to return non-MUSL builds first if available.
+
+        Raises:
+            KeyError: If the specified architecture is not supported.
+            typer.Exit: If an unsupported architecture is encountered, the program will exit with a status code of 1.
+        """
         possible_assets = []
         for a in self.assets:
             if not a["name"].endswith(".tar.gz"):
@@ -303,7 +386,21 @@ class BinaryUpdater:
 
     @property
     def download_url(self) -> str:
-        """Identify the correct asset to download for the host system."""
+        """Identify and return the correct asset download URL for the host system.
+
+        This method determines the appropriate download URL for the host system by:
+        1. Gathering information about the host system's platform and machine.
+        2. Finding possible releases based on the host system's platform.
+        3. Selecting the correct release asset if multiple are found.
+
+        Raises:
+            typer.Exit: If the host system or machine cannot be determined.
+            typer.Exit: If no assets are found for the host system.
+            typer.Exit: If multiple assets are found for the host system.
+
+        Returns:
+            str: The download URL of the identified asset.
+        """
         if not self._download_url:
             # Get information about the host system
             host_platform = platform.uname()
@@ -341,7 +438,17 @@ class BinaryUpdater:
 
     @property
     def download_asset_name(self) -> str:
-        """Return the name of the asset to download."""
+        """Return the name of the asset to download.
+
+        This method extracts the asset name from the download URL. If the asset name
+        has not been previously determined (i.e., `_download_asset_name` is not set),
+        it will split the `download_url` by slashes and take the last segment as the
+        asset name. The extracted name is then cached in `_download_asset_name` for
+        future use.
+
+        Returns:
+            str: The name of the asset to be downloaded.
+        """
         if not self._download_asset_name:
             self._download_asset_name = self.download_url.split("/")[-1]
 
@@ -349,7 +456,21 @@ class BinaryUpdater:
 
 
 def install_from_tarball(binary: BinaryUpdater, dry_run: bool) -> None:
-    """Download and install a binary from a tarball."""
+    """Download and install a binary from a tarball.
+
+    This function handles the process of downloading a tarball, extracting its contents,
+    and moving the binary to the appropriate directory. It supports dry-run mode to
+    simulate the actions without making any changes.
+
+    Args:
+        binary (BinaryUpdater): An instance of the BinaryUpdater class containing information
+                                about the binary to be installed.
+        dry_run (bool): If True, the function will only log the actions that would be taken
+                        without actually performing them.
+
+    Raises:
+        typer.Exit: If any step in the process fails, the function will log an error and exit.
+    """
     bin_dir = Path.home() / ".local" / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
     tempdir = TemporaryDirectory(ignore_cleanup_errors=True)
@@ -395,7 +516,15 @@ def install_from_tarball(binary: BinaryUpdater, dry_run: bool) -> None:
 
 
 def install_deb_package(binary: BinaryUpdater, dry_run: bool) -> None:
-    """Download and install a binary from a .deb package."""
+    """Download and install a binary from a .deb package.
+
+    Args:
+        binary (BinaryUpdater): The binary updater object containing download information.
+        dry_run (bool): If True, log actions without performing them.
+
+    Raises:
+        typer.Exit: If dpkg command is not found or installation fails.
+    """
     bin_dir = Path.home() / ".local" / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
     tempdir = TemporaryDirectory(ignore_cleanup_errors=True)
@@ -438,7 +567,19 @@ def install_deb_package(binary: BinaryUpdater, dry_run: bool) -> None:
 
 
 def install_from_cli_script(install_script: str, dry_run: bool) -> None:
-    """Run a CLI install script to install the binary."""
+    """Execute a CLI install script to install the binary.
+
+    This function downloads and runs a shell script to install the binary. It supports
+    dry-run mode to simulate the actions without making any changes.
+
+    Args:
+        install_script (str): URL of the install script to be executed.
+        dry_run (bool): If True, the function will only log the actions that would be taken
+                        without actually performing them.
+
+    Raises:
+        typer.Exit: If the script execution fails, the function will log an error and exit.
+    """
     msg = f"{install_script} | sh"
     if dry_run:
         logger.log("DRYRUN", msg)

@@ -116,7 +116,8 @@
         formulae = [
             "act",        # runs GitHub Actions locally
             "bats-core",
-            "gh",
+            "doggo",      # DNS Client
+            "gh",         # GitHub CLI
             "git-delta",
             "git-extras",
             "goaccess",
@@ -176,6 +177,7 @@
         apps = [
             "1091189122", # Bear
             "1136220934", # Infuse
+            "1502839586", # Handmirror
             "1532597159", # MP3tag
             "696977615",  # Capo
             "975937182",  # Fantastical

@@ -1,29 +1,29 @@
 ---
 matches:
     # Repository URLS
-  - trigger: "//gh"
+  - trigger: ".//gh"
     replace: "https://github.com/natelandau"
 
-  - trigger: "//dot"
+  - trigger: ".//dot"
     replace: "https://github.com/natelandau/dotfiles"
 
-  - trigger: "//val"
+  - trigger: ".//val"
     replace: "https://github.com/natelandau/valentina"
 
-  - trigger: "//halp"
+  - trigger: ".//halp"
     replace: "https://github.com/natelandau/halp"
 
-  - trigger: "//vid"
+  - trigger: ".//vid"
     replace: "https://github.com/natelandau/vid-cleaner"
 
-  - trigger: "//jd"
+  - trigger: ".//jd"
     replace: "https://github.com/natelandau/jdfile"
 
 {{- if .use_secrets }}
-  - trigger: "//usr"
+  - trigger: ".//usr"
     replace: "{{- onepasswordRead .secrets.gitea_address }}/natelandau/usrbin"
 
-  - trigger: "//aus"
+  - trigger: ".//aus"
     replace: "{{- onepasswordRead .secrets.gitea_address }}/natelandau/ansible-server-update"
 
   - trigger: ".email"
