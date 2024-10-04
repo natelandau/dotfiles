@@ -122,6 +122,11 @@ jobs:
                     Library
                   )
 
+                  installed_packages=(
+                    jq
+                    pygmentize
+                  )
+
                   # Confirm files exist
                   for file in ${existing_files[@]}; do
                     if [ ! -e "${homedir}/$file" ]; then
@@ -138,11 +143,13 @@ jobs:
                     fi
                   done
 
-                  # Check apt packages
-                  command -v jq 2>&1 >/dev/null || { echo "jq not found"; exit 1; }
-
-                  # Confirm python packages
-                  command -v pygmentize 2>&1 >/dev/null || { echo "pygmentize not found"; exit 1; }
+                  # Confirm packages are installed
+                  for package in ${installed_packages[@]}; do
+                      if [ ! $(command -v $package) ]; then
+                          echo "$package not found"
+                          exit 1
+                      fi
+                  done
 
             # ----------------------------------------------
             # MACOS: Confirm dotfiles are installed
@@ -170,6 +177,11 @@ jobs:
                     .shell/sourced/080-linux.sh
                   )
 
+                  installed_packages=(
+                    jq
+                    pygmentize
+                  )
+
                   # Confirm files exist
                   for file in ${existing_files[@]}; do
                     if [ ! -e "${homedir}/$file" ]; then
@@ -186,8 +198,10 @@ jobs:
                     fi
                   done
 
-                  # Check homebrew packages
-                  command -v jq 2>&1 >/dev/null || { echo "jq not found"; exit 1; }
-
-                  # Confirm python packages
-                  command -v pygmentize 2>&1 >/dev/null || { echo "pygmentize not found"; exit 1; }
+                  # Confirm packages are installed
+                  for package in ${installed_packages[@]}; do
+                      if [ ! $(command -v $package) ]; then
+                          echo "$package not found"
+                          exit 1
+                      fi
+                  done
