@@ -111,14 +111,13 @@ jobs:
                     .zshrc
                     .bashrc
                     .config/git/config
-                    .shell
                     .ssh/config
-                    .shell/sourced/080-linux.sh
+                    .config/dotfile_source/080-linux.sh
                     .local/share/sed/stopwords.sed
                   )
 
                   missing_files=(
-                    .shell/sourced/080-macos.sh
+                    .config/dotfile_source/080-macos.sh
                     Library
                   )
 
@@ -167,14 +166,13 @@ jobs:
                     .bashrc
                     .config/git/config
                     .config/nano/nanorc
-                    .shell
                     .ssh/config
-                    .shell/sourced/080-macos.sh
+                    .config/dotfile_source/080-macos.sh
                     .local/share/sed/stopwords.sed
                   )
 
                   missing_files=(
-                    .shell/sourced/080-linux.sh
+                    .config/dotfile_source/080-linux.sh
                   )
 
                   installed_packages=(

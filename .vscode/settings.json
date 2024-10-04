@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        ".chezmoiremove": "plaintext",
+        "*.toml.tmpl": "plaintext",
+        ".chezmoiignore": "plaintext"
+    }
+}

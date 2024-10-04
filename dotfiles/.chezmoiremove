@@ -1,3 +1,5 @@
+.DS_Store
+
 # Prepend with a `/` to specify a specific path relative to $HOME.
 
 # migrate to XDG directories
@@ -14,3 +16,4 @@
 /.sed/htmlDecode.sed
 /.sed/htmlEncode.sed
 /.sed/stopwords.sed
+/.zsh_history

@@ -73,7 +73,7 @@ compinit -d "{{ .xdgCacheDir }}/zsh/zcompdump-${ZSH_VERSION}"
 
 # Locations containing files *.bash to be sourced to your environment
 configFileLocations=(
-    "${HOME}/.shell/sourced"
+    "{{ .xdgConfigDir }}/dotfile_source"
 )
 
 for configFileLocation in "${configFileLocations[@]}"; do
