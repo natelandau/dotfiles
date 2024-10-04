@@ -8,6 +8,11 @@ VERBOSE=false
 PACKAGE_NAME="uv"
 REPOSITORY="astral-sh/uv"
 
+UV_PATH="$(_uvBinaryPath_ -p)" || {
+    error "uv is not installed"
+    _safeExit_ 1
+}
+
 header "Verify ${PACKAGE_NAME} installation and check for updates"
 
 # Fetch the API response once and store it in a variable
@@ -24,8 +29,8 @@ debug "Is pre-release: ${IS_PRE_RELEASE}"
 debug "Is draft: ${IS_DRAFT}"
 debug "Release Notes: ${RELEASE_NOTES}"
 
-if [[ $(command -v ${PACKAGE_NAME}) ]]; then
-    CURRENT_VERSION=$(${PACKAGE_NAME} --version | awk '{print $2}')
+if [[ -n ${UV_PATH} ]]; then
+    CURRENT_VERSION=$(${UV_PATH} --version | awk '{print $2}')
 
     info "Local version: ${CURRENT_VERSION}"
 
@@ -56,10 +61,9 @@ brew upgrade uv
 {{ end }}
 
 {{ if eq .chezmoi.os "linux" }}
-if [[ -e "${HOME}/.cargo/bin/uv" ]]; then
-    uv self update
+if [[ -n ${UV_PATH} ]]; then
+    ${UV_PATH} self update
 fi
 {{ end }}
-
 
 _safeExit_

@@ -411,3 +411,39 @@ _inArray_() {
     done
     return 1
 }
+
+_uvBinaryPath_() {
+    # DESC:
+    #         Determine the path to the 'uv' binary.
+    # OPTS:
+    #         -p    Don't exit if binary not found, return empty string
+    # OUTS:
+    #         (string) $path to 'uv' binary
+    #         1 if binary not found (and -p not set)
+
+    local pass_on_error="false"
+    local opt
+    local OPTIND=1
+
+    while getopts ":Pp" opt; do
+        case ${opt} in
+            p | P)
+                pass_on_error="true"
+                ;;
+            *) fatal "Unrecognized option '${1}' passed to ${FUNCNAME[0]}. Exiting." ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    if [[ $(command -v uv) ]]; then
+        echo "$(command -v uv)"
+    elif [ -f "{{ .xdgDataDir }}/cargo/uv" ]; then
+        echo "{{ .xdgDataDir }}/cargo/uv"
+    elif [ -f "${HOME}/.cargo/bin/uv" ]; then
+        echo "${HOME}/.cargo/bin/uv"
+    elif [[ ${pass_on_error} == "true" ]]; then
+        echo ""
+    else
+        return 1
+    fi
+}

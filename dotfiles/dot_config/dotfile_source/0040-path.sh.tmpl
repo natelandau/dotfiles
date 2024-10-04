@@ -4,7 +4,7 @@ _myPaths=(
     "/usr/local/bin"
     "/opt/homebrew/bin"
     "${HOME}/bin"
-    "${HOME}/.cargo/bin"
+    "{{ .xdgDataDir }}/cargo/bin"
     "/usr/bin/snap"
     "${HOME}.atuin/bin"
 )
@@ -16,3 +16,5 @@ for _path in "${_myPaths[@]}"; do
         fi
     fi
 done
+
+unset _myPaths _path

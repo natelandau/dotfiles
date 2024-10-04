@@ -18,15 +18,22 @@ did_remove_package=false
     {{ end }}
 {{ end }}
 
-{{- if lookPath "uv" -}}
-    # header "removing python packages with uv"
-    {{ range $package := .packages.python.to_remove }}
-    if uv tool list | grep "{{ $package }}" &> /dev/null; then
+
+UV_PATH="$(_uvBinaryPath_)" || {
+    warning "uv is not installed"
+}
+
+
+# header "removing python packages with uv"
+{{ range $package := .packages.python.to_remove }}
+if [[ -n ${UV_PATH} ]]; then
+    if ${UV_PATH} tool list | grep "{{ $package }}" &> /dev/null; then
         did_remove_package=true
-        uv tool uninstall "{{ $package }}"
+        ${UV_PATH} tool uninstall "{{ $package }}"
     fi
-    {{ end }}
+fi
 {{ end }}
+
 
 {{- if eq .chezmoi.os "linux" -}}
     # header "removing python packages with uv"

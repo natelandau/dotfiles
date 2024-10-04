@@ -5,7 +5,7 @@
 
 export HOMEBREW_NO_INSTALL_UPGRADE=TRUE
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
-export HOMEBREW_NO_INSTALL_CLEANUP=FALSE
+export HOMEBREW_NO_INSTALL_CLEANUP=1
 
 formulae=(
     {{ range $package := .packages.homebrew.common.formulae }}
@@ -73,16 +73,15 @@ for formula in ${formulae[@]}; do
     fi
 done
 
+{{ if not .is_ci_workflow }}
 for cask in ${casks[@]}; do
     if ! _inArray_ -i "${cask}" "${currently_installed_casks[@]}"; then
         brew install -q --cask ${cask}
     fi
 
 done
+{{ end }}
 
-_safeExit_
-
-brew cleanup
 success "Homebrew packages installed"
 
 _safeExit_

@@ -1,7 +1,11 @@
-{{- if (and (eq .chezmoi.os "darwin") (lookPath "brew")) }}
+{{- if and (eq .chezmoi.os "darwin") (lookPath "brew") }}
 
-# Don't send analytics data
-export HOMEBREW_NO_ANALYTICS=1
+# Set Exports
+export HOMEBREW_CASK_OPTS="--appdir=/Applications"
+export HOMEBREW_NO_INSTALL_CLEANUP=1
+{{ if .use_secrets -}}
+export HOMEBREW_GITHUB_API_TOKEN={{- onepasswordRead .secrets.homebrew_github_token }}
+{{ end }}
 
 # Set homebrew paths for GNU utilities
 _homebrewPaths=(
@@ -24,9 +28,7 @@ done
 
 eval "$($(brew --prefix)/bin/brew shellenv)"
 
-# if [[ -s /usr/local/etc/profile.d/autojump.sh ]]; then
-#     source "/usr/local/etc/profile.d/autojump.sh"
-# fi
+
 # shellcheck disable=SC1091
 if [[ -n ${BASH} ]] && [ -f "/usr/local/etc/profile.d/bash_completion.sh" ]; then
     source "/usr/local/etc/profile.d/bash_completion.sh"
@@ -37,10 +39,6 @@ if [ -f "$(brew --repository)/bin/src-hilite-lesspipe.sh" ]; then
     LESSOPEN="| $(brew --repository)/bin/src-hilite-lesspipe.sh %s"
     export LESS=' -R -z-4'
 fi
-
-# /Applications is now the default but leaving this for posterity
-export HOMEBREW_CASK_OPTS="--appdir=/Applications"
-export HOMEBREW_NO_INSTALL_CLEANUP=FALSE
 
 # Aliases
 

@@ -3,8 +3,8 @@
 alias chez='chezmoi'
 
 {{- if lookPath "code" }}
-alias cdot='code ${HOME}/.local/share/chezmoi/.'
+alias cdot='code {{ .xdgDataDir }}/chezmoi/.'
 {{- else }}
-alias cdot='cd ${HOME}/.local/share/chezmoi'
+alias cdot='cd {{ .xdgDataDir }}/chezmoi'
 {{- end }}
 {{- end }}

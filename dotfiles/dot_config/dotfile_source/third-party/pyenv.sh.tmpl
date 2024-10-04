@@ -1,0 +1,9 @@
+{{- if and ((joinPath .chezmoi.homeDir ".pyenv") | lstat) (lookPath "pyenv") -}}
+
+export PYENV_ROOT="${XDG_DATA_HOME}"/pyenv
+
+command -v pyenv >/dev/null || export PATH="${PYENV_ROOT}/bin:${PATH}"
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+
+{{- end }}

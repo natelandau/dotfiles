@@ -9,9 +9,13 @@
     email             = {{ $email | quote }}
     github_user       = "natelandau"
     homelab_member    = {{ $homelab_member }}
+    is_ci_workflow    = false # Set true only in CI test
     personal_computer = {{ $personal_computer }}
     use_secrets       = {{ $use_secrets }}
-    zsh_dir           = "{{ .chezmoi.homeDir }}/.local/share/zsh"
+    xdgCacheDir       = "{{ .chezmoi.homeDir }}/.cache"
+    xdgConfigDir      = "{{ .chezmoi.homeDir }}/.config"
+    xdgDataDir        = "{{ .chezmoi.homeDir }}/.local/share"
+    xdgStateDir       = "{{ .chezmoi.homeDir }}/.local/state"
 
 [diff]
     {{ if lookPath "delta" -}}command = "delta"

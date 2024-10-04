@@ -1,5 +1,3 @@
-{{- if lookPath "uv" -}}
-
 #!/usr/bin/env bash
 
 {{ template "shared_script_utils.bash" . }}
@@ -50,13 +48,18 @@ done
 
 {{ end }}
 
-# Install the packages with uv
-for package in "${packages[@]}"; do
-    uv tool install "${package}"
-done
+UV_PATH="$(_uvBinaryPath_)" || {
+    error "uv is not installed"
+    _safeExit_ 1
+}
+
+if [[ -n ${UV_PATH} ]]; then
+    # Install the packages with uv
+    for package in "${packages[@]}"; do
+        ${UV_PATH} tool install "${package}"
+    done
+fi
 
 success "Python packages installed"
 
 _safeExit_
-
-{{- end }}

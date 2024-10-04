@@ -2,3 +2,5 @@ data.json
 .venv
 .DS_Store
 reports
+.mypy_cache
+__pycache__

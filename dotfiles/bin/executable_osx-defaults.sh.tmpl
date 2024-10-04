@@ -9,9 +9,6 @@
 # and sets up preferences and configurations for all the built-in services and
 # apps. Third-party app config should be done elsewhere.
 #
-# Options:
-#   --no-restart: Don't restart any apps or services after running the script.
-#
 # If you want to figure out what default needs changing, do the following:
 #
 #   1. `cd /tmp`
@@ -879,17 +876,6 @@ defaults write com.google.Chrome.canary DisablePrintPreview -bool true
 
 # Enable the debug menu in Address Book
 defaults write com.apple.addressbook ABShowDebugMenu -bool true
-
-###############################################################################
-# Kill/restart affected applications                                          #
-###############################################################################
-
-# Restart affected applications if `--no-restart` flag is not present.
-# if [[ ! ($* == *--no-restart*) ]]; then
-#     for app in "cfprefsd" "Dock" "Finder" "Mail" "Messages" "Safari" "SystemUIServer" "Terminal"; do
-#         killall "${app}" >/dev/null 2>&1
-#     done
-# fi
 
 notice "osx-defaults: Done. Note that some of these changes require a logout/restart to take effect."
 _safeExit_

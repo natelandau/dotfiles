@@ -1,3 +1,4 @@
+{{- if .dev_computer -}}
 ---
 # Find full documentation at: https://yamllint.readthedocs.io/en/stable/index.html
 extends: default
@@ -31,3 +32,4 @@ rules:
     truthy:
         level: error
         check-keys: false
+{{ end }}

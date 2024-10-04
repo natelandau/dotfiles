@@ -2,11 +2,11 @@
 
 # Completions for zsh
 if [[ -n ${ZSH_NAME} ]]; then
-    if [ ! -d "{{ .zsh_dir }}/completions" ]; then
-        mkdir -p "{{ .zsh_dir }}/completions"
+    if [ ! -d "{{ .xdgDataDir }}/zsh/completions" ]; then
+        mkdir -p "{{ .xdgDataDir }}/zsh/completions"
     fi
-    if [ ! -f "{{ .zsh_dir }}/completions/_poetry" ]; then
-        poetry completions zsh >"{{ .zsh_dir }}/completions/_poetry"
+    if [ $(command -v poetry) ] && [ ! -f "{{ .xdgDataDir }}/zsh/completions/_poetry" ]; then
+        poetry completions zsh >"{{ .xdgDataDir }}/zsh/completions/_poetry"
     fi
 fi
 

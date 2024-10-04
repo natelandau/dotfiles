@@ -15,7 +15,7 @@ comment_placement = "BEST"
 file_exclude_regex = '0[0-3][0-9]-.*\.sh$'
 
 # Globs to match files against
-file_globs = ["~/.shell/sourced/**/*.sh"]
+file_globs = ["{{ .xdgConfigDir }}/dotfile_sourced/**/*.sh"]
 
 # The name of the uncategorized category
 uncategorized_name = "uncategorized"

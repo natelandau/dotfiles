@@ -1305,7 +1305,7 @@
 			<key>Columns</key>
 			<integer>140</integer>
 			<key>Command</key>
-			<string>/usr/local/bin/bash</string>
+			<string></string>
 			<key>Cursor Color</key>
 			<dict>
 				<key>Alpha Component</key>
@@ -1689,6 +1689,8 @@
 				<key>Red Component</key>
 				<real>0.87367779016494751</real>
 			</dict>
+			<key>Load Shell Integration Automatically</key>
+			<true/>
 			<key>Log Directory</key>
 			<string></string>
 			<key>Minimum Contrast</key>

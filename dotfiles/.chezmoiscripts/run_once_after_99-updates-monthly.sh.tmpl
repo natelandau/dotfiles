@@ -6,10 +6,15 @@
 
 {{ template "shared_script_utils.bash" . }}
 
+UV_PATH="$(_uvBinaryPath_)" || {
+    error "uv is not installed"
+    _safeExit_
+}
+
 # Run these commands on all systems
-if [[ $(command -v uv) ]]; then
+if [[ -n ${UV_PATH} ]]; then
     header "Upgrading tools installed with uv"
-    uv tool upgrade --all
+    ${UV_PATH} tool upgrade --all
 fi
 
 _safeExit_

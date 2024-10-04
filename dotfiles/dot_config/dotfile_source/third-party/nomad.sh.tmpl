@@ -1,4 +1,4 @@
-{{- if (and (.homelab_member) (lookPath "nomad")) -}}
+{{- if and (.homelab_member) (lookPath "nomad") -}}
 
 nomadExecutable="$(command -v nomad)"
 if [[ -n ${BASH} ]]; then

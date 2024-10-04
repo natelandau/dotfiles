@@ -65,14 +65,21 @@ jobs:
                   if [ -d /home/runner ]; then homedir="/home/runner"; else homedir="/Users/runner"; fi
 
                   mkdir -p ${homedir}/.config/chezmoi
-                  echo '[data]' > ${homedir}/.config/chezmoi/chezmoi.toml
-                  echo '    email        = "test@test.com"' >> ${homedir}/.config/chezmoi/chezmoi.toml
-                  echo '    github_user  = "natelandau"' >> ${homedir}/.config/chezmoi/chezmoi.toml
-                  echo '    dev_computer = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
-                  echo '    use_secrets  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
-                  echo '    personal_computer  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
-                  echo '    homelab_member  = false' >> ${homedir}/.config/chezmoi/chezmoi.toml
-                  echo '    zsh_dir      = "${homedir}/.local/share/zsh"' >> ${homedir}/.config/chezmoi/chezmoi.toml
+
+                  cat > ${homedir}/.config/chezmoi/chezmoi.toml<< EOF
+                  [data]
+                      dev_computer      = false
+                      email             = "test@test.com"
+                      github_user       = "natelandau"
+                      homelab_member    = false
+                      is_ci_workflow    = true # Set true only in CI test
+                      personal_computer = false
+                      use_secrets       = false
+                      xdgCacheDir       = "${homedir}/.cache"
+                      xdgConfigDir      = "${homedir}/.config"
+                      xdgDataDir        = "${homedir}/.local/share"
+                      xdgStateDir       = "${homedir}/.local/state"
+                  EOF
 
             # ----------------------------------------------
             # Install chezmoi
@@ -94,32 +101,54 @@ jobs:
             - name: Confirm dotfiles are installed
               if: startsWith(matrix.os, 'ubuntu')
               run: |
+                  if [ -d /home/runner ]; then homedir="/home/runner"; else homedir="/Users/runner"; fi
                   echo "------- Testing files -------"
                   cd /home/runner
                   # echo "pwd: $(pwd)"
                   # ls -al
 
+                  existing_files=(
+                    .zshrc
+                    .bashrc
+                    .config/git/config
+                    .ssh/config
+                    .config/dotfile_source/080-linux.sh
+                    .local/share/sed/stopwords.sed
+                  )
+
+                  missing_files=(
+                    .config/dotfile_source/080-macos.sh
+                    Library
+                  )
+
+                  installed_packages=(
+                    jq
+                    pygmentize
+                  )
+
                   # Confirm files exist
-                  for file in .zshrc .bashrc .gitconfig .shell .ssh/config .shell/sourced/080-linux.sh; do
-                    if [ ! -e $file ]; then
+                  for file in ${existing_files[@]}; do
+                    if [ ! -e "${homedir}/$file" ]; then
                         echo "$file not found"
                         exit 1
                     fi
                   done
 
                   # Confirm files don't exist
-                  for file in Library .shell/sourced/080-macos.sh; do
-                    if [ -e $file ]; then
+                  for file in ${missing_files[@]} ; do
+                    if [ -e "${homedir}/$file "]; then
                         echo "$file found"
                         exit 1
                     fi
                   done
 
-                  # Check apt packages
-                  command -v htop 2>&1 >/dev/null || { echo "htop not found"; exit 1; }
-
-                  # Confirm python packages
-                  command -v pygmentize 2>&1 >/dev/null || { echo "pygmentize not found"; exit 1; }
+                  # Confirm packages are installed
+                  for package in ${installed_packages[@]}; do
+                      if [ ! $(command -v $package) ]; then
+                          echo "$package not found"
+                          exit 1
+                      fi
+                  done
 
             # ----------------------------------------------
             # MACOS: Confirm dotfiles are installed
@@ -127,27 +156,50 @@ jobs:
             - name: Confirm dotfiles are installed
               if: startsWith(matrix.os, 'macos')
               run: |
+                  if [ -d /home/runner ]; then homedir="/home/runner"; else homedir="/Users/runner"; fi
+
                   echo "------- Testing files -------"
-                  cd /Users/runner
+                  cd ${homedir}
+
+                  existing_files=(
+                    .zshrc
+                    .bashrc
+                    .config/git/config
+                    .config/nano/nanorc
+                    .ssh/config
+                    .config/dotfile_source/080-macos.sh
+                    .local/share/sed/stopwords.sed
+                  )
+
+                  missing_files=(
+                    .config/dotfile_source/080-linux.sh
+                  )
+
+                  installed_packages=(
+                    jq
+                    pygmentize
+                  )
 
                   # Confirm files exist
-                  for file in .zshrc .bashrc .gitconfig .shell .ssh/config Library .shell/sourced/080-macos.sh; do
-                    if [ ! -e $file ]; then
+                  for file in ${existing_files[@]}; do
+                    if [ ! -e "${homedir}/$file" ]; then
                         echo "$file not found"
                         exit 1
                     fi
                   done
 
                   # Confirm files don't exist
-                  for file in .shell/sourced/080-linux.sh; do
-                    if [ -e $file ]; then
+                  for file in ${missing_files[@]} ; do
+                    if [ -e "${homedir}/$file" ]; then
                         echo "$file found"
                         exit 1
                     fi
                   done
 
-                  # Check homebrew packages
-                  command -v htop 2>&1 >/dev/null || { echo "htop not found"; exit 1; }
-
-                  # Confirm python packages
-                  command -v pygmentize 2>&1 >/dev/null || { echo "pygmentize not found"; exit 1; }
+                  # Confirm packages are installed
+                  for package in ${installed_packages[@]}; do
+                      if [ ! $(command -v $package) ]; then
+                          echo "$package not found"
+                          exit 1
+                      fi
+                  done

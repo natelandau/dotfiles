@@ -1,3 +1,4 @@
+{{- if not .is_ci_workflow -}}
 #!/usr/bin/env bash
 {{ template "shared_script_utils.bash" . }}
 {{ $current_os := .chezmoi.os }}
@@ -62,3 +63,4 @@ uv run -q "${INSTALL_SCRIPT}" --binary-name="{{ $binary.name }}" --repository="{
 {{ end }}
 {{ end }}
 _safeExit_
+{{- end }}

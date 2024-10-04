@@ -6,7 +6,7 @@
 _pluginload_() {
     local giturl="$1"
     local plugin_name=${${1##*/}%.git}
-    local plugindir="${ZPLUGINDIR:-{{ .zsh_dir }}/plugins}/$plugin_name"
+    local plugindir="${ZPLUGINDIR:-{{ .xdgDataDir }}/zsh/plugins}/$plugin_name"
 
     # clone if the plugin isn't there already
     if [[ ! -d "${plugindir}" ]]; then
@@ -41,7 +41,7 @@ _pluginload_() {
 }
 
 # set where we should store Zsh plugins
-ZPLUGINDIR="{{ .zsh_dir }}/plugins"
+ZPLUGINDIR="{{ .xdgDataDir }}/zsh/plugins"
 
 # add your plugins to this list
 plugins=(
@@ -77,7 +77,7 @@ unset repo
 
 # Update ZSH Plugins
 function zshup () {
-  local plugindir="${ZPLUGINDIR:-{{ .zsh_dir }}/plugins}"
+  local plugindir="${ZPLUGINDIR:-{{ .xdgDataDir }}/zsh/plugins}"
   for d in $plugindir/*/.git(/); do
     echo "Updating ${d:h:t}..."
     command git -C "${d:h}" pull --ff --recurse-submodules --depth 1 --rebase --autostash

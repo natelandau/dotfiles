@@ -1,9 +1,19 @@
-bin/pull_all_repos
+.DS_Store
 
-# Migrate to zoxide
-.z
+# Prepend with a `/` to specify a specific path relative to $HOME.
 
-# Migrate zsh data to ~/.local/share/zsh
-.zsh_history
-.zfunc/_eza
-.zfunc/poetry
+# migrate to XDG directories
+/.curlrc
+/.gitignore
+/.gitconfig
+/.nanorc
+/.lesshst
+/.digrc
+/.wget-hsts
+/.zcompdump
+/.python_history
+/.local/share/zsh/history
+/.sed/htmlDecode.sed
+/.sed/htmlEncode.sed
+/.sed/stopwords.sed
+/.zsh_history

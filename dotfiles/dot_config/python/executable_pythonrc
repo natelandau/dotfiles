@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+
+# This entire thing is unnecessary post v3.13.0a3
+# https://github.com/python/cpython/issues/73965
+
+
+def is_vanilla() -> bool:
+    """:return: whether running "vanilla" Python <3.13"""
+    import sys
+
+    return (
+        not hasattr(__builtins__, "__IPYTHON__")
+        and "bpython" not in sys.argv[0]
+        and sys.version_info < (3, 13)
+    )
+
+
+def setup_history() -> None:
+    """Read and write history from state file."""
+    import atexit
+    import os
+    import readline
+    from pathlib import Path
+
+    history: Path
+    state_home: Path
+
+    # Check PYTHON_HISTORY for future-compatibility with Python 3.13
+    if history := os.environ.get("PYTHON_HISTORY"):
+        history = Path(history)
+
+    # https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html#variables
+
+    elif state_home := os.environ.get("XDG_STATE_HOME"):
+        state_home = Path(state_home)
+    else:
+        state_home = Path.home() / ".local" / "state"
+
+    final_history: Path = history or state_home / "python_history"
+
+    # https://github.com/python/cpython/issues/105694
+    if not final_history.is_file():
+        readline.write_history_file(str(final_history))  # breaks on macos + python3 without this.
+
+    readline.read_history_file(final_history)
+    atexit.register(readline.write_history_file, final_history)
+
+
+if is_vanilla():
+    setup_history()

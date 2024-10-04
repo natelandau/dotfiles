@@ -34,30 +34,46 @@ elif [[ $0 == 'bash' ]]; then
     exit
 fi
 
-
 unset _myPaths _path
 
+# Create XDG directories
+#############################################
+if [ ! -d "{{ .xdgCacheDir }}/zsh" ]; then
+    mkdir -p "{{ .xdgCacheDir }}/zsh"
+fi
+if [ ! -d "{{ .xdgDataDir }}/zsh" ]; then
+    mkdir -p "{{ .xdgDataDir }}/zsh"
+fi
+if [ ! -d "{{ .xdgStateDir }}/zsh" ]; then
+    mkdir -p "{{ .xdgStateDir }}/zsh"
+fi
+
 # Source completions
-if [ -d "{{ .zsh_dir }}/completions" ]; then
-  fpath=({{ .zsh_dir }}/completions $fpath)
+if [ -d "{{ .xdgDataDir }}/zsh/completions" ]; then
+    fpath+={{ .xdgDataDir }}/zsh/completions
 fi
 
-if [ -d "{{ .zsh_dir }}/zsh-completions/src" ]; then
-  fpath=({{ .zsh_dir }}/zsh-completions/src $fpath)
+if [ -d "{{ .xdgDataDir }}/zsh/zsh-completions/src" ]; then
+    fpath+={{ .xdgDataDir }}/zsh/zsh-completions/src
 fi
 
+{{ if eq .chezmoi.os "darwin" -}}
+if type brew &>/dev/null; then
+    fpath+="$(brew --prefix)/share/zsh/site-functions"
+fi
+{{- end }}
 
 # Load Completions
 #############################################
 autoload -Uz compinit
-compinit
+compinit -d "{{ .xdgCacheDir }}/zsh/zcompdump-${ZSH_VERSION}"
 
 # SOURCE Dotfiles
 #############################################
 
 # Locations containing files *.bash to be sourced to your environment
 configFileLocations=(
-    "${HOME}/.shell/sourced"
+    "{{ .xdgConfigDir }}/dotfile_source"
 )
 
 for configFileLocation in "${configFileLocations[@]}"; do
@@ -74,9 +90,9 @@ done
 
 unset configFileLocations configFileLocation
 
-
+# Allow for local configuration not managed by chezmoi
 if [ -f "${HOME}/.dotfiles.local" ]; then
     source "${HOME}/.dotfiles.local"
 fi
 
-alias sourcea='source ${HOME}/.zshrc' # Source this file to apply changes
+alias sourcea='source ${HOME}/.zshrc' # Source this file to apply changes in the current shell

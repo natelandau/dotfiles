@@ -11,21 +11,23 @@ if [ ! "$(command -v unzip)" ]; then
 fi
 
 # Check if the nano syntax highlighting directory exists
-if [ ! -d "${HOME}/.nano" ]; then
+
+NANO_DIR="{{ .xdgDataDir }}/nano"
+if [ ! -e "${NANO_DIR}/conf.nanorc" ]; then
     header "Installing nano syntax highlighting..."
 
-    nano_dir="${HOME}/.nano"
+    if [ ! -d "${NANO_DIR}" ]; then
+        mkdir -p "${NANO_DIR}"
+    fi
 
-    mkdir -p "${nano_dir}"
+    wget --hsts-file='{{ .xdgDataDir }}/wget-hsts' -O "${NANO_DIR}/nanorc.zip" https://github.com/scopatz/nanorc/archive/master.zip
 
-    wget -O "${nano_dir}/nanorc.zip" https://github.com/scopatz/nanorc/archive/master.zip
+    pushd "${NANO_DIR}" >/dev/null || exit
 
-    pushd "${nano_dir}" >/dev/null || exit
-
-    unzip -o "${nano_dir}/nanorc.zip"
-    mv nanorc-master/* "${nano_dir}/"
+    unzip -o "${NANO_DIR}/nanorc.zip"
+    mv nanorc-master/* "${NANO_DIR}/"
     rm -rf nanorc-master
-    rm "${nano_dir}/nanorc.zip"
+    rm "${NANO_DIR}/nanorc.zip"
 
     popd >/dev/null || exit
 
