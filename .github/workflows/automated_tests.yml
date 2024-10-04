@@ -136,7 +136,7 @@ jobs:
                   done
 
                   # Confirm files don't exist
-                  for file in ${missing_files[@] ; do
+                  for file in ${missing_files[@]} ; do
                     if [ -e "${homedir}/$file "]; then
                         echo "$file found"
                         exit 1
@@ -191,7 +191,7 @@ jobs:
                   done
 
                   # Confirm files don't exist
-                  for file in ${missing_files[@] ; do
+                  for file in ${missing_files[@]} ; do
                     if [ -e "${homedir}/$file" ]; then
                         echo "$file found"
                         exit 1
