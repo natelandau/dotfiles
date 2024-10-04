@@ -71,8 +71,8 @@ jobs:
                       dev_computer      = false
                       email             = "test@test.com"
                       github_user       = "natelandau"
-                      homelab_member    = false'
-                      personal_computer = false'
+                      homelab_member    = false
+                      personal_computer = false
                       use_secrets       = false
                       xdgCacheDir       = "${homedir}/.cache"
                       xdgConfigDir      = "${homedir}/.config"
