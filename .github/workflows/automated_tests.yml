@@ -101,22 +101,38 @@ jobs:
             - name: Confirm dotfiles are installed
               if: startsWith(matrix.os, 'ubuntu')
               run: |
+                  if [ -d /home/runner ]; then homedir="/home/runner"; else homedir="/Users/runner"; fi
                   echo "------- Testing files -------"
                   cd /home/runner
                   # echo "pwd: $(pwd)"
                   # ls -al
 
+                  existing_files=(
+                    .zshrc
+                    .bashrc
+                    .config/git/config
+                    .shell
+                    .ssh/config
+                    .shell/sourced/080-linux.sh
+                    .local/share/sed/stopwords.sed
+                  )
+
+                  missing_files=(
+                    .shell/sourced/080-macos.sh
+                    Library
+                  )
+
                   # Confirm files exist
-                  for file in .zshrc .bashrc .gitconfig .shell .ssh/config .shell/sourced/080-linux.sh; do
-                    if [ ! -e $file ]; then
+                  for file in ${existing_files[@]}; do
+                    if [ ! -e "${homedir}/$file" ]; then
                         echo "$file not found"
                         exit 1
                     fi
                   done
 
                   # Confirm files don't exist
-                  for file in Library .shell/sourced/080-macos.sh; do
-                    if [ -e $file ]; then
+                  for file in ${missing_files[@] ; do
+                    if [ -e "${homedir}/$file "]; then
                         echo "$file found"
                         exit 1
                     fi
@@ -134,20 +150,37 @@ jobs:
             - name: Confirm dotfiles are installed
               if: startsWith(matrix.os, 'macos')
               run: |
+                  if [ -d /home/runner ]; then homedir="/home/runner"; else homedir="/Users/runner"; fi
+
                   echo "------- Testing files -------"
-                  cd /Users/runner
+                  cd ${homedir}
+
+                  existing_files=(
+                    .zshrc
+                    .bashrc
+                    .config/git/config
+                    .config/nano/nanorc
+                    .shell
+                    .ssh/config
+                    .shell/sourced/080-macos.sh
+                    .local/share/sed/stopwords.sed
+                  )
+
+                  missing_files=(
+                    .shell/sourced/080-linux.sh
+                  )
 
                   # Confirm files exist
-                  for file in .zshrc .bashrc .gitconfig .shell .ssh/config Library .shell/sourced/080-macos.sh; do
-                    if [ ! -e $file ]; then
+                  for file in ${existing_files[@]}; do
+                    if [ ! -e "${homedir}/$file" ]; then
                         echo "$file not found"
                         exit 1
                     fi
                   done
 
                   # Confirm files don't exist
-                  for file in .shell/sourced/080-linux.sh; do
-                    if [ -e $file ]; then
+                  for file in ${missing_files[@] ; do
+                    if [ -e "${homedir}/$file" ]; then
                         echo "$file found"
                         exit 1
                     fi

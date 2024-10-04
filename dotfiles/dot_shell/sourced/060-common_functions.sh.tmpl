@@ -293,7 +293,7 @@ htmldecode() {
     # USAGE:	htmlDecode <string>
 
     local sedLocation
-    sedLocation="${HOME}/.sed/htmlDecode.sed"
+    sedLocation="{{ .xdgDataDir }}/sed/htmlDecode.sed"
     if [ -f "${sedLocation}" ]; then
         echo "${1}" | sed -f "${sedLocation}"
     else
@@ -306,7 +306,7 @@ htmlencode() {
     # USAGE:	htmlEncode <string>
 
     local sedLocation
-    sedLocation="${HOME}/.sed/htmlEncode.sed"
+    sedLocation="{{ .xdgDataDir }}/sed/htmlEncode.sed"
     if [ -f "${sedLocation}" ]; then
         echo "${1}" | sed -f "${sedLocation}"
     else

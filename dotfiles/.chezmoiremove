@@ -11,3 +11,6 @@
 /.zcompdump
 /.python_history
 /.local/share/zsh/history
+/.sed/htmlDecode.sed
+/.sed/htmlEncode.sed
+/.sed/stopwords.sed
