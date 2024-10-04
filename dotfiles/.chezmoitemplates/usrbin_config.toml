@@ -55,8 +55,8 @@
 [autopull]
 
 repo_dirs = [
-    {{- if joinPath .zsh_dir "plugins" | lstat }}
-    "{{ .zsh_dir }}/plugins",
+    {{- if joinPath .xdgDataDir "zsh" "plugins" | lstat }}
+    "{{ .xdgDataDir }}/zsh/plugins",
     {{- end }}
     {{- if joinPath .chezmoi.homeDir "repos" | lstat }}
     "~/repos",

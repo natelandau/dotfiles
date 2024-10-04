@@ -90,6 +90,7 @@
             "mas",             # Mac App Store command-line interface
             "mc",              # Midnight Commander
             "most",            # Pager
+            "nano",
             "ncdu",            # NCurses Disk Usage
             "ncurses",         # Text-based UI library
             "openssl",         # SSL/TLS cryptography library

@@ -1,9 +1,13 @@
-bin/pull_all_repos
+# Prepend with a `/` to specify a specific path relative to $HOME.
 
-# Migrate to zoxide
-.z
-
-# Migrate zsh data to ~/.local/share/zsh
-.zsh_history
-.zfunc/_eza
-.zfunc/poetry
+# migrate to XDG directories
+/.curlrc
+/.gitignore
+/.gitconfig
+/.nanorc
+/.lesshst
+/.digrc
+/.wget-hsts
+/.zcompdump
+/.python_history
+/.local/share/zsh/history

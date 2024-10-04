@@ -6,7 +6,9 @@ export EDITOR="$(command -v code nano | head -n 1)"
 
 {{ if and (.use_secrets) (.dev_computer) -}}
 
-export HOMEBREW_GITHUB_API_TOKEN="{{ range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{ if eq .label "HOMEBREW_GITHUB_API_TOKEN" }}{{ .value }}{{ end }}{{ end }}"
+# Authenticate github cli (gh) with a personal access token
+# Commented out b/c gh copilot CLI doesn't work with a personal access token
+# export GH_TOKEN="{{ onepasswordRead .secrets.github_personal_access_token }}"
 
 # Valentina env variables for local development on natenate test server
 # natenate-test-bot
@@ -19,7 +21,7 @@ export VALENTINA_OWNER_CHANNELS="{{- range (onepassword "oktogknogbneoifxxtnefno
 export VALENTINA_AWS_ACCESS_KEY_ID="{{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "VALENTINA_AWS_ACCESS_KEY_ID" }}{{- .value }}{{- end }}{{- end }}"
 export VALENTINA_AWS_SECRET_ACCESS_KEY="{{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "VALENTINA_AWS_SECRET_ACCESS_KEY" }}{{- .value }}{{- end }}{{- end }}"
 export VALENTINA_S3_BUCKET_NAME="{{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "VALENTINA_S3_BUCKET_NAME" }}{{- .value }}{{- end }}{{- end }}"
-export VALENTINA_GITHUB_TOKEN="{{- range (onepassword "oktogknogbneoifxxtnefno2cu").fields }}{{- if eq .label "VALENTINA_GITHUB_TOKEN" }}{{- .value }}{{- end }}{{- end }}"
+export VALENTINA_GITHUB_TOKEN={{- onepasswordRead .secrets.homebrew_github_token }}
 export VALENTINA_GITHUB_REPO="natelandau/valentina"
 
 {{- end }}

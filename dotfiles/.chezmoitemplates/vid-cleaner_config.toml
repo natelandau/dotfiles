@@ -9,11 +9,10 @@ log_to_file = false
 keep_languages = ["en"]
 
 # External services used to determine the original language of a movie or TV show
-
-radarr_api_key = "{{- range (onepassword "yevda4magqej3yawqf573rijd4").fields }}{{- if eq .label "api_key" }}{{ .value }}{{- end }}{{- end }}"
-radarr_url     = "{{- range (onepassword "yevda4magqej3yawqf573rijd4").urls }}{{- if eq .label "website" }}{{- .href }}{{- end }}{{- end }}"
-sonarr_api_key = "{{- range (onepassword "5zk3pkmm2wbk73ss4dlli6dvz4").fields }}{{- if eq .label "api_key" }}{{ .value }}{{- end }}{{- end }}"
-sonarr_url     = "{{- range (onepassword "5zk3pkmm2wbk73ss4dlli6dvz4").urls }}{{- if eq .label "website" }}{{- .href }}{{- end }}{{- end }}"
-tmdb_api_key   = "{{- range (onepassword "42el6epcf5c55hi2kyn2kmwwxq").fields }}{{- if eq .label "api_key" }}{{ .value }}{{- end }}{{- end }}"
+radarr_api_key = "{{- onepasswordRead .secrets.radarr_api_key }}"
+radarr_url     = "{{- onepasswordRead .secrets.radarr_url }}"
+sonarr_api_key = "{{- onepasswordRead .secrets.sonarr_api_key }}"
+sonarr_url     = "{{- onepasswordRead .secrets.sonarr_url }}"
+tmdb_api_key   = "{{- onepasswordRead .secrets.tmdb_api_key }}"
 
 {{- end }}

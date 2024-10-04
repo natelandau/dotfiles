@@ -16,3 +16,5 @@ for _path in "${_myPaths[@]}"; do
         fi
     fi
 done
+
+unset _myPaths _path
