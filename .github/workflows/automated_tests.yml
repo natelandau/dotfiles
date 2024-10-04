@@ -72,6 +72,7 @@ jobs:
                       email             = "test@test.com"
                       github_user       = "natelandau"
                       homelab_member    = false
+                      is_ci_workflow    = true # Set true only in CI test
                       personal_computer = false
                       use_secrets       = false
                       xdgCacheDir       = "${homedir}/.cache"
