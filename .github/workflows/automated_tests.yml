@@ -139,7 +139,7 @@ jobs:
                   done
 
                   # Check apt packages
-                  command -v htop 2>&1 >/dev/null || { echo "htop not found"; exit 1; }
+                  command -v jq 2>&1 >/dev/null || { echo "jq not found"; exit 1; }
 
                   # Confirm python packages
                   command -v pygmentize 2>&1 >/dev/null || { echo "pygmentize not found"; exit 1; }
@@ -187,7 +187,7 @@ jobs:
                   done
 
                   # Check homebrew packages
-                  command -v htop 2>&1 >/dev/null || { echo "htop not found"; exit 1; }
+                  command -v jq 2>&1 >/dev/null || { echo "jq not found"; exit 1; }
 
                   # Confirm python packages
                   command -v pygmentize 2>&1 >/dev/null || { echo "pygmentize not found"; exit 1; }

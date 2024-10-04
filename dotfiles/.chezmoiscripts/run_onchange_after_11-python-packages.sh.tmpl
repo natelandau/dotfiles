@@ -1,5 +1,3 @@
-{{- if lookPath "uv" -}}
-
 #!/usr/bin/env bash
 
 {{ template "shared_script_utils.bash" . }}
@@ -58,5 +56,3 @@ done
 success "Python packages installed"
 
 _safeExit_
-
-{{- end }}
