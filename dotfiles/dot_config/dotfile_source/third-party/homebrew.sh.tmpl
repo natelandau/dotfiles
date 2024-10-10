@@ -16,6 +16,7 @@ _homebrewPaths=(
     "$(brew --prefix)/opt/gnu-tar/libexec/gnubin"
     "$(brew --prefix)/opt/grep/libexec/gnubin"
     "$(brew --prefix)/sbin"
+    "$(brew --prefix)/opt/libpq/bin" # TODO: Conflicts with postgresql if instaleld
 )
 
 for _path in "${_homebrewPaths[@]}"; do
@@ -25,6 +26,13 @@ for _path in "${_homebrewPaths[@]}"; do
         fi
     fi
 done
+
+
+# Link libpq if installed and postgresql is not
+if [[ -d "$(brew --prefix)/opt/libpq/bin" ]] && [[ ! -d "$(brew --prefix)/opt/postgresql/bin" ]]; then
+        PATH="$(brew --prefix)/opt/libpq/bin:${PATH}"
+fi
+
 
 eval "$($(brew --prefix)/bin/brew shellenv)"
 

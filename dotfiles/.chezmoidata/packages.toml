@@ -124,6 +124,7 @@
             "goaccess",
             "gpg",
             "lazygit",    # simple terminal UI for git commands
+            "libpq",      # PostgreSQL utilities but not postgresql itself
             "redis",
             "shellcheck",
             "shfmt",
