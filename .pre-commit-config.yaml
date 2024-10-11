@@ -15,7 +15,7 @@ repos:
           - post-commit
           - push
   - repo: "https://github.com/pre-commit/pre-commit-hooks"
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
       - id: check-byte-order-marker
@@ -33,7 +33,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: "https://github.com/crate-ci/typos"
-    rev: v1.25.0
+    rev: v1.26.0
     hooks:
       - id: typos
 

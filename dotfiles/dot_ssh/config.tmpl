@@ -1,3 +1,10 @@
+{{- if and (eq .chezmoi.os "darwin") (joinPath .chezmoi.homeDir ".orbstack/ssh/config" | lstat) -}}
+# Added by OrbStack: 'orb' SSH host for Linux machines
+# This only works if it's at the top of ssh_config (before any Host blocks).
+# This won't be added again if you remove it.
+Include ~/.orbstack/ssh/config
+{{- end }}
+
 # Create a new key with:
 # ssh-keygen -f [filename] -t ed25519 -C "[comment]"
 # ssh-keygen -f [filename] -t rsa -b 4096 -C "[comment]"
