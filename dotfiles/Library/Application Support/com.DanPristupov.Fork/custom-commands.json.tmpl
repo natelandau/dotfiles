@@ -1,0 +1,81 @@
+{{- if .dev_computer -}}
+[
+    {
+        "name": "Show Unmerged Branches",
+        "target": "repository",
+        "ui": {
+            "title": "Show Unmerged Branches",
+            "description": "Which branch do you want to check for unmerged branches?",
+            "buttons": [
+                {
+                    "title": "develop",
+                    "action": {
+                        "type": "process",
+                        "path": "$git",
+                        "args": "branch --no-merged origin/develop -a",
+                        "showOutput": true,
+                        "waitForExit": true
+                    }
+                },
+                {
+                    "title": "working",
+                    "action": {
+                        "type": "process",
+                        "path": "$git",
+                        "args": "branch --no-merged origin/working -a",
+                        "showOutput": true,
+                        "waitForExit": true
+                    }
+                },
+                {
+                    "title": "main",
+                    "action": {
+                        "type": "process",
+                        "path": "$git",
+                        "args": "branch --no-merged origin/main -a",
+                        "showOutput": true,
+                        "waitForExit": true
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "target": "repository",
+        "ui": {
+            "buttons": [
+                {
+                    "title": "OK",
+                    "action": {
+                        "showOutput": false,
+                        "type": "process",
+                        "waitForExit": true,
+                        "args": "gc --aggressive",
+                        "path": "$git"
+                    }
+                },
+                {
+                    "title": "Cancel",
+                    "action": {
+                        "type": "cancel"
+                    }
+                }
+            ],
+            "title": "Garbage Collect",
+            "description": "Are you sure you want to run \"git gc --aggressive\" ?"
+        },
+        "name": "Garbage Collect"
+    },
+    {
+        "name": "Amend",
+        "target": "repository",
+        "action": {
+            "type": "process",
+            "path": "$git",
+            "args": "commit --amend --no-edit",
+            "showOutput": false,
+            "waitForExit": true
+        }
+    }
+]
+{{ end }}

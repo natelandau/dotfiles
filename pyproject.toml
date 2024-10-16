@@ -75,6 +75,7 @@
             "FBT002",  # Boolean-typed positional argument in function definition
             "FIX001",  # line-contains-fixme
             "FIX002",  # Line contains TODO, consider resolving the issue
+            "G004",    # Logging-f-string
             "ISC001",  # single-line-implicit-string-concatenation
             "N805",    # invalid-first-argument-name-for-method
             "PGH003",  # Use specific codes when ignoring issues

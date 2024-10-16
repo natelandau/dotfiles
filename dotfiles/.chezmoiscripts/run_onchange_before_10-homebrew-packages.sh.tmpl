@@ -70,6 +70,11 @@ for formula in ${formulae[@]}; do
             brew install -q --formula ${formula}
         fi
 
+        # https://github.com/microsoft/Git-Credential-Manager-for-Mac-and-Linux/blob/master/Install.md
+        if [[ ${formula} == "git-credential-manager" ]]; then
+            git-credential-manager install
+        fi
+
     fi
 done
 

@@ -123,6 +123,7 @@
             "git-extras",
             "goaccess",
             "gpg",
+            "jless",      # JSON viewer
             "lazygit",    # simple terminal UI for git commands
             "libpq",      # PostgreSQL utilities but not postgresql itself
             "redis",

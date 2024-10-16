@@ -11,6 +11,7 @@
     fixup = commit --amend --no-edit
     force = "!git push origin $(git mainbranch) --force-with-lease --force-if-includes"
     forgot = "!f() { git checkout -b \"$1\" 2> /dev/null || git checkout \"$1\"; }; f"
+    fullgc = "gc --aggressive --prune=1day"
     mainbranch = "!git remote show origin | sed -n '/HEAD branch/s/.*: //p'"
     nevermind = "!git reset --hard HEAD && git clean -d -f"
     oops = commit --amend --no-edit
@@ -18,6 +19,7 @@
     reb = "!r() { git rebase -i HEAD~${1:-2}; }; r"
     remotes = remote -v
     stashes = stash list
+    st = status --short --branch
     subup = submodule update --init --recursive
     synced = "!git pull origin $(git mainbranch) --rebase" # Rebase on remote main
     tags = tag -l
@@ -33,21 +35,13 @@
     whitespace = fix
 
 [core]
-    # Use custom `.gitignore` and `.gitattributes`
-    # excludesfile = ~/.gitignore
-    # attributesfile = ~/.gitattributes
+    sshCommand = ssh -i ~/.ssh_keys/git
+    pager = delta
 
     # Treat spaces before tabs and all kinds of trailing whitespace as an error
     # [default] trailing-space: looks for spaces at the end of a line
     # [default] space-before-tab: looks for spaces before tabs at the beginning of a line
     whitespace = space-before-tab,-indent-with-non-tab,trailing-space
-
-{{- if eq .chezmoi.os "darwin" }}
-
-    # Make `git rebase` safer on OS X
-    # More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
-    trustctime = false
-{{- end }}
 
     # Prevent showing files whose names contain non-ASCII symbols as unversioned.
     # http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
@@ -55,6 +49,13 @@
 
     # Set default editor to use VisualCode
     editor = code --wait
+
+{{- if eq .chezmoi.os "darwin" }}
+
+    # Make `git rebase` safer on OS X
+    # More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
+    trustctime = false
+{{- end }}
 
 [color]
     ui = true
@@ -105,10 +106,6 @@
 
 [github]
    user = {{ .github_user }}
-
-[core]
-    sshCommand = ssh -i ~/.ssh_keys/git
-    pager = delta
 
 [interactive]
     diffFilter = delta --color-only

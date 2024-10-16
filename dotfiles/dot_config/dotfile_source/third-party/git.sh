@@ -1,19 +1,19 @@
-alias diff="git difftool"                                 # Open file in git's default diff tool <file>
-alias fetch="git fetch origin"                            # Fetch from origin
-alias gc="git --no-pager commit"                          # Commit w/ message written in EDITOR
-alias gcl='git clone --recursive'                         # Clone with all submodules
-alias gcm="git --no-pager commit -m"                      # Commit w/ message from the command line <commit message>
-alias gcv="git --no-pager commit --no-verify"             # Commit without verification
-alias ginitsubs='git submodule update --init --recursive' # Init and update all submodules
-alias gundo="git reset --soft HEAD^"                      # Undo last commit
-alias gs='git --no-pager status -s --untracked-files=all' # Git status
-alias gss='git remote update && git status -uno'          # Are we behind remote?
-alias gsubs='git submodule update --recursive --remote'   # Update all submodules
-alias undopush="git push -f origin HEAD^:master"          # Undo a git push
+alias diff="git difftool"                                          # Open file in git's default diff tool <file>
+alias fetch="git fetch origin"                                     # Fetch from origin
+alias gc="git --no-pager commit"                                   # Commit w/ message written in EDITOR
+alias gcl='git clone --recursive'                                  # Clone with all submodules
+alias gcm="git --no-pager commit -m"                               # Commit w/ message from the command line <commit message>
+alias gcv="git --no-pager commit --no-verify"                      # Commit without verification
+alias ginitsubs='git submodule update --init --recursive'          # Init and update all submodules
+alias gundo="git reset --soft HEAD^"                               # Undo last commit
+alias gs='git --no-pager status -s --untracked-files=all --branch' # Git status
+alias gss='git remote update && git status -uno'                   # Are we behind remote?
+alias gsubs='git submodule update --recursive --remote'            # Update all submodules
+alias undopush="git push -f origin HEAD^:master"                   # Undo a git push
 
 ga() { git add "${@:-.}"; } # Add file (default: all)
 
-alias gl='git log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short' # A nicer Git Log
+alias gl='git log --pretty=format:"%C(yellow)%h %ad%Cred%d %Creset%s%Cblue [%cn]" --decorate --date=short' # A nicer Git Log
 
 applyignore() {
     # DESC:   Applies changes to the git .ignorefile after the files mentioned were already committed to the repo
