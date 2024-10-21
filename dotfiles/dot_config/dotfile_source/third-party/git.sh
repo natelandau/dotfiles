@@ -13,7 +13,23 @@ alias undopush="git push -f origin HEAD^:master"                   # Undo a git 
 
 ga() { git add "${@:-.}"; } # Add file (default: all)
 
-alias gl='git log --pretty=format:"%C(yellow)%h %ad%Cred%d %Creset%s%Cblue [%cn]" --decorate --date=short' # A nicer Git Log
+HASH="%C(always,yellow)%h%C(always,reset)"
+RELATIVE_TIME="%C(always,green)%ar%C(always,reset)"
+AUTHOR="%C(always,bold blue)%an%C(always,reset)"
+REFS="%C(always,red)%d%C(always,reset)"
+SUBJECT="%s"
+
+FORMAT="$HASH $RELATIVE_TIME{$AUTHOR{$REFS $SUBJECT"
+
+pretty_git_log() {
+    git log --graph --pretty="tformat:$FORMAT" \
+        | column -t -s '{' \
+        | \less -XRS --quit-if-one-screen
+}
+
+alias gl="pretty_git_log" # A nicer Git Log
+
+alias gll='git log --pretty=format:"%C(yellow)%h %ad%Cred%d %Creset%s%Cblue [%cn]" --decorate --date=short' # A nicer Git Log
 
 applyignore() {
     # DESC:   Applies changes to the git .ignorefile after the files mentioned were already committed to the repo
