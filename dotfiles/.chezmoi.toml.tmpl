@@ -28,6 +28,9 @@
     command = "code"
 
 [merge]
-    args    = ["--merge", "{{ "{{" }} .Destination }}", "{{ "{{" }} .Source }}", "{{ "{{" }} .Target }}"]
-    command = "code"
+    command = "bash"
+    args = [
+        "-c",
+        "cp '{{ "{{" }} .Target {{ "}}" }}' '{{ "{{" }} .Target {{ "}}" }}.base' && code --new-window --wait --merge '{{ "{{" }} .Destination {{ "}}" }}' '{{ "{{" }} .Target {{ "}}" }}' '{{ "{{" }} .Target {{ "}}" }}.base' '{{ "{{" }} .Source {{ "}}" }}'",
+    ]
 {{ end -}}
