@@ -17,3 +17,4 @@
 /.sed/htmlEncode.sed
 /.sed/stopwords.sed
 /.zsh_history
+/.yamllint.yml

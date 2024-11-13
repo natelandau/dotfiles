@@ -44,9 +44,6 @@ jobs:
             #       apt-get update
             #       apt-get install -y git zsh
 
-            # ----------------------------------------------
-            #    Checkout repository
-            # ----------------------------------------------
             - name: Checkout repository
               uses: actions/checkout@v4
 

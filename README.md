@@ -103,12 +103,10 @@ Custom terminal configurations are stored in `~/.config/applications/terminal`. 
 
 1. Install [uv](https://docs.astral.sh/uv/) to enable integration with Python tooling.
 2. Install the virtual environment with `uv sync`
-3. Activate the virtual environment with `source .venv/bin/activate`
-4. Install the pre-commit hooks with `pre-commit install --install-hooks`
+3. Install the pre-commit hooks with `uv run pre-commit install --install-hooks`
 
 ## Committing changes
 
-1. Activate the virtual environment with `source .venv/bin/activate`
-2. Add changed files to the staging area with `git add .`
-3. Run `cz c` to commit changes
-4. Push to remote repository
+1. Add changed files to the staging area with `git add .`
+2. Run `uv run cz c` to commit changes
+3. Push to remote repository
