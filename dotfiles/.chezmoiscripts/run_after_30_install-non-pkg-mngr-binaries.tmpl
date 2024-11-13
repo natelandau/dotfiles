@@ -43,20 +43,18 @@ debug "Skipping binary installation of {{ $binary.name }} for non personal compu
 
 {{ end }}
 
-INSTALL_SCRIPT="${HOME}/bin/install-binary.py"
-
 if [[ ! $(command -v uv) ]] then
     warning "Please install 'uv' to run the binary installation script."
     _safeExit_
 fi
 
-if [[ ! -e ${INSTALL_SCRIPT} ]] then
+if [[ ! -e "${HOME}/bin/install-binary.py" ]] then
     warning "The binary installation script is missing. Rerun chezmoi to generate it."
     _safeExit_
 fi
 
 
-uv run -q "${INSTALL_SCRIPT}" --binary-name="{{ $binary.name }}" --repository="{{ $binary.repository }}" --version-regex="{{ $binary.version_regex }}" --remove-from-release="{{ $binary.remove_from_release }}" --executable-name="{{ $binary.executable_name }}"
+uv run -q ${HOME}/bin/install-binary.py --binary-name="{{ $binary.name }}" --repository="{{ $binary.repository }}" --version-regex="{{ $binary.version_regex }}" --remove-from-release="{{ $binary.remove_from_release }}" --executable-name="{{ $binary.executable_name }}"
 
 
 {{ end }}

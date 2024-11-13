@@ -76,7 +76,7 @@ def log_formatter(record: dict) -> str:
         str: A formatted log message string with rich styling applied.
     """
     color_map = {
-        "TRACE": "turquoise4",
+        "TRACE": "cyan",
         "DEBUG": "cyan",
         "DRYRUN": "bold blue",
         "INFO": "",
@@ -491,11 +491,14 @@ def install_from_tarball(binary: BinaryUpdater, dry_run: bool) -> None:  # noqa:
         typer.Exit: If any step fails.
     """
 
-    def find_unarchived_binary(possible_dirs: list[Path], binary_name: str) -> Path | None:
+    def find_unarchived_binary(possible_locations: list[Path], binary_name: str) -> Path | None:
         """Find the binary in one of the possible unarchived directories."""
-        for directory in possible_dirs:
-            if directory.exists() and directory.is_dir():
-                unarchive_path = directory / binary_name
+        for location in possible_locations:
+            logger.trace(f"Looking for {binary_name} in {location}")
+            if location.exists() and location.is_file() and location.name == binary_name:
+                return location
+            if location.exists() and location.is_dir():
+                unarchive_path = location / binary_name
                 if unarchive_path.exists() and unarchive_path.is_file():
                     return unarchive_path
         return None
@@ -512,6 +515,7 @@ def install_from_tarball(binary: BinaryUpdater, dry_run: bool) -> None:  # noqa:
             work_dir / download_path.stem,
             work_dir / download_path.name.replace(".tar.gz", ""),
         ]
+        logger.trace(f"{possible_unarchive_dirs=}")
 
         # Download the asset
         download_msg = f"Download: {binary.download_url}"
