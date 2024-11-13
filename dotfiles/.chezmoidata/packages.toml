@@ -94,7 +94,6 @@
             "ncdu",            # NCurses Disk Usage
             "ncurses",         # Text-based UI library
             "openssl",         # SSL/TLS cryptography library
-            "otree",           # View objects (JSON/YAML/TOML) in TUI tree widget
             "rip2",            # A safer, rust-based rm
             "ripgrep",         # search tool like grep and the silver searcher
             "sqlite3",

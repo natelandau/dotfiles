@@ -51,16 +51,6 @@
         systems               = ["linux"]
         version_regex         = "version=(.*?),"
 
-    [binaries.otree]
-        executable_name       = ""
-        install_filter        = ""
-        name                  = "otree"
-        remove_from_release   = ""
-        repository            = "fioncat/otree"
-        required_architecture = "amd64"
-        systems               = ["linux"]
-        version_regex         = ""
-
     [binaries.rip2]
         executable_name       = ""
         install_filter        = ""
