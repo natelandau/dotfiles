@@ -68,7 +68,7 @@
         remove_from_release   = ""
         repository            = "MilesCranmer/rip2"
         required_architecture = ""
-        systems               = ["darwin", "linux"]
+        systems               = ["linux"]
         version_regex         = ""
 
     [binaries.zoxide]

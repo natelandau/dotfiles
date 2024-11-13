@@ -45,7 +45,7 @@
     [packages.python.homelab_member]
         packages = ["git+GITEA_ADDRESS/natelandau/usrbin"]
     [packages.python.personal_computer]
-        packages = ["jdfile", "trash-cli", "vid-cleaner"]
+        packages = ["jdfile", "vid-cleaner"]
 [packages.homebrew]
     to_remove = ["btop", "htop", "istat-menus", "rocket", "shotrr"]
     [packages.homebrew.common]
@@ -95,6 +95,7 @@
             "ncurses",         # Text-based UI library
             "openssl",         # SSL/TLS cryptography library
             "otree",           # View objects (JSON/YAML/TOML) in TUI tree widget
+            "rip2",            # A safer, rust-based rm
             "ripgrep",         # search tool like grep and the silver searcher
             "sqlite3",
             "ssh-copy-id",     # Add a public key to a remote machine's authorized_keys file

@@ -89,3 +89,9 @@
         name              = "synology"
         op_id             = "u4jors52vyhwhs5ab24otdyrmq"
         tailscale_ip      = false
+
+    [remote_servers.rootsrelief]
+        add_to_ssh_config = true
+        name              = "rootsrelief"
+        op_id             = "lddaddipiv3mr7bo62r7f5bo3e"
+        tailscale_ip      = true
