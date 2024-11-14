@@ -47,7 +47,7 @@
     [packages.python.personal_computer]
         packages = ["jdfile", "vid-cleaner"]
 [packages.homebrew]
-    to_remove = ["btop", "htop", "istat-menus", "rocket", "shotrr"]
+    to_remove = ["btop", "htop", "istat-menus", "qlimagesize", "rocket", "shotrr"]
     [packages.homebrew.common]
         casks = [
             "1password",
@@ -159,7 +159,6 @@
             "zoom",
             # Quick Look plugins
             "qlcolorcode",
-            "qlimagesize",
             "qlmarkdown",
             "qlprettypatch",
             "qlstephen",
