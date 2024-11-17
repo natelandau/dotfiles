@@ -43,6 +43,7 @@
     [packages.python.dev_computer]
         packages = ["ansible-core", "cookiecutter", "poetry"]
     [packages.python.homelab_member]
+        # 'GITEA_ADDRESS' is overwritten by the 'gitea_address' secret
         packages = ["git+GITEA_ADDRESS/natelandau/usrbin"]
     [packages.python.personal_computer]
         packages = ["jdfile", "vid-cleaner"]

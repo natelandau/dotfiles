@@ -1,1 +1,110 @@
-{{- template "halp_config.toml" . -}}
+# Default TOML configuration file
+
+### General Configuration
+
+# Whether or not to match case sensitively with regexes
+case_sensitive = false
+
+# Regex to exclude command names from matching
+command_name_ignore_regex = '^_'
+
+# Where you place comments to describe your code. One of "best", "above", "inline"
+comment_placement = "BEST"
+
+# Regex to exclude paths from matching
+file_exclude_regex = '0[0-3][0-9]-.*\.sh$'
+
+# Globs to match files against
+file_globs = ["{{ .xdgConfigDir }}/dotfile_source/**/*.sh"]
+
+# The name of the uncategorized category
+uncategorized_name = "uncategorized"
+
+[categories]
+    [categories.system]
+        code_regex         = '(\s|^)(top|htop|df|du|free|kill|pkill|pgrep|pmap|lsof|uname|uptime|whoami|w|id|date|cal|bc)(\s|$)'
+        command_name_regex = '(\s|^)(system)(\s|$)'
+        comment_regex      = '(\s|^)(system|processes|memory|cpu)(\s|$)'
+        description        = "System commands"
+        name               = "system"
+        path_regex         = ''
+
+    [categories.filesystem]
+        code_regex         = '(\s|^)(find||fd|cd|ls|ll|jdfile|cp|mv|chmod|chown|mkdir|rm|eza|tar)(\s|$)'
+        command_name_regex = ''
+        comment_regex      = 'navigate|nav|md5|hash|directory'
+        description        = "Directories and files"
+        name               = "filesystem"
+        path_regex         = ''
+
+    [categories.network]
+        code_regex         = '(\s|^)(ssh|dig|ping|ip|ssh|tailscale|cscli|ufw|iptables|tailscale)(\s|$)'
+        command_name_regex = '(\s|^)(ssh|dig|ping|ssh)(\s|$)'
+        comment_regex      = '(\s|^)(dhcp|ssh|dig|ping|ip|ssh|ip|firewall|cloudflare|tunnel|vpn|tailscale)(\s|$)'
+        description        = "Networking"
+        name               = "network"
+        path_regex         = ''
+
+    [categories.homelab]
+        code_regex         = 'ansible|nomad|consul|docker|nginx|traefik|cluster|homelab'
+        command_name_regex = ''
+        comment_regex      = '(\s|^)(ansible|nomad|consul|docker|homelab|cluster|jobs)(\s|$)'
+        description        = "Homelab"
+        name               = "homelab"
+        path_regex         = 'docker|nomad|consul|ansible|traefik'
+
+    [categories.media]
+        code_regex         = '(\s|^)(ffmpeg|ffprobe)(\s|$)'
+        command_name_regex = 'ffmpeg|ffprobe|video|podcast|audio|video'
+        comment_regex      = 'ffmpeg|ffprobe|video|podcast|audio|video|transcode'
+        description        = "Media"
+        name               = "media"
+        path_regex         = ''
+
+    [categories.git]
+        code_regex         = '(\s|^)(git)(\s|$)'
+        command_name_regex = '(\s|^)(git|repos(itor(y|ies)))(\s|$)'
+        comment_regex      = '(\s|^)(git|repos(itor(y|ies)))(\s|$)'
+        description        = "Git"
+        name               = "git"
+        path_regex         = '/git\.'
+
+    [categories.macos]
+        code_regex         = '(\s|^)(brew|mas|osascript)(\s|$)'
+        command_name_regex = ''
+        comment_regex      = '(\s|^)(mac(os)?|osx|finder|homebrew)(\s|$)'
+        description        = "MacOS specific commands"
+        name               = "macos"
+        path_regex         = 'macos'
+
+    [categories.linux]
+        code_regex         = '(\s|^)(apt(-get)?)(\s|$)'
+        command_name_regex = ''
+        comment_regex      = 'linux|rpi|raspberry|debian'
+        description        = "Linux specific"
+        name               = "linux"
+        path_regex         = 'linux|raspberry|debian'
+
+    [categories.text]
+        code_regex         = '(\s|^)(sed|awk|tail)(\s|$)'
+        command_name_regex = 'text|string'
+        comment_regex      = 'text|strings'
+        description        = "Text and string manipulation"
+        name               = "text"
+        path_regex         = ''
+
+    [categories.python]
+        code_regex         = '(\s|^)(pyenv|poetry|pipx?)(\s|$)|.*\.py(\s|$)'
+        command_name_regex = ''
+        comment_regex      = '(\s|^)python|poetry|pipx?(\s|$)'
+        description        = "Python commands"
+        name               = "python"
+        path_regex         = 'pipx?|pyenv|poetry|python'
+
+    [categories.dev]
+        code_regex         = '(\s|^|\))(npm|grunt|shfmt|ruby|jekyll|aws|mongo|mariadb|mysql|apache|nginx)(\s|$)'
+        command_name_regex = ''
+        comment_regex      = '(\s|^)aws(\s|$)'
+        description        = "Development tools"
+        name               = "development"
+        path_regex         = ''
