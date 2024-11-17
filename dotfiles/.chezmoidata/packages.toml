@@ -43,11 +43,12 @@
     [packages.python.dev_computer]
         packages = ["ansible-core", "cookiecutter", "poetry"]
     [packages.python.homelab_member]
+        # 'GITEA_ADDRESS' is overwritten by the 'gitea_address' secret
         packages = ["git+GITEA_ADDRESS/natelandau/usrbin"]
     [packages.python.personal_computer]
         packages = ["jdfile", "vid-cleaner"]
 [packages.homebrew]
-    to_remove = ["btop", "htop", "istat-menus", "rocket", "shotrr"]
+    to_remove = ["btop", "htop", "istat-menus", "qlimagesize", "rocket", "shotrr"]
     [packages.homebrew.common]
         casks = [
             "1password",
@@ -159,7 +160,6 @@
             "zoom",
             # Quick Look plugins
             "qlcolorcode",
-            "qlimagesize",
             "qlmarkdown",
             "qlprettypatch",
             "qlstephen",

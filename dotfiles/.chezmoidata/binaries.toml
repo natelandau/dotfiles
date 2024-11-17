@@ -12,6 +12,7 @@
 
 [binaries]
     [binaries.bottom]
+        description           = "A cross-platform graphical process/system monitor with a focus on performance, privacy, and a nice visual design"
         executable_name       = "btm"
         install_filter        = ""
         name                  = "bottom"
@@ -22,6 +23,7 @@
         version_regex         = ""
 
     [binaries.doggo]
+        description           = "Command-line DNS Client for Humans"
         executable_name       = ""
         install_filter        = ""
         name                  = "doggo"
@@ -32,6 +34,7 @@
         version_regex         = ""
 
     [binaries.git-delta]
+        description           = "A syntax-highlighting pager for git and diff output"
         executable_name       = ""
         install_filter        = ""
         name                  = "delta"
@@ -42,6 +45,7 @@
         version_regex         = ""
 
     [binaries.lazygit]
+        description           = "A simple terminal UI for git commands"
         executable_name       = ""
         install_filter        = "dev_computer"
         name                  = "lazygit"
@@ -52,6 +56,7 @@
         version_regex         = "version=(.*?),"
 
     [binaries.rip2]
+        description           = "A safe and ergonomic alternative to rm"
         executable_name       = ""
         install_filter        = ""
         name                  = "rip"
@@ -62,6 +67,7 @@
         version_regex         = ""
 
     [binaries.zoxide]
+        description           = "A fast, user-friendly alternative to cd"
         executable_name       = ""
         install_filter        = ""
         name                  = "zoxide"

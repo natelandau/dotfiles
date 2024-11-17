@@ -54,7 +54,7 @@ if [[ ! -e "${HOME}/bin/install-binary.py" ]] then
 fi
 
 
-uv run -q ${HOME}/bin/install-binary.py --binary-name="{{ $binary.name }}" --repository="{{ $binary.repository }}" --version-regex="{{ $binary.version_regex }}" --remove-from-release="{{ $binary.remove_from_release }}" --executable-name="{{ $binary.executable_name }}"
+uv run -q ${HOME}/bin/install-binary.py --binary-name="{{ $binary.name }}" --repository="{{ $binary.repository }}" --version-regex="{{ $binary.version_regex }}" --remove-from-release="{{ $binary.remove_from_release }}" --executable-name="{{ $binary.executable_name }}" --description="{{ $binary.description }}"
 
 
 {{ end }}

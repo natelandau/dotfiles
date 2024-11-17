@@ -26,7 +26,7 @@ on:
             - "uv.lock"
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
 
 jobs:
@@ -44,9 +44,6 @@ jobs:
             #       apt-get update
             #       apt-get install -y git zsh
 
-            # ----------------------------------------------
-            #    Checkout repository
-            # ----------------------------------------------
             - name: Checkout repository
               uses: actions/checkout@v4
 

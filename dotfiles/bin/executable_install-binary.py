@@ -25,7 +25,6 @@ import platform
 import re
 import shutil
 import tarfile
-from collections.abc import Callable
 from enum import Enum
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -193,7 +192,6 @@ class BinaryUpdater:
         self.version_regex = version_regex
         self.remove_from_release = remove_from_release
         self.executable_name = executable_name if executable_name else binary_name
-
         # Get the latest release information
         self.latest_version: str = re.search(r"(\d+\.\d+\.\d+)", self.release_info["name"]).group(1)
         self.is_draft: bool = self.release_info["draft"]
@@ -492,7 +490,15 @@ def install_from_tarball(binary: BinaryUpdater, dry_run: bool) -> None:  # noqa:
     """
 
     def find_unarchived_binary(possible_locations: list[Path], binary_name: str) -> Path | None:
-        """Find the binary in one of the possible unarchived directories."""
+        """Find the binary in one of the possible unarchived directories.
+
+        Args:
+            possible_locations (list[Path]): A list of possible locations to search for the binary.
+            binary_name (str): The name of the binary to search for.
+
+        Returns:
+            Path | None: The path to the binary if found, otherwise None.
+        """
         for location in possible_locations:
             logger.trace(f"Looking for {binary_name} in {location}")
             if location.exists() and location.is_file() and location.name == binary_name:
@@ -508,14 +514,15 @@ def install_from_tarball(binary: BinaryUpdater, dry_run: bool) -> None:  # noqa:
 
     with TemporaryDirectory() as tempdir:
         work_dir = Path(tempdir)
+        logger.debug(f"Working in {work_dir}")
         download_path = work_dir / binary.download_asset_name
-        possible_unarchive_dirs = [
+        possible_unarchive_locations = [
             work_dir / binary.binary_name,
             work_dir / download_path.name,
             work_dir / download_path.stem,
             work_dir / download_path.name.replace(".tar.gz", ""),
         ]
-        logger.trace(f"{possible_unarchive_dirs=}")
+        logger.trace(f"{possible_unarchive_locations=}")
 
         # Download the asset
         download_msg = f"Download: {binary.download_url}"
@@ -539,7 +546,7 @@ def install_from_tarball(binary: BinaryUpdater, dry_run: bool) -> None:  # noqa:
                 tar.extractall(path=work_dir, filter="data")
 
         # Move the binary to the bin directory
-        unarchive_path = find_unarchived_binary(possible_unarchive_dirs, binary.binary_name)
+        unarchive_path = find_unarchived_binary(possible_unarchive_locations, binary.binary_name)
         if not unarchive_path:
             error_msg = f"Failed to find {binary.binary_name} in archive"
             if dry_run:
@@ -650,6 +657,10 @@ def main(
         str,
         typer.Option(help="Name of executable if different from binary_name", show_default=False),
     ] = "",
+    description: Annotated[
+        str,
+        typer.Option(help="Description of the binary", show_default=False),
+    ] = "",
     install_script: Annotated[
         str, typer.Option(help="URL for an install script to be piped to sh", show_default=False)
     ] = "",
@@ -722,6 +733,8 @@ def main(
         executable_name=executable_name,
     )
 
+    if description:
+        logger.log("SECONDARY", f"{binary_name}: {description.capitalize()}")
     logger.log("SECONDARY", f"Repository: https://github.com/{binary.repository}")
     logger.log("SECONDARY", f"Latest version: {binary.latest_version}")
     logger.log(

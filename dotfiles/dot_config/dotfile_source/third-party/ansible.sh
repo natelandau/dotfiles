@@ -12,7 +12,7 @@ aus() {
 
     if [ -d "${ANSIBLE_DIR}" ]; then
         pushd "${ANSIBLE_DIR}" &>/dev/null || return 1
-        poetry run ansible-playbook main.yml "${@}"
+        uv run ansible-playbook main.yml "${@}"
         popd &>/dev/null || return 1
     else
         echo "Can not find ${ANSIBLE_DIR}"
