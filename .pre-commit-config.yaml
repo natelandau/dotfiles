@@ -7,7 +7,7 @@ default_stages: [pre-commit, manual]
 fail_fast: true
 repos:
   - repo: "https://github.com/commitizen-tools/commitizen"
-    rev: v3.31.0
+    rev: v4.1.0
     hooks:
       - id: commitizen
       - id: commitizen-branch
@@ -34,7 +34,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: "https://github.com/crate-ci/typos"
-    rev: typos-dict-v0.11.35
+    rev: v1.28.4
     hooks:
       - id: typos
 
