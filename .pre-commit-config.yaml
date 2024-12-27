@@ -7,7 +7,7 @@ default_stages: [pre-commit, manual]
 fail_fast: true
 repos:
   - repo: "https://github.com/commitizen-tools/commitizen"
-    rev: v3.31.0
+    rev: v4.1.0
     hooks:
       - id: commitizen
       - id: commitizen-branch
@@ -34,7 +34,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: "https://github.com/crate-ci/typos"
-    rev: typos-dict-v0.11.35
+    rev: v1.28.4
     hooks:
       - id: typos
 
@@ -56,3 +56,14 @@ repos:
         language: system
         types: [shell]
         exclude: "dotfiles/dot_zshrc|.*\\.zsh$"
+
+ci:
+  autofix_commit_msg: |
+    fix: auto fixes from pre-commit.com hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_commit_msg: "build: pre-commit autoupdate"
+  autoupdate_schedule: quarterly
+  skip: [stopwords, shellcheck]
+  submodules: false

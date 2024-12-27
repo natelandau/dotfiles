@@ -116,11 +116,11 @@
         [tool.ruff.lint.pylint]
             max-args = 6
 
-[tool.ruff.format]
-    indent-style              = "space"
-    line-ending               = "auto"
-    quote-style               = "double"
-    skip-magic-trailing-comma = false
+    [tool.ruff.format]
+        indent-style              = "space"
+        line-ending               = "auto"
+        quote-style               = "double"
+        skip-magic-trailing-comma = false
 
 [tool.poe.tasks]
     [tool.poe.tasks.upgrade]
