@@ -1,0 +1,55 @@
+# THEME SETTINGS
+theme = nord
+bold-is-bright = true
+cursor-style = block
+
+# FONT SETTINGS
+font-size = 16
+font-family = MesloLGMDZ Nerd Font Mono
+font-thicken = true
+font-feature = +liga
+
+# WINDOW SETTINGS
+window-height = 55
+window-width = 150
+window-padding-x = 2
+window-padding-y = 2
+window-padding-balance = false
+window-padding-color = background
+adjust-cell-height = -5%
+confirm-close-surface = false
+link-url = true
+macos-titlebar-style = tabs
+
+
+# CLIPBOARD INTEGRATIONS
+clipboard-read = allow
+clipboard-write = ask
+clipboard-trim-trailing-spaces = true
+clipboard-paste-protection = false
+
+cursor-click-to-move = true
+
+# SPLITS
+unfocused-split-opacity = 0.5
+
+
+#### KEYBINDINGS ####
+
+# QUICK TERMINAL
+keybind = global:opt+`=toggle_quick_terminal
+# terminal position options: top, left, right, bottom, center
+quick-terminal-position = top
+# Terminal screen options: mouse, main, macos-menu-bar
+quick-terminal-screen = main
+
+# WINDOW SPLITS
+keybind = ctrl+\=new_split:right
+keybind = ctrl+-=new_split:down
+keybind = ctrl+z=toggle_split_zoom
+keybind = ctrl+e=equalize_splits
+keybind = ctrl+h=goto_split:left
+keybind = ctrl+j=goto_split:bottom
+keybind = ctrl+k=goto_split:top
+keybind = ctrl+l=goto_split:right
+keybind = super+shift+enter=new_split:auto

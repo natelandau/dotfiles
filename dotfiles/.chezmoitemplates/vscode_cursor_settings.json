@@ -1,6 +1,7 @@
 {
     "[ansible]": {
-        "gitlens.codeLens.scopes": ["document"]
+        "gitlens.codeLens.scopes": ["document"],
+        "editor.detectIndentation": false
     },
     "[css]": {
         "editor.defaultFormatter": "HookyQR.beautify",
@@ -456,5 +457,8 @@
         "!Split sequence"
     ],
     "yaml.format.bracketSpacing": true,
+    "djlint.showInstallError": false,
+    "makefile.configureOnOpen": true,
+    "githubLocalActions.dockerDesktopPath": "/Applications/Docker.app",
     "yaml.format.printWidth": 200
 }

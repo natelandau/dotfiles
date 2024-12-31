@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+
+# https://gist.github.com/yhoiseth/c80c1e44a7036307e424fce616eed25e
+
+import subprocess
+import tomllib
+from pathlib import Path
+from re import Match, match
+from typing import Any
+
+pyproject_path = Path("pyproject.toml")
+
+
+def main() -> None:
+    """Upgrade Python packages using uv package manager.
+
+    Reads dependencies from pyproject.toml and reinstalls each package with latest version.
+    Handles both regular dependencies and dev dependencies, preserving any extras specified.
+    Useful for keeping project dependencies up to date while maintaining compatibility.
+
+    Returns:
+        None
+    """
+    with pyproject_path.open("rb") as file:
+        pyproject: dict[str, Any] = tomllib.load(file)
+
+    dependencies: list[str] = pyproject["project"]["dependencies"]
+    package_pattern = r"^([a-zA-Z0-9\-]+)(?:\[([\w,\s-]+)\])?"
+    for dependency in dependencies:
+        package_match = match(package_pattern, dependency)
+        if not isinstance(package_match, Match):
+            continue
+        package = package_match.group(1)
+        extra = package_match.group(2)
+
+        uv("remove", package)
+        uv("add", package, extra)
+
+    dev_dependencies: list[str] = pyproject["tool"]["uv"]["dev-dependencies"]
+    package_pattern = r"^([a-zA-Z0-9\-]+)(?:\[([\w,\s-]+)\])?"
+    for dependency in dev_dependencies:
+        package_match = match(package_pattern, dependency)
+        if not isinstance(package_match, Match):
+            continue
+        package = package_match.group(1)
+        extra = package_match.group(2)
+
+        uv("remove", package, dev=True)
+        uv("add", package, extra, dev=True)
+
+
+def uv(command: str, package: str, extra: str | None = None, dev: bool = False) -> None:
+    """Execute a uv package manager command for installing or removing packages.
+
+    Runs the uv package manager with the specified command (add/remove) and package.
+    Handles optional package extras and development dependencies.
+
+    Args:
+        command (str): The uv command to run ('add' or 'remove')
+        package (str): Name of the Python package to install/remove
+        extra (str | None): Optional package extras to include (e.g. 'test,docs')
+        dev (bool): Whether to install as a development dependency. Defaults to False.
+
+    Returns:
+        None
+    """
+    args = ["uv", command]
+    if dev:
+        args.append("--dev")
+
+    args.append(package)
+
+    if extra:
+        args.append("--extra")
+        args.append(extra)
+    subprocess.run(args, check=False)  # noqa: S603
+
+
+if __name__ == "__main__":
+    main()
