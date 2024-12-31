@@ -5,6 +5,7 @@
         Enabledi = "Enabledi" # Context: com.apple.metadata
         Froms    = "Froms"    # Context: export LESS_TERMCAP_us=
         Pn       = "Pn"
+        brwe     = "brwe"     # Context: used in aliases
         curren   = "curren"   # Context: '¤100'
         halp     = "halp"
         iterm    = "iterm"    # iTerm2
