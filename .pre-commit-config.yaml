@@ -34,7 +34,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: "https://github.com/crate-ci/typos"
-    rev: codespell-dict-v0.5.0
+    rev: dictgen-v0.3.1
     hooks:
       - id: typos
 
