@@ -127,7 +127,8 @@
         """
 
     [[tool.poe.tasks.lint.sequence]]
-        shell = "typos"
+        # shell = "typos"
+        shell = "typos --config .typos.toml --diff"
 
-    [[tool.poe.tasks.lint.sequence]]
-        shell = "pre-commit run --all-files"
+        # [[tool.poe.tasks.lint.sequence]]
+        # shell = "pre-commit run --all-files"

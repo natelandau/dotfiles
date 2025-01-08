@@ -48,6 +48,9 @@ if [ -f "$(brew --repository)/bin/src-hilite-lesspipe.sh" ]; then
     export LESS=' -R -z-4'
 fi
 
+# Prioritize ~/.local/bin over homebrew tools
+PATH="${HOME}/.local/bin:${PATH}"
+
 # Aliases
 
 alias brwe='brew'                   # Fix common typo
