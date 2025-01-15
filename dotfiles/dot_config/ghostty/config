@@ -4,10 +4,12 @@ bold-is-bright = true
 cursor-style = block
 
 # FONT SETTINGS
-font-size = 16
+font-size = 15
 font-family = MesloLGMDZ Nerd Font Mono
 font-thicken = true
 font-feature = +liga
+adjust-cell-width = -3%
+adjust-cell-height = -5%
 
 # WINDOW SETTINGS
 window-height = 55
@@ -16,7 +18,7 @@ window-padding-x = 2
 window-padding-y = 2
 window-padding-balance = false
 window-padding-color = background
-adjust-cell-height = -5%
+
 confirm-close-surface = false
 link-url = true
 macos-titlebar-style = tabs

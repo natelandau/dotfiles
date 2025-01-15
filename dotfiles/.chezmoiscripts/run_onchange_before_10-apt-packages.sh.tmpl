@@ -33,7 +33,11 @@ for package in "${packages[@]}"; do
         info "Package ${package} is already installed"
         continue
     fi
-    sudo apt-get install -y --no-upgrade $package
+    if apt-cache search --names-only '^${package}$' | grep '${package}' &>/dev/null; then
+        sudo apt-get install -y --no-upgrade ${package}
+    else
+        warning "Package ${package} is not available in apt"
+    fi
 done
 
 success "Apt packages installed"
