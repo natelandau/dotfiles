@@ -6,7 +6,10 @@ if [[ "$(command -v fzf)" ]] && [[ -n ${ZSH_NAME} ]]; then
         eval "$(fzf --zsh)"
     elif [ -f "/usr/share/doc/fzf/examples/key-bindings.zsh" ]; then
         source /usr/share/doc/fzf/examples/key-bindings.zsh
-        source /usr/share/doc/fzf/examples/completion.zsh
+
+        if [ -f "/usr/share/doc/fzf/examples/completion.zsh" ]; then
+            source /usr/share/doc/fzf/examples/completion.zsh
+        fi
     fi
 
 elif [[ "$(command -v fzf)" ]] && [[ -n ${BASH} ]]; then
