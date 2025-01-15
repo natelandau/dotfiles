@@ -43,12 +43,12 @@ debug "Skipping binary installation of {{ $binary.name }} for non personal compu
 
 {{ end }}
 
-if [[ ! $(command -v uv) ]] then
+if [[ ! $(command -v uv) ]]; then
     warning "Please install 'uv' to run the binary installation script."
     _safeExit_
 fi
 
-if [[ ! -e "${HOME}/bin/install-binary.py" ]] then
+if [[ ! -e "${HOME}/bin/install-binary.py" ]]; then
     warning "The binary installation script is missing. Rerun chezmoi to generate it."
     _safeExit_
 fi
