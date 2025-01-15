@@ -53,8 +53,9 @@ if [[ ! -e "${HOME}/bin/install-binary.py" ]]; then
     _safeExit_
 fi
 
-
-uv run -q ${HOME}/bin/install-binary.py --binary-name="{{ $binary.name }}" --repository="{{ $binary.repository }}" --version-regex="{{ $binary.version_regex }}" --remove-from-release="{{ $binary.remove_from_release }}" --executable-name="{{ $binary.executable_name }}" --description="{{ $binary.description }}"
+if ! uv run -q ${HOME}/bin/install-binary.py --binary-name="{{ $binary.name }}" --repository="{{ $binary.repository }}" --version-regex="{{ $binary.version_regex }}" --remove-from-release="{{ $binary.remove_from_release }}" --executable-name="{{ $binary.executable_name }}" --description="{{ $binary.description }}"; then
+    error "Could not install {{ $binary.name }}. Review error messages above."
+fi
 
 
 {{ end }}
