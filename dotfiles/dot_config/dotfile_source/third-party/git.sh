@@ -133,6 +133,106 @@ gnuke() {
     fi
 }
 
+# Creates a feature branch with date-indexed naming based on $USER.
+# Add this function to your .bashrc or .zshrc file for easy access in every terminal session.
+#
+# Example:
+# If $USER is "ckrauter" and today is 2024-11-08:
+# Running `fb` creates a branch like `feature/ckrauter/2024-11-08/1`.
+# Running `fb utils package` creates `feature/ckrauter/utils-package/2024-11-08/1`.
+
+feature_branch() {
+    # DESC:	Creates a feature branch with optional <name>
+    #       https://gist.github.com/coltenkrauter/3e6a2f71cc6e37b03f227b8c7a8f7825
+    # USAGE:  feature_branch <additional_path>
+    # Example:
+    #   If $USER is "nlandau" and today is 2024-11-08:
+    #   Running `fb -ud` creates a branch like `feature/nlandau/2024-11-08/1`.
+    #   Running `fb -ud utils package` creates `feature/nlandau/utils-package/2024-11-08/1`.
+
+    local opt
+    local OPTIND=1
+    local dry_run=false
+    local date_indexed=false
+    local username_indexed=false
+    local index=1
+    local new_branch
+    local main_branch="main"
+    local prefix="feature"
+    local today
+    local username
+    local additional_path
+    today=$(date +%Y-%m-%d)
+    username=$(echo "$USER" | tr '[:upper:]' '[:lower:]') # Convert $USER to lowercase
+
+    while getopts "hdun" opt; do
+        case "$opt" in
+            h)
+                \cat <<End-Of-Usage
+$ ${FUNCNAME[0]} [option] <name (optional)>
+
+Create a feature branch with optional <name>.
+
+Options:
+    -h  show this message and exit
+    -d  use date-indexed naming
+    -u  use username-indexed naming
+    -n  dry run: don't create the branch, just print the branch name
+End-Of-Usage
+                return
+                ;;
+            d)
+                date_indexed=true
+                ;;
+            u)
+                username_indexed=true
+                ;;
+            n)
+                dry_run=true
+                ;;
+            ?)
+                feature_branch -h >&2
+                return 1
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    additional_path=$(printf "%s" "$*" | tr '[:upper:]' '[:lower:]' | tr -c '[:alnum:]-' '-') # Convert arguments to hyphen-separated string
+
+    # Construct the branch path prefix with optional additional path
+    local branch_path="${prefix}"
+    if [[ ${username_indexed} == true ]]; then
+        branch_path="${branch_path}/${username}"
+    fi
+    [[ -n $additional_path ]] && branch_path="${branch_path}/${additional_path}"
+    if [[ ${date_indexed} == true ]]; then
+        branch_path="${branch_path}/${today}"
+    fi
+
+    # Switch to main branch and pull latest changes if not on main
+    if [[ ${dry_run} == false && "$(git branch --show-current)" != "$main_branch" ]]; then
+        echo "Switching to ${main_branch} and pulling latest changes..."
+        git checkout "${main_branch}"
+        git pull
+    fi
+
+    # Find the next available branch index
+    while git rev-parse --verify --quiet "${branch_path}/${index}"; do
+        index=$((index + 1))
+    done
+
+    # Create and switch to the new branch
+    new_branch="${branch_path}/${index}"
+    if [[ ${dry_run} == false ]]; then
+        echo "Creating and checking out ${new_branch}..."
+        git checkout -b "$new_branch"
+    else
+        echo "${new_branch}"
+    fi
+}
+alias fb="feature_branch" # Create a feature branch. Alias for feature_branch
+
 # From Git-Extras (https://github.com/tj/git-extras)
 alias obliterate='git obliterate'       # Completely remove a file from the repository, including past commits and tags
 alias release='git-release'             # Create release commit with the given <tag> and other options
