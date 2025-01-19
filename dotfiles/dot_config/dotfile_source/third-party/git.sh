@@ -141,6 +141,26 @@ gnuke() {
 # Running `fb` creates a branch like `feature/ckrauter/2024-11-08/1`.
 # Running `fb utils package` creates `feature/ckrauter/utils-package/2024-11-08/1`.
 
+purge_merged_branches() {
+    # DESC:	Purges merged branches no longer available on remote
+    if ! git rev-parse --show-toplevel 2>/dev/null; then
+        echo "Not in a git repository"
+        return 1
+    fi
+
+    local main_branch
+    main_branch=$(git remote show origin | grep 'HEAD branch' | awk '{print $3;}')
+    git fetch -p
+    git checkout "${main_branch}"
+    if command -v pull >/dev/null; then
+        pull
+    fi
+    for gone_branch in $(git branch -vv | grep ': gone]' | grep -v "\*" | awk '{ print $1; }'); do
+        git branch --delete --force "${gone_branch}"
+    done
+}
+alias pmb="purge_merged_branches" # Purge merged branches no longer available on remote
+
 feature_branch() {
     # DESC:	Creates a feature branch with optional <name>
     #       https://gist.github.com/coltenkrauter/3e6a2f71cc6e37b03f227b8c7a8f7825
