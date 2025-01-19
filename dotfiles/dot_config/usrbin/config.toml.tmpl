@@ -59,6 +59,6 @@ repo_dirs = [
     "{{ .xdgDataDir }}/zsh/plugins",
     {{- end }}
     {{- if joinPath .chezmoi.homeDir "repos" | lstat }}
-    "~/repos",
+    "{{ .directories.repos_dir | replaceAllRegex "\\${HOME}" "~"}}",
     {{- end }}
     ]

@@ -8,7 +8,7 @@ aus() {
     # Run the Ansible Update Server (AUS) playbook with options
     # USAGE: aus -l [host] -t [tag],[tag]
 
-    ANSIBLE_DIR="${HOME}/repos/ansible-update-server"
+    ANSIBLE_DIR="{{ .directories.repos_dir }}/ansible-update-server"
 
     if [ -d "${ANSIBLE_DIR}" ]; then
         pushd "${ANSIBLE_DIR}" &>/dev/null || return 1

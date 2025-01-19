@@ -5,21 +5,21 @@
 
 header "Creating SSH keys"
 
-if [ ! -d "${HOME}/.ssh_keys" ]; then
-    mkdir -p "${HOME}/.ssh_keys"
-    echo "[notice] Created directory: ${HOME}/.ssh_keys"
+if [ ! -d "{{ .directories.ssh_keys_dir }}" ]; then
+    mkdir -p "{{ .directories.ssh_keys_dir }}"
+    echo "[notice] Created directory: {{ .directories.ssh_keys_dir }}"
 fi
 
 {{ range .remote_servers -}}
 updated=false
-if [ ! -f "${HOME}/.ssh_keys/{{ .name }}" ]; then
-    echo "{{ range (onepassword .op_id).fields }}{{ if or (eq .label "privkey") (eq .label "private key") }}{{ .value }}{{ end }}{{ end }}" >"${HOME}/.ssh_keys/{{ .name }}"
-    chmod 600 "${HOME}/.ssh_keys/{{ .name }}"
+if [ ! -f "{{ $.directories.ssh_keys_dir }}/{{ .name }}" ]; then
+    echo "{{ range (onepassword .op_id).fields }}{{ if or (eq .label "privkey") (eq .label "private key") }}{{ .value }}{{ end }}{{ end }}" >"{{ $.directories.ssh_keys_dir }}/{{ .name }}"
+    chmod 600 "{{ $.directories.ssh_keys_dir }}/{{ .name }}"
     updated=true
 fi
-if [ ! -f "${HOME}/.ssh_keys/{{ .name }}.pub" ]; then
-    echo "{{ range (onepassword .op_id).fields }}{{ if or (eq .label "pubkey") (eq .label "public key") }}{{ .value }}{{ end }}{{ end }}" >"${HOME}/.ssh_keys/{{ .name }}.pub"
-    chmod 644 "${HOME}/.ssh_keys/{{ .name }}.pub"
+if [ ! -f "{{ $.directories.ssh_keys_dir }}/{{ .name }}.pub" ]; then
+    echo "{{ range (onepassword .op_id).fields }}{{ if or (eq .label "pubkey") (eq .label "public key") }}{{ .value }}{{ end }}{{ end }}" >"{{ $.directories.ssh_keys_dir }}/{{ .name }}.pub"
+    chmod 644 "{{ $.directories.ssh_keys_dir }}/{{ .name }}.pub"
     updated=true
 fi
 

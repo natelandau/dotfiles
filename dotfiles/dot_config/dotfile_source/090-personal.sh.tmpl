@@ -12,7 +12,7 @@ alias work='cd ${HOME}/work-docs'
 alias personal='cd ${HOME}/personal-files'
 {{- end }}
 
-alias repos='cd ${HOME}/repos'
+alias repos='cd {{ .directories.repos_dir }}'
 
 {{ if .use_secrets -}}
 # SSH Shortcuts

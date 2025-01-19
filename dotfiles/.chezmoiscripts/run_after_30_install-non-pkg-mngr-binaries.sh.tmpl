@@ -48,12 +48,12 @@ if [[ ! $(command -v uv) ]]; then
     _safeExit_
 fi
 
-if [[ ! -e "${HOME}/bin/install-binary.py" ]]; then
+if [[ ! -e "{{ .directories.user_bin_dir }}/install-binary.py" ]]; then
     warning "The binary installation script is missing. Rerun chezmoi to generate it."
     _safeExit_
 fi
 
-if ! uv run -q ${HOME}/bin/install-binary.py --binary-name="{{ $binary.name }}" --repository="{{ $binary.repository }}" --version-regex="{{ $binary.version_regex }}" --remove-from-release="{{ $binary.remove_from_release }}" --executable-name="{{ $binary.executable_name }}" --description="{{ $binary.description }}"; then
+if ! uv run -q {{ .directories.user_bin_dir }}/install-binary.py --binary-name="{{ $binary.name }}" --repository="{{ $binary.repository }}" --version-regex="{{ $binary.version_regex }}" --remove-from-release="{{ $binary.remove_from_release }}" --executable-name="{{ $binary.executable_name }}" --description="{{ $binary.description }}"; then
     error "Could not install {{ $binary.name }}. Review error messages above."
 fi
 

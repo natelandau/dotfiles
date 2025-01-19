@@ -18,7 +18,7 @@ Host {{ .name }}
     User {{ range (onepassword .op_id).fields }}{{ if eq .label "user" }}{{ .value }}{{ end }}{{ end }}
     Hostname {{ range (onepassword .op_id).fields }}{{ if eq .label "hostname" }}{{ .value }}{{ end }}{{ end }}
     Port {{ range (onepassword .op_id).fields }}{{ if eq .label "port" }}{{ .value }}{{ end }}{{ end }}
-    IdentityFile ~/.ssh_keys/{{ .name }}
+    IdentityFile {{ $.directories.ssh_keys_dir | replaceAllRegex "\\${HOME}" "~" }}/{{ .name }}
     IdentitiesOnly yes
 {{-         if .tailscale_ip}}
 
@@ -26,7 +26,7 @@ Host t{{ .name }}
     User {{ range (onepassword .op_id).fields }}{{ if eq .label "user" }}{{ .value }}{{ end }}{{ end }}
     Hostname {{ range (onepassword .op_id).fields }}{{ if eq .label "tailscale_ip" }}{{ .value }}{{ end }}{{ end }}
     Port {{ range (onepassword .op_id).fields }}{{ if eq .label "port" }}{{ .value }}{{ end }}{{ end }}
-    IdentityFile ~/.ssh_keys/{{ .name }}
+    IdentityFile {{ $.directories.ssh_keys_dir | replaceAllRegex "\\${HOME}" "~" }}/{{ .name }}
     IdentitiesOnly yes
 {{-         end }}
 {{-     end }}

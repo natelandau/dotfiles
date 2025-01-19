@@ -6,10 +6,12 @@
 # Grab the hash of the osx-defaults.sh script to run it when changed
 # osx-defaults.sh hash: {{ include "bin/executable_osx-defaults.sh.tmpl" | sha256sum }}
 
-osx_script=${HOME}/bin/osx-defaults.sh
+osx_script={{ .directories.user_bin_dir }}/osx-defaults.sh
 header "Running OS X defaults script"
 
-sudo "${osx_script}"
+if [ -f "${osx_script}" ]; then
+    sudo "${osx_script}"
+fi
 
 _safeExit_
 {{- end }}

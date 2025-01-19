@@ -35,7 +35,7 @@
     whitespace = fix
 
 [core]
-    sshCommand = ssh -i ~/.ssh_keys/git
+    sshCommand = ssh -i {{ .directories.ssh_keys_dir | replaceAllRegex "\\${HOME}" "~" }}/git
     pager = delta
 
     # Treat spaces before tabs and all kinds of trailing whitespace as an error

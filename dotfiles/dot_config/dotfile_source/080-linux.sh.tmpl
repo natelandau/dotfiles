@@ -2,7 +2,7 @@
 
 # Run startup scripts
 
-if [[ -f "${HOME}/bin/linux-startup.sh" ]]; then
+if [[ -f "{{ .directories.user_bin_dir }}/linux-startup.sh" ]]; then
     "${HOME}"/bin/linux-startup.sh
 fi
 

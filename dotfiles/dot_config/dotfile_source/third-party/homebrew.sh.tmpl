@@ -68,7 +68,7 @@ bup() {
             brewup $*
         fi
     elif command -v brew >/dev/null 2>&1; then
-        local brewScript="${HOME}/bin/updateHomebrew"
+        local brewScript="{{ .directories.user_bin_dir }}/updateHomebrew"
         if [ -e "${brewScript}" ]; then
             "${brewScript}" "$*"
         else

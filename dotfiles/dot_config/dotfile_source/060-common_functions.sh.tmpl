@@ -254,7 +254,7 @@ if ! command -v help &>/dev/null; then
         if [[ ${cmdtest} == "command" || ${cmdtest} == "file" ]]; then
             local location
             location=$(command -v "${cmd}")
-            local bindir="${HOME}/bin/${cmd}"
+            local bindir="{{ .directories.user_bin_dir }}/${cmd}"
             if [[ ${location} == "${bindir}" ]]; then
                 echo -e "${yellow}${cmd} is a custom script${reset}\n"
                 "${bindir}" -h

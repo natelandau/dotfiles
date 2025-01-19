@@ -3,7 +3,7 @@ _myPaths=(
     "${HOME}/.local/bin"
     "/usr/local/bin"
     "/opt/homebrew/bin"
-    "${HOME}/bin"
+    "{{ .directories.user_bin_dir }}"
     "{{ .xdgDataDir }}/cargo/bin"
     "/usr/bin/snap"
     "${HOME}/.atuin/bin"

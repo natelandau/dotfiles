@@ -6,15 +6,15 @@
 # Grab current setting
 if current=$(defaults read com.googlecode.iterm2 PrefsCustomFolder 2>/dev/null); then
 
-    if [[ ${current} != "${HOME}/.config/applications/iterm2" ]]; then
+    if [[ ${current} != "{{ .xdgConfigDir }}/applications/iterm2" ]]; then
 
         # Specify the preferences directory
-        defaults write com.googlecode.iterm2 PrefsCustomFolder -string "${HOME}/.config/applications/iterm2"
+        defaults write com.googlecode.iterm2 PrefsCustomFolder -string "{{ .xdgConfigDir }}/applications/iterm2"
 
         # Tell iTerm2 to use the custom preferences in the directory
         defaults write com.googlecode.iterm2 LoadPrefsFromCustomFolder -bool true
 
-        notice "Set shared iTerm2 preferences: ~/.config/applications/iterm2"
+        notice "Set shared iTerm2 preferences: {{ .xdgConfigDir }}/applications/iterm2"
         exit 0
     fi
 else
