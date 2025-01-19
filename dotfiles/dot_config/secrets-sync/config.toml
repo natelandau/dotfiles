@@ -1,0 +1,3 @@
+
+repos_dir   = "~/repos"
+secrets_dir = "~/repos/ansible-vault-secrets/secrets"

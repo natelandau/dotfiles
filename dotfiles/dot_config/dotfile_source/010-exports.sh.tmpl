@@ -6,6 +6,11 @@ export EDITOR="$(command -v code nano | head -n 1)"
 
 {{ if and (.use_secrets) (.dev_computer) -}}
 
+# Use secrets-sync password file for ansible-vault
+if [[ -f ${HOME}/.config/secrets-sync/.password_file ]]; then
+    export ANSIBLE_VAULT_PASSWORD_FILE=${HOME}/.config/secrets-sync/.password_file
+fi
+
 # Authenticate github cli (gh) with a personal access token
 # Commented out b/c gh copilot CLI doesn't work with a personal access token
 # export GH_TOKEN="{{ onepasswordRead .secrets.github_personal_access_token }}"
