@@ -36,7 +36,13 @@ def main() -> None:
         uv("remove", package)
         uv("add", package, extra)
 
-    dev_dependencies: list[str] = pyproject["tool"]["uv"]["dev-dependencies"]
+    if "uv" in pyproject["tool"] and "dev-dependencies" in pyproject["tool"]["uv"]:
+        dev_dependencies: list[str] = pyproject["tool"]["uv"]["dev-dependencies"]
+    elif "dev" in pyproject["dependency-groups"]:
+        dev_dependencies = pyproject["dependency-groups"]["dev"]
+    else:
+        dev_dependencies = []
+
     package_pattern = r"^([a-zA-Z0-9\-]+)(?:\[([\w,\s-]+)\])?"
     for dependency in dev_dependencies:
         package_match = match(package_pattern, dependency)
