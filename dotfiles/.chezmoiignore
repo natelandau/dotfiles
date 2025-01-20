@@ -48,6 +48,7 @@ Library
 
 {{ if not (lookPath "vidcleaner") }}
 .config/vidcleaner
+.config/vid-cleaner
 {{ end }}
 
 {{ if not (and .use_secrets .dev_computer) }}
