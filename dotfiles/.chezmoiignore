@@ -7,11 +7,49 @@ README.md
 
 {{ if ne .chezmoi.os "darwin" }}
 Library/Application Support
-.librewolf
-.vscode
 Library
+.config/applications
 {{ end }}
 
 {{ if ne .chezmoi.os "linux" }}
 
+{{ end }}
+
+# Directories based on rules
+# ##################################################
+
+{{ if not (and (eq .chezmoi.os "darwin") (.personal_computer)) }}
+.librewolf
+{{ end }}
+
+{{ if not (and .personal_computer (lookPath "jdfile")) }}
+.config/jdfile
+{{ end }}
+
+{{ if not (lookPath "ghostty") }}
+.config/ghostty
+{{ end }}
+
+{{ if not (and (.use_secrets) (lookPath "secrets-sync")) }}
+.config/secrets-sync
+{{ end }}
+
+{{ if not (or (lookPath "nd") (lookPath "brewup")) }}
+.config/usrbin
+{{ end }}
+
+{{ if not (lookPath "halp") }}
+.config/halp
+{{ end }}
+
+{{- if not (lookPath "npm") -}}
+.config/npm
+{{ end }}
+
+{{ if not (lookPath "vidcleaner") }}
+.config/vidcleaner
+{{ end }}
+
+{{ if not (and .use_secrets .dev_computer) }}
+.local/share/git_stopwords
 {{ end }}
