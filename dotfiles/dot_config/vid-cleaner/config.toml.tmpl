@@ -1,4 +1,4 @@
-{{- if or .personal_computer (lookPath "vidcleaner") -}}
+{{- if lookPath "vidcleaner" -}}
 
 # Whether to log to a file or not
 log_to_file = false

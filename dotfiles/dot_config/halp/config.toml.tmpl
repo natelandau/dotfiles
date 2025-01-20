@@ -1,3 +1,5 @@
+{{- if lookPath "halp" -}}
+
 # Default TOML configuration file
 
 ### General Configuration
@@ -94,12 +96,12 @@ uncategorized_name = "uncategorized"
         path_regex         = ''
 
     [categories.python]
-        code_regex         = '(\s|^)(pyenv|poetry|pipx?)(\s|$)|.*\.py(\s|$)'
+        code_regex         = '(\s|^)(pyenv|poetry|uv|pipx?)(\s|$)|.*\.py(\s|$)'
         command_name_regex = ''
-        comment_regex      = '(\s|^)python|poetry|pipx?(\s|$)'
+        comment_regex      = '(\s|^)python|poetry|uv|pipx?(\s|$)'
         description        = "Python commands"
         name               = "python"
-        path_regex         = 'pipx?|pyenv|poetry|python'
+        path_regex         = 'pipx?|pyenv|poetry|python|uv'
 
     [categories.dev]
         code_regex         = '(\s|^|\))(npm|grunt|shfmt|ruby|jekyll|aws|mongo|mariadb|mysql|apache|nginx)(\s|$)'
@@ -108,3 +110,5 @@ uncategorized_name = "uncategorized"
         description        = "Development tools"
         name               = "development"
         path_regex         = ''
+
+{{- end }}

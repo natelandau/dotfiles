@@ -22,10 +22,13 @@ repos:
       - id: check-byte-order-marker
       - id: check-case-conflict
       - id: check-json
+        exclude: ".tmpl$|^dotfiles/.chezmoitemplates/"
       - id: check-merge-conflict
       - id: check-symlinks
       - id: check-xml
+        exclude: ".tmpl$|^dotfiles/.chezmoitemplates/"
       - id: check-yaml
+        exclude: ".tmpl$|^dotfiles/.chezmoitemplates/"
       - id: destroyed-symlinks
       - id: detect-private-key
       - id: end-of-file-fixer

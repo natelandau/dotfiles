@@ -18,3 +18,4 @@
 /.sed/stopwords.sed
 /.zsh_history
 /.yamllint.yml
+/.git_stop_words

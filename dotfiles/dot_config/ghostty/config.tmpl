@@ -1,3 +1,5 @@
+{{- if lookPath "ghostty" -}}
+
 # THEME SETTINGS
 theme = nord
 bold-is-bright = true
@@ -55,3 +57,5 @@ keybind = ctrl+j=goto_split:bottom
 keybind = ctrl+k=goto_split:top
 keybind = ctrl+l=goto_split:right
 keybind = super+shift+enter=new_split:auto
+
+{{- end }}

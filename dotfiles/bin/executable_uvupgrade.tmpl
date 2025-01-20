@@ -1,3 +1,5 @@
+{{- if and (lookPath "uv") (.dev_computer) -}}
+
 #!/usr/bin/env python3
 
 # https://gist.github.com/yhoiseth/c80c1e44a7036307e424fce616eed25e
@@ -84,3 +86,5 @@ def uv(command: str, package: str, extra: str | None = None, dev: bool = False) 
 
 if __name__ == "__main__":
     main()
+
+{{- end }}
