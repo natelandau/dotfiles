@@ -1,4 +1,4 @@
-{{- if or .personal_computer (lookPath "jdfile") -}}
+{{- if and .personal_computer (lookPath "jdfile") -}}
 clean_filenames    = true
 date_format        = "%Y-%m-%d"
 format_dates       = true

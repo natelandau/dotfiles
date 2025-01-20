@@ -1,3 +1,5 @@
+{{- if or (lookPath "nd") (lookPath "brewup") -}}
+
 # Configuration for usrbin scripts.
 
 [dcp]
@@ -62,3 +64,5 @@ repo_dirs = [
     "{{ .directories.repos_dir | replaceAllRegex "\\${HOME}" "~"}}",
     {{- end }}
     ]
+
+{{- end }}

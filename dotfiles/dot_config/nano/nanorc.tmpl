@@ -1,3 +1,5 @@
+{{- if or (and (eq .chezmoi.os "linux") (eq .chezmoi.osRelease.id "debian") (gt .chezmoi.osRelease.versionID "11" )) (eq .chezmoi.os "darwin") -}}
+
 # enables the minibar feature
 set minibar
 
@@ -9,3 +11,5 @@ set titlecolor normal,normal
 
 # Include syntax highlighters (add more from {{ .xdgDataDir }}/nano)
 include {{ .xdgDataDir }}/nano/*.nanorc
+
+{{- end }}

@@ -1,3 +1,6 @@
+{{- if and (.use_secrets) (lookPath "secrets-sync") -}}
 
 repos_dir   = "{{ .directories.repos_dir | replaceAllRegex "\\${HOME}" "~" }}"
 secrets_dir = "{{ .directories.repos_dir | replaceAllRegex "\\${HOME}" "~" }}/ansible-vault-secrets/secrets"
+
+{{- end }}

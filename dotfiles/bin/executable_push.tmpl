@@ -1,0 +1,88 @@
+#!/bin/bash
+# shellcheck disable=SC2086,SC2063,SC2048,SC2076
+#
+# Usage: push
+#
+# Send your local branch changes to the remote branch,
+# and copy the relevant GitHub 'compare' URL to your clipboard (Mac/Linux only)
+#
+# Any extra args to this command will be passed through to 'git push',
+# e.g. for doing "push -f"
+#
+# Taken wholecloth from https://github.com/git-friendly/git-friendly
+
+# Abort if this isn't a git repository
+git rev-parse --is-inside-work-tree >/dev/null || exit $?
+
+# Get parent branch
+# https://stackoverflow.com/a/17843908/1973105
+function get_parent() {
+    git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'
+}
+
+# Colors
+color_error="$(tput sgr 0 1)$(tput setaf 1)"
+color_reset="$(tput sgr0)"
+
+# TODO DRY this b/w pull and push
+branch=$(git branch --no-color 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/') || exit $?
+default_remote="origin"
+remote=$(git config "branch.${branch}.remote" || echo "$default_remote")
+remote_branch=$( (git config "branch.${branch}.merge" || echo "refs/heads/$branch") | cut -d/ -f3-)
+
+# Push & save output
+if [ -z $* ]; then
+    args="$remote $remote_branch"
+else
+    args="$*"
+fi
+push=$(git push --set-upstream $args 2>&1)
+exit_code=$?
+
+if [ $exit_code != 0 ]; then
+    echo -e "${color_error}Ouch, push failed!${color_reset}\n\n$push"
+    exit $exit_code
+elif echo $push | grep "Everything up-to-date" >/dev/null; then
+    echo "✌️  Git says everything is up-to-date!"
+    exit 0
+fi
+
+# Parse relevant commit refs and let user know what we did
+# 1st-time push to new branch gets special treatment
+if echo $push | grep "\[new branch\]" >/dev/null; then
+    parent=$(get_parent)
+    if [ -z "$parent" ]; then
+        parent="main"
+    fi
+    refs="$parent...$branch"
+    echo "🚀  Pushed a new branch '$branch' remotely"
+else
+    refs=$(echo $push | awk '{ print $3}' | sed 's/\.\./\.\.\./')
+    echo "🚀  Pushed:"
+    echo "$push"
+fi
+
+# Parse output into a GitHub compare URL
+remote_url=$(git remote show $remote -n | grep Push | awk '{ print $3 }')
+
+if [[ $remote_url =~ "github.com" ]]; then
+
+    if [[ ${remote_url:0:4} == "git@" ]]; then
+        regEx='s/.*\:\(.*\)\.git/\1/'
+        url='https://github.com/'
+    else
+        regEx='s/\(.*\)\.git/\1/'
+    fi
+
+    repo_name=$(echo $remote_url | sed $regEx)
+    github_url="$url$repo_name/compare/$refs"
+    if [ "$GIT_FRIENDLY_NO_COPY_URL_AFTER_PUSH" != "true" ]; then
+        copied="\nCompare URL copied to clipboard:"
+        which pbcopy >&/dev/null && echo $github_url | pbcopy && echo -e "$copied"
+        which xclip >&/dev/null && echo $github_url | xclip -selection clipboard && echo -e "$copied"
+    fi
+
+    echo $github_url
+fi
+
+exit 0

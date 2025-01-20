@@ -1,3 +1,4 @@
+{{- if and (eq .chezmoi.os "darwin") (.personal_computer) }}
 //---------------|
 //   LibreWolf   |
 //---------------|
@@ -46,3 +47,5 @@ defaultPref("javascript.options.wasm", false); // disable web assembly
 //defaultPref("privacy.resistFingerprinting.letterboxing", true); // enable letterboxing
 defaultPref("dom.event.clipboardevents.enabled", false); // disable user triggered clipboard access
 defaultPref("browser.download.useDownloadDir", false); // enforce user input on any download
+
+{{- end }}

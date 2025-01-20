@@ -133,13 +133,11 @@ gnuke() {
     fi
 }
 
-# Creates a feature branch with date-indexed naming based on $USER.
-# Add this function to your .bashrc or .zshrc file for easy access in every terminal session.
-#
-# Example:
-# If $USER is "ckrauter" and today is 2024-11-08:
-# Running `fb` creates a branch like `feature/ckrauter/2024-11-08/1`.
-# Running `fb utils package` creates `feature/ckrauter/utils-package/2024-11-08/1`.
+git_churn() {
+    # Prints the most edited files in the current repository
+    echo "=== Most edited files in this repository ==="
+    git --no-pager log --all --find-renames --find-copies --name-only --format='format:' "$@" | grep -v '^$' | sort | uniq -c | sort -nr | head
+}
 
 purge_merged_branches() {
     # DESC:	Purges merged branches no longer available on remote
