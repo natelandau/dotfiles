@@ -8,6 +8,7 @@ alias showdot='defaults write com.apple.finder AppleShowAllFiles TRUE'  # show d
 alias hidedot='defaults write com.apple.finder AppleShowAllFiles FALSE' # hide dot files in Finder
 alias spot-off="sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist"
 alias spot-on="sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist"
+alias fixmounts="sudo automount -vcu" # Re-mount all shared drives
 
 # If the 'mds' process is eating tons of memory it is likely getting hung on a file. This will tell you which file that is.
 alias spot-file="lsof -c '/mds$/'"

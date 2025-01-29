@@ -35,6 +35,7 @@
     whitespace = fix
 
 [core]
+    excludesfile = {{ .xdgConfigDir }}/git/gitignore
     sshCommand = ssh -i {{ .directories.ssh_keys_dir | replaceAllRegex "\\${HOME}" "~" }}/git
     pager = delta
 

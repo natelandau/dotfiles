@@ -462,6 +462,7 @@
     "djlint.showInstallError": false,
     "makefile.configureOnOpen": true,
     "githubLocalActions.dockerDesktopPath": "/Applications/Docker.app",
-    "yaml.format.printWidth": 200
+    "yaml.format.printWidth": 200,
+    "Devdb.colorTheme": "dark"
 }
 {{- end }}

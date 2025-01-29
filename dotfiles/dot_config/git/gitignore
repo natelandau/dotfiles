@@ -1,0 +1,36 @@
+# Ignore unnecessary cruft from OS
+.DS_Store
+.Trash-*
+.AppleDouble
+.LSOverride
+Thumbs.db
+Thumbs.db:encryptable
+
+# Ignore syncthing caches
+.stversions
+
+# Ignore a file by renaming it with ignore its name
+*.ignore
+ignore.*
+*.ignore.*
+
+# Ignore backup files
+*.bak
+*.gho
+*.ori
+*.orig
+*.tmp
+
+# Ignore redis binary dump (dump.rdb) files
+*.rdb
+
+# Python
+.env
+.venv
+env/
+venv/
+env.bak/
+venv.bak/
+*_cache/
+__pycache__/
+*.py[cdo]

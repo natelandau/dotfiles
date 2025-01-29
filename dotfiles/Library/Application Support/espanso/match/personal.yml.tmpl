@@ -29,8 +29,14 @@ matches:
   - trigger: ".email"
     replace: "{{ onepasswordRead .secrets.email_address }}"
 
-  - trigger: ".cal"
+  - trigger: ".cal0"
     replace: "{{ onepasswordRead .secrets.calendly_address }}"
+
+  - trigger: ".cal3"
+    replace: "{{ onepasswordRead .secrets.calendly_address }}/30min"
+
+  - trigger: ".cal6"
+    replace: "{{ onepasswordRead .secrets.calendly_address }}/60min"
 
   - trigger: ".zoom"
     replace: "{{ onepasswordRead .secrets.zoom_address }}"
