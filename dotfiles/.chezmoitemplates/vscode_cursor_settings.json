@@ -1,9 +1,8 @@
 {{- if or (lookPath "cursor") (lookPath "code") (lookPath "code-insiders") -}}
-
 {
     "[ansible]": {
-        "gitlens.codeLens.scopes": ["document"],
-        "editor.detectIndentation": false
+        "editor.detectIndentation": false,
+        "gitlens.codeLens.scopes": ["document"]
     },
     "[css]": {
         "editor.defaultFormatter": "HookyQR.beautify",
@@ -70,8 +69,10 @@
     "cursor.general.enableShadowWorkspace": true,
     "debug.hideActionBar": false,
     "debug.inlineValues": true,
+    "Devdb.colorTheme": "dark",
     "diffEditor.ignoreTrimWhitespace": false,
     "djlint.configuration": "pyproject.toml",
+    "djlint.showInstallError": false,
     "editor.acceptSuggestionOnEnter": "off",
     "editor.accessibilitySupport": "off",
     "editor.bracketPairColorization.enabled": true,
@@ -184,7 +185,6 @@
     "git.confirmSync": false,
     "git.fetchOnPull": true,
     "git.openRepositoryInParentFolders": "never",
-    "githubPullRequests.pullBranch": "never",
     "github.copilot.advanced": {},
     "github.copilot.editor.enableAutoCompletions": true,
     "github.copilot.enable": {
@@ -194,6 +194,8 @@
         "plaintext": false,
         "scminput": false
     },
+    "githubLocalActions.dockerDesktopPath": "/Applications/Docker.app",
+    "githubPullRequests.pullBranch": "never",
     "gitlens.advanced.messages": {
         "suppressCommitHasNoPreviousCommitWarning": false,
         "suppressCommitNotFoundWarning": false,
@@ -218,6 +220,7 @@
     "indentRainbow.includedLanguages": [],
     "indentRainbow.indicatorStyle": "light",
     "isort.args": ["--profile black"],
+    "makefile.configureOnOpen": true,
     "markdown-table-formatter.markdownGrammarScopes": ["markdown", "yaml"],
     "markdown.extension.tableFormatter.normalizeIndentation": true,
     "markdown.extension.toc.levels": "1..2",
@@ -230,6 +233,7 @@
     "mdb.showMongoDBHelpExplorer": false,
     "mdb.showMongoDBPlaygrounds": false,
     "mypy-type-checker.args": ["--config-file=${workspaceFolder}/pyproject.toml"],
+    "mypy-type-checker.ignorePatterns": ["${workspaceFolder}/tests/**/*.py"],
     "mypy-type-checker.importStrategy": "fromEnvironment",
     "npm.exclude": "",
     "prettier.bracketSameLine": true,
@@ -459,10 +463,6 @@
         "!Split sequence"
     ],
     "yaml.format.bracketSpacing": true,
-    "djlint.showInstallError": false,
-    "makefile.configureOnOpen": true,
-    "githubLocalActions.dockerDesktopPath": "/Applications/Docker.app",
-    "yaml.format.printWidth": 200,
-    "Devdb.colorTheme": "dark"
+    "yaml.format.printWidth": 200
 }
 {{- end }}

@@ -1,4 +1,5 @@
-{{- if lookPath "ghostty" -}}
+# Configuration for Ghostty
+# https://ghostty.org/docs/config/reference
 
 # THEME SETTINGS
 theme = nord
@@ -16,36 +17,39 @@ adjust-cell-height = -5%
 # WINDOW SETTINGS
 window-height = 55
 window-width = 150
-window-padding-x = 2
-window-padding-y = 2
+window-padding-x = 12
+window-padding-y = 10
 window-padding-balance = false
-window-padding-color = background
+window-padding-color = extend
+window-inherit-working-directory = false
 
+# CLIPBOARD INTEGRATIONS
+clipboard-read = allow
+clipboard-write = allow
+clipboard-trim-trailing-spaces = true
+clipboard-paste-protection = false
+
+# SPLITS
+unfocused-split-opacity = 0.5
+
+# QUICK TERMINAL
+quick-terminal-position = top
+quick-terminal-screen = main
+
+# OTHER
+cursor-click-to-move = true
 confirm-close-surface = false
 link-url = true
 macos-titlebar-style = tabs
 
 
-# CLIPBOARD INTEGRATIONS
-clipboard-read = allow
-clipboard-write = ask
-clipboard-trim-trailing-spaces = true
-clipboard-paste-protection = false
-
-cursor-click-to-move = true
-
-# SPLITS
-unfocused-split-opacity = 0.5
+# SHELL INTEGRATION
+shell-integration-features = true
 
 
-#### KEYBINDINGS ####
-
-# QUICK TERMINAL
+# ### KEYBINDINGS ####
+# ####################
 keybind = global:opt+`=toggle_quick_terminal
-# terminal position options: top, left, right, bottom, center
-quick-terminal-position = top
-# Terminal screen options: mouse, main, macos-menu-bar
-quick-terminal-screen = main
 
 # WINDOW SPLITS
 keybind = ctrl+\=new_split:right
@@ -57,5 +61,3 @@ keybind = ctrl+j=goto_split:bottom
 keybind = ctrl+k=goto_split:top
 keybind = ctrl+l=goto_split:right
 keybind = super+shift+enter=new_split:auto
-
-{{- end }}
