@@ -10,12 +10,16 @@ aus() {
 
     ANSIBLE_DIR="{{ .directories.repos_dir }}/ansible-update-server"
 
-    if [ -d "${ANSIBLE_DIR}" ]; then
-        pushd "${ANSIBLE_DIR}" &>/dev/null || return 1
-        uv run ansible-playbook main.yml "${@}"
-        popd &>/dev/null || return 1
+    if [[ "$($PWD)" != "${ANSIBLE_DIR}" ]]; then
+        if [ -d "${ANSIBLE_DIR}" ]; then
+            pushd "${ANSIBLE_DIR}" &>/dev/null || return 1
+            uv run ansible-playbook main.yml "${@}"
+            popd &>/dev/null || return 1
+        else
+            echo "Can not find ${ANSIBLE_DIR}"
+            return 1
+        fi
     else
-        echo "Can not find ${ANSIBLE_DIR}"
-        return 1
+        uv run ansible-playbook main.yml "${@}"
     fi
 }

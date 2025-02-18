@@ -233,7 +233,7 @@
     "mdb.showMongoDBHelpExplorer": false,
     "mdb.showMongoDBPlaygrounds": false,
     "mypy-type-checker.args": ["--config-file=${workspaceFolder}/pyproject.toml"],
-    "mypy-type-checker.ignorePatterns": ["${workspaceFolder}/tests/**/*.py"],
+    "mypy-type-checker.ignorePatterns": ["${workspaceFolder}/tests/**/*.py", "${workspaceFolder}/duties.py"],
     "mypy-type-checker.importStrategy": "fromEnvironment",
     "npm.exclude": "",
     "prettier.bracketSameLine": true,

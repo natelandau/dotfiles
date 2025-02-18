@@ -1,14 +1,21 @@
 {{- if and (lookPath "uv") (.dev_computer) -}}
-
 #!/usr/bin/env python3
 
-# https://gist.github.com/yhoiseth/c80c1e44a7036307e424fce616eed25e
+# Upgrade Python package dependencies using uv package manager.
+#
+# Reads dependencies from pyproject.toml and upgrades each package to its latest version
+# while preserving any extras. Handles both regular dependencies and dev dependencies.
+# Uses uv to remove and reinstall packages with latest versions.
+#
+# Inspired by: https://gist.github.com/yhoiseth/c80c1e44a7036307e424fce616eed25e
+
 
 import subprocess
-import tomllib
 from pathlib import Path
 from re import Match, match
 from typing import Any
+
+import tomllib
 
 pyproject_path = Path("pyproject.toml")
 
@@ -19,9 +26,6 @@ def main() -> None:
     Reads dependencies from pyproject.toml and reinstalls each package with latest version.
     Handles both regular dependencies and dev dependencies, preserving any extras specified.
     Useful for keeping project dependencies up to date while maintaining compatibility.
-
-    Returns:
-        None
     """
     with pyproject_path.open("rb") as file:
         pyproject: dict[str, Any] = tomllib.load(file)
@@ -38,9 +42,9 @@ def main() -> None:
         uv("remove", package)
         uv("add", package, extra)
 
-    if "uv" in pyproject["tool"] and "dev-dependencies" in pyproject["tool"]["uv"]:
+    if pyproject.get("tool", {}).get("uv", {}).get("dev-dependencies"):
         dev_dependencies: list[str] = pyproject["tool"]["uv"]["dev-dependencies"]
-    elif "dev" in pyproject["dependency-groups"]:
+    elif pyproject.get("dependency-groups", {}).get("dev"):
         dev_dependencies = pyproject["dependency-groups"]["dev"]
     else:
         dev_dependencies = []
@@ -68,9 +72,6 @@ def uv(command: str, package: str, extra: str | None = None, dev: bool = False) 
         package (str): Name of the Python package to install/remove
         extra (str | None): Optional package extras to include (e.g. 'test,docs')
         dev (bool): Whether to install as a development dependency. Defaults to False.
-
-    Returns:
-        None
     """
     args = ["uv", command]
     if dev:
@@ -79,8 +80,7 @@ def uv(command: str, package: str, extra: str | None = None, dev: bool = False) 
     args.append(package)
 
     if extra:
-        args.append("--extra")
-        args.append(extra)
+        args.extend(("--extra", extra))
     subprocess.run(args, check=False)  # noqa: S603
 
 
