@@ -6,6 +6,11 @@ export EDITOR="$(command -v code nano | head -n 1)"
 
 {{ if and (.use_secrets) (.dev_computer) -}}
 
+# Configure gitleaks to use a custom config file
+if [[ -f ${HOME}/.local/share/git_stopwords/gitleaks.toml ]]; then
+    export GITLEAKS_CONFIG=${HOME}/.local/share/git_stopwords/gitleaks.toml
+fi
+
 # Use secrets-sync password file for ansible-vault
 if [[ -f {{ .xdgConfigDir }}/secrets-sync/.password_file ]]; then
     export ANSIBLE_VAULT_PASSWORD_FILE={{ .xdgConfigDir }}/secrets-sync/.password_file

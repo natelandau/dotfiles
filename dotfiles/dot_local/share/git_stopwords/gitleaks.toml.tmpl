@@ -1,0 +1,19 @@
+{{- if and .use_secrets .dev_computer }}
+# https://github.com/gitleaks/gitleaks
+
+title = "Custom Gitleaks configuration"
+
+[extend]
+    disabledRules = []
+    useDefault    = true
+
+[[rules]]
+    description = "My Passwords"
+    id          = "my-passwords"
+    regex       = '''(?i)({{ onepasswordRead .secrets.gitleaks_password_regex }})(?:['|\"|\n|\r|\s|\x60]|$)'''
+
+[[rules]]
+    description = "My PII"
+    id          = "my-pii"
+    regex       = '''(?i)({{ onepasswordRead .secrets.gitleaks_pii_regex }})(?:['|\"|\n|\r|\s|\x60]|$)'''
+{{- end }}
