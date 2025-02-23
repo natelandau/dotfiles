@@ -54,15 +54,4 @@
     # List of casks to unquarantine after updating
     no_quarantine = ["librewolf"]
 
-[autopull]
-
-repo_dirs = [
-    {{- if joinPath .xdgDataDir "zsh" "plugins" | lstat }}
-    "{{ .xdgDataDir }}/zsh/plugins",
-    {{- end }}
-    {{- if joinPath .chezmoi.homeDir "repos" | lstat }}
-    "{{ .directories.repos_dir | replaceAllRegex "\\${HOME}" "~"}}",
-    {{- end }}
-    ]
-
 {{- end }}

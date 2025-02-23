@@ -1,0 +1,12 @@
+{{- if (lookPath "autopull") -}}
+# Paths to directories containing git repositories to autopull
+repo_dirs = [
+    {{- if joinPath .xdgDataDir "zsh" "plugins" | lstat }}
+    "{{ .xdgDataDir }}/zsh/plugins",
+    {{- end }}
+    {{- if joinPath .chezmoi.homeDir "repos" | lstat }}
+    "{{ .directories.repos_dir | replaceAllRegex "\\${HOME}" "~"}}",
+    {{- end }}
+    ]
+
+{{- end }}

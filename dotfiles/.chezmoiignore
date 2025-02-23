@@ -34,7 +34,7 @@ Library
 .config/secrets-sync
 {{ end }}
 
-{{ if not (or (lookPath "nd") (lookPath "brewup")) }}
+{{ if not (or (lookPath "dcp") (lookPath "autopull") (lookPath "nd") (lookPath "brewup")) }}
 .config/usrbin
 {{ end }}
 

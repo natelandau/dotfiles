@@ -40,7 +40,11 @@ def main() -> None:
         extra = package_match.group(2)
 
         uv("remove", package)
-        uv("add", package, extra)
+
+        if package == "script-utilities":
+            uv("add", "git+{{- onepasswordRead .secrets.gitea_address }}/natelandau/script-utilities", extra)
+        else:
+            uv("add", package, extra)
 
     if pyproject.get("tool", {}).get("uv", {}).get("dev-dependencies"):
         dev_dependencies: list[str] = pyproject["tool"]["uv"]["dev-dependencies"]

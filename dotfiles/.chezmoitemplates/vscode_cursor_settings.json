@@ -59,9 +59,10 @@
         "coverage.xml",
         "jacoco.xml",
         "coverage.cobertura.xml",
-        "reports/coverage.xml"
+        "reports/coverage.xml",
+        ".reports/coverage.xml"
     ],
-    "coverage-gutters.coverageReportFileName": "reports/coverage.xml",
+    "coverage-gutters.coverageReportFileName": ".reports/coverage.xml",
     "coverage-gutters.showGutterCoverage": false,
     "coverage-gutters.showLineCoverage": true,
     "coverage-gutters.showRulerCoverage": true,
@@ -179,7 +180,9 @@
         "**/.git/objects/**": true,
         "**/.git/subtree-cache/**": true,
         "**/node_modules/**": true,
-        "**/test/test_helper/**": true
+        "**/.venv*/**": true,
+        "**/.venvs*/**": true,
+        "**/venv*/**": true
     },
     "git.autofetch": true,
     "git.confirmSync": false,
@@ -233,7 +236,11 @@
     "mdb.showMongoDBHelpExplorer": false,
     "mdb.showMongoDBPlaygrounds": false,
     "mypy-type-checker.args": ["--config-file=${workspaceFolder}/pyproject.toml"],
-    "mypy-type-checker.ignorePatterns": ["${workspaceFolder}/tests/**/*.py", "${workspaceFolder}/duties.py"],
+    "mypy-type-checker.ignorePatterns": [
+        "${workspaceFolder}/tests/**/*.py",
+        "${workspaceFolder}/duties.py",
+        "${workspaceFolder}/tests/*.py"
+    ],
     "mypy-type-checker.importStrategy": "fromEnvironment",
     "npm.exclude": "",
     "prettier.bracketSameLine": true,
@@ -465,4 +472,5 @@
     "yaml.format.bracketSpacing": true,
     "yaml.format.printWidth": 200
 }
+
 {{- end }}
