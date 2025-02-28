@@ -1,0 +1,11 @@
+{{- if (lookPath "dcp") -}}
+
+# List of directories to search for compose files.
+
+{{- if joinPath .chezmoi.homeDir "homelab" "docker_compose" | lstat }}
+compose_dir_paths = ["{{ .chezmoi.homeDir }}/homelab/docker_compose"]
+{{- else }}
+compose_dir_paths = []
+{{- end }}
+
+{{- end }}

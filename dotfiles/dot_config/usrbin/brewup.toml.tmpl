@@ -1,0 +1,30 @@
+{{- if (lookPath "brewup") -}}
+# Target location for Applications, mimics --appdir.
+# app_dir = ""
+
+# List of packages to exclude from updates
+exclude_updades = [
+    "1password",
+    "arq",
+    "discord",
+    "docker",
+    "docker-compose",
+    "fmail2",
+    "fork",
+    "mongodb-compass",
+    "raycast",
+    "syncthing",
+    "visual-studio-code",
+    "zoom",
+]
+
+# Full path to `brew` if not in $PATH
+# homebrew_command = ""
+
+# List of casks to open after updating
+reopen = ["iterm2", "raycast", "slack", "syncthing"]
+
+# List of casks to unquarantine after updating
+unquarantine = ["librewolf"]
+
+{{- end }}
