@@ -2,15 +2,16 @@
     default.locale = "en_us"
 
     [default.extend-words]
-        Enabledi = "Enabledi" # Context: com.apple.metadata
-        Froms    = "Froms"    # Context: export LESS_TERMCAP_us=
+        Enabledi = "Enabledi" # com.apple.metadata
+        Froms    = "Froms"    # export LESS_TERMCAP_us=
         Pn       = "Pn"
-        brwe     = "brwe"     # Context: used in aliases
-        curren   = "curren"   # Context: '¤100'
+        brwe     = "brwe"     # used in aliases
+        curren   = "curren"   # '¤100'
         halp     = "halp"
         iterm    = "iterm"    # iTerm2
+        kend     = "kend"     #
         nd       = "nd"
-        ue       = "ue"       # Context: com.apple.metadata
+        ue       = "ue"       # com.apple.metadata
 
 [files]
     extend-exclude = [
