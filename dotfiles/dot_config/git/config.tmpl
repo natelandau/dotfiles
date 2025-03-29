@@ -34,6 +34,12 @@
 [apply]
     whitespace = fix
 
+[branch]
+    sort = -committerdate
+
+[column]
+    ui = auto
+
 [core]
     excludesfile = {{ .xdgConfigDir }}/git/gitignore
     sshCommand = ssh -i {{ .directories.ssh_keys_dir | replaceAllRegex "\\${HOME}" "~" }}/git
@@ -105,11 +111,19 @@
   name = Nathaniel Landau
   email = {{ .email }}
 
+[fetch]
+    prune = true
+    pruneTags = true
+    all = true
+
 [github]
    user = {{ .github_user }}
 
 [interactive]
     diffFilter = delta --color-only
+
+[init]
+    defaultBranch = main
 
 [delta]
     features = side-by-side line-numbers decorations
@@ -161,8 +175,9 @@
     rebase = true
 
 [push]
-    default = current # Always push the local branch to a remote branch with the same name
+    default = simple
     followTags = true
+    autoSetupRemote = true
 
 [pager]
     status = true
@@ -171,6 +186,10 @@
 [rebase]
     autosquash = true
     autostash = true
+    updateRefs = true
+
+[tag]
+    sort = version:refname
 
 [filter "lfs"]
     required = true

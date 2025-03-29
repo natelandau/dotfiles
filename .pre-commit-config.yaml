@@ -37,28 +37,25 @@ repos:
       - id: trailing-whitespace
 
   - repo: "https://github.com/gitleaks/gitleaks"
-    rev: v8.24.0
+    rev: v8.24.2
     hooks:
       - id: gitleaks
 
+  - repo: "https://github.com/crate-ci/committed"
+    rev: v1.1.7
+    hooks:
+      - id: committed
+        stages: [commit-msg]
+
   - repo: "https://github.com/crate-ci/typos"
-    rev: dictgen-v0.3.1
+    rev: v1.30.2
     hooks:
       - id: typos
         args: ["--force-exclude"]
+        stages: [commit-msg, pre-commit]
 
   - repo: local
     hooks:
-      # This calls a custom pre-commit script.
-      # Disable if you don't have it.
-      - id: stopwords
-        name: stopwords
-        entry: git-stopwords
-        # args: ["-v"]
-        language: system
-        pass_filenames: true
-        types: [text]
-
       - id: shellcheck
         name: shellcheck
         entry: shellcheck
@@ -74,5 +71,5 @@ ci:
   autofix_prs: true
   autoupdate_commit_msg: "build: pre-commit autoupdate"
   autoupdate_schedule: quarterly
-  skip: [stopwords, shellcheck]
+  skip: [shellcheck]
   submodules: false

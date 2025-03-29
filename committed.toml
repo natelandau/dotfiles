@@ -1,0 +1,18 @@
+allowed_types = [
+    "build",
+    "bump",
+    "chore",
+    "ci",
+    "docs",
+    "feat",
+    "fix",
+    "perf",
+    "refactor",
+    "revert",
+    "style",
+    "test",
+]
+ignore_author_re = "(dependabot|renovate)"
+merge_commit = false
+style = "conventional"
+subject_capitalized = false
