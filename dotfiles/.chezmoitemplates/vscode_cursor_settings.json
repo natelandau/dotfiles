@@ -250,7 +250,7 @@
     "prettier.proseWrap": "never",
     "prettier.tabWidth": 4,
     "prettier.useTabs": false,
-    "projectManager.any.baseFolders": ["$home\\repos", "$home\\.local\\share"],
+    "projectManager.any.baseFolders": ["$home\\repos"],
     "projectManager.any.ignoredFolders": ["node_modules", "out", "typings", "test", ".git", "__pycache__"],
     "projectManager.any.maxDepthRecursion": 1,
     "projectManager.git.baseFolders": ["$home\\repos", "$home\\.local\\share", "$home\\repos\\tmp"],
