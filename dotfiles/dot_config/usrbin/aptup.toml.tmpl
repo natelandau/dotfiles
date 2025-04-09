@@ -1,0 +1,5 @@
+{{- if eq .chezmoi.os "linux" -}}
+# List of packages which will not be upgraded
+exclude_packages = ["containerd.io"]
+
+{{ end -}}

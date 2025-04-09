@@ -36,12 +36,6 @@
         op_id             = "guqi3eab5xe6zgvkx4ajb6he3a"
         tailscale_ip      = false
 
-    [remote_servers.natenate]
-        add_to_ssh_config = true
-        name              = "natenate"
-        op_id             = "zoda4scdiwqnp7zyauzobyljma"
-        tailscale_ip      = false
-
     [remote_servers.rpi1]
         add_to_ssh_config = true
         name              = "rpi1"
@@ -72,12 +66,6 @@
         op_id             = "2seakr2b2lezvfvtajwswtls5e"
         tailscale_ip      = true
 
-    [remote_servers.sosb-old]
-        add_to_ssh_config = true
-        name              = "sosb-old"
-        op_id             = "2gjp4p2yz5mnwkqwz4bsrko2tq"
-        tailscale_ip      = false
-
     [remote_servers.stacy]
         add_to_ssh_config = true
         name              = "stacy"
@@ -89,9 +77,3 @@
         name              = "synology"
         op_id             = "u4jors52vyhwhs5ab24otdyrmq"
         tailscale_ip      = false
-
-    [remote_servers.rootsrelief]
-        add_to_ssh_config = true
-        name              = "rootsrelief"
-        op_id             = "lddaddipiv3mr7bo62r7f5bo3e"
-        tailscale_ip      = true
