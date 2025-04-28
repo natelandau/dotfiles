@@ -10,7 +10,7 @@ Dotfiles, managed with [Chezmoi](https://www.chezmoi.io/).
 -   SSH configuration and key management with 1Password
 -   OSX defaults management
 -   Custom [vscode](https://code.visualstudio.com/) theme
--   Configuration for CLI scripts and packages including [halp](https://github.com/natelandau/halp), [vid-cleaner](https://github.com/natelandau/vid-cleaner), [jdfile](https://github.com/natelandau/jdfile), and others.
+-   Configuration for CLI scripts and packages including [halp](https://github.com/natelandau/halp), [vid-cleaner](https://github.com/natelandau/vid-cleaner), [neatfile](https://github.com/natelandau/neatfile), and others.
 -   and more...
 
 **IMPORTANT:** While many dotfile repositories are designed to be forked, mine are not. These are heavily customized for my personal use and likely contain many things you won't need or want to use. Posting publicly so you can see how I manage my dotfiles and maybe get some ideas for how to manage your own.

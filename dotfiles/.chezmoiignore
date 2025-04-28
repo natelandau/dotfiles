@@ -22,8 +22,8 @@ Library
 .librewolf
 {{ end }}
 
-{{ if not (and .personal_computer (lookPath "jdfile")) }}
-.config/jdfile
+{{ if not (and .personal_computer (lookPath "neatfile")) }}
+.config/neatfile
 {{ end }}
 
 {{ if not (lookPath "ghostty") }}

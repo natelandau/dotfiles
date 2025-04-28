@@ -1,5 +1,12 @@
 {{- if eq .chezmoi.os "linux" -}}
 # List of packages which will not be upgraded
-exclude_packages = ["containerd.io"]
+exclude_packages = [
+    "containerd.io",
+    "docker-buildx-plugin",
+    "docker-ce-cli",
+    "docker-ce-rootless-extras",
+    "docker-ce",
+    "docker-compose-plugin",
+]
 
 {{ end -}}

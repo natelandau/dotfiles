@@ -1,0 +1,20 @@
+{{ if lookPath "neatfile" }}
+
+wfile() {
+    # DESC:	 File work documents using neatfile
+    if [[ $1 == "--help" || $1 == "-h" ]]; then
+        neatfile --help
+    else
+        neatfile process --project=work --confirm "$@"
+    fi
+}
+
+pfile() {
+    # DESC:	 File personal documents using neatfile
+    if [[ $1 == "--help" || $1 == "-h" ]]; then
+        neatfile --help
+    else
+        neatfile process --project=personal --confirm "$@"
+    fi
+}
+{{- end }}

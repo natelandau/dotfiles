@@ -1,0 +1,63 @@
+{{- if and .personal_computer (lookPath "neatfile") -}}
+date_format = "%Y-%m-%d"
+ignore_dotfiles = true
+ignore_file_regex = ''
+ignored_files = []
+match_case_list = [
+    "BWS",
+    "CEO",
+    "CPO",
+    "CPTO",
+    "CTO",
+    "CapEx",
+    "DD",
+    "DEI",
+    "DEIJ",
+    "EDH",
+    "EHG",
+    "EHGC",
+    "EULA",
+    "EverydayHealth",
+    "HQ",
+    "KPI",
+    "KPIs",
+    "MM",
+    "MSA",
+    "NDA",
+    "NPR",
+    "NY",
+    "NYC",
+    "OKR",
+    "OKRs",
+    "PDDE",
+    "PRFAQ",
+    "PRFAQs",
+    "QA",
+    "README",
+    "SOW",
+    "SVP",
+    "VP",
+    "YY",
+    "YYYY",
+    "ZD",
+    "ZiffDavis",
+    "theSkimm",
+]
+overwrite_existing = false
+separator = "space"
+split_words = true
+stopwords = []
+strip_stopwords = true
+transform_case = "title"
+
+[projects]
+    [projects.personal]
+        path  = "~/personal-docs"
+        type  = "jd"
+
+    [projects.work]
+        path      = "~/work-docs/theSkimm"
+        stopwords = ["pptx"]
+        type      = "jd"
+
+{{ end -}}

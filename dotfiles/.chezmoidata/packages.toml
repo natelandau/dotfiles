@@ -46,7 +46,7 @@
         # 'GITEA_ADDRESS' is overwritten by the 'gitea_address' secret
         packages = ["git+GITEA_ADDRESS/natelandau/usrbin"]
     [packages.python.personal_computer]
-        packages = ["jdfile", "vid-cleaner"]
+        packages = ["vid-cleaner"]
 [packages.homebrew]
     to_remove = ["btop", "htop", "istat-menus", "qlimagesize", "rocket", "shotrr"]
     [packages.homebrew.common]

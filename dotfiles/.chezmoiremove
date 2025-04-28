@@ -19,3 +19,5 @@
 /.zsh_history
 /.yamllint.yml
 /.git_stop_words
+/.config/jdfile/config.toml
+/.config/dotfile_source/third-party/jdfile.sh
