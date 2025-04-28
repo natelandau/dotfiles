@@ -18,7 +18,7 @@ if current=$(defaults read com.googlecode.iterm2 PrefsCustomFolder 2>/dev/null);
         exit 0
     fi
 else
-    warning "iTerm2 application preferences not found. Open and then quit iTerm2 and rerun 'chezmoi apply'"
+    warning "iTerm2 application preferences not found. Changes not applied."
 fi
 
 _safeExit_
