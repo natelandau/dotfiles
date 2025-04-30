@@ -58,6 +58,7 @@
             "font-jetbrains-mono-nerd-font",
             "font-meslo-lg-dz",
             "font-meslo-lg-nerd-font",
+            "ghostty",
             "git-credential-manager",
             "grandperspective",              # Disk usage visualizer
             "iterm2",                        # Terminal emulator
@@ -113,6 +114,7 @@
             "dbeaver-community",
             "fork",
             # "sourcetree", # Alternative to fork
+            "cursor",
             "lingon-x",
         ]
         formulae = [
@@ -132,7 +134,7 @@
             "shfmt",
         ]
     [packages.homebrew.homelab_member]
-        casks    = ["syncthing", "whatsapp"]
+        casks    = []
         formulae = ["ffmpeg", "iperf", "nmap", "tailspin"]
     [packages.homebrew.personal_computer]
         casks = [
@@ -140,7 +142,6 @@
             "brave-browser",
             "discord",
             "firefox",
-            "flux",          # Night Shift
             "fmail2",
             "google-chrome",
             "iina",
@@ -154,7 +155,7 @@
             "roon",
             "slack",
             "stats",
-            "steam",
+            "syncthing",
             "tripmode",
             "whatsapp",
             "zoom",
@@ -183,5 +184,4 @@
             "1502839586", # Handmirror
             "1532597159", # MP3tag
             "696977615",  # Capo
-            "975937182",  # Fantastical
         ]

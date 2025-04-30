@@ -17,8 +17,6 @@ if current=$(defaults read com.googlecode.iterm2 PrefsCustomFolder 2>/dev/null);
         notice "Set shared iTerm2 preferences: {{ .xdgConfigDir }}/applications/iterm2"
         exit 0
     fi
-else
-    warning "iTerm2 application preferences not found. Changes not applied."
 fi
 
 _safeExit_
