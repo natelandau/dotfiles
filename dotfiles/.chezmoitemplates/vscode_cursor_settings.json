@@ -60,9 +60,10 @@
         "jacoco.xml",
         "coverage.cobertura.xml",
         "reports/coverage.xml",
-        ".reports/coverage.xml"
+        ".reports/coverage.xml",
+        ".cache/coverage.xml"
     ],
-    "coverage-gutters.coverageReportFileName": ".reports/coverage.xml",
+    "coverage-gutters.coverageReportFileName": ".cache/coverage.xml",
     "coverage-gutters.showGutterCoverage": false,
     "coverage-gutters.showLineCoverage": true,
     "coverage-gutters.showRulerCoverage": true,
@@ -88,7 +89,8 @@
         "**/.mypy_cache",
         "**/.pytest_cache",
         "**/.ruff_cache",
-        "**/.reports"
+        "**/.reports",
+        "**/.cache"
     ],
     "debug.hideActionBar": false,
     "debug.inlineValues": true,

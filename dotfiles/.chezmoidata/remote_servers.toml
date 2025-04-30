@@ -66,6 +66,12 @@
         op_id             = "2seakr2b2lezvfvtajwswtls5e"
         tailscale_ip      = true
 
+    [remote_servers.blackbook]
+        add_to_ssh_config = true
+        name              = "blackbook"
+        op_id             = "y2sdjdr5pvzhuq52vegqd2gxsi"
+        tailscale_ip      = true
+
     [remote_servers.stacy]
         add_to_ssh_config = true
         name              = "stacy"
