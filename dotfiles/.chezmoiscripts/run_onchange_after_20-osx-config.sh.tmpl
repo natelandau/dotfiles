@@ -4,7 +4,7 @@
 {{ template "shared_script_utils.bash" . }}
 
 # Grab the hash of the osx-defaults.sh script to run it when changed
-# osx-defaults.sh hash: {{ include "bin/executable_osx-defaults.sh.tmpl" | sha256sum }}
+# osx-defaults.py hash: {{ include "bin/executable_osx-defaults.py" | sha256sum }}
 
 osx_script={{ .directories.user_bin_dir }}/osx-defaults.py
 header "Running OS X defaults script"
