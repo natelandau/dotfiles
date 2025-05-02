@@ -11,6 +11,12 @@ alias gss='git remote update && git status -uno'                   # Are we behi
 alias gsubs='git submodule update --recursive --remote'            # Update all submodules
 alias undopush="git push -f origin HEAD^:master"                   # Undo a git push
 
+dirty_repos() {
+    echo "Checking for dirty repositories under $(pwd)..."
+    find . -name "*.git" -type d -print0 | xargs -0 -L 1 -I% sh -c "cd %/..; pwd; git status -suno; git branch -vvv 2>/dev/null"
+}
+alias dirtyrepos="dirty_repos"
+
 ga() { git add "${@:-.}"; } # Add file (default: all)
 
 HASH="%C(always,yellow)%h%C(always,reset)"
