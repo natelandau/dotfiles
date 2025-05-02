@@ -38,7 +38,7 @@
     strict_optional             = true
     warn_redundant_casts        = true
     warn_unreachable            = true
-    warn_unused_ignores         = true
+    warn_unused_ignores         = false
 
 [tool.ruff] # https://github.com/charliermarsh/ruff
     fix            = true
@@ -64,6 +64,7 @@
             "D409",    # section-underline-matches-section-length
             "D413",    # blank-line-after-last-section
             "E501",    # line-too-long
+            "EXE001",  # Shebang found, file not executable
             "FBT001",  # Boolean-typed positional argument in function definition
             "FBT002",  # Boolean-typed positional argument in function definition
             "FIX001",  # line-contains-fixme

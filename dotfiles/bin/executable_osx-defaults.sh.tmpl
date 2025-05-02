@@ -337,6 +337,9 @@ _trapCleanup_() {
     fi
 }
 
+info "This script is deprecated. Use the python script instead."
+_safeExit_ 0
+
 # Warn that some commands will not be run if the script is not run as root.
 if [[ $EUID -ne 0 ]]; then
     RUN_AS_ROOT=false

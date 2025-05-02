@@ -1,4 +1,4 @@
-{{- if and (eq .chezmoi.os "darwin") (not .is_ci_workflow) -}}
+{{- if and (eq .chezmoi.os "darwin") (not .is_ci_workflow) (lookPath "uv") -}}
 #!/usr/bin/env bash
 
 {{ template "shared_script_utils.bash" . }}
@@ -6,11 +6,11 @@
 # Grab the hash of the osx-defaults.sh script to run it when changed
 # osx-defaults.sh hash: {{ include "bin/executable_osx-defaults.sh.tmpl" | sha256sum }}
 
-osx_script={{ .directories.user_bin_dir }}/osx-defaults.sh
+osx_script={{ .directories.user_bin_dir }}/osx-defaults.py
 header "Running OS X defaults script"
 
 if [ -f "${osx_script}" ]; then
-    sudo "${osx_script}"
+    "${osx_script}"
 fi
 
 _safeExit_
