@@ -9,6 +9,11 @@ if [[ ! $(command -v brew) ]]; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
+if [[ -e "/opt/homebrew/bin/brew" && ! $(command -v brew) ]]; then
+    notice "Adding Homebrew to your PATH"
+    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >>/Users/natelandau/.zprofile
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
 {{ end }}
 
 {{ if eq .chezmoi.os "linux" }}

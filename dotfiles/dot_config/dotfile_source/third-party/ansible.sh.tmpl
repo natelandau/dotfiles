@@ -10,7 +10,17 @@ aus() {
     # Run the Ansible Update Server (AUS) playbook with options
     # USAGE: aus -l [host] -t [tag],[tag]
 
-    ANSIBLE_DIR="{{ .directories.repos_dir }}/ansible-update-server"
+    ANSIBLE_DIR1="{{ .directories.repos_dir }}/ansible-update-server"
+    ANSIBLE_DIR2="{{ .directories.repos_dir }}/ansible-server-update"
+
+    if [[ -d ${ANSIBLE_DIR1} ]]; then
+        ANSIBLE_DIR="${ANSIBLE_DIR1}"
+    elif [[ -d ${ANSIBLE_DIR2} ]]; then
+        ANSIBLE_DIR="${ANSIBLE_DIR2}"
+    else
+        echo "Can not find ansible-update-server or ansible-server-update directory"
+        return 1
+    fi
 
     if [[ "$($PWD)" != "${ANSIBLE_DIR}" ]]; then
         if [ -d "${ANSIBLE_DIR}" ]; then

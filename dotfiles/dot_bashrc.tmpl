@@ -12,6 +12,10 @@ umask 002
 
 ### SOURCE BASH PLUGINS ###
 
+if [[ ! -d "{{ .xdgStateDir }}/bash/" ]]; then
+    mkdir -p "{{ .xdgStateDir }}/bash/"
+fi
+
 # Locations containing files *.bash to be sourced to your environment
 configFileLocations=(
     "{{ .xdgConfigDir }}/dotfile_source"

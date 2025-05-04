@@ -2,7 +2,7 @@
 export LANG='en_US.UTF-8'
 export LC_ALL='en_US.UTF-8'
 
-export EDITOR="$(command -v code nano | head -n 1)"
+export EDITOR="$(command -v cursor code nano | head -n 1)"
 
 {{ if and (.use_secrets) (.dev_computer) -}}
 
