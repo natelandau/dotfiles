@@ -52,11 +52,11 @@ transform_case = "title"
 
 [projects]
     [projects.personal]
-        path  = "~/personal-docs"
+        path  = "{{ .chezmoi.homeDir }}/personal-docs"
         type  = "jd"
 
     [projects.work]
-        path      = "~/work-docs/theSkimm"
+        path      = "{{ .chezmoi.homeDir }}/work-docs/theSkimm"
         stopwords = ["pptx"]
         type      = "jd"
 

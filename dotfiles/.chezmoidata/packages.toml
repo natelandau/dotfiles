@@ -41,7 +41,7 @@
     [packages.python.common]
         packages = ["halper", "pygments"]
     [packages.python.dev_computer]
-        packages = ["ansible-core", "cookiecutter", "poetry"]
+        packages = ["ansible-core", "cookiecutter"]
     [packages.python.homelab_member]
         # 'GITEA_ADDRESS' is overwritten by the 'gitea_address' secret
         packages = ["git+GITEA_ADDRESS/natelandau/usrbin"]

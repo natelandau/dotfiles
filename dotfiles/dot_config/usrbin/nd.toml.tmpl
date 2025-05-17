@@ -4,7 +4,10 @@
 file_ignore_strings = ["template"]
 
 # List of directories to search for job files.
-job_file_locations = ["~/homelab/nomad", "~/homelab/nomad-csi"]
+job_file_locations = ["{{ .chezmoi.homeDir }}/homelab/nomad"]
+
+# CSI folder storing nomad controllers, nodes, and volumes.
+csi_folder = "{{ .chezmoi.homeDir }}/homelab/nomad-csi"
 
 # Address of the Nomad server
 {{- if "/etc/nomad.d" | lstat }}
