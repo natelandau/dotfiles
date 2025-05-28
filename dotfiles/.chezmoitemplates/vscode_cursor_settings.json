@@ -279,6 +279,7 @@
     "python.analysis.extraPaths": [],
     "python.analysis.fixAll": [],
     "python.autoComplete.extraPaths": [],
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
     "python.terminal.activateEnvInCurrentTerminal": true,
     "python.terminal.activateEnvironment": false,
     "python.testing.cwd": "",
