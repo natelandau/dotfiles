@@ -114,15 +114,12 @@ rollback() {
 }
 
 gurl() {
-    # DESC:		Prints URL of current git repository
-    local remote remotename host user_repo
-
-    remotename="${*:-origin}"
-    remote="$(git remote -v | awk '/^'"${remotename}"'.*\(push\)$/ {print $2}')"
-    [[ "${remote}" ]] || return
-    host="$(echo "${remote}" | perl -pe 's/.*@//;s/:.*//')"
-    user_repo="$(echo "${remote}" | perl -pe 's/.*://;s/\.git$//')"
-    echo "https://${host}/${user_repo}"
+    # DESC:		Print URL of current git repository
+    git remote get-url origin \
+        | sed 's/\.git$//' \
+        | sed 's/^ssh:\/\/git@/https:\/\//' \
+        | sed -E 's/:[0-9]+//' \
+        | sed 's/git@github.com:/https:\/\/github.com\//'
 }
 
 gnuke() {
