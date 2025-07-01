@@ -9,7 +9,7 @@
         "editor.tabSize": 4
     },
     "[dockerfile]": {
-        "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+        "editor.defaultFormatter": "foxundermoon.shell-format"
     },
     "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
@@ -67,30 +67,34 @@
     "coverage-gutters.showGutterCoverage": false,
     "coverage-gutters.showLineCoverage": true,
     "coverage-gutters.showRulerCoverage": true,
+    "cursor.composer.textSizeScale": 1.15,
     "cursor.cpp.disabledLanguages": ["plaintext", "scminput"],
     "cursor.general.enableShadowWorkspace": true,
     "cursor.general.globalCursorIgnoreList": [
-        "**/.env",
-        "**/.env.*",
-        "**/credentials.json",
-        "**/credentials.*.json",
-        "**/secret.json",
-        "**/secrets.json",
+        "**/*.cer",
+        "**/*.crt",
         "**/*.key",
+        "**/*.p12",
         "**/*.pem",
         "**/*.pfx",
-        "**/*.p12",
-        "**/*.crt",
-        "**/*.cer",
-        "**/id_rsa",
-        "**/id_dsa",
-        "**/.ssh/id_*",
-        "**/.venv",
+        "**/.cache",
+        "**/.dev",
+        "**/.env",
+        "**/.env.*",
         "**/.mypy_cache",
         "**/.pytest_cache",
-        "**/.ruff_cache",
         "**/.reports",
-        "**/.cache"
+        "**/.ruff_cache",
+        "**/.ssh/id_*",
+        "**/.tmp",
+        "**/.venv",
+        "**/credentials.*.json",
+        "**/credentials.json",
+        "**/id_dsa",
+        "**/id_rsa",
+        "**/secret.json",
+        "**/secrets.json",
+        "**/tmp"
     ],
     "debug.hideActionBar": false,
     "debug.inlineValues": true,
@@ -193,9 +197,9 @@
     "files.watcherExclude": {
         "**/.git/objects/**": true,
         "**/.git/subtree-cache/**": true,
-        "**/node_modules/**": true,
         "**/.venv*/**": true,
         "**/.venvs*/**": true,
+        "**/node_modules/**": true,
         "**/venv*/**": true
     },
     "git.autofetch": true,
@@ -265,7 +269,7 @@
     "prettier.tabWidth": 4,
     "prettier.useTabs": false,
     "projectManager.any.baseFolders": ["$home\\repos"],
-    "projectManager.any.ignoredFolders": ["node_modules", "out", "typings", "test", ".git", "__pycache__"],
+    "projectManager.any.ignoredFolders": ["node_modules", ".git", "__pycache__"],
     "projectManager.any.maxDepthRecursion": 1,
     "projectManager.git.baseFolders": ["$home\\repos", "$home\\.local\\share", "$home\\repos\\tmp"],
     "projectManager.git.maxDepthRecursion": 1,

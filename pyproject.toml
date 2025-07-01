@@ -1,12 +1,18 @@
 [project]
-    authors         = [{ name = "Nate Landau", email = "github@natenate.org" }]
-    dependencies    = ["commitizen>=4.8.2", "poethepoet>=0.34.0", "pre-commit>=4.2.0", "typos>=1.32.0"]
-    description     = "Home for my bootstrap script, dotfiles, and configuration files"
-    license         = "MIT"
-    name            = "dotfiles"
-    readme          = "README.md"
-    requires-python = ">=3.11"
-    version         = "0.1.0"
+    authors = [{ name = "Nate Landau", email = "github@natenate.org" }]
+    dependencies = [
+        "commitizen>=4.8.3",
+        "duty>=1.6.0",
+        "poethepoet>=0.36.0",
+        "pre-commit>=4.2.0",
+        "typos>=1.34.0",
+    ]
+    description = "Home for my bootstrap script, dotfiles, and configuration files"
+    license = "MIT"
+    name = "dotfiles"
+    readme = "README.md"
+    requires-python = ">=3.13"
+    version = "0.1.0"
     [project.urls]
         homepage   = "https://github.com/natelandau/dotfiles"
         repository = "https://github.com/natelandau/dotfiles"
@@ -16,10 +22,10 @@
     tag_format               = "v$version"
     update_changelog_on_bump = true
     version                  = "0.1.0"
-    version_provider         = "pep621"
+    version_provider         = "uv"
 
 [dependency-groups]
-    dev = ["mypy>=1.15.0", "ruff>=0.11.11"]
+    dev = ["mypy>=1.16.1", "ruff>=0.12.1"]
 
 [tool.mypy] # https://mypy.readthedocs.io/en/latest/config_file.html
     disallow_any_unimported     = false

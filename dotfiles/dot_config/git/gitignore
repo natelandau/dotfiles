@@ -9,6 +9,10 @@ Thumbs.db:encryptable
 # Ignore syncthing caches
 .stversions
 
+# Secrets
+.env.secret
+.env.secrets
+
 # Ignore a file by renaming it with ignore its name
 *.ignore
 ignore.*
@@ -20,17 +24,20 @@ ignore.*
 *.ori
 *.orig
 *.tmp
+*.log
 
 # Ignore redis binary dump (dump.rdb) files
 *.rdb
 
 # Python
-.env
-.venv
+.venv/
 env/
 venv/
 env.bak/
 venv.bak/
-*_cache/
-__pycache__/
 *.py[cdo]
+
+# Caches
+*_cache/
+.cache/
+__pycache__/
