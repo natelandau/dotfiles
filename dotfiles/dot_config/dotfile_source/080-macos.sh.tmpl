@@ -15,6 +15,27 @@ alias spot-file="lsof -c '/mds$/'"
 
 alias cleanupLS="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder" # Clean up LaunchServices to remove duplicates in the "Open With" menu
 
+cleanup() {
+    # DESC:		Clean up cached files and directories
+
+    if command -v uv >/dev/null 2>&1; then
+        uv cache clean
+    fi
+
+    if command -v pre-commit >/dev/null 2>&1; then
+        pre-commit clean
+    fi
+
+    if command -v brew >/dev/null 2>&1; then
+        brew cleanup --prune=all
+    fi
+
+    if command -v npm >/dev/null 2>&1; then
+        npm cache clean --force
+    fi
+
+}
+
 listdsstore() {
     # List the .DS_Store files in the current directory and subdirectories
     echo "Listing .DS_Store files..."

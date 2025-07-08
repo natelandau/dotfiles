@@ -54,11 +54,15 @@
     # http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
     precomposeunicode = false
 
-    # Set default editor to use VisualCode
+{{ if lookPath "cursor" -}}
+    # Set default editor to use cusror
+    editor = cursor --wait
+{{- else if lookPath "code" -}}
+    # Set default editor to use vscode
     editor = code --wait
+{{- end }}
 
-{{- if eq .chezmoi.os "darwin" }}
-
+{{ if eq .chezmoi.os "darwin" }}
     # Make `git rebase` safer on OS X
     # More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
     trustctime = false
