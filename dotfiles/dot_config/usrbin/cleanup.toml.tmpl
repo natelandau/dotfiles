@@ -1,0 +1,30 @@
+{{- if (lookPath "cleanup") -}}
+
+macos_folders = ["~/.Trash", "~/Library/Caches", "~/Library/Logs"]
+
+[binaries]
+    [binaries.uv]
+        args   = ["cache", "clean"]
+        binary = "uv"
+        name   = "uv"
+    [binaries.pre-commit]
+        args   = ["clean"]
+        binary = "pre-commit"
+        name   = "pre-commit"
+    [binaries.npm]
+        args   = ["cache", "clean", "--force"]
+        binary = "npms"
+        name   = "npm"
+    [binaries.homebrew]
+        args   = ["cleanup", "--prune=all"]
+        binary = "brew"
+        name   = "homebrew"
+    [binaries.docker_system]
+        args   = ["system", "prune", "--all", "--force"]
+        binary = "docker"
+        name   = "docker system"
+    [binaries.docker_volumes]
+        args   = ["volume", "prune", "--all", "--force"]
+        binary = "docker"
+        name   = "docker volumes"
+{{- end }}
