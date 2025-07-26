@@ -179,9 +179,6 @@
         apps = []
     [packages.mas.personal_computer]
         apps = [
-            "1091189122", # Bear
             "1136220934", # Infuse
-            "1502839586", # Handmirror
-            "1532597159", # MP3tag
             "696977615",  # Capo
         ]

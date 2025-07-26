@@ -2,7 +2,7 @@
     authors = [{ name = "Nate Landau", email = "github@natenate.org" }]
     dependencies = [
         "commitizen>=4.8.3",
-        "duty>=1.6.0",
+        "duty>=1.6.2",
         "poethepoet>=0.36.0",
         "pre-commit>=4.2.0",
         "typos>=1.34.0",
@@ -25,9 +25,10 @@
     version_provider         = "uv"
 
 [dependency-groups]
-    dev = ["mypy>=1.16.1", "ruff>=0.12.1"]
+    dev = ["mypy>=1.17.0", "ruff>=0.12.5"]
 
 [tool.mypy] # https://mypy.readthedocs.io/en/latest/config_file.html
+    cache_dir                   = ".cache/mypy"
     disallow_any_unimported     = false
     disallow_subclassing_any    = false
     disallow_untyped_decorators = false
@@ -35,7 +36,7 @@
     exclude                     = ['tests/']
     follow_imports              = "normal"
     ignore_missing_imports      = true
-    junit_xml                   = ".reports/mypy.xml"
+    junit_xml                   = ".cache/mypy.xml"
     no_implicit_optional        = true
     pretty                      = false
     show_column_numbers         = true
@@ -55,37 +56,16 @@
 
     [tool.ruff.lint]
         ignore = [
-            "ANN204",  # Missing return type annotation for special method `__init__`
-            "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed
-            "B006",    # mutable-argument-default
-            "B008",    # function-call-in-default-argument
-            "COM812",  # Trailing comma missing"
-            "CPY001",  # Missing copyright notice at top of file
-            "D107",    # undocumented-public-init
-            "D213",    # multi-line-summary-second-line
-            "D215",    # section-underline-not-over-indented
-            "D406",    # new-line-after-section-name
-            "D407",    # dashed-underline-after-section
-            "D408",    # section-underline-after-name
-            "D409",    # section-underline-matches-section-length
-            "D413",    # blank-line-after-last-section
-            "E501",    # line-too-long
-            "EXE001",  # Shebang found, file not executable
-            "FBT001",  # Boolean-typed positional argument in function definition
-            "FBT002",  # Boolean-typed positional argument in function definition
-            "FIX001",  # line-contains-fixme
-            "FIX002",  # Line contains TODO, consider resolving the issue
-            "G004",    # Logging-f-string
-            "ISC001",  # single-line-implicit-string-concatenation
-            "N805",    # invalid-first-argument-name-for-method
-            "PGH003",  # Use specific codes when ignoring issues
-            "PLR0913", # too-many-arguments
-            "RSE102",  # Unnecessary parentheses on raised exception
-            "S311",    # suspicious-non-cryptographic-random-usage
-            "TD001",   # Invalid TODO format
-            "TD002",   # Missing author in TODO
-            "TD003",   # Missing issue link on the line following this TODO
-            "UP007",   # non-pep604-annotation
+            "ANN204", # missing return type annotation for special method `__init__`
+            "B006",   # mutable-argument-default
+            "COM812", # Trailing comma missing
+            "CPY001", # Missing copyright notice at top of file
+            "D213",   # multi-line-summary-second-line
+            "E501",   # line-too-long
+            "FIX002", # Line contains TODO, consider resolving the issue
+            "S311",   # suspicious-non-cryptographic-random-usage
+            "TD002",  # Missing author in TODO
+            "TD003",  # Missing issue link on the line following this TODO
         ]
         per-file-ignores = { "tests/*.py" = [
             "A002",
@@ -105,7 +85,11 @@
             "S101",
         ] }
         select = ["ALL"]
-        unfixable = ["E712", "ERA001", "F401", "F841", "UP007"]
+        unfixable = [
+            "ERA001", # Commented out code
+            "F401",   # unused-import
+            "F841",   # unused-variable
+        ]
         [tool.ruff.lint.mccabe]
             # Unlike Flake8, default to a complexity level of 10.
             max-complexity = 10

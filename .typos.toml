@@ -8,6 +8,7 @@
         brwe     = "brwe"     # used in aliases
         curren   = "curren"   # '¤100'
         halp     = "halp"
+        halper   = "halper"
         iterm    = "iterm"    # iTerm2
         kend     = "kend"     #
         nd       = "nd"

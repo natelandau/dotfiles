@@ -79,4 +79,5 @@ def lint(ctx: Context) -> None:
 def update(ctx: Context) -> None:
     """Update the project."""
     ctx.run(["uv", "lock", "--upgrade"], title="update uv lock")
+    ctx.run(["uv", "sync"], title="update uv sync")
     ctx.run(["pre-commit", "autoupdate"], title="pre-commit autoupdate")

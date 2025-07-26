@@ -3,9 +3,10 @@ data.json
 .DS_Store
 reports
 .reports
-.cache
-.ruff_cache
-.pytest_cache
-.mypy_cache
+.cache/
 __pycache__
 GEMINI.md
+.github/copilot-instructions.md
+.github/instructions/
+.cursor/
+.cache/
