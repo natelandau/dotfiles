@@ -348,7 +348,7 @@ _trapCleanup_() {
 _hasJQ_() {
 
     if [[ ! $(command -v jq) ]]; then
-        warning "Must instal jq prior to running script"
+        warning "Must install jq prior to running script"
 
         {{- if eq .chezmoi.os "linux" }}
         sudo apt install -y jq
