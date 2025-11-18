@@ -1,6 +1,9 @@
 {{- if .personal_computer -}}
 alias vnc="open vnc://10.0.0.4"
-{{ end }}
+{{- if .use_secrets }}
+alias tvnc='open vnc://{{ range (onepassword .remote_servers.macmini.op_id).fields }}{{ if eq .label "tailscale_ip" }}{{ .value }}{{ end }}{{ end }}'
+{{- end }}
+{{- end }}
 
 {{- if and (.homelab_member) (not (.personal_computer)) -}}
 

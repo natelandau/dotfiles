@@ -1,5 +1,5 @@
 [default]
-    default.locale = "en_us"
+    locale = "en-us"
 
     [default.extend-words]
         Enabledi = "Enabledi" # com.apple.metadata

@@ -1,18 +1,12 @@
 [project]
-    authors = [{ name = "Nate Landau", email = "github@natenate.org" }]
-    dependencies = [
-        "commitizen>=4.8.3",
-        "duty>=1.6.2",
-        "poethepoet>=0.36.0",
-        "pre-commit>=4.2.0",
-        "typos>=1.34.0",
-    ]
-    description = "Home for my bootstrap script, dotfiles, and configuration files"
-    license = "MIT"
-    name = "dotfiles"
-    readme = "README.md"
+    authors         = [{ name = "Nate Landau", email = "github@natenate.org" }]
+    dependencies    = ["commitizen>=4.8.3", "duty>=1.6.2", "pre-commit>=4.2.0", "typos>=1.34.0"]
+    description     = "Home for my bootstrap script, dotfiles, and configuration files"
+    license         = "MIT"
+    name            = "dotfiles"
+    readme          = "README.md"
     requires-python = ">=3.13"
-    version = "0.1.0"
+    version         = "0.1.0"
     [project.urls]
         homepage   = "https://github.com/natelandau/dotfiles"
         repository = "https://github.com/natelandau/dotfiles"

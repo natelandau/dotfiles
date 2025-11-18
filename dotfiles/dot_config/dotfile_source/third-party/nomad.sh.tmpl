@@ -10,7 +10,7 @@ fi
 
 if ! pgrep nomad &>/dev/null; then
     # Allow Nomad CLI to access cluster on non-cluster computers
-    export NOMAD_ADDR=http://nomad-servers.service.consul:4646
+    export NOMAD_ADDR=http://10.0.30.95:4646
 fi
 
 {{ if eq .chezmoi.os "darwin" -}}

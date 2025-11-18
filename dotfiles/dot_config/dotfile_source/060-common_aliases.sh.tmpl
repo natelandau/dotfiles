@@ -31,7 +31,7 @@ alias lls='eza -lah --classify=auto --icons=auto --total-size {{- if not (and (e
 alias lss='eza -lah --classify=auto --sort=size --icons=auto --total-size {{- if not (and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arm64")) }} --git{{ end }}'
 
 # List files by last modified
-alias llm='ll --sort=modified'
+alias llmm='ll --sort=modified'
 
 # List files with attributes
 alias la='eza -lbhHigUmuSa --icons=auto {{- if not (and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arm64")) }} --git{{ end }}'

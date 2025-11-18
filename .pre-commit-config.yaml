@@ -7,7 +7,7 @@ default_stages: [pre-commit, manual]
 fail_fast: true
 repos:
   - repo: "https://github.com/commitizen-tools/commitizen"
-    rev: v4.8.3
+    rev: v4.10.0
     hooks:
       - id: commitizen
       - id: commitizen-branch
@@ -16,10 +16,9 @@ repos:
           - pre-push
 
   - repo: "https://github.com/pre-commit/pre-commit-hooks"
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
-      - id: check-byte-order-marker
       - id: check-case-conflict
       - id: check-json
         exclude: ".tmpl$|^dotfiles/.chezmoitemplates/"
@@ -37,7 +36,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: "https://github.com/gitleaks/gitleaks"
-    rev: v8.28.0
+    rev: v8.29.0
     hooks:
       - id: gitleaks
 
@@ -48,7 +47,7 @@ repos:
         stages: [commit-msg]
 
   - repo: "https://github.com/adhtruong/mirrors-typos"
-    rev: v1.34.0
+    rev: v1.39.2
     hooks:
       - id: typos
         args: ["--force-exclude"]
