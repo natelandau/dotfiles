@@ -159,15 +159,6 @@
             "tripmode",
             "whatsapp",
             "zoom",
-            # Quick Look plugins
-            "qlcolorcode",
-            "qlmarkdown",
-            "qlprettypatch",
-            "qlstephen",
-            "qlvideo",
-            "quicklook-csv",
-            "quicklook-json",
-            "webpquicklook",
         ]
         formulae = []
 [packages.mas]

@@ -11,6 +11,15 @@
     "[dockerfile]": {
         "editor.defaultFormatter": "foxundermoon.shell-format"
     },
+    "[dockercompose]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.autoIndent": "advanced",
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "[github-actions-workflow]": {
+        "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
     "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
     },
@@ -151,8 +160,33 @@
     "evenBetterToml.formatter.indentTables": true,
     "evenBetterToml.formatter.reorderArrays": true,
     "evenBetterToml.formatter.reorderKeys": true,
-    "explorer.confirmDragAndDrop": false,
+    "explorer.confirmDragAndDrop": true,
     "explorer.decorations.badges": false,
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+        "*.css": "${capture}.css.map, ${capture}*.css",
+        "*.db": "${capture}.${extname}-*",
+        "*.db3": "${capture}.${extname}-*",
+        "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+        "*.jsx": "${capture}.js",
+        "*.md": "${capture}*.md",
+        "*.py": "${capture}.pyi",
+        "*.s3db": "${capture}.${extname}-*",
+        "*.sdb": "${capture}.${extname}-*",
+        "*.sqlite": "${capture}.${extname}-*",
+        "*.sqlite3": "${capture}.${extname}-*",
+        "*.ts": "${capture}.js",
+        "*.tsx": "${capture}.ts",
+        ".env": "*.env, .env.*, .envrc",
+        ".gitignore": ".gitattributes, .gitmodules, .gitmessage, .lfsconfig, .git-blame*",
+        "Cargo.toml": ".clippy.toml, .rustfmt.toml, Cargo.Bazel.lock, Cargo.lock, clippy.toml, cross.toml, insta.yaml, rust-toolchain.toml, rustfmt.toml",
+        "Dockerfile": "compose*.yml, *.dockerfile, .devcontainer.*, .dockerignore, compose.*, docker-compose.*, dockerfile",
+        "README.md": "CHANGELOG*, CITATION*, CODEOWNERS, CODE_OF_CONDUCT*, CONTRIBUTING*, CONTRIBUTORS, CONTRIBUTORS.MD, CONTRIBUTORS.TXT, LICENSE*, TODO*",
+        "gemfile": ".ruby-version, gemfile.lock",
+        "package.json": ".node-version, .nodemon*, .npm*, .nvmrc, .yarnrc*, bower.json, bun.lock, bun.lockb, bunfig.toml, grunt*, gulp*, package-lock.json, package.nls*.json, pnpm-lock.yaml, wrangler.*,yarn*",
+        "pyproject.toml": "uv.lock, .typos.toml, .yamllint.yml, committed.toml, .python-version, .markdownlint*, .prettier*, .shellcheckrc, .stylelint*, .textlint*, Pipfile, Pipfile.lock, prettier*, requirements*.in, requirements*.pip, requirements*.txt, setup.cfg, setup.py, stylelint*",
+        "tsconfig.json": "tsconfig.*.json"
+    },
     "extensions.ignoreRecommendations": false,
     "files.associations": {
         ".ssh_config": "plaintext",
@@ -215,6 +249,7 @@
         "plaintext": false,
         "scminput": false
     },
+    "github.copilot.nextEditSuggestions.enabled": true,
     "githubLocalActions.dockerDesktopPath": "/Applications/Docker.app",
     "githubPullRequests.pullBranch": "never",
     "gitlens.advanced.messages": {
@@ -396,6 +431,7 @@
     "trailing-spaces.includeEmptyLines": false,
     "trailing-spaces.syntaxIgnore": ["markdown"],
     "trailing-spaces.trimOnSave": true,
+    "ty.inlayHints.variableTypes": false,
     "update.mode": "manual",
     "workbench.activityBar.orientation": "vertical",
     "workbench.colorCustomizations": {
