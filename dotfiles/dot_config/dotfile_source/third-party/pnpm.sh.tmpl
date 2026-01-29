@@ -1,0 +1,7 @@
+{{- if joinPath .xdgDataDir "pnpm" | lstat -}}
+export PNPM_HOME="{{ .xdgDataDir }}/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+{{- end }}

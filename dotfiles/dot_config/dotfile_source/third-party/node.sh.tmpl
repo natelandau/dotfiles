@@ -1,0 +1,4 @@
+{{- if joinPath .xdgConfigDir "nvm" | lstat -}}
+export NVM_DIR="$([ -z "{{ .xdgConfigDir }}" ] && printf %s "${HOME}/.nvm" || printf %s "{{ .xdgConfigDir }}/nvm")"
+[ -s "${NVM_DIR}/nvm.sh" ] && \. "${NVM_DIR}/nvm.sh"
+{{- end }}
