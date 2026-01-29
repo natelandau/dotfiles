@@ -45,9 +45,9 @@ _fix_systemctl_() {
         _check_systemd_user_() {
             local output
             output=$(systemctl --user status 2>&1)
-            local status=$?
+            local exit_code=$?
 
-            if [[ $status -ne 0 ]]; then
+            if [[ $exit_code -ne 0 ]]; then
                 if echo "$output" | grep -q "Failed to connect to bus: No medium found"; then
                     export XDG_RUNTIME_DIR="/run/user/$(id -u)"
                     export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
