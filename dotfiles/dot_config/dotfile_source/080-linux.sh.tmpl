@@ -19,7 +19,6 @@ aup() {
 
 # Systemctl aliases
 
-alias ctl='systemctl'
 alias reboot="sudo systemctl reboot"
 alias sstop="sudo systemctl stop"
 alias sstatus="sudo systemctl status"
@@ -39,5 +38,26 @@ srestart() {
 # Journalctl aliases
 alias logs='sudo journalctl -fu'
 alias logs-all='sudo journalctl -u'
+
+_fix_systemctl_() {
+    # Fix sysctls
+    if command -v systemctl &>/dev/null; then
+        _check_systemd_user_() {
+            local output
+            output=$(systemctl --user status 2>&1)
+            local status=$?
+
+            if [[ $status -ne 0 ]]; then
+                if echo "$output" | grep -q "Failed to connect to bus: No medium found"; then
+                    export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+                    export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
+                fi
+            fi
+        }
+        _check_systemd_user_
+
+    fi
+}
+_fix_systemctl_
 
 {{- end }}
