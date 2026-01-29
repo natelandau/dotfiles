@@ -2,3 +2,9 @@
 export NVM_DIR="$([ -z "{{ .xdgConfigDir }}" ] && printf %s "${HOME}/.nvm" || printf %s "{{ .xdgConfigDir }}/nvm")"
 [ -s "${NVM_DIR}/nvm.sh" ] && \. "${NVM_DIR}/nvm.sh"
 {{- end }}
+
+_NPM_PATH="{{ .xdgDataDir }}/npm/bin"
+if [[ -d $_NPM_PATH ]]; then
+    PATH="$_NPM_PATH:$PATH"
+fi
+unset _NPM_PATH
