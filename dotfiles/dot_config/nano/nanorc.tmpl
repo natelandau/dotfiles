@@ -12,4 +12,19 @@ set titlecolor normal,normal
 # Include syntax highlighters (add more from {{ .xdgDataDir }}/nano)
 include {{ .xdgDataDir }}/nano/*.nanorc
 
+# Display over multiple screen rows line that exceed the screen's width.
+set softwrap
+set atblanks
+
+# Set tab size
+set tabsize 2
+
+# Replace Tabs With Spaces
+set tabstospaces
+
+# Automatically indent a newly created line to the same number of tabs and/or
+# spaces as the previous line.
+set autoindent
+
+
 {{- end }}
