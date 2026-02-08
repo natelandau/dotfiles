@@ -56,6 +56,9 @@
             "espanso",                       # Text expander
             "font-departure-mono",
             "font-jetbrains-mono-nerd-font",
+            "font-maple-mono",               # https://font.subf.dev/en/
+            "font-maple-mono-nf",            # https://font.subf.dev/en/
+            "font-maple-mono-nf-cn",         # https://font.subf.dev/en/
             "font-meslo-lg-dz",
             "font-meslo-lg-nerd-font",
             "ghostty",
