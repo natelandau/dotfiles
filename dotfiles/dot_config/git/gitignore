@@ -9,6 +9,10 @@ Thumbs.db:encryptable
 # Ignore syncthing caches
 .stversions
 
+# Git specific
+.worktree/
+.worktrees/
+
 # Secrets
 .env.secret
 .env.secrets
@@ -41,3 +45,6 @@ venv.bak/
 *_cache/
 .cache/
 __pycache__/
+
+# Agents
+.claude/.settings.local.json

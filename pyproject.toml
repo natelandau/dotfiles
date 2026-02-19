@@ -1,6 +1,6 @@
 [project]
     authors         = [{ name = "Nate Landau", email = "github@natenate.org" }]
-    dependencies    = ["commitizen>=4.12.0", "duty>=1.6.3", "prek>=0.2.30", "typos>=1.42.1"]
+    dependencies    = ["commitizen>=4.13.8", "duty>=1.9.0", "prek>=0.3.3", "typos>=1.43.5"]
     description     = "Home for my bootstrap script, dotfiles, and configuration files"
     license         = "MIT"
     name            = "dotfiles"
@@ -15,11 +15,10 @@
     bump_message             = "bump(release): v$current_version → v$new_version"
     tag_format               = "v$version"
     update_changelog_on_bump = true
-    version                  = "0.1.0"
     version_provider         = "uv"
 
 [dependency-groups]
-    dev = ["mypy>=1.19.1", "ruff>=0.14.13"]
+    dev = ["mypy>=1.19.1", "ruff>=0.15.1"]
 
 [tool.mypy] # https://mypy.readthedocs.io/en/latest/config_file.html
     cache_dir                   = ".cache/mypy"
@@ -46,7 +45,7 @@
     line-length    = 100
     output-format  = "grouped"
     src            = ["src", "tests"]
-    target-version = "py311"
+    target-version = "py313"
 
     [tool.ruff.lint]
         ignore = [
@@ -54,30 +53,16 @@
             "B006",   # mutable-argument-default
             "COM812", # Trailing comma missing
             "CPY001", # Missing copyright notice at top of file
+            "D107",   # Missing docstring in __init__
             "D213",   # multi-line-summary-second-line
             "E501",   # line-too-long
+            "EXE001", # Executable found in source code
             "FIX002", # Line contains TODO, consider resolving the issue
             "S311",   # suspicious-non-cryptographic-random-usage
             "TD002",  # Missing author in TODO
             "TD003",  # Missing issue link on the line following this TODO
         ]
-        per-file-ignores = { "tests/*.py" = [
-            "A002",
-            "A003",
-            "ANN001",
-            "ANN201",
-            "ARG002",
-            "ARG005",
-            "D102",
-            "ERA001",
-            "F403",
-            "PGH003",
-            "PLR0913",
-            "PLR0917",
-            "PLR2004",
-            "PLR6301",
-            "S101",
-        ] }
+        per-file-ignores = {}
         select = ["ALL"]
         unfixable = [
             "ERA001", # Commented out code
@@ -99,19 +84,3 @@
         line-ending               = "auto"
         quote-style               = "double"
         skip-magic-trailing-comma = false
-
-[tool.poe.tasks]
-    [tool.poe.tasks.upgrade]
-        shell = """
-        echo "-- Upgrading packages --" &&
-        uv lock --upgrade &&
-        echo "-- Autoupdating pre-commit --" &&
-        pre-commit autoupdate
-        """
-
-    [[tool.poe.tasks.lint.sequence]]
-        # shell = "typos"
-        shell = "typos --config .typos.toml --diff"
-
-        # [[tool.poe.tasks.lint.sequence]]
-        # shell = "pre-commit run --all-files"

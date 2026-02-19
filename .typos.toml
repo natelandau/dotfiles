@@ -2,6 +2,7 @@
     locale = "en-us"
 
     [default.extend-words]
+        CMO      = "CMO"      # Chief Marketing Officer
         Enabledi = "Enabledi" # com.apple.metadata
         Froms    = "Froms"    # export LESS_TERMCAP_us=
         Pn       = "Pn"

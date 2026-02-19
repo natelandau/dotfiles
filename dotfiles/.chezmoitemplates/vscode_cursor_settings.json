@@ -2,7 +2,9 @@
 {
     "[ansible]": {
         "editor.detectIndentation": false,
-        "gitlens.codeLens.scopes": ["document"]
+        "gitlens.codeLens.scopes": [
+            "document"
+        ]
     },
     "[css]": {
         "editor.defaultFormatter": "HookyQR.beautify",
@@ -31,10 +33,12 @@
         "editor.tabSize": 4
     },
     "[json]": {
-        "editor.defaultFormatter": "vscode.json-language-features"
+        "editor.defaultFormatter": "vscode.json-language-features",
+        "editor.tabSize": 2
     },
     "[jsonc]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "vscode.json-language-features",
+        "editor.tabSize": 2
     },
     "[markdown]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
@@ -77,7 +81,10 @@
     "coverage-gutters.showLineCoverage": true,
     "coverage-gutters.showRulerCoverage": true,
     "cursor.composer.textSizeScale": 1.3,
-    "cursor.cpp.disabledLanguages": ["plaintext", "scminput"],
+    "cursor.cpp.disabledLanguages": [
+        "plaintext",
+        "scminput"
+    ],
     "cursor.general.enableShadowWorkspace": true,
     "cursor.general.globalCursorIgnoreList": [
         "**/*.cer",
@@ -138,7 +145,9 @@
         "other": true,
         "strings": false
     },
-    "editor.rulers": [100],
+    "editor.rulers": [
+        100
+    ],
     "editor.snippetSuggestions": "top",
     "editor.suggest.showWords": false,
     "editor.tabSize": 4,
@@ -264,7 +273,11 @@
     "gitlens.codeLens.authors.enabled": false,
     "gitlens.codeLens.enabled": false,
     "gitlens.currentLine.enabled": false,
-    "gitlens.graph.minimap.additionalTypes": ["localBranches", "stashes", "tags"],
+    "gitlens.graph.minimap.additionalTypes": [
+        "localBranches",
+        "stashes",
+        "tags"
+    ],
     "gitlens.hovers.annotations.details": false,
     "gitlens.hovers.currentLine.details": false,
     "gitlens.hovers.currentLine.over": "line",
@@ -275,9 +288,14 @@
     "html.format.templating": true,
     "indentRainbow.includedLanguages": [],
     "indentRainbow.indicatorStyle": "light",
-    "isort.args": ["--profile black"],
+    "isort.args": [
+        "--profile black"
+    ],
     "makefile.configureOnOpen": true,
-    "markdown-table-formatter.markdownGrammarScopes": ["markdown", "yaml"],
+    "markdown-table-formatter.markdownGrammarScopes": [
+        "markdown",
+        "yaml"
+    ],
     "markdown.extension.tableFormatter.normalizeIndentation": true,
     "markdown.extension.toc.levels": "1..2",
     "markdown.extension.toc.unorderedList.marker": "*",
@@ -288,7 +306,9 @@
     "mdb.sendTelemetry": false,
     "mdb.showMongoDBHelpExplorer": false,
     "mdb.showMongoDBPlaygrounds": false,
-    "mypy-type-checker.args": ["--config-file=${workspaceFolder}/pyproject.toml"],
+    "mypy-type-checker.args": [
+        "--config-file=${workspaceFolder}/pyproject.toml"
+    ],
     "mypy-type-checker.ignorePatterns": [
         "${workspaceFolder}/tests/**/*.py",
         "${workspaceFolder}/duties.py",
@@ -300,13 +320,24 @@
     "prettier.bracketSpacing": true,
     "prettier.endOfLine": "auto",
     "prettier.printWidth": 120,
-    "prettier.proseWrap": "never",
+    "prettier.proseWrap": "preserve",
     "prettier.tabWidth": 4,
     "prettier.useTabs": false,
-    "projectManager.any.baseFolders": ["$home\\repos"],
-    "projectManager.any.ignoredFolders": ["node_modules", ".git", "__pycache__"],
+    "projectManager.any.baseFolders": [
+        "$home\\repos"
+    ],
+    "projectManager.any.ignoredFolders": [
+        "node_modules",
+        ".git",
+        "__pycache__"
+    ],
     "projectManager.any.maxDepthRecursion": 1,
-    "projectManager.git.baseFolders": ["$home\\repos", "$home\\.local\\share", "$home\\repos\\tmp"],
+    "projectManager.git.baseFolders": [
+        "$home\\repos",
+        "$home\\.local\\share",
+        "$home\\repos\\tmp","
+        $home\\.local\\share\\agent-glue"
+    ],
     "projectManager.git.maxDepthRecursion": 1,
     "projectManager.groupList": true,
     "projectManager.sortList": "Name",
@@ -333,7 +364,9 @@
     ],
     "python.testing.pytestEnabled": true,
     "redhat.telemetry.enabled": false,
-    "ruff.args": ["--preview"],
+    "ruff.args": [
+        "--preview"
+    ],
     "ruff.importStrategy": "fromEnvironment",
     "ruff.nativeServer": true,
     "search.exclude": {
@@ -347,7 +380,9 @@
     "search.useIgnoreFiles": true,
     "security.workspace.trust.untrustedFiles": "open",
     "settingsSync.ignoredSettings": [],
-    "shellcheck.customArgs": ["-x"],
+    "shellcheck.customArgs": [
+        "-x"
+    ],
     "shellcheck.enable": true,
     "shellcheck.executablePath": "/opt/homebrew/bin/shellcheck",
     "shellcheck.ignorePatterns": {
@@ -400,12 +435,16 @@
     },
     "terminal.integrated.profiles.osx": {
         "bash": {
-            "args": ["-l"],
+            "args": [
+                "-l"
+            ],
             "icon": "terminal-bash",
             "path": "/opt/homebrew/bin/bash"
         },
         "fish": {
-            "args": ["-l"],
+            "args": [
+                "-l"
+            ],
             "path": "fish"
         },
         "pwsh": {
@@ -417,19 +456,30 @@
             "path": "tmux"
         },
         "zsh": {
-            "args": ["-l", "-i"],
+            "args": [
+                "-l",
+                "-i"
+            ],
             "path": "/opt/homebrew/bin/zsh"
         }
     },
     "terminal.integrated.shellIntegration.enabled": true,
     "terminal.integrated.stickyScroll.enabled": true,
     "todo-tree.filtering.ignoreGitSubmodules": true,
-    "todo-tree.general.tags": ["BUG", "HACK", "FIXME", "TODO", "XXX"],
+    "todo-tree.general.tags": [
+        "BUG",
+        "HACK",
+        "FIXME",
+        "TODO",
+        "XXX"
+    ],
     "todo-tree.regex.regex": "(//|#|<!--|;|/\\*|^|^\\s*(-|\\d+.))\\s*($TAGS)",
     "todo-tree.tree.expanded": true,
     "trailing-spaces.highlightCurrentLine": false,
     "trailing-spaces.includeEmptyLines": false,
-    "trailing-spaces.syntaxIgnore": ["markdown"],
+    "trailing-spaces.syntaxIgnore": [
+        "markdown"
+    ],
     "trailing-spaces.trimOnSave": true,
     "ty.inlayHints.variableTypes": false,
     "update.mode": "manual",
@@ -527,5 +577,6 @@
     "yaml.format.bracketSpacing": true,
     "yaml.format.printWidth": 200
 }
+
 
 {{- end }}

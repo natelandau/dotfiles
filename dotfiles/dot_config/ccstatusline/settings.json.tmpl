@@ -1,0 +1,69 @@
+{{- if lookPath "claude" -}}
+{
+  "version": 3,
+  "lines": [
+    [
+      {
+        "id": "1",
+        "type": "model",
+        "color": "cyan"
+      },
+      {
+        "id": "f28a0319-e670-40c0-a8fa-46ff03ae68c6",
+        "type": "current-working-dir",
+        "backgroundColor": "bgCyan",
+        "metadata": {
+          "fishStyle": "true"
+        }
+      },
+      {
+        "id": "5",
+        "type": "git-branch",
+        "color": "magenta",
+        "rawValue": false,
+        "merge": true
+      },
+      {
+        "id": "7",
+        "type": "git-changes",
+        "color": "yellow"
+      },
+      {
+        "id": "3",
+        "type": "context-percentage",
+        "color": "brightBlack",
+        "metadata": {
+          "inverse": "false"
+        },
+        "merge": true
+      },
+      {
+        "id": "d6155453-926e-4d2f-bd1a-1d6ea877607c",
+        "type": "session-clock",
+        "backgroundColor": "bgMagenta"
+      }
+    ],
+    [],
+    []
+  ],
+  "flexMode": "full-minus-40",
+  "compactThreshold": 60,
+  "colorLevel": 2,
+  "inheritSeparatorColors": false,
+  "globalBold": false,
+  "powerline": {
+    "enabled": true,
+    "separators": [
+      ""
+    ],
+    "separatorInvertBackground": [
+      false
+    ],
+    "startCaps": [],
+    "endCaps": [],
+    "autoAlign": false,
+    "theme": "nord"
+  },
+  "defaultPadding": " "
+}
+{{- end }}

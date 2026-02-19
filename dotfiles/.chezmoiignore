@@ -18,6 +18,10 @@ Library
 # Directories based on rules
 # ##################################################
 
+{{ if not (lookPath "claude") }}
+.claude
+{{ end }}
+
 {{ if not (and (eq .chezmoi.os "darwin") (.personal_computer)) }}
 .librewolf
 {{ end }}
