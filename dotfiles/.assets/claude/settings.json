@@ -7,37 +7,51 @@
   },
   "permissions": {
     "allow": [
+      "Bash(cat:*)",
+      "Bash(date:*)",
+      "Bash(echo:*)",
       "Bash(git add:*)",
       "Bash(git check-ignore:*)",
       "Bash(git checkout:*)",
       "Bash(git commit:*)",
+      "Bash(git diff:*)",
       "Bash(git log:*)",
       "Bash(git stash:*)",
-      "Bash(git merge:*)",
+      "Bash(git status:*)",
       "Bash(git worktree:*)",
+      "Bash(grep:*)",
+      "Bash(head:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
       "Bash(ruff check:*)",
       "Bash(ruff format:*)",
+      "Bash(sort:*)",
+      "Bash(tail:*)",
+      "Bash(tr:*)",
+      "Bash(tree:*)",
       "Bash(uv run:*)",
-      "Bash(uv sync:*)"
+      "Bash(uv add:*)",
+      "Bash(uv sync:*)",
+      "Bash(wc:*)"
     ],
     "deny": [
+      "Bash(git add -f:*)",
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
-      "Edit(**/.env)",
       "Edit(**/.env.secret)",
       "Edit(**/.env.secrets)",
+      "Edit(**/.env)",
+      "Read(.envrc)",
+      "Read(**/.env)",
       "Read(**/*.key)",
       "Read(**/*.pem)",
-      "Read(**/.env)",
-      "Read(**/.env.secret)",
-      "Read(**/.env.secrets)",
-      "Read(.envrc)",
       "Read(~/.aws/**)",
       "Read(~/.ssh/**)"
     ],
     "ask": [
       "Bash(chmod 777:*)",
       "Bash(eval:*)",
+      "Bash(git tag:*)",
       "Bash(git checkout main:*)",
       "Bash(git clean -fd:*)",
       "Bash(git push:*)",
@@ -46,7 +60,7 @@
       "Bash(rip:*)",
       "Bash(rm -fr:*)",
       "Bash(rm -rf:*)",
-      "Bash(sudo:*)"
+      "Bash(git merge:*)"
     ]
   },
   "hooks": {
@@ -58,6 +72,16 @@
             "type": "command",
             "command": "~/.claude/hooks/enforce_branch_protection.py",
             "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/natelandau/.claude/hooks/gsd-check-update.js\""
           }
         ]
       }

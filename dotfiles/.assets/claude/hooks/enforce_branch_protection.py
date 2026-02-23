@@ -414,10 +414,10 @@ class ProtectedBranchGuard:
         if self._tool_name in ("Edit", "Write", "NotebookEdit"):
             return (
                 f"Cannot modify files on the '{self._branch}' branch. "
-                "Create a new branch first:\n"
+                "Create a new branch or worktree first:\n"
                 "  git checkout -b <branch-name>\n"
-                "Or use a worktree for isolated work:\n"
-                "  git worktree add .worktrees/<branch-name> -b <branch-name>"
+                "Or:\n"
+                "  git worktree add .worktrees/<branch-name>"
             )
         return None
 

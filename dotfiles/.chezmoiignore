@@ -58,3 +58,11 @@ Library
 {{ if not (and .use_secrets .dev_computer) }}
 .local/share/git_stopwords
 {{ end }}
+
+{{- if not (lookPath "cursor") -}}
+Library/Application Support/Cursor
+{{ end }}
+
+{{- if not (or (lookPath "code") (lookPath "code-insiders")) -}}
+Library/Application Support/Code
+{{ end }}
