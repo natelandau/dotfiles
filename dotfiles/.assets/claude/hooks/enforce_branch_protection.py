@@ -297,15 +297,15 @@ def get_effective_branch(data: dict[str, Any]) -> str:
     tool_input: dict[str, Any] = data.get("tool_input", {})
     cwd: str = data.get("cwd", "")
 
-    # For file tools, check branch at the file's location
+    # For file tools, use only the branch at the file's location.
+    # If the file is outside any git repo, return "" so no branch protection applies
+    # and the normal Claude Code permission system handles the ask.
     if tool_name in ("Edit", "Write", "NotebookEdit"):
         file_path = tool_input.get("file_path", "") or tool_input.get("notebook_path", "")
         if file_path:
-            branch = get_branch_at_path(file_path)
-            if branch:
-                return branch
+            return get_branch_at_path(file_path)
 
-    # Fall back to session working directory (reflects cd into worktree)
+    # For non-file tools, fall back to session working directory
     if cwd:
         branch = get_branch_at_path(cwd)
         if branch:

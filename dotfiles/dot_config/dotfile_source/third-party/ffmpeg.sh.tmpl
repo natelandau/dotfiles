@@ -1,3 +1,15 @@
 {{- if lookPath "ffprobe" }}
 alias ffjson="ffprobe -v quiet -print_format json -show_format -show_streams" # ffprobe streams in json format
 {{- end }}
+
+if [[ -d "/opt/homebrew/opt/ffmpeg-full/bin" ]]; then
+    PATH="/opt/homebrew/opt/ffmpeg-full/bin:$PATH"
+fi
+
+if [[ -d "/home/linuxbrew/.linuxbrew/opt/ffmpeg-full/bin" ]]; then
+    PATH="/home/linuxbrew/.linuxbrew/opt/ffmpeg-full/bin:$PATH"
+fi
+
+if [[ -d "/usr/local/opt/ffmpeg-full/bin" ]]; then
+    PATH="/usr/local/opt/ffmpeg-full/bin:$PATH"
+fi

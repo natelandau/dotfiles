@@ -25,7 +25,8 @@
     "editor.defaultFormatter": "vscode.html-language-features"
   },
   "[html][django-html][handlebars][hbs][mustache][jinja][jinja-html][nj][njk][nunjucks][twig]": {
-    "editor.defaultFormatter": "monosans.djlint"
+    "editor.defaultFormatter": "monosans.djlint",
+    "editor.tabSize": 2
   },
   "[javascript]": {
     "editor.formatOnPaste": false,
@@ -117,6 +118,7 @@
   "diffEditor.ignoreTrimWhitespace": false,
   "djlint.configuration": "pyproject.toml",
   "djlint.showInstallError": false,
+  "djlint.useVenv": true,
   "editor.acceptSuggestionOnEnter": "off",
   "editor.accessibilitySupport": "off",
   "editor.bracketPairColorization.enabled": true,
@@ -168,6 +170,7 @@
   "evenBetterToml.formatter.indentTables": true,
   "evenBetterToml.formatter.reorderArrays": true,
   "evenBetterToml.formatter.reorderKeys": true,
+  "explorer.autoReveal": false,
   "explorer.confirmDragAndDrop": true,
   "explorer.decorations.badges": false,
   "explorer.fileNesting.enabled": true,

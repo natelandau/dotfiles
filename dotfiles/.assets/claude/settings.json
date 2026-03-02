@@ -32,7 +32,12 @@
       "Bash(uv run:*)",
       "Bash(uv add:*)",
       "Bash(uv sync:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Write(//tmp/**)",
+      "Edit(//tmp/**)",
+      "Read(//tmp/**)"
     ],
     "deny": [
       "Bash(git add -f:*)",
@@ -72,16 +77,11 @@
             "type": "command",
             "command": "~/.claude/hooks/enforce_branch_protection.py",
             "timeout": 5
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
+          },
           {
             "type": "command",
-            "command": "node \"/Users/natelandau/.claude/hooks/gsd-check-update.js\""
+            "command": "~/.claude/hooks/use_uv.py",
+            "timeout": 10000
           }
         ]
       }
@@ -102,8 +102,9 @@
     "claude-md-management@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true,
-    "commit-commands@claude-plugins-official": true
+    "commit-commands@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "superpowers@superpowers-marketplace": true
   },
   "mcpServers": {
     "context7": {

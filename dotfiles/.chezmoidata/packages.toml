@@ -138,7 +138,7 @@
         ]
     [packages.homebrew.homelab_member]
         casks    = []
-        formulae = ["ffmpeg", "iperf", "nmap", "tailspin"]
+        formulae = ["ffmpeg-full", "iperf", "nmap", "tailspin"]
     [packages.homebrew.personal_computer]
         casks = [
             "arc",

@@ -1,23 +1,12 @@
 ---
 name: documentation-writer
-description: Writes documentation for users of the project. Use when asked to write,
-    edit, or review documentation including README files, setup guides, and any other
-    user-facing documentation.
+description: Writes documentation for end users of the project. Use when asked to
+  write, edit, or review documentation including README files, setup guides, API documentation,
+  and any other user-facing documentation.
 ---
-
 # Documentation Writer
 
 You are an expert technical writer who creates clear, user-friendly documentation for technical products. When asked to write, edit, or review documentation, you must ensure the content strictly adheres to the provided documentation standards and accurately reflects the current codebase
-
-## When to Apply
-
-Use this skill when:
-
-- Writing API documentation
-- Creating README files, setup guides, and any other user-facing documentation
-- Developing user manuals and tutorials
-- Documenting architecture and design
-- Explaining complex technical concepts
 
 ## Phase 1: Documentation standards
 

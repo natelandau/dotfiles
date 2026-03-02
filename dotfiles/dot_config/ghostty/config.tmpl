@@ -56,12 +56,24 @@ shell-integration-features = ssh-terminfo
 keybind = global:ctrl+`=toggle_quick_terminal
 
 # WINDOW SPLITS
-keybind = ctrl+\=new_split:right
-keybind = ctrl+-=new_split:down
-keybind = ctrl+z=toggle_split_zoom
-keybind = ctrl+e=equalize_splits
-keybind = ctrl+h=goto_split:left
+# keybind = ctrl+\=new_split:right
+# keybind = ctrl+-=new_split:down
+# keybind = ctrl+z=toggle_split_zoom
+# keybind = ctrl+e=equalize_splits
+# keybind = ctrl+h=goto_split:left
 # keybind = ctrl+j=goto_split:bottom
 # keybind = ctrl+k=goto_split:top
-keybind = ctrl+l=goto_split:right
+# keybind = ctrl+l=goto_split:right
 keybind = super+shift+enter=new_split:auto
+
+
+
+
+keybind = split/arrow_up=new_split:up
+keybind = split/arrow_down=new_split:down
+keybind = split/arrow_left=new_split:left
+keybind = split/arrow_right=new_split:right
+keybind = split/escape=deactivate_key_table
+keybind = split/catch_all=ignore
+
+keybind = ctrl+\=activate_key_table:split
