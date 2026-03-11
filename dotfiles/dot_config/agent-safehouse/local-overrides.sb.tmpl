@@ -1,0 +1,101 @@
+{{- if lookPath "safehouse" }}
+;; https://agent-safehouse.dev/
+
+
+;; Local user overrides
+(allow file-read*
+  (home-subpath "/Downloads")                                         ;; Read-only access to Downloads.
+  (home-subpath "/Desktop")                                           ;; Read-only access to Desktop.
+  (home-subpath "/.config/git")                                       ;; Global git config
+)
+
+;; ---------------------------------------------------------------------------
+;; Integration: Launch Services
+;; macOS Launch Services access needed by the `open` command.
+;; Source: 50-integrations-core/launch-services.sb
+;; ---------------------------------------------------------------------------
+
+(allow mach-lookup
+    (global-name "com.apple.lsd.mapdb")                               ;; Read-only type-to-app mapping database.
+    (global-name "com.apple.lsd.modifydb")                            ;; Writeable mapping database (required even for read-only open).
+    (global-name "com.apple.coreservices.quarantine-resolver")        ;; Gatekeeper quarantine check.
+)
+
+(allow file-issue-extension
+    (extension-class "com.apple.app-sandbox.read")
+    (extension-class "com.apple.app-sandbox.read-write")
+)
+
+(allow lsopen)
+
+;; ---------------------------------------------------------------------------
+;; Integration: 1Password
+;; 1Password desktop app and CLI agent socket access.
+;; Source: 55-integrations-optional/1password.sb
+;; ---------------------------------------------------------------------------
+
+(allow file-read* file-write*
+    (home-subpath "/.config/op")                                      ;; 1Password CLI config and session tokens.
+    (home-subpath "/.1password")                                      ;; 1Password SSH agent symlink dir.
+    (subpath "/Users/Shared/.1password")                              ;; Shared path for SSH agent socket.
+    (regex (string-append "^" HOME_DIR "/Library/Group Containers/[A-Za-z0-9]+\\.com\\.1password/t/agent\\.sock$"))
+)
+
+(allow file-read*
+    (regex (string-append "^" HOME_DIR "/Library/Group Containers/[A-Za-z0-9]+\\.com\\.1password/Library/Application Support/1Password/Data/settings(/.*)?$"))
+    (home-subpath "/.config/1Password")                               ;; ssh/agent.toml — controls which keys are offered.
+)
+
+(allow mach-lookup
+    (global-name-regex #"^([A-Za-z0-9]+\.)?com\.1password(\..*)?$")   ;; 1Password app/service IPC endpoints.
+    (global-name-regex #"^com\.agilebits(\..*)?$")                    ;; Legacy AgileBits service names.
+)
+
+;; ---------------------------------------------------------------------------
+;; Integration: Shell Init
+;; Shell startup file reads so spawned shells have correct $PATH.
+;; Source: 55-integrations-optional/shell-init.sb
+;; ---------------------------------------------------------------------------
+
+(allow file-read*
+    (literal "/private/etc/profile")                                  ;; Shell startup file.
+    (literal "/private/etc/paths")                                    ;; PATH defaults.
+    (subpath "/private/etc/paths.d")                                  ;; Additional PATH fragments.
+    (literal "/private/etc/zprofile")                                 ;; Zsh startup file for login sessions.
+    (literal "/private/etc/zshrc")                                    ;; Zsh startup file for interactive sessions.
+    (home-literal "/.zshenv")                                         ;; Zsh environment file.
+    (home-literal "/.zprofile")                                       ;; Zsh profile file.
+    (home-literal "/.zshrc")                                          ;; Zsh interactive startup file.
+    (home-literal "/.zcompdump")                                      ;; Zsh completion dump cache.
+    (home-prefix "/.zcompdump")                                       ;; Versioned .zcompdump variants.
+    (home-subpath "/.local/share/zsh")                                ;; Zsh configuration
+    (home-subpath "/.config/dotfile_source")                          ;; Zsh source files
+    (home-subpath "/.config/zsh")                                     ;; Zsh configuration
+
+)
+
+;; ---------------------------------------------------------------------------
+;; Agent: Cursor
+;; Cursor CLI binary, state, config, and app bundle paths.
+;; Source: 60-agents/cursor-agent.sb
+;; ---------------------------------------------------------------------------
+
+(allow file-read* file-write*
+    (home-prefix "/.local/bin/agent")                                 ;; cursor-agent install path.
+    (home-prefix "/.local/bin/cursor-agent")                          ;; cursor-agent symlink.
+    (home-prefix "/.local/bin/cursor")                                ;; cursor shim.
+    (home-subpath "/.local/share/cursor-agent")                       ;; cursor-agent versions/state.
+    (home-subpath "/.cursor")                                         ;; Cursor local state including project state.
+    (home-subpath "/.config/cursor")                                  ;; Cursor config.
+    (home-subpath "/.cache/cursor-compile-cache")                     ;; NODE_COMPILE_CACHE for cursor.
+    (home-subpath "/Library/Caches/cursor-compile-cache")             ;; macOS cache variant.
+)
+
+(allow file-read*
+    (home-subpath "/Library/Application Support/Cursor")              ;; Cursor workspace/IDE state.
+    (literal "/Applications")                                         ;; App directory listing.
+    (literal "/usr/local/bin/cursor")                                 ;; System-wide cursor binary.
+    (literal "/opt/homebrew/bin/cursor")                               ;; Homebrew cursor binary.
+    (subpath "/Applications/Cursor.app")                              ;; Cursor app bundle.
+)
+{{- end }}

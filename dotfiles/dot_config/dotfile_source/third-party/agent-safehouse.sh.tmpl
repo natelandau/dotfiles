@@ -1,0 +1,21 @@
+{{- if lookPath "safehouse" }}
+# https://agent-safehouse.dev/
+SAFEHOUSE_APPEND_PROFILE="{{ .xdgConfigDir }}/agent-safehouse/local-overrides.sb"
+
+safe()     { safehouse \
+                --add-dirs={{ .chezmoi.homeDir }}/repos:{{ .xdgConfigDir }}/agent-safehouse \
+                --add-dirs-ro={{ .chezmoi.homeDir }}/homelab:{{ .chezmoi.homeDir }}/obsidian \
+                --append-profile="$SAFEHOUSE_APPEND_PROFILE" \
+                "$@"; }
+
+safeenv()  { safe --env "$@"; }
+safekeys() { safe --env-pass=OPENAI_API_KEY,ANTHROPIC_API_KEY "$@"; }
+claude()   { safe claude --dangerously-skip-permissions "$@"; }
+codex()    { safe codex --dangerously-bypass-approvals-and-sandbox "$@"; }
+amp()      { safe amp --dangerously-allow-all "$@"; }
+opencode() { OPENCODE_PERMISSION='{"*":"allow"}' safeenv opencode "$@"; }
+gemini()   { NO_BROWSER=true safeenv gemini --yolo "$@"; }
+goose()    { safe goose "$@"; }
+kilo()     { safe kilo "$@"; }
+pi()       { safe pi "$@"; }
+{{- end }}

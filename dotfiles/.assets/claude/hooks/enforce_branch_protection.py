@@ -430,6 +430,9 @@ class ProtectedBranchGuard:
         if self._is_pure_git_command():
             return None
 
+        if self._targets_only_tmp():
+            return None
+
         return self._check_file_modifying_command()
 
     def _check_git_commit(self) -> str | None:
@@ -460,6 +463,20 @@ class ProtectedBranchGuard:
             return False
         parts = _split_compound(self._command)
         return all(_is_git_command(p) or not p.strip() for p in parts)
+
+    def _targets_only_tmp(self) -> bool:
+        """Check if all file arguments in non-git parts reference /tmp/."""
+        for part in _split_compound(self._command):
+            stripped = part.strip()
+            if not stripped or _is_git_command(stripped):
+                continue
+            tokens = stripped.split()
+            file_args = [t for t in tokens[1:] if not t.startswith("-")]
+            if not file_args:
+                return False
+            if not all(a.startswith("/tmp/") for a in file_args):  # noqa: S108
+                return False
+        return True
 
     def _check_file_modifying_command(self) -> str | None:
         """Block bash commands that modify files."""
