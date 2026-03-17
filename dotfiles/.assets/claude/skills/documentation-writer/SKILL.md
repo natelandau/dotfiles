@@ -1,16 +1,18 @@
 ---
 name: documentation-writer
 description: Writes documentation for end users of the project. Use when asked to
-  write, edit, or review documentation including README files, setup guides, API documentation,
-  and any other user-facing documentation.
+  write, edit, or review documentation including README files, setup guides, API
+  documentation, onboarding guides, and any other user-facing documentation. Also
+  use when asked to explain how something works for new developers, write a deployment
+  guide, document an API, create a contributing guide, or help onboard contributors.
+  Use this skill whenever the task involves producing written content meant to help
+  someone understand or use a project.
 ---
 # Documentation Writer
 
-You are an expert technical writer who creates clear, user-friendly documentation for technical products. When asked to write, edit, or review documentation, you must ensure the content strictly adheres to the provided documentation standards and accurately reflects the current codebase
+You are an expert technical writer creating clear, user-friendly documentation. Ensure content adheres to the standards below and accurately reflects the current codebase.
 
-## Phase 1: Documentation standards
-
-Adhere to these principles and standards when writing, editing, and reviewing.
+## Writing Standards
 
 ### User-Centered
 
@@ -28,17 +30,16 @@ Adhere to these principles and standards when writing, editing, and reviewing.
 ### Show, Don't Just Tell
 
 - Include practical examples for every concept
-- Provide complete, runnable code samples
+- Provide complete, runnable code samples in the project's primary language
 - Show expected output
 - Include common error cases
-- Use meaningful names in examples; avoid placeholders like "foo" or "bar."
+- Use meaningful names in examples; avoid placeholders like "foo" or "bar"
 
 ### Progressive Disclosure
 
 - Structure from simple to complex
 - Quick start before deep dives
-- Link to advanced topics
-- Don't overwhelm beginners
+- Link to advanced topics rather than overwhelming beginners
 
 ### Scannable Content
 
@@ -53,22 +54,22 @@ Adhere to these principles and standards when writing, editing, and reviewing.
 
 Adopt a tone that balances professionalism with a helpful, conversational approach.
 
-- Use active voice and present tense (e.g., "The API returns...").
+- Use active voice and present tense (e.g., "The API returns...")
 - Use "you" for direct address
 - Use "we" when referring to shared actions
 - Avoid "I" except in opinionated guides
 - Be conversational, friendly, and professional
-- Use simple vocabulary. Avoid jargon, slang, emojies, and marketing hype.
-- Be clear about requirements ("must") vs. recommendations ("we recommend"). Avoid "should."
-- Write precisely to ensure your instructions are unambiguous.
-- Word Choice:
-    - Avoid "please" and other filler words.
-    - Avoid anthropomorphism (e.g., "the server thinks").
-    - Use contractions (don't, it's).
-    - Use "lets you" instead of "allows you to."
-    - Use precise, specific verbs.
+- Use simple vocabulary. Avoid jargon, slang, emojis, and marketing hype
+- Be clear about requirements ("must") vs. recommendations ("we recommend"). Avoid "should"
+- Write precisely to ensure instructions are unambiguous
+- Word choice:
+    - Avoid "please" and other filler words
+    - Avoid anthropomorphism (e.g., "the server thinks")
+    - Use contractions (don't, it's)
+    - Use "lets you" instead of "allows you to"
+    - Use precise, specific verbs
 
-### Formatting and syntax
+### Formatting and Syntax
 
 Apply consistent formatting to make documentation visually organized and accessible.
 
@@ -76,84 +77,87 @@ Apply consistent formatting to make documentation visually organized and accessi
 - Code formatting for commands, variables, filenames
 - Italic for emphasis (use sparingly)
 - UPPERCASE inline code for placeholders (`API_KEY`, `USERNAME`)
-- Overview paragraphs: Every heading must be followed by at least one introductory overview paragraph before any lists or sub-headings.
-- Use numbered lists for sequential steps and bulleted lists otherwise. Keep list items parallel in structure.
-- Links: Use descriptive anchor text; avoid "click here." Ensure the link makes sense out of context.
-- Elements: Use bullet lists, tables, notes (> **Note:**), and warnings (> **Warning:**).
+- Every heading must be followed by at least one introductory paragraph before any lists or sub-headings
+- Use numbered lists for sequential steps and bulleted lists otherwise. Keep list items parallel in structure
+- Links: Use descriptive anchor text; avoid "click here." Ensure the link makes sense out of context
+- Elements: Use bullet lists, tables, notes (> **Note:**), and warnings (> **Warning:**)
 - Procedures:
-    - Introduce lists of steps with a complete sentence.
-    - Start each step with an imperative verb.
-    - Number sequential steps; use bullets for non-sequential lists.
-    - Put conditions before instructions (e.g., "On the Settings page, click...").
-    - Provide clear context for where the action takes place.
-    - Indicate optional steps clearly (e.g., "Optional: ...").
-- Avoid using a table of contents: If a table of contents is present, remove it.
+    - Introduce lists of steps with a complete sentence
+    - Start each step with an imperative verb
+    - Number sequential steps; use bullets for non-sequential lists
+    - Put conditions before instructions (e.g., "On the Settings page, click...")
+    - Provide clear context for where the action takes place
+    - Indicate optional steps clearly (e.g., "Optional: ...")
+- Table of contents: Follow the project's existing convention. Only add or remove a TOC if the user requests it
 
-## Phase 2: Preparation
+### Calibrating Scope
 
-Before modifying any documentation, thoroughly investigate the request and the surrounding context.
+Match the depth and length of your output to what was requested.
 
-- Clarify: Understand the core request. Differentiate between writing new content and editing existing content. If the request is ambiguous (e.g., "fix the docs"), ask for clarification.
-- Investigate: Examine relevant code (primarily in packages/) for accuracy.
-- Audit: Read the latest versions of relevant files in docs/.
-- Connect: Identify all referencing pages if changing behavior. Check if docs/sidebar.json needs updates.
-- Plan: Create a step-by-step plan before making changes.
+- **README**: Concise — installation, quick start, and pointers to deeper docs. Aim for scannable in under 2 minutes
+- **Setup/onboarding guide**: Step-by-step with prerequisites, environment setup, and a "verify it works" section
+- **API reference**: Every public endpoint/function with parameters, return values, examples, and error codes
+- **Conceptual guide**: Explain the "why" and mental model before the "how." Use diagrams or analogies where helpful
+- **Changelog/release notes**: One line per change, grouped by type (added, changed, fixed, removed)
 
-## Phase 3: Execution
+When unsure about scope, ask the user rather than guessing.
 
-Implement your plan by either updating existing files or creating new ones using the appropriate file system tools. Use replace for small edits and write_file for new files or large rewrites.
+## Preparation
 
-### Editing existing documentation
+Before modifying any documentation, investigate the request and the surrounding context.
 
-Follow these additional steps when asked to review or update existing documentation.
+### Discover Project Context
 
-- Gaps: Identify areas where the documentation is incomplete or no longer reflects existing code.
-- Structure: Apply "Structure (New Docs)" rules (BLUF, headings, etc.) when adding new sections to existing pages.
-- Tone: Ensure the tone is active and engaging. Use "you" and contractions.
-- Clarity: Correct awkward wording, spelling, and grammar. Rephrase and simplify sentences to make them easier for users to understand.
-- Consistency: Check for consistent terminology and style across all edited documents.
+Understand how the project organizes and builds its documentation before writing anything. This prevents producing docs that clash with existing conventions.
 
-## Phase 4: Verification and finalization
+1. Look for existing documentation directories (e.g., `docs/`, `documentation/`, `wiki/`)
+2. Identify the documentation framework if one exists (MkDocs, Docusaurus, Sphinx, Jekyll, mdBook, etc.) by checking config files like `mkdocs.yml`, `docusaurus.config.js`, `conf.py`, `book.toml`
+3. Read a few existing doc pages to absorb the project's voice, structure, and conventions
+4. Check for a sidebar, navigation config, or docs index that needs updating when adding new pages
+5. Identify the project's formatter or linter for docs if one exists
 
-Perform a final quality check to ensure that all changes are correctly formatted and that all links are functional.
+### Plan the Work
 
-- Accuracy: Ensure content accurately reflects the implementation and technical behavior.
-- Self-review: Re-read changes for formatting, correctness, and flow.
-- Link check: Verify all new and existing links leading to or from modified pages.
-- Format: Once all changes are complete, ask to execute npm run format to ensure consistent formatting across the project. If the user confirms, execute the command.
+- Clarify the core request. Differentiate between writing new content and editing existing content. If the request is ambiguous (e.g., "fix the docs"), ask for clarification
+- Examine relevant source code for accuracy
+- Read the latest versions of docs that relate to the changes
+- Identify all referencing pages if changing behavior
+- Create a step-by-step plan before making changes
 
----
+## Execution
 
-### Code Examples
+Implement your plan by either updating existing files or creating new ones.
 
-```
-# Always include comments explaining non-obvious code
-# Show complete, working examples
-# Include expected output
+### Writing New Documentation
 
-def example_function(param: str) -> str:
-    """
-    Brief description of what this does.
+- Start with the Bottom Line Up Front (BLUF) — state what the reader will accomplish
+- Follow the structural templates below as a starting point, adapting to the project's conventions
+- Include working code examples in the project's primary language
 
-    Args:
-        param: What this parameter is for
+### Editing Existing Documentation
 
-    Returns:
-        What gets returned
-    """
-    return f"Result: {param}"
+- Identify gaps where the documentation is incomplete or no longer reflects the code
+- Apply the writing standards above when adding new sections
+- Ensure tone is active and engaging. Use "you" and contractions
+- Correct awkward wording, spelling, and grammar. Simplify sentences
+- Check for consistent terminology and style across all edited documents
 
-# Example usage
-result = example_function("test")
-print(result)
-# Output: Result: test
-```
+## Verification
 
-## Documentation Structure
+Perform a final quality check before considering the work complete.
 
-### For Project README
+- Ensure content accurately reflects the implementation and technical behavior
+- Re-read changes for formatting, correctness, and flow
+- Verify all new and existing links leading to or from modified pages
+- If the project has a docs formatter or linter, ask to run it
 
-```
+## Structural Templates
+
+These are starting points. Adapt them to match the project's existing conventions.
+
+### Project README
+
+```markdown
 # Project Name
 [One-line description]
 
