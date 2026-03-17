@@ -1,13 +1,11 @@
 ---
 name: flask-development
-description: Build Python web applications with Flask, using the application factory pattern, and Blueprints. Covers project structure, authentication, and configuration management. Use when developing Flask projects – blueprint structure, routes, authentication, error handling, working with sessions, implementing forms, configuring flask extensions, and more.
+description: Build Python web applications with Flask 3+, using the application factory pattern and Blueprints. Use when developing Flask projects — blueprint structure, routes, authentication, error handling, working with sessions, implementing forms, configuring flask extensions, Jinja2 templates, CLI commands, logging, security, and deployment. Also use when the user mentions Flask routes, blueprints, app factory, Flask-Login, Flask-WTF, or any Flask extension, even if they don't explicitly say "Flask development."
 ---
 
 # Flask Development Skill
 
-## Purpose
-
-Build Python web applications with Flask, using the application factory pattern, and Blueprints. Covers project structure, authentication, and configuration management.
+Target: **Flask 3.x** (Python 3.9+)
 
 ### Minimal Working Example
 
@@ -36,7 +34,7 @@ Always use the application factory pattern for production Flask applications:
 ```python
 # app/__init__.py
 from flask import Flask
-from app.extensions import db, login_manager
+from app.extensions import login_manager
 from config import Config
 
 
@@ -46,7 +44,6 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     # Initialize extensions
-    db.init_app(app)
     login_manager.init_app(app)
 
     # Register blueprints
@@ -56,9 +53,9 @@ def create_app(config_class=Config):
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
 
-    # Create database tables
-    with app.app_context():
-        db.create_all()
+    # Register error handlers
+    from app.errors import register_error_handlers
+    register_error_handlers(app)
 
     return app
 ```
@@ -71,18 +68,16 @@ def create_app(config_class=Config):
 
 ### Extensions Module
 
+Centralizing extensions in a separate file prevents circular imports — other modules can import extensions without importing `app`.
+
 ```python
 # app/extensions.py
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
-db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
 login_manager.login_message_category = "info"
 ```
-
-**Why separate file?**: Prevents circular imports - models can import `db` without importing `app`.
 
 ### Configuration
 
@@ -100,8 +95,6 @@ load_dotenv()
 class Config:
     """Base configuration."""
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "sqlite:///app.db")
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 @dataclass
 class DevelopmentConfig(Config):
@@ -112,7 +105,6 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """Testing configuration."""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     WTF_CSRF_ENABLED = False
 
 @dataclass
@@ -121,10 +113,10 @@ class ProductionConfig(Config):
     DEBUG = False
 
 config = {
-    'development': DevelopmentConfig,
-    'production': ProductionConfig,
-    'testing': TestingConfig,
-    'default': DevelopmentConfig
+    "development": DevelopmentConfig,
+    "production": ProductionConfig,
+    "testing": TestingConfig,
+    "default": DevelopmentConfig,
 }
 ```
 
@@ -144,7 +136,7 @@ Run: `flask --app run run --debug`
 
 ### Creating a Blueprint
 
-Blueprints are used to organize routes into logical groups.
+Blueprints organize routes into logical groups.
 
 ```python
 # app/main/__init__.py
@@ -152,7 +144,7 @@ from flask import Blueprint
 
 bp = Blueprint("main", __name__)
 
-from app.main import routes  # Import routes after bp is created!
+from app.main import routes  # Import routes after bp is created
 ```
 
 ```python
@@ -171,108 +163,135 @@ def health():
     return jsonify({"status": "ok"})
 ```
 
-### MethodViews for more complex routes
+### MethodViews
+
+MethodViews map HTTP methods to class methods, which is useful when a single URL needs to handle multiple methods with distinct logic:
 
 ```python
-# app/auth/views.py
-from flask import Blueprint
+# app/items/views.py
+from flask import render_template, redirect, url_for, request
 from flask.views import MethodView
-from vclient import companies_service
+
+from app.items import bp
 
 
-bp = Blueprint("index", __name__)
+class ItemView(MethodView):
+    """CRUD operations for a single item."""
 
-
-class IndexView(MethodView):
-    """Home page view."""
-
-    def get(self) -> str:
-        """Render the landing page."""
-
-        return render_template("main/index.html")
+    def get(self, item_id: int) -> str:
+        item = get_item_or_404(item_id)
+        return render_template("items/detail.html", item=item)
 
     def post(self) -> str:
-        """Handle the POST request."""
+        # Handle item creation from form
+        create_item(request.form)
+        return redirect(url_for("items.list"))
 
-        return render_template("main/index.html")
+    def delete(self, item_id: int) -> tuple:
+        delete_item(item_id)
+        return "", 204
 
-    def put(self) -> str:
-        """Handle the PUT request."""
 
-        return render_template("main/index.html")
-
-    def delete(self) -> str:
-        """Handle the DELETE request."""
-
-        return render_template("main/index.html")
+# Register the view with the blueprint
+item_view = ItemView.as_view("item")
+bp.add_url_rule("/items/", view_func=item_view, methods=["POST"])
+bp.add_url_rule("/items/<int:item_id>", view_func=item_view, methods=["GET", "DELETE"])
 ```
 
 ### Async Views
 
-Use async views for I/O-bound operations:
+Flask 3.x has native async support. Use async views for I/O-bound operations:
 
 ```python
-from flask import Flask
 import asyncio
 import httpx
 
-app = Flask(__name__)
 
-@app.route('/external-data')
+@bp.route("/external-data")
 async def get_external_data():
-    """Async route handler for external API calls."""
     async with httpx.AsyncClient() as client:
-        response = await client.get('https://api.example.com/data')
+        response = await client.get("https://api.example.com/data")
         return response.json()
 
-@app.route('/multiple-sources')
+
+@bp.route("/multiple-sources")
 async def get_multiple_sources():
-    """Fetch from multiple sources concurrently."""
     async with httpx.AsyncClient() as client:
         results = await asyncio.gather(
-            client.get('https://api1.example.com/data'),
-            client.get('https://api2.example.com/data'),
+            client.get("https://api1.example.com/data"),
+            client.get("https://api2.example.com/data"),
         )
-        return {'source1': results[0].json(), 'source2': results[1].json()}
+        return {"source1": results[0].json(), "source2": results[1].json()}
 ```
 
 ### Context Locals (g, request, session)
-
-Use Flask context locals properly:
 
 ```python
 from flask import g, request, session, current_app
 
 @app.before_request
 def load_user():
-    """Load current user into g for request duration."""
-    user_id = session.get('user_id')
-    if user_id:
-        g.user = User.query.get(user_id)
-    else:
-        g.user = None
+    user_id = session.get("user_id")
+    g.user = get_user(user_id) if user_id else None
 
-@app.route('/profile')
+@app.route("/profile")
 def profile():
-    """Use g.user set by before_request."""
     if not g.user:
-        return redirect(url_for('auth.login'))
-    return render_template('profile.html', user=g.user)
+        return redirect(url_for("auth.login"))
+    return render_template("profile.html", user=g.user)
 
-# Access configuration via current_app
+# Access configuration via current_app (not the app instance directly)
 def send_email(to: str, subject: str, body: str):
-    """Send email using app configuration."""
-    smtp_server = current_app.config['SMTP_SERVER']
-    # ... send email
+    smtp_server = current_app.config["SMTP_SERVER"]
+    # ...
+```
+
+### CLI Commands
+
+Register custom CLI commands for management tasks:
+
+```python
+import click
+from flask import Flask
+
+
+def register_cli(app: Flask):
+    @app.cli.command("seed")
+    @click.argument("count", default=10)
+    def seed_data(count):
+        """Seed the application with sample data."""
+        click.echo(f"Seeding {count} records...")
+        # ... create sample data
+        click.echo("Done")
+```
+
+Run: `flask --app run seed 50`
+
+### Logging
+
+```python
+import logging
+from flask import Flask
+
+
+def configure_logging(app: Flask):
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter(
+        "[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
+    ))
+    app.logger.addHandler(handler)
+    app.logger.setLevel(logging.INFO)
+
+# Use within request context
+@bp.route("/action")
+def some_action():
+    current_app.logger.info("Action performed by user %s", g.user)
+    return "ok"
 ```
 
 ### Security Best Practices
 
-Implement proper security measures:
-
 ```python
-# app/__init__.py
-from flask import Flask
 from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -282,45 +301,32 @@ from flask_talisman import Talisman
 csrf = CSRFProtect()
 limiter = Limiter(key_func=get_remote_address)
 
-def create_app(config_name: str = 'default') -> Flask:
+def create_app(config_name: str = "default") -> Flask:
     app = Flask(__name__)
     app.config.from_object(config[config_name])
 
-    # Security extensions
     csrf.init_app(app)
     limiter.init_app(app)
+    CORS(app, resources={r"/api/*": {"origins": app.config["ALLOWED_ORIGINS"]}})
 
-    # CORS for API endpoints
-    CORS(app, resources={r"/api/*": {"origins": app.config['ALLOWED_ORIGINS']}})
-
-    # Security headers (HTTPS, CSP, etc.)
     if not app.debug:
-        Talisman(app, content_security_policy=app.config['CSP_POLICY'])
+        Talisman(app, content_security_policy=app.config["CSP_POLICY"])
 
     return app
 
-# Rate limiting on routes
-@users_bp.route('/login', methods=['POST'])
+# Rate limiting on sensitive routes
+@auth_bp.route("/login", methods=["POST"])
 @limiter.limit("5 per minute")
 def login():
-    """Login endpoint with rate limiting."""
-    pass
-
-# Exempt CSRF for API endpoints (use token auth instead)
-@users_bp.route('/api/users', methods=['POST'])
-@csrf.exempt
-def api_create_user():
-    """API endpoint with token authentication."""
     pass
 ```
 
-### Error Handling with errorhandler
-
-Implement centralized error handling:
+### Error Handling
 
 ```python
 # app/errors.py
 from flask import jsonify, Flask
+
 
 class APIError(Exception):
     """Base API error class."""
@@ -333,20 +339,22 @@ class APIError(Exception):
             self.status_code = status_code
 
     def to_dict(self) -> dict:
-        return {'error': self.message}
+        return {"error": self.message}
+
 
 class NotFoundError(APIError):
     status_code = 404
 
+
 class ValidationError(APIError):
     status_code = 400
+
 
 class AuthenticationError(APIError):
     status_code = 401
 
-def register_error_handlers(app: Flask):
-    """Register error handlers with the application."""
 
+def register_error_handlers(app: Flask):
     @app.errorhandler(APIError)
     def handle_api_error(error):
         response = jsonify(error.to_dict())
@@ -355,188 +363,33 @@ def register_error_handlers(app: Flask):
 
     @app.errorhandler(404)
     def handle_404(error):
-        return jsonify({'error': 'Resource not found'}), 404
+        return jsonify({"error": "Resource not found"}), 404
 
     @app.errorhandler(500)
     def handle_500(error):
-        app.logger.error(f'Server error: {error}')
-        return jsonify({'error': 'Internal server error'}), 500
-
-    @app.errorhandler(Exception)
-    def handle_exception(error):
-        app.logger.exception('Unhandled exception')
-        return jsonify({'error': 'An unexpected error occurred'}), 500
+        app.logger.error(f"Server error: {error}")
+        return jsonify({"error": "Internal server error"}), 500
 ```
 
-## Authentication with Flask-Login
+## Authentication
 
-### Auth Forms
-
-```python
-# app/auth/forms.py
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
-from app.models import User
-
-
-class LoginForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    remember = BooleanField("Remember Me")
-    submit = SubmitField("Login")
-
-
-class RegistrationForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired(), Length(min=8)])
-    confirm = PasswordField("Confirm Password", validators=[
-        DataRequired(), EqualTo("password", message="Passwords must match")
-    ])
-    submit = SubmitField("Register")
-
-    def validate_email(self, field):
-        if User.query.filter_by(email=field.data).first():
-            raise ValidationError("Email already registered.")
-```
-
-### Auth Routes
-
-```python
-# app/auth/routes.py
-from flask import render_template, redirect, url_for, flash, request
-from flask_login import login_user, logout_user, login_required, current_user
-from app.auth import bp
-from app.auth.forms import LoginForm, RegistrationForm
-from app.extensions import db
-from app.models import User
-
-
-@bp.route("/register", methods=["GET", "POST"])
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for("main.index"))
-
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        user = User(email=form.email.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash("Registration successful! Please log in.", "success")
-        return redirect(url_for("auth.login"))
-
-    return render_template("auth/register.html", form=form)
-
-
-@bp.route("/login", methods=["GET", "POST"])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for("main.index"))
-
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember.data)
-            next_page = request.args.get("next")
-            flash("Logged in successfully!", "success")
-            return redirect(next_page or url_for("main.index"))
-        flash("Invalid email or password.", "danger")
-
-    return render_template("auth/login.html", form=form)
-
-
-@bp.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    flash("You have been logged out.", "info")
-    return redirect(url_for("main.index"))
-```
-
-### Protecting Routes
-
-```python
-from flask_login import login_required, current_user
-
-@bp.route("/dashboard")
-@login_required
-def dashboard():
-    return render_template("main/dashboard.html", user=current_user)
-```
-
-### Custom Decorators for Auth/Validation
-
-Create reusable decorators:
-
-```python
-# app/decorators.py
-from functools import wraps
-from flask import g, jsonify, request
-
-def login_required(f):
-    """Decorator to require authentication."""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if g.user is None:
-            return jsonify({'error': 'Authentication required'}), 401
-        return f(*args, **kwargs)
-    return decorated_function
-
-def admin_required(f):
-    """Decorator to require admin privileges."""
-    @wraps(f)
-    @login_required
-    def decorated_function(*args, **kwargs):
-        if not g.user.is_admin:
-            return jsonify({'error': 'Admin privileges required'}), 403
-        return f(*args, **kwargs)
-    return decorated_function
-
-def validate_json(*required_fields):
-    """Decorator to validate required JSON fields."""
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if not request.is_json:
-                return jsonify({'error': 'Content-Type must be application/json'}), 400
-
-            data = request.get_json()
-            missing = [field for field in required_fields if field not in data]
-            if missing:
-                return jsonify({'error': f'Missing required fields: {missing}'}), 400
-
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
-
-# Usage
-@users_bp.route('/profile', methods=['PUT'])
-@login_required
-@validate_json('email')
-def update_profile():
-    """Update user profile."""
-    return UserService.update_user(g.user.id, **request.json)
-```
+For authentication patterns with Flask-Login (forms, routes, protecting routes, custom decorators), see `references/authentication.md`.
 
 ## Critical Rules
 
 ### Always Do
 
-1. **Use application factory pattern** - Enables testing, avoids globals
-2. **Put extensions in separate file** - Prevents circular imports
-3. **Import routes at bottom of blueprint `__init__.py`** - After `bp` is created
-4. **Use `current_app` not `app`** - Inside request context
-5. **Use `with app.app_context()`** - When accessing db outside requests
+1. **Use application factory pattern** — enables testing, avoids globals
+2. **Put extensions in separate file** — prevents circular imports
+3. **Import routes at bottom of blueprint `__init__.py`** — after `bp` is created
+4. **Use `current_app` not `app`** — inside request context
 
 ### Never Do
 
-1. **Never import `app` in models** - Causes circular imports
-2. **Never access `db` before app context** - RuntimeError
-3. **Never store secrets in code** - Use environment variables
-4. **Never use `app.run()` in production** - Use Gunicorn
-5. **Never skip CSRF protection** - Keep Flask-WTF enabled or implement your own CSRF protection
+1. **Never import `app` in modules that `app` imports** — causes circular imports
+2. **Never store secrets in code** — use environment variables
+3. **Never use `app.run()` in production** — use Gunicorn
+4. **Never skip CSRF protection** — keep Flask-WTF enabled for form submissions
 
 ## Common Errors & Fixes
 
@@ -544,56 +397,42 @@ def update_profile():
 
 **Error**: `ImportError: cannot import name 'X' from partially initialized module`
 
-**Cause**: Models importing app, app importing models
-
-**Fix**: Use extensions.py pattern:
+**Fix**: Use deferred imports inside the factory function:
 
 ```python
-# WRONG - circular import
-# app/__init__.py
-from app.models import User  # models.py imports db from here!
+# WRONG
+from app.models import User  # at module level in app/__init__.py
 
-# RIGHT - deferred import
-# app/__init__.py
+# RIGHT
 def create_app():
     # ... setup ...
-    from app.models import User  # Import inside factory
+    from app.models import User  # inside factory
 ```
 
 ### Working Outside Application Context
 
 **Error**: `RuntimeError: Working outside of application context`
 
-**Cause**: Accessing `current_app`, `g`, or `db` outside request
-
-**Fix**:
+**Fix**: Wrap code in `app.app_context()`:
 
 ```python
-# WRONG
-from app import create_app
-app = create_app()
-users = User.query.all()  # No context!
-
-# RIGHT
-from app import create_app
 app = create_app()
 with app.app_context():
-    users = User.query.all()  # Has context
+    # now current_app, g, etc. are available
+    do_something()
 ```
 
 ### Blueprint Not Found
 
 **Error**: `werkzeug.routing.BuildError: Could not build url for endpoint`
 
-**Cause**: Using wrong blueprint prefix in `url_for()`
-
-**Fix**:
+**Fix**: Include the blueprint name prefix in `url_for()`:
 
 ```python
 # WRONG
 url_for("login")
 
-# RIGHT - include blueprint name
+# RIGHT
 url_for("auth.login")
 ```
 
@@ -601,19 +440,14 @@ url_for("auth.login")
 
 **Error**: `Bad Request: The CSRF token is missing`
 
-**Cause**: Form submission without CSRF token
-
-**Fix**: Include token in templates:
+**Fix**: Include the token in templates:
 
 ```html
 <form method="post">
     {{ form.hidden_tag() }}
-    <!-- Adds CSRF token -->
     <!-- form fields -->
 </form>
 ```
-
----
 
 ## Testing
 
@@ -621,17 +455,13 @@ url_for("auth.login")
 # tests/conftest.py
 import pytest
 from app import create_app
-from app.extensions import db
 from config import TestingConfig
 
 
 @pytest.fixture
 def app():
     app = create_app(TestingConfig)
-    with app.app_context():
-        db.create_all()
-        yield app
-        db.drop_all()
+    yield app
 
 
 @pytest.fixture
@@ -648,15 +478,6 @@ def runner(app):
 # tests/test_main.py
 def test_index(client):
     response = client.get("/")
-    assert response.status_code == 200
-
-
-def test_register(client):
-    response = client.post("/auth/register", data={
-        "email": "test@example.com",
-        "password": "testpass123",
-        "confirm": "testpass123",
-    }, follow_redirects=True)
     assert response.status_code == 200
 ```
 
@@ -677,24 +498,9 @@ uv add gunicorn
 uv run gunicorn -w 4 -b 0.0.0.0:8000 "run:app"
 ```
 
-### Docker
-
-```dockerfile
-FROM python:3.12-slim
-
-WORKDIR /app
-COPY . .
-
-RUN pip install uv && uv sync
-
-EXPOSE 8000
-CMD ["uv", "run", "gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "run:app"]
-```
-
 ### Environment Variables (.env)
 
 ```
 SECRET_KEY=your-production-secret-key
-DATABASE_URL=postgresql://user:pass@localhost/dbname
 FLASK_ENV=production
 ```

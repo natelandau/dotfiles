@@ -10,3 +10,9 @@ GEMINI.md
 .github/instructions/
 .cursor/
 .cache/
+.claude/settings.local.json
+.worktree/
+.worktrees/
+docs/plans/
+docs/superpowers/
+.superpowers/
