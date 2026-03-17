@@ -10,7 +10,7 @@ DRYRUN=false
 # Set Options
 # ######################
 # Confirm we have BASH greater than v4
-[ "${BASH_VERSINFO:-0}" -ge 4 ] || {
+[ "${BASH_VERSINFO:-0}" -ge 4 ] && {
     shopt -s nullglob globstar # Make `for f in *.txt` work when `*.txt` matches zero files
 }
 

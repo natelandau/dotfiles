@@ -66,6 +66,9 @@
       "Bash(rm -fr:*)",
       "Bash(rm -rf:*)",
       "Bash(git merge:*)"
+    ],
+    "additionalDirectories": [
+      "/private/tmp"
     ]
   },
   "hooks": {
@@ -106,6 +109,7 @@
     "skill-creator@claude-plugins-official": true,
     "superpowers@superpowers-marketplace": true
   },
+  "skipDangerousModePermissionPrompt": true,
   "mcpServers": {
     "context7": {
       "command": "npx",
