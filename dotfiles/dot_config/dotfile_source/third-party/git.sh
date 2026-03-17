@@ -171,6 +171,11 @@ feature_branch() {
     #   Running `fb -ud` creates a branch like `feature/nlandau/2024-11-08/1`.
     #   Running `fb -ud utils package` creates `feature/nlandau/utils-package/2024-11-08/1`.
 
+    if ! git rev-parse --show-toplevel >/dev/null 2>&1; then
+        echo "Not in a git repository"
+        return 1
+    fi
+
     local opt
     local OPTIND=1
     local dry_run=false
@@ -178,13 +183,14 @@ feature_branch() {
     local username_indexed=false
     local index=1
     local new_branch
-    local main_branch="main"
+    local main_branch
     local prefix="feature"
     local today
     local username
     local additional_path
+    main_branch=$(git remote show origin | grep 'HEAD branch' | awk '{print $3;}')
     today=$(date +%Y-%m-%d)
-    username=$(echo "$USER" | tr '[:upper:]' '[:lower:]') # Convert $USER to lowercase
+    username="${USER,,}" # Convert $USER to lowercase
 
     while getopts "hdun" opt; do
         case "$opt" in
@@ -219,7 +225,7 @@ End-Of-Usage
     done
     shift $((OPTIND - 1))
 
-    additional_path=$(printf "%s" "$*" | tr '[:upper:]' '[:lower:]' | tr -c '[:alnum:]-' '-') # Convert arguments to hyphen-separated string
+    additional_path=$(printf "%s" "$*" | tr '[:upper:]' '[:lower:]' | tr -c '[:alnum:]-' '-' | sed 's/-\{2,\}/-/g; s/-$//')
 
     # Construct the branch path prefix with optional additional path
     local branch_path="${prefix}"
@@ -235,11 +241,11 @@ End-Of-Usage
     if [[ ${dry_run} == false && "$(git branch --show-current)" != "$main_branch" ]]; then
         echo "Switching to ${main_branch} and pulling latest changes..."
         git checkout "${main_branch}"
-        git pull
+        git pull --ff-only
     fi
 
     # Find the next available branch index
-    while git rev-parse --verify --quiet "${branch_path}/${index}"; do
+    while git rev-parse --verify --quiet "${branch_path}/${index}" >/dev/null 2>&1; do
         index=$((index + 1))
     done
 
