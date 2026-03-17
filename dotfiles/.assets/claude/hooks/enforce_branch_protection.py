@@ -91,7 +91,7 @@ RULES: tuple[Rule, ...] = (
     # === Destructive commands (blocked on ALL branches) ===
     Rule(
         category=RuleCategory.DESTRUCTIVE,
-        pattern=r"^\s*git\s+push\b.*(?:--force\b|--force-with-lease\b|-[a-zA-Z]*f)",
+        pattern=r"^\s*git\s+push\b.*(?:--force\b|--force-with-lease\b|\s-[a-zA-Z]*f)",
         reason="Force push rewrites remote history and can destroy others' work",
     ),
     Rule(
