@@ -68,6 +68,6 @@ git config --worktree core.hookspath "$hooks"
 
 Never use `$()` command substitution in commit commands. For multi-line commit messages:
 
-1. Write the message to `/tmp/commit_msg.txt` using the Write tool
-2. Run `git commit -F /tmp/commit_msg.txt`
-3. Run `rm /tmp/commit_msg.txt`
+1. Write the message to `/tmp/<random characters>.txt` using the Write tool. Random characters are to avoid conflicts with other files in the `/tmp` directory.
+2. Run `git commit -F /tmp/<random characters>.txt`
+3. Run `rm /tmp/<random characters>.txt`
