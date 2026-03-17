@@ -144,21 +144,45 @@ git_churn() {
 
 purge_merged_branches() {
     # DESC:	Purges merged branches no longer available on remote
-    if ! git rev-parse --show-toplevel 2>/dev/null; then
+    if ! git rev-parse --show-toplevel >/dev/null 2>&1; then
         echo "Not in a git repository"
         return 1
     fi
 
     local main_branch
+    local gone_branches
+    local count=0
     main_branch=$(git remote show origin | grep 'HEAD branch' | awk '{print $3;}')
     git fetch -p
     git checkout "${main_branch}"
     if command -v pull >/dev/null; then
         pull
+    else
+        git pull --ff-only
     fi
-    for gone_branch in $(git branch -vv | grep ': gone]' | grep -v "\*" | awk '{ print $1; }'); do
+
+    mapfile -t gone_branches < <(git branch --format='%(refname:short) %(upstream:track)' | grep '\[gone\]' | awk '{print $1}')
+
+    if [[ ${#gone_branches[@]} -eq 0 ]]; then
+        echo "No gone branches to delete"
+        return 0
+    fi
+
+    echo "Branches to delete:"
+    printf "  %s\n" "${gone_branches[@]}"
+
+    local worktree_path
+    for gone_branch in "${gone_branches[@]}"; do
+        # Clean up associated worktree if one exists for this branch
+        worktree_path=$(git worktree list --porcelain | grep -B2 "branch refs/heads/${gone_branch}$" | grep '^worktree ' | sed 's/^worktree //')
+        if [[ -n "${worktree_path}" ]]; then
+            echo "  Removing worktree at ${worktree_path}"
+            git worktree remove --force "${worktree_path}"
+        fi
         git branch --delete --force "${gone_branch}"
+        count=$((count + 1))
     done
+    echo "Deleted ${count} branch(es)"
 }
 alias pmb="purge_merged_branches" # Purge merged branches no longer available on remote
 
