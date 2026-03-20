@@ -43,8 +43,10 @@ quick-terminal-screen = main
 # OTHER
 cursor-click-to-move = true
 confirm-close-surface = false
+focus-follows-mouse = true
 link-url = true
 macos-titlebar-style = tabs
+macos-non-native-fullscreen = true
 
 # SHELL INTEGRATION
 shell-integration-features = true
@@ -53,7 +55,7 @@ shell-integration-features = ssh-terminfo
 
 # ### KEYBINDINGS ####
 # ####################
-keybind = global:ctrl+shift+space=toggle_quick_terminal
+keybind = global:ctrl+shift+`=toggle_quick_terminal
 
 # WINDOW SPLITS
 # keybind = ctrl+\=new_split:right
@@ -66,8 +68,8 @@ keybind = global:ctrl+shift+space=toggle_quick_terminal
 # keybind = ctrl+l=goto_split:right
 keybind = super+shift+enter=new_split:auto
 
-
-
+keybind = super+left=goto_split:previous
+keybind = super+right=goto_split:next
 
 keybind = split/arrow_up=new_split:up
 keybind = split/arrow_down=new_split:down

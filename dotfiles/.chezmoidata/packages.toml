@@ -65,7 +65,6 @@
             "git-credential-manager",
             "grandperspective",              # Disk usage visualizer
             "iterm2",                        # Terminal emulator
-            "jordanbaird-ice",               # Menu bar customization
             "lingon-x",
             "orbstack",                      # Docker replacement
             "tailscale",
