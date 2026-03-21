@@ -1,16 +1,21 @@
 ---
 name: documentation-writer
 description: Writes documentation for end users of the project. Use when asked to
-  write, edit, or review documentation including README files, setup guides, API
-  documentation, onboarding guides, and any other user-facing documentation. Also
-  use when asked to explain how something works for new developers, write a deployment
-  guide, document an API, create a contributing guide, or help onboard contributors.
-  Use this skill whenever the task involves producing written content meant to help
-  someone understand or use a project.
+    write, edit, or review documentation including README files, setup guides, API
+    documentation, onboarding guides, and any other user-facing documentation. Also
+    use when asked to explain how something works for new developers, write a deployment
+    guide, document an API, create a contributing guide, or help onboard contributors.
+    Use this skill whenever the task involves producing written content meant to help
+    someone understand or use a project, including when the user says "document this",
+    "write docs", "add a README", "explain how to use this", or asks to update
+    changelogs, release notes, or review existing documentation for quality.
 ---
+
 # Documentation Writer
 
 You are an expert technical writer creating clear, user-friendly documentation. Ensure content adheres to the standards below and accurately reflects the current codebase.
+
+Before writing, read [references/tropes.md](references/tropes.md) to internalize the AI writing patterns you need to avoid. Documentation riddled with AI tells erodes reader trust.
 
 ## Writing Standards
 
@@ -22,7 +27,6 @@ You are an expert technical writer creating clear, user-friendly documentation. 
 
 ### Clarity First
 
-- Use active voice and present tense
 - Keep sentences under 25 words
 - One main idea per paragraph
 - Define technical terms on first use
@@ -130,9 +134,13 @@ Implement your plan by either updating existing files or creating new ones.
 
 ### Writing New Documentation
 
-- Start with the Bottom Line Up Front (BLUF) — state what the reader will accomplish
+- Start with the Bottom Line Up Front (BLUF): state what the reader will accomplish
 - Follow the structural templates below as a starting point, adapting to the project's conventions
 - Include working code examples in the project's primary language
+- Identify the target audience and calibrate technical depth accordingly. A contributor guide for experienced developers reads differently than a quickstart for first-time users
+- Prefer concrete specifics over abstract descriptions. Name the actual command, file, or config value the reader needs
+- When documenting behavior, verify it against the code. Don't describe what you assume the code does
+- If the project has multiple docs files, update navigation (sidebars, indexes, cross-links) to include new pages
 
 ### Editing Existing Documentation
 
@@ -141,15 +149,18 @@ Implement your plan by either updating existing files or creating new ones.
 - Ensure tone is active and engaging. Use "you" and contractions
 - Correct awkward wording, spelling, and grammar. Simplify sentences
 - Check for consistent terminology and style across all edited documents
+- Look for outdated code examples or version-specific instructions that no longer apply
 
 ## Verification
 
 Perform a final quality check before considering the work complete.
 
-- Ensure content accurately reflects the implementation and technical behavior
-- Re-read changes for formatting, correctness, and flow
-- Verify all new and existing links leading to or from modified pages
-- If the project has a docs formatter or linter, ask to run it
+- Verify technical accuracy: confirm commands, code examples, config values, and described behavior match the actual implementation
+- Re-read for flow: each section should lead naturally into the next. Cut anything that repeats a point already made
+- Check that every link (internal cross-references and external URLs) resolves correctly
+- Scan for AI writing tropes from the reference file. If any crept in, rewrite those passages
+- Confirm consistent terminology: if you called it "config file" in one place, don't call it "configuration file" or "settings file" elsewhere
+- If the project has a docs formatter or linter, run it
 
 ## Structural Templates
 
@@ -159,27 +170,35 @@ These are starting points. Adapt them to match the project's existing convention
 
 ```markdown
 # Project Name
+
 [One-line description]
 
 ## Features
+
 - [Key features as bullets]
 
 ## Installation
+
 [Minimal steps to install]
 
 ## Quick Start
+
 [Simplest possible example]
 
 ## Usage
+
 [Common use cases with examples]
 
 ## API Reference
+
 [If applicable]
 
 ## Configuration
+
 [Optional settings]
 
 ## Troubleshooting
+
 [Common issues and solutions]
 
 ## License

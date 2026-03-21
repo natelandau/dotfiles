@@ -74,14 +74,14 @@ v5 changed form structure significantly from v4. The old `form-control`/`label-t
 
 ### Common v4 → v5 Mistakes
 
-| v4 (wrong) | v5 (correct) |
-|---|---|
-| `<div class="form-control">` | `<fieldset class="fieldset">` |
-| `<label><span class="label-text">` | `<legend class="fieldset-legend">` |
-| `<input class="input-bordered input">` | `<label class="input w-full"><input class="grow">` |
-| `<select class="select-bordered select">` | `<select class="select w-full">` |
-| `<textarea class="textarea-bordered">` | `<textarea class="textarea w-full">` |
-| `<nav class="btm-nav">` | `<div class="dock">` |
+| v4 (wrong)                                | v5 (correct)                                       |
+| ----------------------------------------- | -------------------------------------------------- |
+| `<div class="form-control">`              | `<fieldset class="fieldset">`                      |
+| `<label><span class="label-text">`        | `<legend class="fieldset-legend">`                 |
+| `<input class="input-bordered input">`    | `<label class="input w-full"><input class="grow">` |
+| `<select class="select-bordered select">` | `<select class="select w-full">`                   |
+| `<textarea class="textarea-bordered">`    | `<textarea class="textarea w-full">`               |
+| `<nav class="btm-nav">`                   | `<div class="dock">`                               |
 
 For complete form examples, validation patterns, error handling, and textarea patterns, see `references/forms.md`.
 
