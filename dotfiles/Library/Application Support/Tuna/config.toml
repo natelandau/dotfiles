@@ -7,7 +7,7 @@ enabledIdentifiers = [ 'com.brnbw.tuna.plugins.github' ]
 carbonKeyCode = 49
 carbonModifiers = 256
 
-[hotkeys.app.leaderMode]
+[hotkeys.app.textMode]
 carbonKeyCode = 49
 carbonModifiers = 2304
 

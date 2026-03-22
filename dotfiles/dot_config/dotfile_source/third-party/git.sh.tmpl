@@ -143,8 +143,13 @@ git_churn() {
 }
 
 {{ if lookPath "gx" -}}
+alias push="gx push"
+alias pull="gx pull"
 alias pmb="gx done"
-{{- else }}
+alias fb="gx feat"
+{{- end }}
+
+{{ if not (lookPath "gx") -}}
 purge_merged_branches() {
     # DESC:	Purges merged branches no longer available on remote
     if ! git rev-parse --show-toplevel >/dev/null 2>&1; then
@@ -188,12 +193,6 @@ purge_merged_branches() {
     echo "Deleted ${count} branch(es)"
 }
 alias pmb="purge_merged_branches" # Purge merged branches no longer available on remote
-{{- end }}
-
-
-{{ if lookPath "gx" -}}
-alias fb="gx feat"
-{{- else }}
 feature_branch() {
     # DESC:	Creates a feature branch with optional <name>
     #       https://gist.github.com/coltenkrauter/3e6a2f71cc6e37b03f227b8c7a8f7825
