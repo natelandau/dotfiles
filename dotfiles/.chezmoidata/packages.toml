@@ -150,11 +150,11 @@
             "iina",
             "kap",
             "librewolf",
-            "lulu",          # Firewall
+            "lulu",            # Firewall
+            "mikker/tap/tuna",
             "mimestream",
             "obsidian",
             "plex",
-            "raycast",
             "roon",
             "slack",
             "stats",
