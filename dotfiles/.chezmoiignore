@@ -20,6 +20,7 @@ Library
 
 {{ if not (lookPath "claude") }}
 .claude
+.config/ccstatusline
 {{ end }}
 
 {{ if not (and (eq .chezmoi.os "darwin") (.personal_computer)) }}
