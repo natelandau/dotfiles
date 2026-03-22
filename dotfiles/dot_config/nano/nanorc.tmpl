@@ -1,5 +1,3 @@
-{{- if or (and (eq .chezmoi.os "linux") (eq .chezmoi.osRelease.id "debian") (gt .chezmoi.osRelease.versionID "11" )) (eq .chezmoi.os "darwin") -}}
-
 # enables the minibar feature
 set minibar
 
@@ -25,6 +23,3 @@ set tabstospaces
 # Automatically indent a newly created line to the same number of tabs and/or
 # spaces as the previous line.
 set autoindent
-
-
-{{- end }}

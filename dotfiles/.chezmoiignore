@@ -35,6 +35,10 @@ Library
 .config/ghostty
 {{ end }}
 
+{{ if not (or (and (eq .chezmoi.os "linux") (eq .chezmoi.osRelease.id "debian") (gt .chezmoi.osRelease.versionID "11" )) (eq .chezmoi.os "darwin")) }}
+.config/nano
+{{ end }}
+
 {{ if not (and (.use_secrets) (lookPath "secrets-sync")) }}
 .config/secrets-sync
 {{ end }}

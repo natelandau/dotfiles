@@ -1,4 +1,3 @@
-{{- if lookPath "claude" -}}
 {
   "version": 3,
   "lines": [
@@ -101,4 +100,3 @@
     "autoAlign": false
   }
 }
-{{- end }}
