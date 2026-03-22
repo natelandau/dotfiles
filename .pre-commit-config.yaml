@@ -7,7 +7,7 @@ default_stages: [pre-commit, manual]
 fail_fast: true
 repos:
   - repo: "https://github.com/commitizen-tools/commitizen"
-    rev: v4.12.0
+    rev: v4.13.9
     hooks:
       - id: commitizen
       - id: commitizen-branch
@@ -36,18 +36,18 @@ repos:
       - id: trailing-whitespace
 
   - repo: "https://github.com/gitleaks/gitleaks"
-    rev: v8.30.0
+    rev: v8.30.1
     hooks:
       - id: gitleaks
 
   - repo: "https://github.com/crate-ci/committed"
-    rev: v1.1.10
+    rev: v1.1.11
     hooks:
       - id: committed
         stages: [commit-msg]
 
   - repo: "https://github.com/adhtruong/mirrors-typos"
-    rev: v1.42.1
+    rev: v1.44.0
     hooks:
       - id: typos
         args: ["--force-exclude"]
