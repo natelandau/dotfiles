@@ -39,14 +39,15 @@
 [packages.python]
     to_remove = []
     [packages.python.common]
-        packages = ["halper", "pygments"]
+        packages = ["git-gx", "halper", "pygments"]
     [packages.python.dev_computer]
         packages = ["ansible-core", "cookiecutter"]
     [packages.python.homelab_member]
-        # 'GITEA_ADDRESS' is overwritten by the 'gitea_address' secret
-        packages = ["git+GITEA_ADDRESS/natelandau/usrbin"]
+
+        packages = []
     [packages.python.personal_computer]
-        packages = ["vid-cleaner"]
+        # 'GITEA_ADDRESS' is overwritten by the 'gitea_address' secret
+        packages = ["git+GITEA_ADDRESS/natelandau/usrbin", "vid-cleaner"]
 [packages.homebrew]
     to_remove = ["btop", "htop", "istat-menus", "qlimagesize", "rocket", "shotrr"]
     [packages.homebrew.common]

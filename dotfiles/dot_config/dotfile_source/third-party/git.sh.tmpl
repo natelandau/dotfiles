@@ -142,6 +142,9 @@ git_churn() {
     git --no-pager log --all --find-renames --find-copies --name-only --format='format:' "$@" | grep -v '^$' | sort | uniq -c | sort -nr | head
 }
 
+{{ if lookPath "gx" -}}
+alias pmb="gx done"
+{{- else }}
 purge_merged_branches() {
     # DESC:	Purges merged branches no longer available on remote
     if ! git rev-parse --show-toplevel >/dev/null 2>&1; then
@@ -185,7 +188,12 @@ purge_merged_branches() {
     echo "Deleted ${count} branch(es)"
 }
 alias pmb="purge_merged_branches" # Purge merged branches no longer available on remote
+{{- end }}
 
+
+{{ if lookPath "gx" -}}
+alias fb="gx feat"
+{{- else }}
 feature_branch() {
     # DESC:	Creates a feature branch with optional <name>
     #       https://gist.github.com/coltenkrauter/3e6a2f71cc6e37b03f227b8c7a8f7825
@@ -283,6 +291,7 @@ End-Of-Usage
     fi
 }
 alias fb="feature_branch" # Create a feature branch. Alias for feature_branch
+{{- end }}
 
 # From Git-Extras (https://github.com/tj/git-extras)
 alias obliterate='git obliterate'       # Completely remove a file from the repository, including past commits and tags
