@@ -191,7 +191,7 @@ class BinaryUpdater:
         self.repository = repository
         self.version_regex = version_regex
         self.remove_from_release = remove_from_release
-        self.executable_name = executable_name if executable_name else binary_name
+        self.executable_name = executable_name or binary_name
         # Get the latest release information
         self.latest_version: str = re.search(r"(\d+\.\d+\.\d+)", self.release_info["name"]).group(1)
         self.is_draft: bool = self.release_info["draft"]
@@ -606,7 +606,7 @@ def install_deb_package(binary: BinaryUpdater, dry_run: bool) -> None:
         logger.debug(f"Installing {download_path} using dpkg")
         try:
             with sh.contrib.sudo:
-                dpkg("-i", download_path, _fg=True)
+                dpkg("-i", "--force-overwrite", download_path, _fg=True)
         except sh.ErrorReturnCode as e:
             logger.error(f"Failed to install {binary.binary_name}: {e}")
             raise typer.Exit(1) from e
