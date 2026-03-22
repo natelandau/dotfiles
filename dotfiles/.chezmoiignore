@@ -56,7 +56,6 @@ Library
 {{ end }}
 
 {{ if not (lookPath "vidcleaner") }}
-.config/vidcleaner
 .config/vid-cleaner
 {{ end }}
 
