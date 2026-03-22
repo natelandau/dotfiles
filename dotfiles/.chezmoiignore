@@ -20,6 +20,7 @@ Library
 
 {{ if not (lookPath "claude") }}
 .claude
+.config/ccstatusline
 {{ end }}
 
 {{ if not (and (eq .chezmoi.os "darwin") (.personal_computer)) }}
@@ -32,6 +33,10 @@ Library
 
 {{ if not (lookPath "ghostty") }}
 .config/ghostty
+{{ end }}
+
+{{ if not (or (and (eq .chezmoi.os "linux") (eq .chezmoi.osRelease.id "debian") (gt .chezmoi.osRelease.versionID "11" )) (eq .chezmoi.os "darwin")) }}
+.config/nano
 {{ end }}
 
 {{ if not (and (.use_secrets) (lookPath "secrets-sync")) }}
