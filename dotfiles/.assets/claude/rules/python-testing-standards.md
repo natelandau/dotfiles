@@ -7,25 +7,27 @@ paths:
 
 ## Python testing standards (pytest)
 
+- Do not use unittest
 - Review existing fixtures and reuse them if possible
 - Write single sentence docstrings in imperative voice starting with "Verify"
 - Structure test body with given/when/then comments
-- Use pytest-mock plugin. Do not use unittest.
-- Include unit and integration tests
-- Use fixture factories to create reusable test data
+- Use fixture factories when tests need variants of the same data
 - Use `@pytest.mark.parametrize` to run the same test with different inputs
-- Ensure tests are stateless and independent
-- Use the `mocker` fixture provided by `pytest-mock` for mocking
-- Mock external dependencies to isolate tests
-- Use `autospec=True` when mocking
+- Use the `mocker` fixture from `pytest-mock` for mocking with `autospec=True`
+- Name tests `test_<unit>_<scenario>` (e.g., `test_parse_config_missing_file`, `test_login_invalid_password`)
 
-## Test Structure
+## Test file organization
+
+- Use top-level folders for test types: `tests/unit/`, `tests/integration/`
+- Within each folder, mirror the source tree (e.g., `src/auth/login.py` → `tests/unit/auth/test_login.py`)
+
+## Test structure
 
 Use the Given/When/Then pattern:
 
 ```python
-def test_user_can_login():
-    """Verify the user can login."""
+def test_login_valid_credentials():
+    """Verify successful login with valid credentials."""
     # Given a user
     user = create_test_user(email="test@example.com", password="secure123")
 
@@ -37,28 +39,7 @@ def test_user_can_login():
     assert result.user.email == "test@example.com"
 ```
 
-## Unit Tests
-
-- Test individual functions/methods in isolation
-- Mock external dependencies
-- Fast execution
-- High coverage of logic branches
-
-## Integration Tests
-
-- Test component interactions
-- Use real dependencies where practical
-- Verify data flows correctly
-
-## Edge Cases
-
-- Empty inputs
-- Boundary values
-- Invalid inputs
-- Error conditions
-- Concurrent access (if applicable)
-
-### Example of good tests
+### Example with fixtures and mocking
 
 ```python
 @pytest.fixture
@@ -67,15 +48,11 @@ def user_factory():
         return {"username": username, "email": email}
     return create_user
 
-def test_backup_file_creates_backup(tmp_path, mocker, user_factory) -> None:
-    """Verify creating backups file with .bak extension."""
-    # Given a constant return from module.function
+def test_backup_file_creates_backup(tmp_path, mocker) -> None:
+    """Verify backup creates file with .bak extension."""
+    # Given a mocked dependency
     mock_function = mocker.patch('module.function', autospec=True)
     mock_function.return_value = 'mocked'
-
-    # Given a user
-    user = user_factory("testuser", "test@example.com")
-    assert user["username"] == "testuser"
 
     # Given a test file exists
     file = tmp_path / "test.txt"

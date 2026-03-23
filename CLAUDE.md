@@ -26,9 +26,6 @@ uv run duty clean             # Remove .DS_Store files
 uv sync                       # Install/sync Python dependencies
 uv run duty update            # Update uv lock, sync, and pre-commit hooks
 
-# Committing
-uv run cz c                   # Commit with commitizen
-
 # Chezmoi
 chezmoi apply                 # Apply dotfiles to the system
 chezmoi diff                  # Preview changes before applying
@@ -64,7 +61,7 @@ Pre-commit is configured with `prek` (a pre-commit alternative). Hooks include:
 
 ### Commit messages
 
-Use angular-style conventional commits via `commitizen`. Run `uv run cz c` for interactive commit or follow the format: `<type>(<scope>): <subject>`.
+Use angular-style conventional commits: `<type>(<scope>): <subject>`.
 
 ### Data files
 

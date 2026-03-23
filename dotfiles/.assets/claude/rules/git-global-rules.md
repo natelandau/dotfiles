@@ -5,20 +5,18 @@ description: Global Git workflow rules. Use this when working with git and git w
 
 # Git global rules
 
-- Before completing any task, you MUST run `/commit-smart` to commit your changes.
-- Use atomic commits with descriptive messages.
+- Use atomic commits
 - Never push or merge unless explicitly asked
-- Check your path. Don't use `git -C` unless you absolutely have to.
+- Don't use `git -C` unless absolutely necessary
 - If pre-commit hooks modify files during commit, re-stage the modified files and retry the commit
 
 ## Git commit messages
 
-- Always use angular style conventional commits style.
 - The first line of the commit should never be more than 70 characters
-- Each commit message consists of a header, and a body. The header has a special format that includes a type, an optional scope and a subject: `<type>(<scope>): <subject>`
+- Each commit message consists of a header and a body. The header has a special format that includes a type, an optional scope and a subject: `<type>(<scope>): <subject>`
 - The types must be one of the following. No exceptions:
-    - **build**: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
-    - **ci**: Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
+    - **build**: Changes that affect the build system or external dependencies
+    - **ci**: Changes to CI configuration files and scripts
     - **docs**: Documentation only changes
     - **feat**: A new feature
     - **fix**: A bug fix
@@ -26,10 +24,10 @@ description: Global Git workflow rules. Use this when working with git and git w
     - **refactor**: A code change that neither fixes a bug nor adds a feature
     - **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
     - **test**: Adding missing tests or correcting existing tests
-- The scope should be the name of the package, feature, codebase, or area that is effected
-- use the imperative, present tense: "change" not "changed" nor "changes"
-- don't capitalize the first letter of the subject
-- no dot (.) at the end of the subject
+- The scope should be the name of the package, feature, codebase, or area that is affected
+- Use the imperative, present tense: "change" not "changed" nor "changes"
+- Don't capitalize the first letter of the subject
+- No dot (.) at the end of the subject
 - The body explains the motivation for the change. Explain the WHY not the WHAT.
 
 ## Git Worktree Rules
@@ -63,11 +61,3 @@ git config extensions.worktreeconfig true
 hooks="$(git rev-parse --git-common-dir)/hooks"
 git config --worktree core.hookspath "$hooks"
 ```
-
-## Multi-line commit messages
-
-Never use `$()` command substitution in commit commands. For multi-line commit messages:
-
-1. Write the message to `/tmp/<random characters>.txt` using the Write tool. Random characters are to avoid conflicts with other files in the `/tmp` directory.
-2. Run `git commit -F /tmp/<random characters>.txt`
-3. Run `rm /tmp/<random characters>.txt`

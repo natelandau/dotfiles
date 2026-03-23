@@ -20,12 +20,10 @@
         "type": "git-branch",
         "color": "white",
         "rawValue": false,
-        "merge": true
-      },
-      {
-        "id": "7",
-        "type": "git-changes",
-        "color": "white"
+        "metadata": {
+          "linkToGitHub": "false",
+          "hideNoGit": "false"
+        }
       },
       {
         "id": "3",
@@ -43,19 +41,19 @@
         "type": "session-usage",
         "color": "brightMagenta",
         "rawValue": false,
+        "merge": true,
         "metadata": {
           "display": "progress-short",
           "invert": "false"
-        },
-        "merge": true
+        }
       },
       {
         "id": "4153981b-9f8a-4def-8e6c-a368e0ddd200",
         "type": "reset-timer",
+        "color": "brightMagenta",
         "metadata": {
           "compact": "true"
-        },
-        "color": "brightMagenta"
+        }
       }
     ],
     [

@@ -6,7 +6,6 @@ alias gcm="git --no-pager commit -m"                               # Commit w/ m
 alias gcv="git --no-pager commit --no-verify"                      # Commit without verification
 alias ginitsubs='git submodule update --init --recursive'          # Init and update all submodules
 alias gundo="git reset --soft HEAD^"                               # Undo last commit
-alias gs='git --no-pager status -s --untracked-files=all --branch' # Git status
 alias gss='git remote update && git status -uno'                   # Are we behind remote?
 alias gsubs='git submodule update --recursive --remote'            # Update all submodules
 alias undopush="git push -f origin HEAD^:master"                   # Undo a git push
@@ -147,9 +146,11 @@ alias push="gx push"
 alias pull="gx pull"
 alias pmb="gx done"
 alias fb="gx feat"
+alias gs="gx status"
 {{- end }}
 
 {{ if not (lookPath "gx") -}}
+alias gs='git --no-pager status -s --untracked-files=all --branch' # Git status
 purge_merged_branches() {
     # DESC:	Purges merged branches no longer available on remote
     if ! git rev-parse --show-toplevel >/dev/null 2>&1; then

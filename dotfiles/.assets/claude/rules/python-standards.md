@@ -14,12 +14,10 @@ paths:
 - Use list comprehensions and generator expressions
 - Use `enumerate()` instead of manual counter variables
 - Use Pathlib for file system operations. Do not use `os.path` or `os.`.
-- Use `typing.Protocol` for interfaces
 
 ## Python docstring standards
 
 - Include docstrings for all public functions, classes, and methods
-- Document function parameters, return values, and exceptions raised
 - **Always use Google format docstrings**
 - Do not document return when nothing is returned
 - **Only write in imperative voice.** Never say "This function ..."
@@ -48,12 +46,17 @@ def read_config(path: Path = "config.toml", globs: list[str] | None = None) -> l
 
 ## Python exceptions standards
 
-- Do not silently swallow exceptions without logging
+- Do not silently swallow exceptions
 - Do not use bare except: clauses
 - Catch specific exceptions rather than broad exception types
-- Use context managers (with statements) for resource cleanup
-- Provide meaningful error messages
-- Add messages to a variable before adding it to the exception
+- Include the failing value and expected condition in error messages
+
+## Python code organization
+
+- Prefer classes over groups of loosely related functions when operations share state, configuration, or represent a cohesive domain concept (e.g., service handlers, API clients, data pipelines)
+- If multiple functions pass the same arguments or operate on the same data, that's a signal they belong as methods on a class
+- A single function or a small set of pure utility functions is fine on its own — don't wrap everything in a class for the sake of it
+- Group related behavior behind a clear interface rather than scattering it across module-level functions
 
 ## Python class style
 
@@ -61,7 +64,7 @@ def read_config(path: Path = "config.toml", globs: list[str] | None = None) -> l
 - Keep **init** simple; avoid complex logic
 - Use dataclasses for simple data containers
 - Prefer composition over inheritance
-- Avoid creating additional class functions if they are not necessary
+- Prefer fewer public methods; keep internal logic private
 - Use @property for computed attributes
 
 ## Python typing standards
@@ -79,10 +82,9 @@ def read_config(path: Path = "config.toml", globs: list[str] | None = None) -> l
 - Use `|` for union types: `str | None` not `Union[str, None]`
 - Use `TypeVar` for generic types
 - Use `Literal` for literal types
+- Use `typing.Protocol` for interfaces
 
 ## Python naming conventions
-
-Always follow these standards for Python naming convention.
 
 - Python files: `snake_case.py` (e.g., `user_handlers.py`, `database_utils.py`)
 - Class names: `CamelCase` (e.g., `UserHandler`, `DatabaseConnection`).
