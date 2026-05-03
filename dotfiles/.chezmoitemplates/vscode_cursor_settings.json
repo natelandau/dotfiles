@@ -327,7 +327,7 @@
   "prettier.tabWidth": 4,
   "prettier.useTabs": false,
   "projectManager.any.baseFolders": [
-    "$home\\repos"
+    "$home/repos"
   ],
   "projectManager.any.ignoredFolders": [
     "node_modules",
@@ -336,10 +336,8 @@
   ],
   "projectManager.any.maxDepthRecursion": 1,
   "projectManager.git.baseFolders": [
-    "$home\\repos",
-    "$home\\.local\\share",
-    "$home\\repos\\tmp","
-        $home\\.local\\share\\agent-glue"
+    "$home/repos",
+    "$home/.local/share"
   ],
   "projectManager.git.maxDepthRecursion": 1,
   "projectManager.groupList": true,
@@ -535,7 +533,7 @@
     "terminalCursor.foreground": "#d8dee8",
     "textLink.foreground": "#FFA000"
   },
-  "workbench.colorTheme": "Nord",
+  "workbench.colorTheme": "Warm Burnout Dark",
   "workbench.editor.pinnedTabsOnSeparateRow": true,
   "workbench.editorAssociations": {
     "*.csv": "gc-excelviewer-csv-editor",
