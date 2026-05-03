@@ -5,9 +5,7 @@ description: Global Git workflow rules. Use this when working with git and git w
 
 # Git global rules
 
-- Use atomic commits
 - Never push or merge unless explicitly asked
-- Don't use `git -C` unless absolutely necessary
 - If pre-commit hooks modify files during commit, re-stage the modified files and retry the commit
 
 ## Git commit messages

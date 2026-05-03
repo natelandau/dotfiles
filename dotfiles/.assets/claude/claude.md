@@ -1,0 +1,1 @@
+- When unfamiliar with a tool/platform, research docs before reasoning from general knowledge

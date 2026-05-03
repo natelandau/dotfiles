@@ -26,15 +26,6 @@ SUBJECT="%s"
 
 FORMAT="$HASH $RELATIVE_TIME{$AUTHOR{$REFS $SUBJECT"
 
-pretty_git_log() {
-    git log --graph --pretty="tformat:$FORMAT" \
-        | column -t -s '{' \
-        | \less -XRS --quit-if-one-screen
-}
-
-alias gl="pretty_git_log" # A nicer Git Log
-
-alias gll='git log --pretty=format:"%C(yellow)%h %ad%Cred%d %Creset%s%Cblue [%cn]" --decorate --date=short' # A nicer Git Log
 
 applyignore() {
     # DESC:   Applies changes to the git .ignorefile after the files mentioned were already committed to the repo
@@ -147,10 +138,12 @@ alias pull="gx pull"
 alias pmb="gx done"
 alias fb="gx feat"
 alias gs="gx status"
+alias gl="gx log -c 20"
 {{- end }}
 
 {{ if not (lookPath "gx") -}}
 alias gs='git --no-pager status -s --untracked-files=all --branch' # Git status
+alias gl='git log --pretty=format:"%C(yellow)%h %C(cyan)%ad%Cred%d %Creset%s%Cblue [%cn]" --decorate --date=short' # A nicer Git Log
 purge_merged_branches() {
     # DESC:	Purges merged branches no longer available on remote
     if ! git rev-parse --show-toplevel >/dev/null 2>&1; then

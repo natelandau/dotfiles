@@ -14,6 +14,7 @@ paths:
 - Use list comprehensions and generator expressions
 - Use `enumerate()` instead of manual counter variables
 - Use Pathlib for file system operations. Do not use `os.path` or `os.`.
+- Always use keyword arguments for function calls that have more than one argument.
 
 ## Python docstring standards
 
