@@ -3,3 +3,7 @@
 # Prepend with a `/` to specify a specific path relative to $HOME.
 
 /.config/usrbin/sabc.toml
+/.config/ghostty/themes/warm-burnout-dark
+/.config/ghostty/themes/warm-burnout-light
+/.config/eza/theme.yml
+/.config/dotfile_source/third-party/eza.sh
