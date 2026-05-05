@@ -1,0 +1,438 @@
+#!/usr/bin/env -S uv run --script --quiet
+
+"""CLI for managing sabNZBD via the api."""
+
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "httpx",
+#     "nllog",
+#     "rich",
+#     "typer",
+# ]
+# ///
+
+import os
+import sys
+import tomllib
+from dataclasses import dataclass
+from enum import IntEnum
+from pathlib import Path
+from time import sleep
+from typing import Annotated, Final
+
+import httpx
+import typer
+from nllog import configure, console, debug, dryrun, error, info, step, trace, warning
+from rich.json import JSON
+from rich.table import Table
+from typer import rich_utils
+
+# ############## CONSTANTS ##############
+
+__version__ = "0.1.0"
+
+PACKAGE_NAME = (
+    __package__.replace("_", "-").replace(".", "-").replace(" ", "-") if __package__ else "sabc"
+)
+CONFIG_DIR = Path(os.getenv("XDG_CONFIG_HOME", "~/.config")).expanduser().absolute() / PACKAGE_NAME
+SABC_RSS_FEED_CHECK_WAIT_TIME: Final[int] = 10
+
+
+class Verbosity(IntEnum):
+    """Output verbosity levels for the CLI."""
+
+    INFO = 0
+    DEBUG = 1
+    TRACE = 2
+
+
+# ############## CONFIG ##############
+
+
+@dataclass(frozen=True)
+class SabcConfig:
+    """User-configurable settings for the package.
+
+    Immutable after creation. Defaults match the original hardcoded values
+    so the package works identically without a config file.
+    """
+
+    sabnzbd_api_key: str = ""
+    sabnzbd_url: str = ""
+    something: str = ""
+
+    def __post_init__(self) -> None:
+        """Validate the config."""
+        if not self.sabnzbd_api_key:
+            msg = "sabnzbd_api_key is required"
+            raise ValueError(msg)
+        if not self.sabnzbd_url:
+            msg = "sabnzbd_url is required"
+            raise ValueError(msg)
+
+
+def _load_toml() -> dict:
+    """Load config from TOML file if it exists.
+
+    Returns:
+        A dict of parsed TOML data, or empty dict if the file is missing or invalid.
+    """
+    config_path = CONFIG_DIR / "config.toml"
+    if not config_path.is_file():
+        return {}
+
+    try:
+        with config_path.open("rb") as f:
+            return tomllib.load(f)
+    except tomllib.TOMLDecodeError:
+        warning(f"Invalid TOML in config file {config_path}, using defaults.")
+        return {}
+
+
+def _load_env_overrides() -> dict:
+    """Load config overrides from GX_* environment variables.
+
+    Returns:
+        A dict of config field names to override values.
+    """
+    overrides: dict = {}
+
+    if val := os.environ.get("SABNZBD_API_KEY"):
+        overrides["sabnzbd_api_key"] = val
+
+    if val := os.environ.get("SABNZBD_URL"):
+        overrides["sabnzbd_url"] = val
+
+    return overrides
+
+
+def _build_config() -> SabcConfig:
+    """Build a the config from defaults, TOML file, and env var overrides."""
+    toml_data = _load_toml()
+    values = dict(toml_data)
+    env_overrides = _load_env_overrides()
+    values.update(env_overrides)
+
+    try:
+        return SabcConfig(**values)
+    except ValueError as e:
+        warning(f"Invalid config\n {e}")
+        sys.exit(1)
+
+
+config: SabcConfig = _build_config()
+
+# ############## API ##############
+
+
+@dataclass
+class Nzb:
+    """Represent a SABnzbd download item with its metadata.
+
+    Args:
+        nzo_id (str): Unique identifier for the NZB file
+        name (str): Name of the NZB file or download
+        category (str): Category assigned to the download
+        status (str): Current status of the download (e.g. "Queued", "Completed")
+        size (str): Total size of the download
+        sizeleft (str | None): Remaining size to download, None if completed
+    """
+
+    nzo_id: str
+    name: str
+    category: str
+    status: str
+    size: str
+    sizeleft: str | None
+
+
+class SABAPI:
+    """API for the sabNZBD API."""
+
+    API_URL = f"{config.sabnzbd_url.strip()}/sabnzbd/api"
+
+    @classmethod
+    def get(cls, params: dict) -> dict:
+        """Make HTTP GET requests to the SABnzbd API.
+
+        Send authenticated GET requests to the SABnzbd API endpoint with the provided parameters. Automatically adds the API key and sets JSON output format.
+
+        Args:
+            params (dict): Query parameters to include in the API request
+
+        Returns:
+            dict: The JSON response from the API
+
+        Raises:
+            cappa.Exit: If the request times out or returns an HTTP error
+        """
+        params["apikey"] = config.sabnzbd_api_key.strip()
+        params["output"] = "json"
+
+        try:
+            response = httpx.get(cls.API_URL, params=params, timeout=10)
+        except httpx.ConnectTimeout as e:
+            error(f"Request to {cls.API_URL} timed out\n{e}")
+            raise typer.Exit(code=1) from e
+        except httpx.HTTPError as e:
+            error(f"API Response:\n{e}")
+            raise typer.Exit(code=1) from e
+
+        trace(f"API Response for params: {params}", details=[JSON(response.text)])
+
+        return response.json()
+
+    @classmethod
+    def get_queue(cls) -> list[Nzb]:
+        """Retrieve the current download queue from SABnzbd.
+
+        Make an API request to get the active download queue. Convert the raw API response into a list of Nzb objects containing details like filename, category, status, size and remaining size for each queued item.
+
+        Returns:
+            list[Nzb]: A list of Nzb objects representing queued downloads, with fields like ID, name, category, status, size and remaining size populated from the queue data
+        """
+        with step("Fetch queue"):
+            queue = cls.get(params={"mode": "queue", "limit": "100"})
+            return [
+                Nzb(
+                    nzo_id=nzb["nzo_id"],
+                    name=nzb["filename"],
+                    category=nzb["cat"],
+                    status=nzb["status"],
+                    size=nzb["size"],
+                    sizeleft=nzb["sizeleft"],
+                )
+                for nzb in queue["queue"]["slots"]
+            ]
+
+    @classmethod
+    def get_history(cls) -> list[Nzb]:
+        """Retrieve the download history from SABnzbd.
+
+        Make an API request to get the history of completed downloads. Convert the raw API response into a list of Nzb objects containing details like name, category, status and size for each historical item.
+
+        Returns:
+            list[Nzb]: A list of Nzb objects representing historical downloads, with fields like ID, name, category, status, and size populated from the history data
+        """
+        with step("Fetch history"):
+            history = cls.get(params={"mode": "history", "limit": "100"})
+            return [
+                Nzb(
+                    nzo_id=nzb["nzo_id"],
+                    name=nzb["name"],
+                    category=nzb["category"],
+                    status=nzb["status"],
+                    size=nzb["size"],
+                    sizeleft=None,
+                )
+                for nzb in history["history"]["slots"]
+            ]
+
+    @classmethod
+    def fetch_rss_feeds(cls) -> dict:
+        """Trigger an immediate RSS feed check and download in SABnzbd.
+
+        Makes an API request to SABnzbd to check all configured RSS feeds for new content and initiate downloads based on the configured filters. Waits 5 seconds after triggering the check to allow it to complete before returning the status.
+
+        Returns:
+            dict: JSON response containing the status of the RSS feed check operation
+        """
+        with step("Fetch RSS feeds"):
+            output = cls.get(params={"mode": "rss_now"})
+            sleep(SABC_RSS_FEED_CHECK_WAIT_TIME)
+            return output
+
+    @classmethod
+    def delete_completed_nzbs(cls, nzbs: list[Nzb]) -> dict:
+        """Remove completed downloads from SABnzbd's history.
+
+        Make an API request to delete the specified completed downloads from SABnzbd's history. Exit if no downloads are provided.
+
+        Args:
+            nzbs (list[Nzb]): List of completed NZB downloads to remove from history
+
+        Returns:
+            dict: JSON response containing the status of the delete operation
+
+        Raises:
+            cappa.Exit: If no completed downloads are provided to delete
+        """
+        if not nzbs:
+            error("No completed downloads to delete")
+            raise typer.Exit
+
+        with step("Deleting completed NZBs"):
+            return cls.get(
+                params={
+                    "mode": "history",
+                    "name": "delete",
+                    "archive": "0",
+                    "value": ",".join([nzb.nzo_id for nzb in nzbs]),
+                }
+            )
+
+    @classmethod
+    def get_warnings(cls) -> list[str]:
+        """Retrieve warnings from SABnzbd.
+
+        Makes an API request to SABnzbd to get any warnings or issues.
+
+        Returns:
+            list[str]: A list of warnings or issues from SABnzbd
+        """
+        with step("Fetch warnings"):
+            warnings = cls.get(params={"mode": "warnings"})
+            return [f"{warning['type']}: {warning['text']}" for warning in warnings["warnings"]]
+
+    @classmethod
+    def clear_warnings(cls) -> dict:
+        """Clear warnings from SABnzbd.
+
+        Makes an API request to SABnzbd to clear any warnings or issues.
+
+        Returns:
+            dict: JSON response containing the status of the clear operation
+        """
+        with step("Clearing warnings"):
+            return cls.get(params={"mode": "warnings", "name": "clear"})
+
+
+# ############## CLI ##############
+
+app = typer.Typer()
+rich_utils.STYLE_HELPTEXT = ""
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+app = typer.Typer(rich_markup_mode="rich", context_settings=CONTEXT_SETTINGS)
+
+
+def _version_callback(value: bool) -> None:  # noqa: FBT001
+    """Print version and exit."""
+    if value:
+        typer.echo(f"{PACKAGE_NAME} {__version__}")
+        raise typer.Exit
+
+
+def _nzbs_to_table(nzbs: list[Nzb]) -> Table:
+    """Create a formatted table displaying NZB download information.
+
+    Format a list of NZB downloads into a rich Table with columns for status, name, category, total size and remaining size. Sort entries by status with completed downloads first. Apply green highlighting to completed downloads.
+
+    Args:
+        nzbs (list[Nzb]): List of NZB objects containing download information.
+
+    Returns:
+        Table: A rich Table object formatted with the NZB download information.
+    """
+    table = Table(title="Full SABnzbd Queue")
+    table.add_column("#", justify="left")
+    table.add_column("Status", justify="left")
+    table.add_column("Name", justify="left")
+    table.add_column("Category", justify="left")
+    table.add_column("Size", justify="right")
+    table.add_column("Size Left", justify="right")
+
+    for i, nzb in enumerate(sorted(nzbs, key=lambda x: x.status, reverse=True)):
+        table.add_row(
+            str(i + 1),
+            nzb.status,
+            nzb.name,
+            nzb.category,
+            nzb.size,
+            nzb.sizeleft or "",
+            style="green" if nzb.status == "Completed" else "",
+        )
+
+    return table
+
+
+def _delete_completed_nzbs(completed: list[Nzb], *, dry_run: bool) -> None:
+    """Delete completed downloads from SABnzbd history.
+
+    Removes completed downloads from SABnzbd's history based on command line options. Supports dry-run mode to preview changes and quiet mode for minimal output. Will exit early if there are no completed downloads to delete.
+
+    Args:
+        completed (list[Nzb]): List of completed NZB downloads to remove from history
+        dry_run (bool): Whether to dry run the command
+    """
+    if not completed:
+        info(":rocket: No completed downloads to delete")
+        return
+
+    if dry_run:
+        dryrun(f"Would delete {len(completed)} NZBs", details=[nzb.name for nzb in completed])
+        return
+
+    SABAPI.delete_completed_nzbs(completed)
+    info(f"Deleted {len(completed)} NZBs")
+    debug("Deleted:", details=[nzb.name for nzb in completed])
+
+
+@app.command()
+def run(
+    rss_feed: Annotated[bool, typer.Option("--rss", "-r", help="Check RSS feeds.")] = False,  # noqa: FBT002
+    clean: Annotated[  # noqa: FBT002
+        bool, typer.Option("--clean", "-c", help="Clean up completed downloads.")
+    ] = False,
+    verbose: Annotated[
+        int,
+        typer.Option(
+            "--verbose",
+            "-v",
+            count=True,
+            help="Increase verbosity (-v debug, -vv trace).",
+        ),
+    ] = 0,
+    dry_run: Annotated[bool, typer.Option("--dry-run", "-n", help="Dry run the command.")] = False,  # noqa: FBT002
+    *,
+    quiet: Annotated[bool, typer.Option("--quiet", "-q", help="Quiet mode.")] = False,
+    _version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            "-V",
+            callback=_version_callback,
+            expose_value=False,
+            is_eager=True,
+            help="Show version and exit.",
+        ),
+    ] = False,
+) -> None:
+    """A CLI for managing sabNZBD via the api."""
+    configure(verbosity=verbose, quiet=quiet)
+
+    if rss_feed:
+        response = SABAPI.fetch_rss_feeds()
+        if not response["status"]:
+            error("Failed to fetch RSS feeds", details=[response])
+            raise typer.Exit(code=1)
+
+    if warnings := SABAPI.get_warnings():
+        warning("SABnzbd warnings", details=warnings)
+
+    queue = SABAPI.get_queue()
+    history = SABAPI.get_history()
+
+    all_nzbs = queue + history
+    if not all_nzbs:
+        info("No downloads in queue or history")
+        raise typer.Exit
+
+    if not quiet:
+        console().print(_nzbs_to_table(all_nzbs))
+
+    if clean:
+        completed = [nzb for nzb in all_nzbs if nzb.status == "Completed"]
+        _delete_completed_nzbs(completed, dry_run=dry_run)
+
+        if warnings:
+            SABAPI.clear_warnings()
+
+
+def main() -> None:
+    """Run the Typer application."""
+    app()
+
+
+if __name__ == "__main__":
+    app()

@@ -25,6 +25,11 @@ Library
 
 {{ if not (and (eq .chezmoi.os "darwin") (.personal_computer)) }}
 .librewolf
+
+{{ end }}
+
+{{ if not (and (.use_secrets) (.personal_computer)) }}
+bin/sabc
 {{ end }}
 
 {{ if not (and .personal_computer (lookPath "neatfile")) }}

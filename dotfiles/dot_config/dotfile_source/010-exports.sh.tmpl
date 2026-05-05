@@ -4,6 +4,11 @@ export LC_ALL='en_US.UTF-8'
 
 export EDITOR="$(command -v cursor code nano | head -n 1)"
 
+{{ if and (.use_secrets) (.personal_computer) -}}
+export SABNZBD_API_KEY="{{- onepasswordRead .secrets.sabnzbd_api_key }}"
+export SABNZBD_URL="{{- onepasswordRead .secrets.sabnzbd_url }}"
+{{ end }}
+
 {{ if and (.use_secrets) (.dev_computer) -}}
 
 # Configure gitleaks to use a custom config file

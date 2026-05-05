@@ -1,4 +1,0 @@
-{{- if and (.use_secrets) (lookPath "sabc") -}}
-sabnzbd_api_key = "{{- onepasswordRead .secrets.sabnzbd_api_key -}}"
-sabnzbd_url     = "{{- onepasswordRead .secrets.sabnzbd_url -}}"
-{{- end }}
