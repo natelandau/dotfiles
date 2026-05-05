@@ -4,7 +4,7 @@ export LC_ALL='en_US.UTF-8'
 
 export EDITOR="$(command -v cursor code nano | head -n 1)"
 
-{{ if and (.use_secrets) (.personal_computer) -}}
+{{ if and (.use_secrets) (or (.personal_computer) (.homelab_member)) -}}
 export SABNZBD_API_KEY="{{- onepasswordRead .secrets.sabnzbd_api_key }}"
 export SABNZBD_URL="{{- onepasswordRead .secrets.sabnzbd_url }}"
 {{ end }}

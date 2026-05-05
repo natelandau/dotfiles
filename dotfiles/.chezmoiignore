@@ -25,10 +25,9 @@ Library
 
 {{ if not (and (eq .chezmoi.os "darwin") (.personal_computer)) }}
 .librewolf
-
 {{ end }}
 
-{{ if not (and (.use_secrets) (.personal_computer)) }}
+{{ if and (.use_secrets) (or (.personal_computer) (.homelab_member)) }}
 bin/sabc
 {{ end }}
 
