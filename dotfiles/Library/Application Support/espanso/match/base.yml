@@ -26,10 +26,3 @@ matches:
         type: date
         params:
           format: "%Y-%m-%d %H:%M"
-
-  - trigger: ".pp"
-    force_clipboard: true
-    replace: "{{clipboard}}"
-    vars:
-      - name: "clipboard"
-        type: "clipboard"
