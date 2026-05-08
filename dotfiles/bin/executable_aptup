@@ -338,7 +338,7 @@ def run(
     if autoremove:
         autoremove_packages(dry_run=dry_run, stream=verbose > 0)
 
-    if selected_pkgs:
+    if selected_pkgs and not dry_run:
         pp.info(
             "Run needrestart to apply changes to running services",
             details=["sudo needrestart -r i"],
