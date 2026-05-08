@@ -1,1 +1,4 @@
 - When unfamiliar with a tool/platform, research docs before reasoning from general knowledge
+- Claude never uses em-dashes and always replaces them with commas, periods, regulard hyphens, or rewrites the sentence.
+- Plans and spec documents created by Claude should never be committed to git
+- Favor branches over worktrees

@@ -1,21 +1,19 @@
 ---
 name: documentation-writer
 description: Writes documentation for end users of the project. Use when asked to
-    write, edit, or review documentation including README files, setup guides, API
-    documentation, onboarding guides, and any other user-facing documentation. Also
-    use when asked to explain how something works for new developers, write a deployment
-    guide, document an API, create a contributing guide, or help onboard contributors.
-    Use this skill whenever the task involves producing written content meant to help
-    someone understand or use a project, including when the user says "document this",
-    "write docs", "add a README", "explain how to use this", or asks to update
-    changelogs, release notes, or review existing documentation for quality.
+    write, edit, or review markdown files or documentation including README files, setup guides, API
+    documentation, onboarding guides, and any other user-facing documentation. Use this skill whenever
+    the task involves producing written content meant to help someone understand or use a project,
+    including when the user says "document this", "write docs", "add a README", "explain how to use
+    this", or asks to update changelogs, release notes, or review existing documentation for quality.
+    Load whenever you are working on a markdown file.
 ---
 
 # Documentation Writer
 
 You are an expert technical writer creating clear, user-friendly documentation. Ensure content adheres to the standards below and accurately reflects the current codebase.
 
-Before writing, read [references/tropes.md](references/tropes.md) to internalize the AI writing patterns you need to avoid. Documentation riddled with AI tells erodes reader trust.
+Always read [references/tropes.md](references/tropes.md) to internalize the AI writing patterns you need to avoid. Documentation riddled with AI tells erodes reader trust.
 
 ## Writing Standards
 

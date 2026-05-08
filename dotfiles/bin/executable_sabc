@@ -6,7 +6,7 @@
 # requires-python = ">=3.12"
 # dependencies = [
 #     "httpx",
-#     "nllog",
+#     "nclutils>=3.0.0,<4.0.0",
 #     "rich",
 #     "typer",
 # ]
@@ -23,14 +23,13 @@ from typing import Annotated, Final
 
 import httpx
 import typer
-from nllog import configure, console, debug, dryrun, error, info, step, trace, warning
+from nclutils import pp
 from rich.json import JSON
 from rich.table import Table
 from typer import rich_utils
 
 # ############## CONSTANTS ##############
 
-__version__ = "0.1.0"
 
 PACKAGE_NAME = (
     __package__.replace("_", "-").replace(".", "-").replace(" ", "-") if __package__ else "sabc"
@@ -60,7 +59,6 @@ class SabcConfig:
 
     sabnzbd_api_key: str = ""
     sabnzbd_url: str = ""
-    something: str = ""
 
     def __post_init__(self) -> None:
         """Validate the config."""
@@ -86,7 +84,7 @@ def _load_toml() -> dict:
         with config_path.open("rb") as f:
             return tomllib.load(f)
     except tomllib.TOMLDecodeError:
-        warning(f"Invalid TOML in config file {config_path}, using defaults.")
+        pp.warning(f"Invalid TOML in config file {config_path}, using defaults.")
         return {}
 
 
@@ -117,7 +115,7 @@ def _build_config() -> SabcConfig:
     try:
         return SabcConfig(**values)
     except ValueError as e:
-        warning(f"Invalid config\n {e}")
+        pp.warning(f"Invalid config\n {e}")
         sys.exit(1)
 
 
@@ -173,13 +171,13 @@ class SABAPI:
         try:
             response = httpx.get(cls.API_URL, params=params, timeout=10)
         except httpx.ConnectTimeout as e:
-            error(f"Request to {cls.API_URL} timed out\n{e}")
+            pp.error(f"Request to {cls.API_URL} timed out\n{e}")
             raise typer.Exit(code=1) from e
         except httpx.HTTPError as e:
-            error(f"API Response:\n{e}")
+            pp.error(f"API Response:\n{e}")
             raise typer.Exit(code=1) from e
 
-        trace(f"API Response for params: {params}", details=[JSON(response.text)])
+        pp.trace(f"API Response for params: {params}", details=[JSON(response.text)])
 
         return response.json()
 
@@ -192,7 +190,7 @@ class SABAPI:
         Returns:
             list[Nzb]: A list of Nzb objects representing queued downloads, with fields like ID, name, category, status, size and remaining size populated from the queue data
         """
-        with step("Fetch queue"):
+        with pp.step("Fetch queue"):
             queue = cls.get(params={"mode": "queue", "limit": "100"})
             return [
                 Nzb(
@@ -215,7 +213,7 @@ class SABAPI:
         Returns:
             list[Nzb]: A list of Nzb objects representing historical downloads, with fields like ID, name, category, status, and size populated from the history data
         """
-        with step("Fetch history"):
+        with pp.step("Fetch history"):
             history = cls.get(params={"mode": "history", "limit": "100"})
             return [
                 Nzb(
@@ -238,7 +236,7 @@ class SABAPI:
         Returns:
             dict: JSON response containing the status of the RSS feed check operation
         """
-        with step("Fetch RSS feeds"):
+        with pp.step("Fetch RSS feeds"):
             output = cls.get(params={"mode": "rss_now"})
             sleep(SABC_RSS_FEED_CHECK_WAIT_TIME)
             return output
@@ -259,10 +257,10 @@ class SABAPI:
             cappa.Exit: If no completed downloads are provided to delete
         """
         if not nzbs:
-            error("No completed downloads to delete")
+            pp.error("No completed downloads to delete")
             raise typer.Exit
 
-        with step("Deleting completed NZBs"):
+        with pp.step("Deleting completed NZBs"):
             return cls.get(
                 params={
                     "mode": "history",
@@ -281,7 +279,7 @@ class SABAPI:
         Returns:
             list[str]: A list of warnings or issues from SABnzbd
         """
-        with step("Fetch warnings"):
+        with pp.step("Fetch warnings"):
             warnings = cls.get(params={"mode": "warnings"})
             return [f"{warning['type']}: {warning['text']}" for warning in warnings["warnings"]]
 
@@ -294,7 +292,7 @@ class SABAPI:
         Returns:
             dict: JSON response containing the status of the clear operation
         """
-        with step("Clearing warnings"):
+        with pp.step("Clearing warnings"):
             return cls.get(params={"mode": "warnings", "name": "clear"})
 
 
@@ -303,14 +301,7 @@ class SABAPI:
 app = typer.Typer()
 rich_utils.STYLE_HELPTEXT = ""
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
-app = typer.Typer(rich_markup_mode="rich", context_settings=CONTEXT_SETTINGS)
-
-
-def _version_callback(value: bool) -> None:  # noqa: FBT001
-    """Print version and exit."""
-    if value:
-        typer.echo(f"{PACKAGE_NAME} {__version__}")
-        raise typer.Exit
+app = typer.Typer(rich_markup_mode="rich", context_settings=CONTEXT_SETTINGS, add_completion=False)
 
 
 def _nzbs_to_table(nzbs: list[Nzb]) -> Table:
@@ -356,16 +347,16 @@ def _delete_completed_nzbs(completed: list[Nzb], *, dry_run: bool) -> None:
         dry_run (bool): Whether to dry run the command
     """
     if not completed:
-        info(":rocket: No completed downloads to delete")
+        pp.info(":rocket: No completed downloads to delete")
         return
 
     if dry_run:
-        dryrun(f"Would delete {len(completed)} NZBs", details=[nzb.name for nzb in completed])
+        pp.dryrun(f"Would delete {len(completed)} NZBs", details=[nzb.name for nzb in completed])
         return
 
     SABAPI.delete_completed_nzbs(completed)
-    info(f"Deleted {len(completed)} NZBs")
-    debug("Deleted:", details=[nzb.name for nzb in completed])
+    pp.info(f"Deleted {len(completed)} NZBs")
+    pp.debug("Deleted:", details=[nzb.name for nzb in completed])
 
 
 @app.command()
@@ -381,45 +372,35 @@ def run(
             "-v",
             count=True,
             help="Increase verbosity (-v debug, -vv trace).",
+            show_default=False,
         ),
     ] = 0,
     dry_run: Annotated[bool, typer.Option("--dry-run", "-n", help="Dry run the command.")] = False,  # noqa: FBT002
     *,
     quiet: Annotated[bool, typer.Option("--quiet", "-q", help="Quiet mode.")] = False,
-    _version: Annotated[
-        bool,
-        typer.Option(
-            "--version",
-            "-V",
-            callback=_version_callback,
-            expose_value=False,
-            is_eager=True,
-            help="Show version and exit.",
-        ),
-    ] = False,
 ) -> None:
     """A CLI for managing sabNZBD via the api."""
-    configure(verbosity=verbose, quiet=quiet)
+    pp.configure(verbosity=verbose, quiet=quiet)
 
     if rss_feed:
         response = SABAPI.fetch_rss_feeds()
         if not response["status"]:
-            error("Failed to fetch RSS feeds", details=[response])
+            pp.error("Failed to fetch RSS feeds", details=[response])
             raise typer.Exit(code=1)
 
     if warnings := SABAPI.get_warnings():
-        warning("SABnzbd warnings", details=warnings)
+        pp.warning("SABnzbd warnings", details=warnings)
 
     queue = SABAPI.get_queue()
     history = SABAPI.get_history()
 
     all_nzbs = queue + history
     if not all_nzbs:
-        info("No downloads in queue or history")
+        pp.info("No downloads in queue or history")
         raise typer.Exit
 
     if not quiet:
-        console().print(_nzbs_to_table(all_nzbs))
+        pp.console().print(_nzbs_to_table(all_nzbs))
 
     if clean:
         completed = [nzb for nzb in all_nzbs if nzb.status == "Completed"]

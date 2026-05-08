@@ -9,6 +9,11 @@ export SABNZBD_API_KEY="{{- onepasswordRead .secrets.sabnzbd_api_key }}"
 export SABNZBD_URL="{{- onepasswordRead .secrets.sabnzbd_url }}"
 {{ end }}
 
+
+{{ if eq .chezmoi.os "linux"}}
+export APTUP_EXCLUDE_PACKAGES=containerd.io,docker-buildx-plugin,docker-ce-cli,docker-ce-rootless-extras,docker-ce,docker-compose-plugin
+{{ end }}
+
 {{ if and (.use_secrets) (.dev_computer) -}}
 
 # Configure gitleaks to use a custom config file

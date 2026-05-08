@@ -8,6 +8,7 @@
         Pn        = "Pn"
         brwe      = "brwe"      # used in aliases
         colourful = "colourful" # eza theme
+        cpy       = "cpy"       # copy
         curren    = "curren"    # '¤100'
         halp      = "halp"
         halper    = "halper"

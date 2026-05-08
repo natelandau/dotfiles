@@ -1,0 +1,357 @@
+#!/usr/bin/env -S uv run --script --quiet
+
+"""CLI for managing apt package updates."""
+
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "nclutils>=3.0.0,<4.0.0",
+#     "rich",
+#     "typer",
+# ]
+# ///
+
+import os
+import platform
+import sys
+import tomllib
+from dataclasses import dataclass, field
+from enum import IntEnum
+from pathlib import Path
+from typing import Annotated
+
+import typer
+from nclutils import pp
+from nclutils.questions import choose_multiple_from_list
+from nclutils.sh import ShellCommandFailedError, run_command
+from nclutils.strings import strip_ansi
+from rich.text import Text
+from typer import rich_utils
+
+# ############## CONSTANTS ##############
+
+PACKAGE_NAME = (
+    __package__.replace("_", "-").replace(".", "-").replace(" ", "-") if __package__ else "sabc"
+)
+CONFIG_DIR = Path(os.getenv("XDG_CONFIG_HOME", "~/.config")).expanduser().absolute() / PACKAGE_NAME
+
+
+class Verbosity(IntEnum):
+    """Output verbosity levels for the CLI."""
+
+    INFO = 0
+    DEBUG = 1
+    TRACE = 2
+
+
+# ############## CONFIG ##############
+
+
+@dataclass(frozen=True)
+class AptupConfig:
+    """User-configurable settings for the package.
+
+    Immutable after creation. Defaults match the original hardcoded values
+    so the package works identically without a config file.
+    """
+
+    exclude_packages: list[str] = field(default_factory=list)
+
+
+def _load_toml() -> dict:
+    """Load config from TOML file if it exists.
+
+    Returns:
+        A dict of parsed TOML data, or empty dict if the file is missing or invalid.
+
+    """
+    config_path = CONFIG_DIR / "config.toml"
+    if not config_path.is_file():
+        return {}
+
+    try:
+        with config_path.open("rb") as f:
+            return tomllib.load(f)
+    except tomllib.TOMLDecodeError:
+        pp.warning(f"Invalid TOML in config file {config_path}, using defaults.")
+        return {}
+
+
+def _load_env_overrides() -> dict:
+    """Load config overrides from GX_* environment variables.
+
+    Returns:
+        A dict of config field names to override values.
+
+    """
+    overrides: dict = {}
+
+    if val := os.environ.get("APTUP_EXCLUDE_PACKAGES"):
+        overrides["exclude_packages"] = val.split(",")
+
+    return overrides
+
+
+def _build_config() -> AptupConfig:
+    """Build a the config from defaults, TOML file, and env var overrides."""
+    toml_data = _load_toml()
+    values = dict(toml_data)
+    env_overrides = _load_env_overrides()
+    values.update(env_overrides)
+
+    try:
+        return AptupConfig(**values)
+    except ValueError as e:
+        pp.warning(f"Invalid config\n {e}")
+        sys.exit(1)
+
+
+config: AptupConfig = _build_config()
+
+
+# ############## FUNCTIONS ##############
+def _guard_statements() -> None:
+    """Validate system requirements before proceeding.
+
+    Verify that the script is running on Linux.
+
+    Raises:
+        cappa.Exit: If running on non-linux system
+
+    """
+    if platform.system() != "Linux":
+        pp.error("This script is only supported on Linux")
+        raise typer.Exit(code=1)
+
+
+def update_package_cache(*, stream: bool = False) -> Text:
+    """Update the APT package cache with latest repository information.
+
+    Refresh package metadata from all configured repositories. Requires sudo privileges.
+
+    Args:
+        stream: Whether to stream the output of the command
+
+    Returns:
+        Text: Formatted output from apt update command
+
+    Raises:
+        cappa.Exit: If apt update fails due to insufficient permissions or other errors
+
+    """
+    with pp.step("Updating apt package cache..."):
+        try:
+            output = run_command(["apt", "update", "-q"], sudo=True, stream=stream)
+        except ShellCommandFailedError as e:
+            if e.result and e.result.stderr and "Permission denied" in e.result.stderr:
+                raise typer.Exit(code=1, message="You need to run this script with sudo") from e
+
+            pp.error("Something went wrong updating the package cache")
+            if e.result and e.result.stderr:
+                pp.error(Text.from_ansi(e.result.stderr))
+            raise typer.Exit(code=1) from e
+
+    return Text.from_ansi(output.stdout)
+
+
+def fetch_upgradable_packages(*, stream: bool = False) -> tuple[list[str], list[str], Text]:
+    """Get a list of packages that can be upgraded from APT cache.
+
+    Query the package manager for all installed packages with available updates.
+
+    Returns:
+        tuple[list[str], list[str]]: Names of packages with updates available, names of packages to exclude
+
+    """
+    packages = []
+    excluded_packages = []
+
+    with pp.step("Listing upgradable packages..."):
+        output = run_command(["apt", "list", "--upgradable", "-q"], stream=stream, sudo=True)
+
+        for line in output.stdout.split("\n"):
+            if "Listing" in line:
+                continue
+
+            if strip_ansi(line).split("/")[0] in config.exclude_packages:
+                excluded_packages.append(strip_ansi(line).split("/")[0])
+                continue
+
+            packages.append(strip_ansi(line).split("/")[0])
+
+    return [x for x in packages if x], excluded_packages, Text.from_ansi(output.stdout)
+
+
+def _select_packages(pkgs: list[str]) -> list[str]:
+    """Present a list of upgradable packages and upgrade the selected ones.
+
+    Display an interactive selection menu of available package upgrades and process the user's selections. Print status messages for each upgrade operation.
+
+    Args:
+        pkgs (list[str]): List of package names that have upgrades available
+
+    Returns:
+        list[str]: List of packages that were selected and upgraded
+
+    """
+    selected_pkgs = (
+        choose_multiple_from_list(list(set(pkgs)), "Select packages to upgrade") if pkgs else []
+    )
+
+    if not pkgs:
+        pp.success("No upgradable packages found")
+        raise typer.Exit(code=0)
+    if not selected_pkgs:
+        pp.success("No packages selected for upgrade")
+        raise typer.Exit(code=0)
+
+    return selected_pkgs or []
+
+
+def _upgrade_package(package: str, *, stream: bool = False, dry_run: bool = False) -> None:
+    """Upgrade the selected packages.
+
+    Args:
+        package: Name of the package to upgrade
+        stream: Whether to stream the output of the command
+        dry_run: Whether to dry run the command
+
+    """
+    args = ["install", "-y", "-qq"]
+    if dry_run:
+        if stream:
+            args.append("--dry-run")
+        else:
+            pp.dryrun(f"apt {' '.join(args)} {package}")
+            return
+
+    args.append(package)
+
+    with pp.step(f"Upgrading {package}..."):
+        try:
+            run_command(["apt", *args], stream=stream, sudo=True)
+        except ShellCommandFailedError as e:
+            pp.error(
+                f"Failed to upgrade: `{package}`",
+                details=[Text.from_ansi(e.result.stderr) if e.result and e.result.stderr else None],
+            )
+            raise typer.Exit(code=1) from e
+
+    pp.info(f":rocket: Upgraded `{package}`")
+
+
+def autoremove_packages(*, dry_run: bool = False, stream: bool = False) -> Text:
+    """Remove automatically installed packages that are no longer needed.
+
+    Clean up orphaned packages that were installed as dependencies but are no longer required.
+
+    Args:
+        dry_run: Whether to dry run the command
+        stream: Whether to stream the output of the command
+
+    Returns:
+        Text: Formatted output from apt autoremove command
+
+    Raises:
+        cappa.Exit: If package removal fails
+
+    """
+    args = ["autoremove", "-y", "-q"]
+    if dry_run:
+        if stream:
+            args.append("--dry-run")
+        else:
+            pp.dryrun(f"apt {' '.join(args)}")
+            return None
+
+    with pp.step("Autoremoving unused packages..."):
+        try:
+            output = run_command(["apt", *args], stream=stream, sudo=True)
+        except ShellCommandFailedError as e:
+            pp.error(
+                "Failed to autoremove packages",
+                details=[Text.from_ansi(e.result.stderr) if e.result and e.result.stderr else None],
+            )
+            raise typer.Exit(code=1) from e
+
+    return Text.from_ansi(output.stdout)
+
+
+# ############## CLI ##############
+
+app = typer.Typer()
+rich_utils.STYLE_HELPTEXT = ""
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+app = typer.Typer(rich_markup_mode="rich", context_settings=CONTEXT_SETTINGS, add_completion=False)
+
+
+@app.command()
+def run(
+    verbose: Annotated[
+        int,
+        typer.Option(
+            "--verbose",
+            "-v",
+            count=True,
+            help="Increase verbosity (-v debug, -vv trace).",
+            show_default=False,
+        ),
+    ] = 0,
+    dry_run: Annotated[bool, typer.Option("--dry-run", "-n", help="Dry run the command.")] = False,  # noqa: FBT002
+    list_upgradable: Annotated[  # noqa: FBT002
+        bool,
+        typer.Option(
+            "--list-upgradable",
+            "-l",
+            help="List upgradable packages and exit.",
+        ),
+    ] = False,
+    autoremove: Annotated[  # noqa: FBT002
+        bool,
+        typer.Option(
+            "--autoremove",
+            "-a",
+            help="Remove autoremove packages.",
+        ),
+    ] = False,
+) -> None:
+    """Small wrapper around apt-get to upgrade selectedpackages."""
+    pp.configure(verbosity=verbose)
+    _guard_statements()
+
+    # Suspend needrestart to avoid automatic service restarts which require
+    # an interactive terminal session
+    os.environ["NEEDRESTART_SUSPEND"] = "y"
+
+    update_package_cache(stream=verbose > 0)
+    pkgs, excluded_pkgs, _ = fetch_upgradable_packages(stream=verbose > 0)
+    if list_upgradable:
+        pp.info(f"{len(pkgs)} upgradable packages", details=list(pkgs))
+        pp.info("")
+        pp.info(f"{len(excluded_pkgs)} excluded packages", details=list(excluded_pkgs))
+        raise typer.Exit(code=0)
+
+    selected_pkgs = _select_packages(pkgs)
+    for package in selected_pkgs:
+        _upgrade_package(package, stream=verbose > 0, dry_run=dry_run)
+
+    if autoremove:
+        autoremove_packages(dry_run=dry_run, stream=verbose > 0)
+
+    if selected_pkgs:
+        pp.info(
+            "Run needrestart to apply changes to running services",
+            details=["sudo needrestart -r i"],
+            marker=":bulb:",
+        )
+
+    pp.info(":rocket: All done!")
+
+
+def main() -> None:
+    """Run the Typer application."""
+    app()
+
+
+if __name__ == "__main__":
+    app()
