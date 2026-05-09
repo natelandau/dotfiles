@@ -8,11 +8,11 @@ def main() -> None:
     # Read the tool use data from stdin
     data = json.load(sys.stdin)
 
-    # Check if this is a Bash/Run command
-    if data.get("tool") not in ["Bash", "Run"]:
+    # Claude Code PreToolUse payloads use `tool_name` and `tool_input`
+    if data.get("tool_name") != "Bash":
         sys.exit(0)
 
-    command = data.get("parameters", {}).get("command", "")
+    command = data.get("tool_input", {}).get("command", "")
 
     # Detect problematic patterns
     patterns = {
