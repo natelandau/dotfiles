@@ -227,7 +227,7 @@ def _upgrade_package(package: str, *, stream: bool = False, dry_run: bool = Fals
 
     args.append(package)
 
-    with pp.step(f"Upgrading {package}..."):
+    with pp.step(f"Upgrade {package}"):
         try:
             run_command(["apt", *args], stream=stream, sudo=True)
         except ShellCommandFailedError as e:
@@ -236,8 +236,6 @@ def _upgrade_package(package: str, *, stream: bool = False, dry_run: bool = Fals
                 details=[Text.from_ansi(e.result.stderr) if e.result and e.result.stderr else None],
             )
             raise typer.Exit(code=1) from e
-
-    pp.info(f":rocket: Upgraded `{package}`")
 
 
 def autoremove_packages(*, dry_run: bool = False, stream: bool = False) -> Text:
