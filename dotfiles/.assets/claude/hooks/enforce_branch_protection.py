@@ -91,6 +91,10 @@ DESTRUCTIVE_RULES: tuple[Rule, ...] = (
         reason="Force push rewrites remote history and can destroy others' work",
     ),
     Rule(
+        pattern=r"^\s*git\s+push\b.*\s\+\S",
+        reason="Force push via refspec (+ref) rewrites remote history",
+    ),
+    Rule(
         pattern=r"^\s*git\s+reset\b.*--hard\b",
         reason="git reset --hard destroys uncommitted changes irrecoverably",
     ),
