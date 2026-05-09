@@ -47,21 +47,6 @@ VIOLATIONS=(
   "future work|NO KNOWN LIMITATIONS. Fix it now or describe exactly what the fix requires — not as a TODO, as a technical explanation."
   "left as an exercise|NO KNOWN LIMITATIONS. Do the work."
 
-  # Session-length quitting
-  "session length|Sessions are unlimited (CLAUDE.md rule). If work remains, do the work. Continue."
-  "session depth|Sessions are unlimited. Continue working."
-  "given the length of this|Sessions are unlimited. Continue working."
-  "continue in a new session|Sessions are unlimited. There is no reason to defer to a new session. Continue."
-  "good place to stop|Is the task done? If not, continue working. Sessions are unlimited."
-  "good stopping point|Is the task done? If not, continue working. Sessions are unlimited."
-  "good checkpoint given|Is the task done? If not, continue working."
-  "natural stopping|Is the task done? If not, continue working."
-  "logical stopping|Is the task done? If not, continue working."
-  "this session has gotten long|Sessions are unlimited. You are a machine. Continue working."
-  "session has been long|Sessions are unlimited. Continue working."
-  "getting long|Sessions are unlimited. Continue working."
-  "lengthy session|Sessions are unlimited. Continue working."
-
   # Permission-seeking mid-task (the answer is always "yes, continue")
   # These fire when Claude stops to ask whether it should keep working on
   # something it was already asked to do. If the only possible answer from the
