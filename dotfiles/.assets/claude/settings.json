@@ -19,6 +19,7 @@
       "Bash(git stash:*)",
       "Bash(git status:*)",
       "Bash(git worktree:*)",
+      "Bash(git branch:*)",
       "Bash(grep:*)",
       "Bash(head:*)",
       "Bash(ls:*)",
@@ -71,25 +72,6 @@
       "/private/tmp"
     ]
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write|NotebookEdit|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/enforce_branch_protection.py",
-            "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/use_uv.py",
-            "timeout": 10000
-          }
-        ]
-      }
-    ]
-  },
   "statusLine": {
     "type": "command",
     "command": "npx -y ccstatusline@latest",
@@ -106,7 +88,16 @@
     "feature-dev@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "superpowers@superpowers-marketplace": true
+    "superpowers@superpowers-marketplace": true,
+    "natelandau-toolkit@natelandau-cc-plugin": true
+  },
+  "extraKnownMarketplaces": {
+    "natelandau-cc-plugin": {
+      "source": {
+        "source": "github",
+        "repo": "natelandau/cc-plugin"
+      }
+    }
   },
   "skipDangerousModePermissionPrompt": true,
   "mcpServers": {
