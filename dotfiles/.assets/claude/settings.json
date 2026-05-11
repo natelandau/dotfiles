@@ -100,6 +100,8 @@
     }
   },
   "skipDangerousModePermissionPrompt": true,
+  "skillListingBudgetFraction": 0.02,
+  "skillListingMaxDescChars": 2048,
   "mcpServers": {
     "context7": {
       "command": "npx",
