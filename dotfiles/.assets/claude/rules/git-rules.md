@@ -12,6 +12,7 @@ description: Global Git workflow rules. Use this when working with git and git w
 
 - The first line of the commit should never be more than 70 characters
 - Each commit message consists of a header and a body. The header has a special format that includes a type, an optional scope and a subject: `<type>(<scope>): <subject>`
+- Frame commit subjects for changelog readers, not maintainers - reference the public API, not internal class names or implementation terminology.
 - The types must be one of the following. No exceptions:
     - **build**: Changes that affect the build system or external dependencies
     - **ci**: Changes to CI configuration files and scripts

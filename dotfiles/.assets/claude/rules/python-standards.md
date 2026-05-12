@@ -15,11 +15,12 @@ paths:
 - Use `enumerate()` instead of manual counter variables
 - Use Pathlib for file system operations. Do not use `os.path` or `os.`.
 - Always use keyword arguments for function calls that have more than one argument.
+- Pass structured data as typed objects whenever it has a fixed shape that crosses function boundaries, but don't wrap genuinely free-form data or trivial single-use values in a class if it would add more noise than clarity.
 
 ## Python docstring standards
 
 - Include docstrings for all public functions, classes, and methods
-- **Always use Google format docstrings**
+- Always use Google format docstrings
 - Do not document return when nothing is returned
 - **Only write in imperative voice.** Never say "This function ..."
 - Docstrings should explain _why_ a developer would use the function, not just what it does

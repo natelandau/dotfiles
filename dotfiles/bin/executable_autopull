@@ -1,0 +1,130 @@
+#!/usr/bin/env -S uv run --script --quiet
+
+"""Pull changes to all git repositories withinin a specified directory."""
+
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "nclutils>=3.4.1,<4.0.0",
+#     "rich",
+#     "typer",
+# ]
+# ///
+
+from pathlib import Path
+from typing import Annotated
+
+import typer
+from nclutils import fs, git, pp
+from typer import rich_utils
+
+# ############## CLI ##############
+
+app = typer.Typer()
+rich_utils.STYLE_HELPTEXT = ""
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+app = typer.Typer(rich_markup_mode="rich", context_settings=CONTEXT_SETTINGS, add_completion=False)
+
+
+@app.command()
+def run(  # noqa: C901, PLR0912
+    directory: Annotated[
+        Path | None,
+        typer.Option("--directory", "-d", help="The directory to pull changes from.", exists=True),
+    ] = None,
+    regex_filter: Annotated[
+        str | None,
+        typer.Option("--regex-filter", "-r", help="Filter repositories by this regex."),
+    ] = None,
+    fetch_only: Annotated[  # noqa: FBT002
+        bool,
+        typer.Option(
+            "--fetch-only",
+            "-f",
+            help="Only fetch the latest changes from the repositories.",
+        ),
+    ] = False,
+    verbose: Annotated[
+        int,
+        typer.Option(
+            "--verbose",
+            "-v",
+            count=True,
+            help="Increase verbosity (-v debug, -vv trace).",
+            show_default=False,
+        ),
+    ] = 0,
+    dry_run: Annotated[bool, typer.Option("--dry-run", "-n", help="Dry run the command.")] = False,  # noqa: FBT002
+    *,
+    quiet: Annotated[bool, typer.Option("--quiet", "-q", help="Quiet mode.")] = False,
+) -> None:
+    """Pull changes to all git repositories withinin a specified directory. If no directory is specified, the current working directory is used."""
+    pp.configure(verbosity=verbose, quiet=quiet)
+
+    directory = Path.cwd() if not directory else Path(directory).expanduser().resolve()
+
+    if not directory.exists():
+        pp.error(f"Directory {directory} does not exist")
+        raise typer.Exit(code=1)
+
+    repositories = [
+        x
+        for x in fs.find_subdirectories(directory, depth=1, filter_regex=regex_filter)
+        if git.is_git_repo(x)
+    ]
+    if not repositories:
+        pp.error(f"No git repositories found under {directory}")
+        raise typer.Exit(code=1)
+
+    for repo in repositories:
+        with pp.step(str(repo)) as step:
+            repo_state = git.get_repo_state(repo)
+            if repo_state.branch != git.default_branch(repo):
+                step.sub(f"Repository is on a non-default branch ({repo_state.branch}). Skipping.")
+                step.skip(f"- {repo}")
+
+                continue
+
+            if dry_run or fetch_only:
+                git.fetch(repo, stream=verbose > 1)
+                repo_state = git.get_repo_state(repo)
+                if repo_state.behind > 0:
+                    if dry_run:
+                        step.sub(
+                            f"[dryrun] would pull changes from {repo_state.upstream}, behind {repo_state.behind} commits"
+                        )
+                    continue
+
+            result = git.sync_branch(
+                repo,
+                stash=True,
+                allow_rebase=True,
+                stream=verbose > 1,
+                on_conflict="abort",
+            )
+            match result.action:
+                case "up_to_date":
+                    continue
+                case "fast_forwarded":
+                    step.sub(f"- Fast-forwarded by {result.behind_before} commits")
+                    continue
+                case "rebased":
+                    step.sub(f"- Rebased by {result.behind_before} commits")
+                    continue
+                case "aborted":
+                    for conflict in result.conflicts:
+                        step.sub(f"- Conflict: {conflict}")
+                    step.fail(f"- {repo}")
+                case _:
+                    step.set_failed(f"- {repo}")
+                    step.sub(f"- Unknown action: {result.action}")
+                    continue
+
+
+def main() -> None:
+    """Run the Typer application."""
+    app()
+
+
+if __name__ == "__main__":
+    app()

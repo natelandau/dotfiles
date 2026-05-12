@@ -1,5 +1,12 @@
 {{- if lookPath "autopull" }}
-alias pr="autopull"
+pr() {
+    {{- if joinPath .xdgDataDir "zsh" "plugins" | lstat }}
+    autopull -d "{{ .xdgDataDir }}/zsh/plugins" "${@}"
+    {{- end }}
+    {{- if joinPath .chezmoi.homeDir "repos" | lstat }}
+    autopull -d "{{ .directories.repos_dir }}" "${@}"
+    {{- end }}
+}
 {{- end }}
 
 {{- if lookPath "vidcleaner" }}
