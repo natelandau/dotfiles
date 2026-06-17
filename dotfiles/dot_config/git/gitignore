@@ -47,4 +47,10 @@ venv.bak/
 __pycache__/
 
 # Agents
-.claude/.settings.local.json
+.claude/settings.local.json
+.agent/
+superpowers/
+.superpowers/
+docs/superpowers/
+**/.claude/settings.local.json
+.worktrees/

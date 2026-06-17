@@ -113,7 +113,11 @@
 
 [user]
   name = Nathaniel Landau
+{{- if .use_secrets }}
+  email = {{ onepasswordRead .secrets.git_email }}
+{{- else }}
   email = {{ .email }}
+{{- end }}
 
 [fetch]
     prune = true
