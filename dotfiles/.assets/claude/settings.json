@@ -1,6 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "respectGitignore": true,
+  "skillListingMaxDescChars": 2048,
+  "skillListingBudgetFraction": 0.02,
   "attribution": {
     "commit": "",
     "pr": ""
@@ -89,7 +91,9 @@
     "commit-commands@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "superpowers@superpowers-marketplace": true,
-    "natelandau-toolkit@natelandau-cc-plugin": true
+    "natelandau-toolkit@natelandau-cc-plugin": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "natelandau-cc-plugin": {
@@ -99,9 +103,8 @@
       }
     }
   },
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
-  "skillListingBudgetFraction": 0.02,
-  "skillListingMaxDescChars": 2048,
   "mcpServers": {
     "context7": {
       "command": "npx",
