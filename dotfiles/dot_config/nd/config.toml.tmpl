@@ -1,0 +1,22 @@
+{{- if (lookPath "nd") -}}
+[nomad]
+{{- if "/etc/nomad.d" | lstat }}
+    address = "http://127.0.0.1:4646"
+{{- else if .use_secrets }}
+    address = "http://{{ onepasswordRead "op://yc7nim47s6rch4ehrvfsz5icei/kqwlkq6yaoarvhwacd7vpll3ei/hostname" }}:4646"
+{{- else }}
+    address = ""
+{{- end }}
+# namespace = "default"
+# region    = "global"
+# timeout   = 30.0
+# token     = "your-acl-token"
+# ui_url    = "https://nomad.example.com"
+
+[jobs]
+    directories = ["{{ .chezmoi.homeDir }}/homelab/nomad"]
+
+[volumes]
+    directories = ["{{ .chezmoi.homeDir }}/homelab/nomad-host-volumes"]
+
+{{- end }}

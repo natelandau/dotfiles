@@ -1,7 +1,151 @@
 schemaVersion = 1
 
-[extensions]
-enabledIdentifiers = [ 'com.brnbw.tuna.plugins.github' ]
+[catalogConfiguration]
+customFolders = []
+scriptsDirectories = []
+
+    [[catalogConfiguration.folderDepthOverrides]]
+    catalogIdentifier = 'TunaCore.UserFoldersCatalog'
+    depthRawValue = 1
+
+[catalogs]
+sortOrders = []
+
+    [[catalogs.globalScopes]]
+    catalogIdentifier = 'Tuna.EffectsCatalog'
+    mode = 'none'
+    selectedItemKeys = []
+
+    [[catalogs.globalScopes]]
+    catalogIdentifier = 'Tuna.Internal.RecentObjectsCatalog'
+    mode = 'none'
+    selectedItemKeys = []
+
+    [[catalogs.globalScopes]]
+    catalogIdentifier = 'TunaCore.CommonActionsCatalog'
+    mode = 'some'
+    selectedItemKeys = [
+        'Activate',
+        'Add to Catalog',
+        'Add to Shelf',
+        "Add\u2026",
+        "Always Open Type With\u2026",
+        "Assign Alias\u2026",
+        'Browse',
+        'Browse Recents',
+        'Browse Shelf',
+        "Check for Updates\u2026",
+        'Clear',
+        'Compress to Shelf',
+        'Convert to Display-P3',
+        'Convert to HSL(A)',
+        'Convert to Hex',
+        'Convert to OKLab',
+        'Convert to RGB(A)',
+        'Copy Answer',
+        'Copy Formatted Answer',
+        'Copy Paths to Clipboard',
+        'Copy Question and Answer',
+        "Copy To\u2026",
+        'Copy to Clipboard',
+        'Define',
+        'Do Not Open at Login',
+        'Eject',
+        'Extract Tokens',
+        'Forget',
+        'Get Absolute (POSIX) Path',
+        'Get File URL',
+        'Get Info',
+        'Get Path',
+        'Hide',
+        'Kill',
+        'Load More Results',
+        "Modify Color\u2026",
+        "Move To\u2026",
+        'Move to Trash',
+        "New Folder\u2026",
+        "New Text File\u2026",
+        'Open',
+        'Open E-mail URL',
+        "Open File\u2026",
+        'Open Printer Queue',
+        'Open Settings',
+        'Open URL',
+        "Open URL With\u2026",
+        'Open URL in Background',
+        "Open With\u2026",
+        'Open at Login',
+        'Paste',
+        'Paste as Plain Text',
+        'Pick',
+        'Quit',
+        "Rename\u2026",
+        'Resolve',
+        'Resolve Result',
+        'Restore Expression',
+        'Reveal',
+        'Run',
+        'Run Text as Shell Command',
+        'Run in Background',
+        "Run with Input\u2026",
+        "Save to File in\u2026",
+        "Send Feedback\u2026",
+        "Send to Script\u2026",
+        'Share',
+        'Show Onboarding',
+        'Show in Large Type',
+        'Show in Silly Type',
+        'Spotlight Search',
+        "Spotlight Search For\u2026",
+        "Spotlight Search In\u2026",
+        'Stage',
+        'Swap Units',
+        'Switch',
+        'Toggle Application',
+        'Toggle Shelf',
+        'Type Text',
+        'Uninstall'
+    ]
+
+    [[catalogs.globalScopes]]
+    catalogIdentifier = 'TunaCore.FinderFavoritesCatalog'
+    mode = 'none'
+    selectedItemKeys = []
+
+    [[catalogs.globalScopes]]
+    catalogIdentifier = 'TunaCore.SystemApplicationsCatalog'
+    mode = 'none'
+    selectedItemKeys = []
+
+    [[catalogs.globalScopes]]
+    catalogIdentifier = 'TunaCore.UserFoldersCatalog'
+    mode = 'none'
+    selectedItemKeys = []
+
+    [[catalogs.globalScopes]]
+    catalogIdentifier = 'TunaEmoji.EmojiCatalog'
+    mode = 'none'
+    selectedItemKeys = []
+
+[[comboMode.bindings]]
+key = 's'
+url = 'tuna://run/path.%252FApplications%252FSafari.app/Open'
+
+[[comboMode.bindings]]
+key = 'f'
+url = 'tuna://run/path.%252FSystem%252FLibrary%252FCoreServices%252FFinder.app/Open'
+
+[[comboMode.bindings]]
+key = 'm'
+url = 'tuna://run/path.%252FSystem%252FApplications%252FMessages.app/Open'
+
+[[comboMode.bindings]]
+key = 'd'
+url = 'tuna://run/path.%252FUsers%252Fnatelandau%252FDownloads/Open'
+
+[[comboMode.bindings]]
+key = 'h'
+url = 'tuna://run/path.%252FUsers%252Fnatelandau/Open'
 
 [hotkeys.app.activate]
 carbonKeyCode = 49
@@ -22,26 +166,6 @@ presentation = 'auto'
     [hotkeys.custom.shortcut]
     carbonKeyCode = 42
     carbonModifiers = 2304
-
-[[leaderMode.bindings]]
-key = 's'
-url = 'tuna://run/path.%252FApplications%252FSafari.app/Open'
-
-[[leaderMode.bindings]]
-key = 'f'
-url = 'tuna://run/path.%252FSystem%252FLibrary%252FCoreServices%252FFinder.app/Open'
-
-[[leaderMode.bindings]]
-key = 'm'
-url = 'tuna://run/path.%252FSystem%252FApplications%252FMessages.app/Open'
-
-[[leaderMode.bindings]]
-key = 'd'
-url = 'tuna://run/path.%252FUsers%252Fnatelandau%252FDownloads/Open'
-
-[[leaderMode.bindings]]
-key = 'h'
-url = 'tuna://run/path.%252FUsers%252Fnatelandau/Open'
 
 [settings]
 clipboardIgnoredBundleIdentifiers = [ 'org.mozilla.librewolf' ]

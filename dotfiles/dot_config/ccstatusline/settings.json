@@ -63,6 +63,11 @@
           "display": "time",
           "compact": "true"
         }
+      },
+      {
+        "id": "58d3a86c-be42-4e91-b015-c6a83868045f",
+        "type": "custom-command",
+        "commandPath": "agentsview usage statusline"
       }
     ]
   ],
@@ -72,6 +77,7 @@
   "defaultPadding": " ",
   "inheritSeparatorColors": false,
   "globalBold": false,
+  "gitCacheTtlSeconds": 5,
   "minimalistMode": false,
   "powerline": {
     "enabled": false,
