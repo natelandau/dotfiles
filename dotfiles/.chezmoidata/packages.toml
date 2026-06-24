@@ -43,11 +43,10 @@
     [packages.python.dev_computer]
         packages = ["ansible-core", "cookiecutter"]
     [packages.python.homelab_member]
-
-        packages = []
+        packages = ["nomadctl"]
     [packages.python.personal_computer]
         # 'GITEA_ADDRESS' is overwritten by the 'gitea_address' secret
-        packages = ["git+GITEA_ADDRESS/natelandau/usrbin", "vid-cleaner"]
+        packages = ["git+GITEA_ADDRESS/natelandau/usrbin", "nomadctl", "vid-cleaner"]
 [packages.homebrew]
     to_remove = ["btop", "htop", "istat-menus", "qlimagesize", "rocket", "shotrr"]
     [packages.homebrew.common]
@@ -127,7 +126,6 @@
             "gh",         # GitHub CLI
             "git-delta",
             "git-extras",
-            "goaccess",
             "gpg",
             "jless",      # JSON viewer
             "lazygit",    # simple terminal UI for git commands
@@ -141,8 +139,8 @@
         formulae = ["ffmpeg-full", "iperf", "nmap", "tailspin"]
     [packages.homebrew.personal_computer]
         casks = [
-            "arc",
-            "brave-browser",
+            # "arc",
+            # "brave-browser",
             "discord",
             "firefox",
             "fmail2",
@@ -150,11 +148,12 @@
             "iina",
             "kap",
             "librewolf",
-            "lulu",            # Firewall
-            "mikker/tap/tuna",
+            "lulu",          # Firewall
+            # "mikker/tap/tuna",
             "mimestream",
             "obsidian",
             "plex",
+            "raycast",
             "roon",
             "slack",
             "stats",
