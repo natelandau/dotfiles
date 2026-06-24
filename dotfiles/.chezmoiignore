@@ -59,6 +59,10 @@ bin/sabc
 .config/halp
 {{ end }}
 
+{{ if not (lookPath "nd") }}
+.config/nd
+{{ end }}
+
 {{- if not (lookPath "npm") -}}
 .config/npm
 {{ end }}
