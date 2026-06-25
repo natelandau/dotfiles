@@ -48,7 +48,9 @@
         # 'GITEA_ADDRESS' is overwritten by the 'gitea_address' secret
         packages = ["git+GITEA_ADDRESS/natelandau/usrbin", "nomadctl", "vid-cleaner"]
 [packages.homebrew]
-    to_remove = ["btop", "htop", "istat-menus", "qlimagesize", "rocket", "shotrr"]
+    # bottom/doggo/git-delta/lazygit/rip2/zoxide moved to mise ([packages.mise]);
+    # uninstall the Homebrew copies so mise owns them on macOS.
+    to_remove = ["bottom", "btop", "doggo", "git-delta", "htop", "istat-menus", "lazygit", "qlimagesize", "rip2", "rocket", "shotrr", "zoxide"]
     [packages.homebrew.common]
         casks = [
             "1password",
@@ -75,7 +77,6 @@
             "bash",
             "bash-completion",
             "bat",             # cat with syntax highlighting and Git integration
-            "bottom",          # Process/system monitor for the terminal.
             "chezmoi",         # Dotfile manager
             "coreutils",
             "eza",             # ls replacement
@@ -84,7 +85,6 @@
             "fzf",             # Fuzzy finder
             "gawk",            # GNU awk
             "git",
-            "git-delta",       # https://github.com/dandavison/delta
             "gnu-sed",         # GNU implementation of the famous stream editor
             "gnu-tar",         # GNU version of the tar archiving utility
             "gnutls",          # GNU Transport Layer Security (TLS) Library
@@ -98,7 +98,6 @@
             "ncdu",            # NCurses Disk Usage
             "ncurses",         # Text-based UI library
             "openssl",         # SSL/TLS cryptography library
-            "rip2",            # A safer, rust-based rm
             "ripgrep",         # search tool like grep and the silver searcher
             "sqlite3",
             "ssh-copy-id",     # Add a public key to a remote machine's authorized_keys file
@@ -107,7 +106,6 @@
             "uv",              # Python Pyenv, pipx, and packagging replacement
             "vivid",           # https://github.com/sharkdp/vivid
             "wget",
-            "zoxide",          # A faster way to navigate your filesystem
             "zsh",
         ]
     [packages.homebrew.dev_computer]
@@ -122,13 +120,10 @@
         formulae = [
             "act",        # runs GitHub Actions locally
             "bats-core",
-            "doggo",      # DNS Client
             "gh",         # GitHub CLI
-            "git-delta",
             "git-extras",
             "gpg",
             "jless",      # JSON viewer
-            "lazygit",    # simple terminal UI for git commands
             "libpq",      # PostgreSQL utilities but not postgresql itself
             "redis",
             "shellcheck",
@@ -163,6 +158,30 @@
             "zoom",
         ]
         formulae = []
+[packages.mise]
+    # Cross-platform CLI binaries installed by mise on both macOS and Linux.
+    # Refs use the aqua registry where available, falling back to the github backend.
+    # Tools in 'to_remove' are uninstalled via 'mise uninstall'; keep them disjoint
+    # from the install lists below or they will flip-flop on each apply.
+    to_remove = []
+    [packages.mise.common]
+        tools = [
+            "aqua:ClementTsang/bottom", # btm: process/system monitor
+            "aqua:dandavison/delta",    # syntax-highlighting pager for git diffs
+            "aqua:ajeetdsouza/zoxide",  # a faster way to navigate the filesystem
+            "github:MilesCranmer/rip2", # rip: a safer, rust-based rm
+        ]
+    [packages.mise.dev_computer]
+        tools = [
+            "aqua:jesseduffield/lazygit", # terminal UI for git
+            # github backend + matching_regex selects the CLI build and excludes the
+            # 'doggo_web_' release variant; the aqua registry's macOS asset names are stale.
+            "github:mr-karan/doggo[matching_regex=^doggo-]", # command-line DNS client
+        ]
+    [packages.mise.homelab_member]
+        tools = []
+    [packages.mise.personal_computer]
+        tools = []
 [packages.mas]
     [packages.mas.common]
         apps = []

@@ -1,0 +1,41 @@
+{{- if not .is_ci_workflow -}}
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" . }}
+
+header "Install/update mise-managed tools"
+
+# mise may have just been installed to ~/.local/bin, which is not yet on PATH
+# for this script, so resolve it explicitly.
+mise_bin="$(command -v mise || echo "${HOME}/.local/bin/mise")"
+
+if [[ ! -x ${mise_bin} ]]; then
+    warning "mise is not installed; skipping mise-managed tools."
+    _safeExit_ 0
+fi
+
+# Suppress mise's 'outdated_bump' hint during apply: it suggests 'mise upgrade
+# --bump', which would rewrite this chezmoi-managed config. disable_hints matches
+# specific hint ids, so name it explicitly rather than using a catch-all.
+export MISE_DISABLE_HINTS=outdated_bump
+
+# Install anything declared in ~/.config/mise/config.toml, then bump pinned
+# 'latest' tools to the newest release (the always-latest behavior).
+if ! "${mise_bin}" install -y; then
+    error "mise install failed. Review the messages above."
+fi
+
+if ! "${mise_bin}" upgrade -y; then
+    error "mise upgrade failed. Review the messages above."
+fi
+
+# Uninstall tools listed in packages.mise.to_remove. These are disjoint from the
+# install lists, so nothing here is reinstalled on the next apply.
+{{- range $tool := .packages.mise.to_remove }}
+"${mise_bin}" uninstall --all {{ $tool | quote }} || true
+{{- end }}
+
+success "mise-managed tools are up to date"
+
+_safeExit_
+{{- end }}
