@@ -12,3 +12,43 @@
 /.config/dotfile_source/0040-path.sh
 /bin/osx-defaults.sh
 /bin/pull_all_repos
+
+# --- Legacy trees relocated by the XDG migration ---
+# Old ~/.shell tree -> ~/.config/dotfile_source
+/.shell
+# Old ~/.sed tree -> ~/.local/share/sed
+/.sed
+
+# --- Single dotfiles relocated or removed ---
+/.curlrc
+/.gitconfig
+/.gitignore
+/.nanorc
+/.nd.toml
+/.git_stop_words
+# Removed entirely, no replacement
+/.digrc
+/.yamllint.yml
+
+# --- dotfile_source third-party integrations removed ---
+/.config/dotfile_source/third-party/agent-safehouse.sh
+/.config/dotfile_source/third-party/jdfile.sh
+/.config/dotfile_source/third-party/npm.sh
+/.config/dotfile_source/third-party/usrbin.sh
+
+# --- App configs removed or relocated ---
+/.config/agent-safehouse/local-overrides.sb
+/.config/jdfile/config.toml
+/.config/usrbin/aptup.toml
+/.config/usrbin/config.toml
+
+# --- macOS app configs migrated from Library to ~/.config ---
+/Library/Application Support/brewup/config.toml
+/Library/Application Support/halp/config.toml
+/Library/Application Support/jdfile/config.toml
+/Library/Application Support/usrbin/config.toml
+/Library/Application Support/vid-cleaner/config.toml
+
+# --- Helper scripts and assets removed ---
+/bin/install-binary.py
+/.vscode/extensions/nateLandauTheme
