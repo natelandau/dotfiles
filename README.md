@@ -1,24 +1,24 @@
 Dotfiles, managed with [Chezmoi](https://www.chezmoi.io/).
 
--   Support for MacOS, Debian, and Ubuntu
--   ZSH and BASH configurations, aliases, and functions
--   Configurations for common command-line tools
--   Integrations for Python tooling from [uv](https://docs.astral.sh/uv/)
--   Package management with [Homebrew](https://brew.sh/), APT, and [uv](https://docs.astral.sh/uv/)
--   Configurations and integrations for MacOS applications
--   Secrets management with [1Password CLI](https://developer.1password.com/docs/cli/)
--   SSH configuration and key management with 1Password
--   OSX defaults management
--   Custom [vscode](https://code.visualstudio.com/) theme
--   Configuration for CLI scripts and packages including [halp](https://github.com/natelandau/halp), [vid-cleaner](https://github.com/natelandau/vid-cleaner), [neatfile](https://github.com/natelandau/neatfile), and others.
--   and more...
+- Support for MacOS, Debian, and Ubuntu
+- ZSH and BASH configurations, aliases, and functions
+- Configurations for common command-line tools
+- Integrations for Python tooling from [uv](https://docs.astral.sh/uv/)
+- Package management with [Homebrew](https://brew.sh/), APT, and [uv](https://docs.astral.sh/uv/)
+- Configurations and integrations for MacOS applications
+- Secrets management with [1Password CLI](https://developer.1password.com/docs/cli/)
+- SSH configuration and key management with 1Password
+- OSX defaults management
+- Custom [vscode](https://code.visualstudio.com/) theme
+- Configuration for CLI scripts and packages including [halp](https://github.com/natelandau/halp), [vid-cleaner](https://github.com/natelandau/vid-cleaner), [neatfile](https://github.com/natelandau/neatfile), and others.
+- and more...
 
 **IMPORTANT:** While many dotfile repositories are designed to be forked, mine are not. These are heavily customized for my personal use and likely contain many things you won't need or want to use. Posting publicly so you can see how I manage my dotfiles and maybe get some ideas for how to manage your own.
 
 ## Install
 
--   [Chezmoi](https://www.chezmoi.io/)
--   [1Password CLI](https://developer.1password.com/docs/cli/) (Optional, for secrets management)
+- [Chezmoi](https://www.chezmoi.io/)
+- [1Password CLI](https://developer.1password.com/docs/cli/) (Optional, for secrets management)
 
 **Ensure required software is installed before proceeding.** There are many ways to install Chezmoi. Check the [official documentation](https://www.chezmoi.io/install/) for the most up-to-date instructions. To install chezmoi and these dotfiles in a single command run the following:
 
@@ -54,9 +54,9 @@ Note that if chezmoi hangs waiting for user input, you will need to kill the pro
 
 Packages are managed with the appropriate tools:
 
--   [Homebrew](https://brew.sh/) for MacOS
--   APT for Debian-based systems
--   [uv](https://docs.astral.sh/uv/) for Python packages
+- [Homebrew](https://brew.sh/) for MacOS
+- APT for Debian-based systems
+- [uv](https://docs.astral.sh/uv/) for Python packages
 
 To configure the packages to be installed or removed on a system, edit the `dotfiles/.chezmoidata/packages.toml` file.
 
@@ -84,14 +84,6 @@ To remove an ssh configuration, delete the server's configuration from `.../dotf
 ## MacOS Application Preferences
 
 Certain MacOS applications need manual configuration.
-
-#### iTerm2
-
-iTerm2 Configurations and profiles are synced to `~/.config/applications/iterm2`.
-
-The configuration file should be synced automatically. If it is not, `Preferences > General > Preferences` and select the `Load preferences from a custom folder or URL` option. Then select the `~/.config/applications/iterm2` directory.
-
-Profiles are not synced automatically. Import the profiles by going to `Profiles > Other Actions > Import JSON Profiles` and import them from `~/.config/applications/iterm2/`.
 
 ### Terminal
 

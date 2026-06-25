@@ -51,7 +51,7 @@
     # atuin/bat/bottom/doggo/fd/git-delta/lazygit/rip2/zoxide moved to mise ([packages.mise]);
     # uninstall the Homebrew copies so mise owns them on macOS. (eza stays on brew: it has
     # no macOS release binary, so mise only manages it on Linux.)
-    to_remove = ["bruno", "dbeaver-community", "redis"]
+    to_remove = ["bruno", "dbeaver-community", "iterm2", "redis"]
     [packages.homebrew.common]
         casks = [
             "1password",
@@ -67,7 +67,6 @@
             "ghostty",
             "git-credential-manager",
             "grandperspective",              # Disk usage visualizer
-            "iterm2",                        # Terminal emulator
             "lingon-x",
             "orbstack",                      # Docker replacement
             "tailscale",

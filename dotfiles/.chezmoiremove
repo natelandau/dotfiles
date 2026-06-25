@@ -52,3 +52,6 @@
 # --- Helper scripts and assets removed ---
 /bin/install-binary.py
 /.vscode/extensions/nateLandauTheme
+
+# --- Remove iterm2 ---
+.config/applications/iterm2

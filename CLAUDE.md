@@ -9,7 +9,7 @@ Personal dotfiles managed with [Chezmoi](https://www.chezmoi.io/). Supports macO
 - `dotfiles/` - Chezmoi-managed dotfiles (uses chezmoi naming conventions like `dot_`, `.tmpl`, `symlink_`)
 - `dotfiles/.chezmoidata/` - Data files for chezmoi templates (packages, constants, servers, etc.)
 - `dotfiles/.chezmoitemplates/` - Reusable chezmoi templates
-- `dotfiles/.assets/` - Static assets (claude config, iTerm2 themes, Terminal themes)
+- `dotfiles/.assets/` - Static assets (claude config, Terminal themes)
 - `dotfiles/dot_config/dotfile_source/` - Shell source files loaded by `.bashrc`/`.zshrc`
 - `dotfiles/dot_config/dotfile_source/third-party/` - Shell integrations for third-party tools
 - `duties.py` - Project task runner (using `duty` library)
@@ -41,6 +41,7 @@ a second pass picks up the config that needs it.
 ### Chezmoi file naming
 
 Files in `dotfiles/` use chezmoi naming conventions:
+
 - `dot_` prefix = `.` in target (e.g., `dot_zshrc` -> `.zshrc`)
 - `.tmpl` suffix = Go template file processed by chezmoi
 - `symlink_` prefix = symlink in target
@@ -49,6 +50,7 @@ Files in `dotfiles/` use chezmoi naming conventions:
 ### Shell source files
 
 Files in `dotfiles/dot_config/dotfile_source/` follow a numbered naming convention for load order:
+
 - `000-` through `090-` for core shell config
 - `third-party/` subdirectory for tool-specific integrations
 - `.sh` files are sourced by both bash and zsh
@@ -57,6 +59,7 @@ Files in `dotfiles/dot_config/dotfile_source/` follow a numbered naming conventi
 ### Pre-commit hooks
 
 Pre-commit is configured with `prek` (a pre-commit alternative). Hooks include:
+
 - commitizen (commit message format)
 - standard pre-commit checks (large files, merge conflicts, trailing whitespace, etc.)
 - gitleaks (secret detection)

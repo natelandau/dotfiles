@@ -420,7 +420,7 @@
   "shellformat.path": "/opt/homebrew/bin/shfmt",
   "sortJSON.orderUnderride": [],
   "sqlite.setupDatabase": {},
-  "terminal.external.osxExec": "iTerm.app",
+  "terminal.external.osxExec": "Ghostty.app",
   "terminal.integrated.enableMultiLinePasteWarning": false,
   "terminal.integrated.enablePersistentSessions": false,
   "terminal.integrated.fontFamily": "'Maple Mono NF', 'MesloLGMDZ Nerd Font', monospace",
