@@ -48,9 +48,9 @@
         # 'GITEA_ADDRESS' is overwritten by the 'gitea_address' secret
         packages = ["git+GITEA_ADDRESS/natelandau/usrbin", "nomadctl", "vid-cleaner"]
 [packages.homebrew]
-    # bottom/doggo/git-delta/lazygit/rip2/zoxide moved to mise ([packages.mise]);
+    # atuin/bottom/doggo/git-delta/lazygit/rip2/zoxide moved to mise ([packages.mise]);
     # uninstall the Homebrew copies so mise owns them on macOS.
-    to_remove = ["bottom", "btop", "doggo", "git-delta", "htop", "istat-menus", "lazygit", "qlimagesize", "rip2", "rocket", "shotrr", "zoxide"]
+    to_remove = ["atuin", "bottom", "btop", "doggo", "git-delta", "htop", "istat-menus", "lazygit", "qlimagesize", "rip2", "rocket", "shotrr", "zoxide"]
     [packages.homebrew.common]
         casks = [
             "1password",
@@ -73,7 +73,6 @@
             "visual-studio-code",
         ]
         formulae = [
-            "atuin",           # Better shell history
             "bash",
             "bash-completion",
             "bat",             # cat with syntax highlighting and Git integration
@@ -166,6 +165,10 @@
     to_remove = []
     [packages.mise.common]
         tools = [
+            # atuin's version is pinned per-arch in mise config.toml.tmpl: 18.13.6 on
+            # aarch64 Linux (Raspberry Pi) to dodge the broken interactive TUI in
+            # 18.16.x (atuinsh/atuin#3472); latest everywhere else.
+            "aqua:atuinsh/atuin",       # better shell history
             "aqua:ClementTsang/bottom", # btm: process/system monitor
             "aqua:dandavison/delta",    # syntax-highlighting pager for git diffs (skipped on Intel Macs; see mise config.toml.tmpl)
             "aqua:ajeetdsouza/zoxide",  # a faster way to navigate the filesystem

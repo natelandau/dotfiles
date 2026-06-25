@@ -4,9 +4,17 @@
 [tools]
 {{ range .packages.mise.common.tools -}}
 {{/* delta dropped its x86_64-apple-darwin release binary as of 0.19.x; skip it on Intel Macs */ -}}
-{{ if not (and (eq $.chezmoi.os "darwin") (eq $.chezmoi.arch "amd64") (eq . "aqua:dandavison/delta")) -}}
+{{/* atuin is emitted separately below with a per-arch version pin */ -}}
+{{ if and (not (and (eq $.chezmoi.os "darwin") (eq $.chezmoi.arch "amd64") (eq . "aqua:dandavison/delta"))) (ne . "aqua:atuinsh/atuin") -}}
 {{ . | quote }} = "latest"
 {{ end -}}
+{{ end -}}
+{{/* atuin 18.16.x has a broken interactive TUI on aarch64 Linux (atuinsh/atuin#3472); */ -}}
+{{/* pin the Raspberry Pis to the last good release and track latest everywhere else */ -}}
+{{ if and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arm64") -}}
+"aqua:atuinsh/atuin" = "18.13.6"
+{{ else -}}
+"aqua:atuinsh/atuin" = "latest"
 {{ end -}}
 {{- if .dev_computer -}}
 {{ range .packages.mise.dev_computer.tools -}}

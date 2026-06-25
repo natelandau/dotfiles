@@ -31,6 +31,11 @@ chezmoi apply                 # Apply dotfiles to the system
 chezmoi diff                  # Preview changes before applying
 ```
 
+Running `chezmoi apply` two or three times to get a clean result is expected and fine.
+Some `run_before`/`run_after` scripts install tooling (e.g. mise, then mise-managed
+binaries) that later configs or scripts depend on, so a first pass installs the tool and
+a second pass picks up the config that needs it.
+
 ## Conventions
 
 ### Chezmoi file naming
