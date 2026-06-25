@@ -59,6 +59,10 @@ bin/sabc
 .config/halp
 {{ end }}
 
+{{ if not (lookPath "mise") }}
+.config/mise
+{{ end }}
+
 {{ if not (lookPath "nd") }}
 .config/nd
 {{ end }}

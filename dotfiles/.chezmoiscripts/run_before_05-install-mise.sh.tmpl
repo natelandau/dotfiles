@@ -1,0 +1,23 @@
+{{- if not .is_ci_workflow -}}
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" . }}
+
+# Bootstrap mise so the run_after tools script can install the cross-platform
+# CLI binaries declared in [packages.mise]. The official installer works on
+# macOS and Linux and installs to ~/.local/bin.
+if [[ $(command -v mise) ]]; then
+    _safeExit_ 0
+fi
+
+header "Installing mise"
+
+if curl -fsSL https://mise.run | sh; then
+    success "mise installed"
+else
+    error "Failed to install mise"
+    _safeExit_ 1
+fi
+
+_safeExit_
+{{- end }}

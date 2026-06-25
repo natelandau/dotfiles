@@ -1,0 +1,9 @@
+if [[ "$(command -v mise)" ]]; then
+    # Activate mise for interactive shells so it manages tool versions and PATH.
+    # Non-interactive shells rely on the shims dir added in 0040-path.sh.tmpl.
+    if [[ -n ${ZSH_NAME} ]]; then
+        eval "$(mise activate zsh)"
+    elif [[ -n ${BASH} ]]; then
+        eval "$(mise activate bash)"
+    fi
+fi

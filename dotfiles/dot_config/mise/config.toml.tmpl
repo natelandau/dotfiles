@@ -1,0 +1,22 @@
+# Managed by chezmoi from .chezmoidata/packages.toml ([packages.mise]).
+# Do not edit directly; edit the data file and run 'chezmoi apply'.
+
+[tools]
+{{ range .packages.mise.common.tools -}}
+{{ . | quote }} = "latest"
+{{ end -}}
+{{- if .dev_computer -}}
+{{ range .packages.mise.dev_computer.tools -}}
+{{ . | quote }} = "latest"
+{{ end -}}
+{{- end -}}
+{{- if .homelab_member -}}
+{{ range .packages.mise.homelab_member.tools -}}
+{{ . | quote }} = "latest"
+{{ end -}}
+{{- end -}}
+{{- if .personal_computer -}}
+{{ range .packages.mise.personal_computer.tools -}}
+{{ . | quote }} = "latest"
+{{ end -}}
+{{- end -}}
