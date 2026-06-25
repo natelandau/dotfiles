@@ -212,6 +212,7 @@
     "*bash.tmpl": "shellscript",
     "*sh.tmpl": "shellscript",
     "*zsh.tmpl": "shellscript",
+    "*toml.tmpl": "toml",
     "Brewfile": "ruby"
   },
   "files.autoSave": "onFocusChange",
@@ -287,6 +288,16 @@
   "gitlens.hovers.currentLine.over": "line",
   "gitlens.keymap": "none",
   "gitlens.views.repositories.files.layout": "tree",
+  "go-template.languages": [
+    "toml",
+    "shellscript",
+    "json",
+    "yaml",
+    "gitconfig",
+    "ssh_config",
+    "plaintext",
+    "python"
+  ],
   "html.autoClosingTags": false,
   "html.format.contentUnformatted": "",
   "html.format.templating": true,

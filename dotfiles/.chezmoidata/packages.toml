@@ -51,7 +51,7 @@
     # atuin/bat/bottom/doggo/fd/git-delta/lazygit/rip2/zoxide moved to mise ([packages.mise]);
     # uninstall the Homebrew copies so mise owns them on macOS. (eza stays on brew: it has
     # no macOS release binary, so mise only manages it on Linux.)
-    to_remove = ["atuin", "bat", "bottom", "btop", "doggo", "fd", "git-delta", "htop", "istat-menus", "lazygit", "qlimagesize", "rip2", "rocket", "shotrr", "zoxide"]
+    to_remove = ["bruno", "dbeaver-community", "redis"]
     [packages.homebrew.common]
         casks = [
             "1password",
@@ -108,8 +108,6 @@
         ]
     [packages.homebrew.dev_computer]
         casks = [
-            "bruno",
-            "dbeaver-community",
             "fork",
             # "sourcetree", # Alternative to fork
             "cursor",
@@ -123,7 +121,6 @@
             "gpg",
             "jless",      # JSON viewer
             "libpq",      # PostgreSQL utilities but not postgresql itself
-            "redis",
             "shellcheck",
             "shfmt",
         ]
@@ -166,16 +163,19 @@
         tools = [
             # atuin's version is pinned per-arch in mise config.toml.tmpl: 18.13.6 on
             # aarch64 Linux (Raspberry Pi) to dodge the broken interactive TUI in
-            # 18.16.x (atuinsh/atuin#3472); latest everywhere else.
-            "aqua:atuinsh/atuin",       # better shell history
+            # 18.16.x (atuinsh/atuin#3472); latest everywhere else. Skipped on Intel
+            # Macs (dropped x86_64-apple-darwin binary); installed manually there.
             "aqua:ClementTsang/bottom", # btm: process/system monitor
-            "aqua:sharkdp/bat",         # cat with syntax highlighting (mise binary is 'bat', so no batcat symlink needed)
+            "aqua:atuinsh/atuin",       # better shell history
             "aqua:dandavison/delta",    # syntax-highlighting pager for git diffs (skipped on Intel Macs; see mise config.toml.tmpl)
+            "aqua:sharkdp/bat",         # cat with syntax highlighting (mise binary is 'bat', so no batcat symlink needed)
             # eza ships no macOS release binaries, so mise installs it on Linux only
             # (see config.toml.tmpl); macOS keeps the Homebrew formula.
-            "aqua:eza-community/eza",   # ls replacement
-            "aqua:sharkdp/fd",          # fd-find (mise binary is 'fd', so no fdfind symlink needed)
+            "aqua:eza-community/eza", # ls replacement
+            # fd dropped its x86_64-apple-darwin binary, so it is skipped on Intel Macs
+            # (install manually there); see config.toml.tmpl.
             "aqua:ajeetdsouza/zoxide",  # a faster way to navigate the filesystem
+            "aqua:sharkdp/fd",          # fd-find (mise binary is 'fd', so no fdfind symlink needed)
             "github:MilesCranmer/rip2", # rip: a safer, rust-based rm
         ]
     [packages.mise.dev_computer]

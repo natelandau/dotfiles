@@ -2,10 +2,12 @@
 # Do not edit directly; edit the data file and run 'chezmoi apply'.
 
 [tools]
+{{ $intelMac := and (eq .chezmoi.os "darwin") (eq .chezmoi.arch "amd64") -}}
 {{ range .packages.mise.common.tools -}}
-{{/* delta dropped its x86_64-apple-darwin release binary as of 0.19.x; skip it on Intel Macs */ -}}
-{{/* atuin and eza are emitted separately below (per-arch pin / Linux-only) */ -}}
-{{ if and (not (and (eq $.chezmoi.os "darwin") (eq $.chezmoi.arch "amd64") (eq . "aqua:dandavison/delta"))) (ne . "aqua:atuinsh/atuin") (ne . "aqua:eza-community/eza") -}}
+{{/* delta and fd dropped their x86_64-apple-darwin release binaries; every GitHub-release */ -}}
+{{/* backend (aqua/ubi/github) fails the same way, so skip them on Intel Macs and install */ -}}
+{{/* manually there. atuin and eza are emitted separately below (per-arch pin / Linux-only). */ -}}
+{{ if and (not (and $intelMac (or (eq . "aqua:dandavison/delta") (eq . "aqua:sharkdp/fd")))) (ne . "aqua:atuinsh/atuin") (ne . "aqua:eza-community/eza") -}}
 {{ . | quote }} = "latest"
 {{ end -}}
 {{ end -}}
@@ -15,10 +17,12 @@
 "aqua:eza-community/eza" = "latest"
 {{ end -}}
 {{/* atuin 18.16.x has a broken interactive TUI on aarch64 Linux (atuinsh/atuin#3472); */ -}}
-{{/* pin the Raspberry Pis to the last good release and track latest everywhere else */ -}}
+{{/* pin the Raspberry Pis to the last good release and track latest everywhere else. */ -}}
+{{/* atuin also dropped its x86_64-apple-darwin binary, so skip it on Intel Macs (install */ -}}
+{{/* manually there). */ -}}
 {{ if and (eq .chezmoi.os "linux") (eq .chezmoi.arch "arm64") -}}
 "aqua:atuinsh/atuin" = "18.13.6"
-{{ else -}}
+{{ else if not $intelMac -}}
 "aqua:atuinsh/atuin" = "latest"
 {{ end -}}
 {{- if .dev_computer -}}
