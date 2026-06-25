@@ -14,9 +14,10 @@ if [[ ! -x ${mise_bin} ]]; then
     _safeExit_ 0
 fi
 
-# Suppress mise's informational hints during apply (e.g. the 'mise upgrade --bump'
-# tip). --bump would rewrite this chezmoi-managed config, so the hint is noise here.
-export MISE_DISABLE_HINTS=1
+# Suppress mise's 'outdated_bump' hint during apply: it suggests 'mise upgrade
+# --bump', which would rewrite this chezmoi-managed config. disable_hints matches
+# specific hint ids, so name it explicitly rather than using a catch-all.
+export MISE_DISABLE_HINTS=outdated_bump
 
 # Install anything declared in ~/.config/mise/config.toml, then bump pinned
 # 'latest' tools to the newest release (the always-latest behavior).

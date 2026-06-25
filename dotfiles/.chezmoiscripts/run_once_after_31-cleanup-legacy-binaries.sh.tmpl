@@ -23,14 +23,23 @@ for _file in "${legacy_files[@]}"; do
     fi
 done
 
-# .deb packages installed via dpkg by the old installer. dpkg -l guards against
-# packages that were never installed (e.g. tarball-only tools).
+# .deb packages installed via dpkg by the old installer. Use dpkg directly rather
+# than apt: dpkg removes the named package without apt's whole-system dependency
+# resolution, which refuses to act while any package is in a broken state (e.g. an
+# old bottom .deb that requires a newer glibc than the host provides).
 legacy_packages=(bottom git-delta zoxide doggo lazygit rip2)
 for _pkg in "${legacy_packages[@]}"; do
-    if dpkg -l "${_pkg}" 2>/dev/null | grep -q "^ii"; then
-        info "Removing dpkg package ${_pkg}"
-        sudo apt-get remove -y "${_pkg}" || warning "Could not remove ${_pkg}"
-    fi
+    # Match any state where files are still on disk, not just fully-configured
+    # 'installed'. A package that failed to configure is left half-installed or
+    # unpacked and must still be removed.
+    _status="$(dpkg-query -W -f='${db:Status-Status}' "${_pkg}" 2>/dev/null || true)"
+    case "${_status}" in
+        "" | not-installed | config-files) ;;
+        *)
+            info "Removing dpkg package ${_pkg}"
+            sudo dpkg --remove "${_pkg}" || warning "Could not remove ${_pkg}"
+            ;;
+    esac
 done
 
 success "Legacy binary cleanup complete"
