@@ -167,7 +167,7 @@
     [packages.mise.common]
         tools = [
             "aqua:ClementTsang/bottom", # btm: process/system monitor
-            "aqua:dandavison/delta",    # syntax-highlighting pager for git diffs
+            "aqua:dandavison/delta",    # syntax-highlighting pager for git diffs (skipped on Intel Macs; see mise config.toml.tmpl)
             "aqua:ajeetdsouza/zoxide",  # a faster way to navigate the filesystem
             "github:MilesCranmer/rip2", # rip: a safer, rust-based rm
         ]

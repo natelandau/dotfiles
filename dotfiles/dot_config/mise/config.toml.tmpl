@@ -3,7 +3,10 @@
 
 [tools]
 {{ range .packages.mise.common.tools -}}
+{{/* delta dropped its x86_64-apple-darwin release binary as of 0.19.x; skip it on Intel Macs */ -}}
+{{ if not (and (eq $.chezmoi.os "darwin") (eq $.chezmoi.arch "amd64") (eq . "aqua:dandavison/delta")) -}}
 {{ . | quote }} = "latest"
+{{ end -}}
 {{ end -}}
 {{- if .dev_computer -}}
 {{ range .packages.mise.dev_computer.tools -}}
