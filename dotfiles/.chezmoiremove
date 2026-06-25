@@ -9,4 +9,6 @@
 /.config/ghostty/themes/warm-burnout-light
 /.config/eza/theme.yml
 /.config/dotfile_source/third-party/eza.sh
+/.config/dotfile_source/0040-path.sh
+/bin/osx-defaults.sh
 /bin/pull_all_repos

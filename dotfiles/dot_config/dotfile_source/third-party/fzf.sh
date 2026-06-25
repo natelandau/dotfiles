@@ -1,5 +1,5 @@
 # Load fzf
-if [[ "$(command -v fzf)" ]] && [[ -n ${ZSH_NAME} ]]; then
+if command -v fzf >/dev/null && [[ -n ${ZSH_NAME} ]]; then
     fzf_version_minor=$(fzf --version | awk '{print $1}' | cut -d. -f2)
 
     if [[ $fzf_version_minor -ge 47 ]]; then
@@ -12,15 +12,15 @@ if [[ "$(command -v fzf)" ]] && [[ -n ${ZSH_NAME} ]]; then
         fi
     fi
 
-elif [[ "$(command -v fzf)" ]] && [[ -n ${BASH} ]]; then
+elif command -v fzf >/dev/null && [[ -n ${BASH} ]]; then
     eval "$(fzf --bash)"
 fi
 
 # Configure fzf
-if [ "$(command -v fzf)" ]; then
+if command -v fzf >/dev/null; then
     # Preferred implementation requires fd, bat, and eza to be installed
 
-    if [ "$(command -v fd)" ] && [ "$(command -v bat)" ] && [ "$(command -v eza)" ]; then
+    if command -v fd >/dev/null && command -v bat >/dev/null && command -v eza >/dev/null; then
         show_file_or_dir_preview="if [ -d {} ]; then eza --tree --color=always {} | head -200; else bat -n --color=always --line-range :500 {}; fi"
 
         export FZF_ALT_C_COMMAND="fd --type=d --hidden --strip-cwd-prefix --exclude .git"

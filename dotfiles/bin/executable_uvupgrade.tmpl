@@ -12,12 +12,13 @@
 
 import subprocess
 from pathlib import Path
-from re import Match, match
+from re import match
 from typing import Any
 
 import tomllib
 
 pyproject_path = Path("pyproject.toml")
+PACKAGE_PATTERN = r"^([a-zA-Z0-9\-]+)(?:\[([\w,\s-]+)\])?"
 
 
 def main() -> None:
@@ -30,21 +31,7 @@ def main() -> None:
     with pyproject_path.open("rb") as file:
         pyproject: dict[str, Any] = tomllib.load(file)
 
-    dependencies: list[str] = pyproject["project"]["dependencies"]
-    package_pattern = r"^([a-zA-Z0-9\-]+)(?:\[([\w,\s-]+)\])?"
-    for dependency in dependencies:
-        package_match = match(package_pattern, dependency)
-        if not isinstance(package_match, Match):
-            continue
-        package = package_match.group(1)
-        extra = package_match.group(2)
-
-        uv("remove", package)
-
-        if package == "script-utilities":
-            uv("add", "git+{{- onepasswordRead .secrets.gitea_address }}/natelandau/script-utilities", extra)
-        else:
-            uv("add", package, extra)
+    upgrade_dependencies(pyproject["project"]["dependencies"])
 
     if pyproject.get("tool", {}).get("uv", {}).get("dev-dependencies"):
         dev_dependencies: list[str] = pyproject["tool"]["uv"]["dev-dependencies"]
@@ -53,16 +40,30 @@ def main() -> None:
     else:
         dev_dependencies = []
 
-    package_pattern = r"^([a-zA-Z0-9\-]+)(?:\[([\w,\s-]+)\])?"
-    for dependency in dev_dependencies:
-        package_match = match(package_pattern, dependency)
-        if not isinstance(package_match, Match):
+    upgrade_dependencies(dev_dependencies, dev=True)
+
+
+def upgrade_dependencies(dependencies: list[str], *, dev: bool = False) -> None:
+    """Remove and reinstall each dependency at its latest version, preserving extras.
+
+    Args:
+        dependencies (list[str]): Dependency specifiers parsed from pyproject.toml.
+        dev (bool): Whether these are development dependencies. Defaults to False.
+    """
+    for dependency in dependencies:
+        package_match = match(PACKAGE_PATTERN, dependency)
+        if package_match is None:
             continue
         package = package_match.group(1)
         extra = package_match.group(2)
 
-        uv("remove", package, dev=True)
-        uv("add", package, extra, dev=True)
+        uv("remove", package, dev=dev)
+
+        # script-utilities is a private package installed from its git remote (regular deps only)
+        if package == "script-utilities" and not dev:
+            uv("add", "git+{{- onepasswordRead .secrets.gitea_address }}/natelandau/script-utilities", extra, dev=dev)
+        else:
+            uv("add", package, extra, dev=dev)
 
 
 def uv(command: str, package: str, extra: str | None = None, dev: bool = False) -> None:

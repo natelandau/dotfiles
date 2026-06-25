@@ -32,15 +32,15 @@ remote=$(git config "branch.${branch}.remote" || echo "$default_remote")
 remote_branch=$( (git config "branch.${branch}.merge" || echo "refs/heads/$branch") | cut -d/ -f3-)
 
 # Push & save output
-if [ -z $* ]; then
-    args="$remote $remote_branch"
+if [ "$#" -eq 0 ]; then
+    args=("$remote" "$remote_branch")
 else
-    args="$*"
+    args=("$@")
 fi
-push=$(git push --set-upstream $args 2>&1)
+push=$(git push --set-upstream "${args[@]}" 2>&1)
 exit_code=$?
 
-if [ $exit_code != 0 ]; then
+if [ "$exit_code" -ne 0 ]; then
     echo -e "${color_error}Ouch, push failed!${color_reset}\n\n$push"
     exit $exit_code
 elif echo $push | grep "Everything up-to-date" >/dev/null; then

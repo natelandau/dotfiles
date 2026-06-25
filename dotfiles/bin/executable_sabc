@@ -16,7 +16,6 @@ import os
 import sys
 import tomllib
 from dataclasses import dataclass
-from enum import IntEnum
 from pathlib import Path
 from time import sleep
 from typing import Annotated, Final
@@ -36,14 +35,6 @@ PACKAGE_NAME = (
 )
 CONFIG_DIR = Path(os.getenv("XDG_CONFIG_HOME", "~/.config")).expanduser().absolute() / PACKAGE_NAME
 SABC_RSS_FEED_CHECK_WAIT_TIME: Final[int] = 10
-
-
-class Verbosity(IntEnum):
-    """Output verbosity levels for the CLI."""
-
-    INFO = 0
-    DEBUG = 1
-    TRACE = 2
 
 
 # ############## CONFIG ##############
@@ -89,7 +80,7 @@ def _load_toml() -> dict:
 
 
 def _load_env_overrides() -> dict:
-    """Load config overrides from GX_* environment variables.
+    """Load config overrides from SABNZBD_* environment variables.
 
     Returns:
         A dict of config field names to override values.
@@ -128,7 +119,7 @@ config: SabcConfig = _build_config()
 class Nzb:
     """Represent a SABnzbd download item with its metadata.
 
-    Args:
+    Attributes:
         nzo_id (str): Unique identifier for the NZB file
         name (str): Name of the NZB file or download
         category (str): Category assigned to the download
@@ -163,7 +154,7 @@ class SABAPI:
             dict: The JSON response from the API
 
         Raises:
-            cappa.Exit: If the request times out or returns an HTTP error
+            typer.Exit: If the request times out or returns an HTTP error
         """
         params["apikey"] = config.sabnzbd_api_key.strip()
         params["output"] = "json"
@@ -231,7 +222,7 @@ class SABAPI:
     def fetch_rss_feeds(cls) -> dict:
         """Trigger an immediate RSS feed check and download in SABnzbd.
 
-        Makes an API request to SABnzbd to check all configured RSS feeds for new content and initiate downloads based on the configured filters. Waits 5 seconds after triggering the check to allow it to complete before returning the status.
+        Make an API request to SABnzbd to check all configured RSS feeds for new content and initiate downloads based on the configured filters. Waits 10 seconds after triggering the check to allow it to complete before returning the status.
 
         Returns:
             dict: JSON response containing the status of the RSS feed check operation
@@ -254,7 +245,7 @@ class SABAPI:
             dict: JSON response containing the status of the delete operation
 
         Raises:
-            cappa.Exit: If no completed downloads are provided to delete
+            typer.Exit: If no completed downloads are provided to delete
         """
         if not nzbs:
             pp.error("No completed downloads to delete")
@@ -274,7 +265,7 @@ class SABAPI:
     def get_warnings(cls) -> list[str]:
         """Retrieve warnings from SABnzbd.
 
-        Makes an API request to SABnzbd to get any warnings or issues.
+        Make an API request to SABnzbd to get any warnings or issues.
 
         Returns:
             list[str]: A list of warnings or issues from SABnzbd
@@ -287,7 +278,7 @@ class SABAPI:
     def clear_warnings(cls) -> dict:
         """Clear warnings from SABnzbd.
 
-        Makes an API request to SABnzbd to clear any warnings or issues.
+        Make an API request to SABnzbd to clear any warnings or issues.
 
         Returns:
             dict: JSON response containing the status of the clear operation
@@ -298,7 +289,6 @@ class SABAPI:
 
 # ############## CLI ##############
 
-app = typer.Typer()
 rich_utils.STYLE_HELPTEXT = ""
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 app = typer.Typer(rich_markup_mode="rich", context_settings=CONTEXT_SETTINGS, add_completion=False)

@@ -16,7 +16,6 @@ import platform
 import sys
 import tomllib
 from dataclasses import dataclass, field
-from enum import IntEnum
 from pathlib import Path
 from typing import Annotated
 
@@ -34,14 +33,6 @@ PACKAGE_NAME = (
     __package__.replace("_", "-").replace(".", "-").replace(" ", "-") if __package__ else "sabc"
 )
 CONFIG_DIR = Path(os.getenv("XDG_CONFIG_HOME", "~/.config")).expanduser().absolute() / PACKAGE_NAME
-
-
-class Verbosity(IntEnum):
-    """Output verbosity levels for the CLI."""
-
-    INFO = 0
-    DEBUG = 1
-    TRACE = 2
 
 
 # ############## CONFIG ##############
@@ -78,7 +69,7 @@ def _load_toml() -> dict:
 
 
 def _load_env_overrides() -> dict:
-    """Load config overrides from GX_* environment variables.
+    """Load config overrides from APTUP_* environment variables.
 
     Returns:
         A dict of config field names to override values.
@@ -93,7 +84,7 @@ def _load_env_overrides() -> dict:
 
 
 def _build_config() -> AptupConfig:
-    """Build a the config from defaults, TOML file, and env var overrides."""
+    """Build the config from defaults, TOML file, and env var overrides."""
     toml_data = _load_toml()
     values = dict(toml_data)
     env_overrides = _load_env_overrides()
@@ -116,7 +107,7 @@ def _guard_statements() -> None:
     Verify that the script is running on Linux.
 
     Raises:
-        cappa.Exit: If running on non-linux system
+        typer.Exit: If running on non-linux system
 
     """
     if platform.system() != "Linux":
@@ -136,7 +127,7 @@ def update_package_cache(*, stream: bool = False) -> Text:
         Text: Formatted output from apt update command
 
     Raises:
-        cappa.Exit: If apt update fails due to insufficient permissions or other errors
+        typer.Exit: If apt update fails due to insufficient permissions or other errors
 
     """
     with pp.step("Updating apt package cache..."):
@@ -160,7 +151,7 @@ def fetch_upgradable_packages(*, stream: bool = False) -> tuple[list[str], list[
     Query the package manager for all installed packages with available updates.
 
     Returns:
-        tuple[list[str], list[str]]: Names of packages with updates available, names of packages to exclude
+        tuple[list[str], list[str], Text]: Names of packages with updates available, names of excluded packages, and the formatted apt output
 
     """
     packages = []
@@ -251,7 +242,7 @@ def autoremove_packages(*, dry_run: bool = False, stream: bool = False) -> Text:
         Text: Formatted output from apt autoremove command
 
     Raises:
-        cappa.Exit: If package removal fails
+        typer.Exit: If package removal fails
 
     """
     args = ["autoremove", "-y", "-q"]
@@ -277,7 +268,6 @@ def autoremove_packages(*, dry_run: bool = False, stream: bool = False) -> Text:
 
 # ############## CLI ##############
 
-app = typer.Typer()
 rich_utils.STYLE_HELPTEXT = ""
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 app = typer.Typer(rich_markup_mode="rich", context_settings=CONTEXT_SETTINGS, add_completion=False)

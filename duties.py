@@ -36,6 +36,9 @@ def strip_ansi(text: str) -> str:
 def pyprefix(title: str) -> str:
     """Add a prefix to the title if CI is true.
 
+    Args:
+        title (str): The task title to display.
+
     Returns:
         str: Title with prefix if CI is true.
     """

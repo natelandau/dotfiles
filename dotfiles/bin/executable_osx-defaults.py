@@ -44,7 +44,7 @@ def run_command(  # noqa: C901
     cmd: str,
     args: list[str],
     pushd: str | Path = "",
-    okay_codes: list[int] = [],
+    okay_codes: list[int] | None = None,
     exclude_regex: str | None = None,
     *,
     quiet: bool = False,
@@ -58,20 +58,13 @@ def run_command(  # noqa: C901
         cmd (str): The command name to execute
         args (list[str]): Command line arguments to pass to the command
         pushd (str | Path): Directory to change to before running the command. Empty string means current directory. Defaults to "".
-        okay_codes (list[int]): List of exit codes that are considered successful. Defaults to [].
+        okay_codes (list[int] | None): List of exit codes that are considered successful. Defaults to None.
         exclude_regex (str | None): Regex to exclude lines from the output. Defaults to None.
         quiet (bool): Whether to suppress real-time output to console. Defaults to False.
         sudo (bool): Whether to run the command with sudo. Defaults to False.
 
     Returns:
         str: The complete command output as a string with ANSI color codes preserved
-
-    Changelog:
-        - v2.2.1: Initial version
-
-    Raises:
-        ShellCommandNotFoundError: When the command is not found in PATH
-        ShellCommandFailedError: When the command exits with a non-zero status code
     """
     output_lines: list[str] = []
 
@@ -101,10 +94,6 @@ def run_command(  # noqa: C901
 
         Returns:
             str: The complete command output as a string
-
-        Raises:
-            ShellCommandNotFoundError: When the command is not found in PATH
-            ShellCommandFailedError: When the command exits with a non-zero status code
         """
         try:
             command = sh.Command(cmd)

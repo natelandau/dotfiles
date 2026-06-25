@@ -29,8 +29,7 @@ for configFileLocation in "${configFileLocations[@]}"; do
         done < <(find "${configFileLocation}" \
             -maxdepth 2 \
             -type f \
-            -name '*.bash' \
-            -o -name '*.sh' \
+            \( -name '*.bash' -o -name '*.sh' \) \
             | sort)
     fi
 done
