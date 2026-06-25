@@ -4,10 +4,15 @@
 [tools]
 {{ range .packages.mise.common.tools -}}
 {{/* delta dropped its x86_64-apple-darwin release binary as of 0.19.x; skip it on Intel Macs */ -}}
-{{/* atuin is emitted separately below with a per-arch version pin */ -}}
-{{ if and (not (and (eq $.chezmoi.os "darwin") (eq $.chezmoi.arch "amd64") (eq . "aqua:dandavison/delta"))) (ne . "aqua:atuinsh/atuin") -}}
+{{/* atuin and eza are emitted separately below (per-arch pin / Linux-only) */ -}}
+{{ if and (not (and (eq $.chezmoi.os "darwin") (eq $.chezmoi.arch "amd64") (eq . "aqua:dandavison/delta"))) (ne . "aqua:atuinsh/atuin") (ne . "aqua:eza-community/eza") -}}
 {{ . | quote }} = "latest"
 {{ end -}}
+{{ end -}}
+{{/* eza publishes no macOS release binaries; manage it via mise on Linux only and */ -}}
+{{/* keep the Homebrew formula on macOS (see packages.toml) */ -}}
+{{ if eq .chezmoi.os "linux" -}}
+"aqua:eza-community/eza" = "latest"
 {{ end -}}
 {{/* atuin 18.16.x has a broken interactive TUI on aarch64 Linux (atuinsh/atuin#3472); */ -}}
 {{/* pin the Raspberry Pis to the last good release and track latest everywhere else */ -}}

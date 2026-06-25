@@ -1,12 +1,12 @@
 [packages.apt]
-    to_remove = ["btop", "htop"]
+    # bat/eza/fd-find moved to mise ([packages.mise]); remove the apt copies (and the
+    # eza custom repo) from Linux hosts. See run_onchange_after_10_remove_packages.sh.tmpl.
+    to_remove = ["bat", "btop", "eza", "fd-find", "htop"]
     [packages.apt.common]
         packages = [
             "apt-transport-https",
-            "bat",                 # cat with syntax highlighting and Git integration
             "curl",
             "dnsutils",
-            "fd-find",
             "figlet",
             "fzf",
             "git",
@@ -48,9 +48,10 @@
         # 'GITEA_ADDRESS' is overwritten by the 'gitea_address' secret
         packages = ["git+GITEA_ADDRESS/natelandau/usrbin", "nomadctl", "vid-cleaner"]
 [packages.homebrew]
-    # atuin/bottom/doggo/git-delta/lazygit/rip2/zoxide moved to mise ([packages.mise]);
-    # uninstall the Homebrew copies so mise owns them on macOS.
-    to_remove = ["atuin", "bottom", "btop", "doggo", "git-delta", "htop", "istat-menus", "lazygit", "qlimagesize", "rip2", "rocket", "shotrr", "zoxide"]
+    # atuin/bat/bottom/doggo/fd/git-delta/lazygit/rip2/zoxide moved to mise ([packages.mise]);
+    # uninstall the Homebrew copies so mise owns them on macOS. (eza stays on brew: it has
+    # no macOS release binary, so mise only manages it on Linux.)
+    to_remove = ["atuin", "bat", "bottom", "btop", "doggo", "fd", "git-delta", "htop", "istat-menus", "lazygit", "qlimagesize", "rip2", "rocket", "shotrr", "zoxide"]
     [packages.homebrew.common]
         casks = [
             "1password",
@@ -75,11 +76,9 @@
         formulae = [
             "bash",
             "bash-completion",
-            "bat",             # cat with syntax highlighting and Git integration
             "chezmoi",         # Dotfile manager
             "coreutils",
-            "eza",             # ls replacement
-            "fd",              # fd-find
+            "eza",             # ls replacement (mise has no macOS binary for eza; brew owns it here)
             "findutils",       # GNU find, locate, updatedb, and xargs
             "fzf",             # Fuzzy finder
             "gawk",            # GNU awk
@@ -170,7 +169,12 @@
             # 18.16.x (atuinsh/atuin#3472); latest everywhere else.
             "aqua:atuinsh/atuin",       # better shell history
             "aqua:ClementTsang/bottom", # btm: process/system monitor
+            "aqua:sharkdp/bat",         # cat with syntax highlighting (mise binary is 'bat', so no batcat symlink needed)
             "aqua:dandavison/delta",    # syntax-highlighting pager for git diffs (skipped on Intel Macs; see mise config.toml.tmpl)
+            # eza ships no macOS release binaries, so mise installs it on Linux only
+            # (see config.toml.tmpl); macOS keeps the Homebrew formula.
+            "aqua:eza-community/eza",   # ls replacement
+            "aqua:sharkdp/fd",          # fd-find (mise binary is 'fd', so no fdfind symlink needed)
             "aqua:ajeetdsouza/zoxide",  # a faster way to navigate the filesystem
             "github:MilesCranmer/rip2", # rip: a safer, rust-based rm
         ]
