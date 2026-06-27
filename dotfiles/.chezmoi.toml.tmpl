@@ -18,7 +18,7 @@
     xdgStateDir       = "{{ .chezmoi.homeDir }}/.local/state"
 
 [diff]
-    {{ if lookPath "delta" -}}pager = "delta"
+    {{ if lookPath "delta" -}}pager = "delta --paging=never"
     {{ end -}}
     exclude = ["scripts"]
 

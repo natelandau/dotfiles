@@ -13,6 +13,8 @@ allowed_types = [
     "test",
 ]
 ignore_author_re = "(dependabot|renovate)"
+line_length = 500
 merge_commit = false
 style = "conventional"
 subject_capitalized = false
+subject_length = 75
