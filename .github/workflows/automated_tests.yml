@@ -29,178 +29,142 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
 
+permissions:
+    contents: read
+
 jobs:
+    # ----------------------------------------------
+    # Lint: fast, single-runner checks that don't need a full apply
+    # ----------------------------------------------
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+
+            - uses: actions/cache@v5
+              with:
+                  path: ~/.cache/prek
+                  key: prek-${{ hashFiles('.pre-commit-config.yaml') }}
+
+            - name: Set up uv
+              uses: astral-sh/setup-uv@v7
+              with:
+                  enable-cache: true
+
+            - name: Install dependencies
+              run: uv sync
+
+            - name: Run linters
+              run: uv run duty lint
+
+            - name: Lint workflows and embedded shell with actionlint
+              # actionlint runs shellcheck over every run: block, catching quoting
+              # and test-expression bugs in the steps below before they ship.
+              run: |
+                  bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7
+                  ./actionlint -color
+
+    # ----------------------------------------------
+    # Apply: full chezmoi apply on each supported OS
+    # ----------------------------------------------
     test-dotfiles:
-        # runs-on: ubuntu-latest
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 os: ["ubuntu-latest", "macos-latest"]
         runs-on: ${{ matrix.os }}
         steps:
-            # - name: Install APT dependencies
-            #   if: startsWith(matrix.os, 'ubuntu')
-            #   run: |
-            #       apt-get update
-            #       apt-get install -y git zsh
-
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@v6
 
-            - name: Copy repository to /home/runner/
+            - name: Install zsh (Ubuntu)
+              if: startsWith(matrix.os, 'ubuntu')
+              # macOS ships zsh; Ubuntu runners need it so the .zshrc smoke test runs.
+              run: sudo apt-get update && sudo apt-get install -y zsh
+
+            - name: Set up chezmoi
+              uses: ./.github/actions/setup-chezmoi
+
+            - name: Validate every template renders
+              # execute-template covers templates even when .chezmoiignore excludes
+              # them on this machine, and localizes which file fails to render.
               run: |
-                  if [ -d /home/runner ]; then homedir="/home/runner"; else homedir="/Users/runner"; fi
+                  set -uo pipefail
+                  cd "${HOME}/.local/share/chezmoi"
+                  fail=0
+                  while IFS= read -r -d '' tmpl; do
+                      if ! chezmoi execute-template < "${tmpl}" > /dev/null 2> render-err.log; then
+                          echo "::error file=${tmpl}::template failed to render"
+                          cat render-err.log
+                          fail=1
+                      fi
+                  done < <(find dotfiles -name '*.tmpl' ! -name '.chezmoi.toml.tmpl' -print0)
+                  exit "${fail}"
 
-                  mkdir -p ${homedir}/.local/share/chezmoi
-                  cp -a . ${homedir}/.local/share/chezmoi
+            - name: Run chezmoi doctor
+              continue-on-error: true
+              run: chezmoi doctor
 
-            # ----------------------------------------------
-            # Create config file
-            # ----------------------------------------------
-            - name: Create config file
-              run: |
-                  if [ -d /home/runner ]; then homedir="/home/runner"; else homedir="/Users/runner"; fi
-
-                  mkdir -p ${homedir}/.config/chezmoi
-
-                  cat > ${homedir}/.config/chezmoi/chezmoi.toml<< EOF
-                  [data]
-                      dev_computer      = false
-                      email             = "test@test.com"
-                      github_user       = "natelandau"
-                      homelab_member    = false
-                      is_ci_workflow    = true # Set true only in CI test
-                      personal_computer = false
-                      use_secrets       = false
-                      xdgCacheDir       = "${homedir}/.cache"
-                      xdgConfigDir      = "${homedir}/.config"
-                      xdgDataDir        = "${homedir}/.local/share"
-                      xdgStateDir       = "${homedir}/.local/state"
-                  EOF
-
-            # ----------------------------------------------
-            # Install chezmoi
-            # ----------------------------------------------
-            - name: Install chezmoi
-              run: |
-                  sh -c "$(curl -fsLS get.chezmoi.io)"
-
-            # ----------------------------------------------
-            # Run chezmoi apply
-            # ----------------------------------------------
-            - name: Run chezmoi apply
+            - name: Run chezmoi apply (first pass)
               env:
                   # gh refuses to run in Actions without a token; templates that shell
                   # out to gh at apply time need one present.
                   GH_TOKEN: ${{ github.token }}
-              run: |
-                  ./bin/chezmoi apply
+              run: chezmoi apply
 
-            # ----------------------------------------------
-            # UBUNTU: Confirm dotfiles are installed
-            # ----------------------------------------------
-            - name: Confirm dotfiles are installed
+            - name: Run chezmoi apply (second pass)
+              # Some run_before/run_after scripts install tooling that later configs
+              # depend on, so a clean machine needs two passes to converge.
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: chezmoi apply
+
+            - name: Verify state is converged
+              # verify exits non-zero if any target still differs after apply, which
+              # is the real idempotency test the file lists below can't provide.
+              run: chezmoi verify
+
+            - name: Smoke test interactive shells
+              # The .bashrc / .zshrc chains source many files in order; a non-zero
+              # exit means one of them broke on startup.
+              run: |
+                  set -e
+                  bash -ic 'exit' < /dev/null
+                  zsh -ic 'exit' < /dev/null
+
+            - name: Assert dotfiles state (Ubuntu)
               if: startsWith(matrix.os, 'ubuntu')
-              run: |
-                  if [ -d /home/runner ]; then homedir="/home/runner"; else homedir="/Users/runner"; fi
-                  echo "------- Testing files -------"
-                  cd /home/runner
-                  # echo "pwd: $(pwd)"
-                  # ls -al
+              uses: ./.github/actions/assert-dotfiles
+              with:
+                  existing-files: |
+                      .zshrc
+                      .bashrc
+                      .config/git/config
+                      .ssh/config
+                      .config/dotfile_source/080-linux.sh
+                      .local/share/sed/stopwords.sed
+                  missing-files: |
+                      .config/dotfile_source/080-macos.sh
+                      Library
+                  installed-packages: |
+                      jq
+                      pygmentize
 
-                  existing_files=(
-                    .zshrc
-                    .bashrc
-                    .config/git/config
-                    .ssh/config
-                    .config/dotfile_source/080-linux.sh
-                    .local/share/sed/stopwords.sed
-                  )
-
-                  missing_files=(
-                    .config/dotfile_source/080-macos.sh
-                    Library
-                  )
-
-                  installed_packages=(
-                    jq
-                    pygmentize
-                  )
-
-                  # Confirm files exist
-                  for file in ${existing_files[@]}; do
-                    if [ ! -e "${homedir}/$file" ]; then
-                        echo "$file not found"
-                        exit 1
-                    fi
-                  done
-
-                  # Confirm files don't exist
-                  for file in ${missing_files[@]} ; do
-                    if [ -e "${homedir}/$file "]; then
-                        echo "$file found"
-                        exit 1
-                    fi
-                  done
-
-                  # Confirm packages are installed
-                  for package in ${installed_packages[@]}; do
-                      if [ ! $(command -v $package) ]; then
-                          echo "$package not found"
-                          exit 1
-                      fi
-                  done
-
-            # ----------------------------------------------
-            # MACOS: Confirm dotfiles are installed
-            # ----------------------------------------------
-            - name: Confirm dotfiles are installed
+            - name: Assert dotfiles state (macOS)
               if: startsWith(matrix.os, 'macos')
-              run: |
-                  if [ -d /home/runner ]; then homedir="/home/runner"; else homedir="/Users/runner"; fi
-
-                  echo "------- Testing files -------"
-                  cd ${homedir}
-
-                  existing_files=(
-                    .zshrc
-                    .bashrc
-                    .config/git/config
-                    .config/nano/nanorc
-                    .ssh/config
-                    .config/dotfile_source/080-macos.sh
-                    .local/share/sed/stopwords.sed
-                  )
-
-                  missing_files=(
-                    .config/dotfile_source/080-linux.sh
-                  )
-
-                  installed_packages=(
-                    jq
-                    pygmentize
-                  )
-
-                  # Confirm files exist
-                  for file in ${existing_files[@]}; do
-                    if [ ! -e "${homedir}/$file" ]; then
-                        echo "$file not found"
-                        exit 1
-                    fi
-                  done
-
-                  # Confirm files don't exist
-                  for file in ${missing_files[@]} ; do
-                    if [ -e "${homedir}/$file" ]; then
-                        echo "$file found"
-                        exit 1
-                    fi
-                  done
-
-                  # Confirm packages are installed
-                  for package in ${installed_packages[@]}; do
-                      if [ ! $(command -v $package) ]; then
-                          echo "$package not found"
-                          exit 1
-                      fi
-                  done
+              uses: ./.github/actions/assert-dotfiles
+              with:
+                  existing-files: |
+                      .zshrc
+                      .bashrc
+                      .config/git/config
+                      .config/nano/nanorc
+                      .ssh/config
+                      .config/dotfile_source/080-macos.sh
+                      .local/share/sed/stopwords.sed
+                  missing-files: |
+                      .config/dotfile_source/080-linux.sh
+                  installed-packages: |
+                      jq
+                      pygmentize

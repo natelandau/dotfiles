@@ -1,0 +1,52 @@
+---
+name: Assert dotfiles state
+description: Assert that expected files exist, forbidden files are absent, and packages are on PATH
+
+inputs:
+    existing-files:
+        description: "Newline-separated paths (relative to $HOME) that must exist"
+        required: false
+        default: ""
+    missing-files:
+        description: "Newline-separated paths (relative to $HOME) that must NOT exist"
+        required: false
+        default: ""
+    installed-packages:
+        description: "Newline-separated commands that must be on PATH"
+        required: false
+        default: ""
+
+runs:
+    using: composite
+    steps:
+        - name: Assert dotfiles state
+          shell: bash
+          run: |
+              set -uo pipefail
+              fail=0
+
+              while IFS= read -r f; do
+                  [ -z "${f}" ] && continue
+                  if [ ! -e "${HOME}/${f}" ]; then
+                      echo "::error::expected file missing: ${f}"
+                      fail=1
+                  fi
+              done <<< "${{ inputs.existing-files }}"
+
+              while IFS= read -r f; do
+                  [ -z "${f}" ] && continue
+                  if [ -e "${HOME}/${f}" ]; then
+                      echo "::error::file should not exist: ${f}"
+                      fail=1
+                  fi
+              done <<< "${{ inputs.missing-files }}"
+
+              while IFS= read -r pkg; do
+                  [ -z "${pkg}" ] && continue
+                  if ! command -v "${pkg}" >/dev/null 2>&1; then
+                      echo "::error::package not on PATH: ${pkg}"
+                      fail=1
+                  fi
+              done <<< "${{ inputs.installed-packages }}"
+
+              exit "${fail}"
