@@ -10,9 +10,10 @@ did_remove_package=false
 {{ if and (eq .chezmoi.os "darwin") (lookPath "brew") }}
 
     {{ range $package := .packages.homebrew.to_remove }}
-    if brew list | grep "{{ $package }}" &> /dev/null; then
+    # Match the package name exactly; a substring grep matches unrelated kegs/casks (e.g. "redis" vs "another-redis-desktop-manager").
+    if brew list --formula "{{ $package }}" &> /dev/null || brew list --cask "{{ $package }}" &> /dev/null; then
         did_remove_package=true
-        brew uninstall "{{ $package }}"
+        brew uninstall "{{ $package }}" || warning "Failed to uninstall {{ $package }}"
     fi
 
     {{ end }}
@@ -27,9 +28,10 @@ UV_PATH="$(_uvBinaryPath_)" || {
 # header "removing python packages with uv"
 {{ range $package := .packages.python.to_remove }}
 if [[ -n ${UV_PATH} ]]; then
-    if ${UV_PATH} tool list | grep "{{ $package }}" &> /dev/null; then
+    # Match the tool name in column one exactly; a bare substring grep also matches version strings and executable lines.
+    if ${UV_PATH} tool list 2>/dev/null | awk '{print $1}' | grep -qx "{{ $package }}"; then
         did_remove_package=true
-        ${UV_PATH} tool uninstall "{{ $package }}"
+        ${UV_PATH} tool uninstall "{{ $package }}" || warning "Failed to uninstall {{ $package }}"
     fi
 fi
 {{ end }}
