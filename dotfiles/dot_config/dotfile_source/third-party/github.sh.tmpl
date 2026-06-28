@@ -1,9 +1,13 @@
-# If the github cli extension `gh-copilot` is installed, this will enable it.
+# gh-copilot aliases (ghcs/ghce). Baked at chezmoi apply time so we don't fork
+# gh several times (including a network-touching `gh auth status`) on every
+# shell startup. Regenerated whenever the extension is present at `chezmoi apply`.
 # More info: https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-the-command-line
-
-if [[ $(command -v gh) ]]; then
-    if gh auth status &>/dev/null && gh extension list | grep -q "copilot"; then
-        [[ -n ${ZSH_NAME} ]] && eval "$(gh copilot alias -- zsh)"
-        [[ -n ${BASH} ]] && eval "$(gh copilot alias -- bash)"
-    fi
+{{- if lookPath "gh" }}
+{{- if output "gh" "extension" "list" | contains "copilot" }}
+if [[ -n ${ZSH_NAME} ]]; then
+{{ output "gh" "copilot" "alias" "--" "zsh" | trim }}
+elif [[ -n ${BASH} ]]; then
+{{ output "gh" "copilot" "alias" "--" "bash" | trim }}
 fi
+{{- end }}
+{{- end }}

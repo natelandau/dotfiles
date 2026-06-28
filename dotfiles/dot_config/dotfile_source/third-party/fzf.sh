@@ -12,8 +12,19 @@ if command -v fzf >/dev/null && [[ -n ${ZSH_NAME} ]]; then
         fi
     fi
 
+    # fzf binds Ctrl-R to its own history widget, which clobbers atuin's binding
+    # (atuin.sh loads before fzf.sh alphabetically). Restore atuin's Ctrl-R.
+    if [[ "$(command -v atuin)" ]]; then
+        bindkey '^r' _atuin_search_widget
+    fi
+
 elif command -v fzf >/dev/null && [[ -n ${BASH} ]]; then
     eval "$(fzf --bash)"
+
+    # Restore atuin's Ctrl-R binding that `fzf --bash` overrides (see above).
+    if [[ "$(command -v atuin)" ]]; then
+        bind -x '"\C-r": __atuin_history'
+    fi
 fi
 
 # Configure fzf

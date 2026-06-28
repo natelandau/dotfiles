@@ -88,8 +88,8 @@ zstyle -e ':completion:*:(ssh|scp|sftp|rsh|rsync):hosts' hosts 'reply=(${=${${(f
 # fzf tab completion
 # https://github.com/Aloxaf/fzf-tab
 # #########################
-# set list-colors to enable filename colorizing
-zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+# Note: list-colors from LS_COLORS is configured in third-party/ls_colors.sh,
+# which loads after LS_COLORS is populated (this file loads before it).
 
 # preview directory's content with eza when completing cd
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'

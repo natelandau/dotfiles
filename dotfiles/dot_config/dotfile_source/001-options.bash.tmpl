@@ -26,11 +26,9 @@ export HISTSIZE=10000
 export HISTFILESIZE=10000
 export HISTFILE={{ .xdgStateDir }}/bash/history
 
-# Avoid duplicate entries
+# Avoid duplicate entries and skip commands with a leading space
+# (ignoreboth = ignorespace + ignoredups; erasedups also purges prior dupes)
 HISTCONTROL="erasedups:ignoreboth"
-
-# commands with leading space do not get added to history
-HISTCONTROL=ignorespace
 
 # Don't record some commands
 export HISTIGNORE="&:[ ]*:exit:ls:bg:fg:history:clear"

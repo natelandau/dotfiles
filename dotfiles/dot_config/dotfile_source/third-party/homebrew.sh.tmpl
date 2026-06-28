@@ -1,4 +1,8 @@
 {{- if and (eq .chezmoi.os "darwin") (lookPath "brew") }}
+{{- /* Bake brew's prefix/repository at apply time so we don't fork the slow
+       brew wrapper a dozen-plus times on every shell startup. */ -}}
+{{- $brewPrefix := output "brew" "--prefix" | trim -}}
+{{- $brewRepo := output "brew" "--repository" | trim -}}
 
 # Set Exports
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
@@ -9,32 +13,34 @@ export HOMEBREW_GITHUB_API_TOKEN={{- onepasswordRead .secrets.homebrew_github_to
 
 # Set homebrew paths for GNU utilities
 _homebrewPaths=(
-    "$(brew --prefix)/opt/coreutils/libexec/gnubin"
-    "$(brew --prefix)/opt/findutils/libexec/gnubin"
-    "$(brew --prefix)/opt/gnu-getopt/bin"
-    "$(brew --prefix)/opt/gnu-sed/libexec/gnubin"
-    "$(brew --prefix)/opt/gnu-tar/libexec/gnubin"
-    "$(brew --prefix)/opt/grep/libexec/gnubin"
-    "$(brew --prefix)/sbin"
-    "$(brew --prefix)/opt/libpq/bin" # TODO: Conflicts with postgresql if instaleld
+    "{{ $brewPrefix }}/opt/coreutils/libexec/gnubin"
+    "{{ $brewPrefix }}/opt/findutils/libexec/gnubin"
+    "{{ $brewPrefix }}/opt/gnu-getopt/bin"
+    "{{ $brewPrefix }}/opt/gnu-sed/libexec/gnubin"
+    "{{ $brewPrefix }}/opt/gnu-tar/libexec/gnubin"
+    "{{ $brewPrefix }}/opt/grep/libexec/gnubin"
+    "{{ $brewPrefix }}/sbin"
+    "{{ $brewPrefix }}/opt/libpq/bin" # TODO: Conflicts with postgresql if instaleld
 )
 
 for _path in "${_homebrewPaths[@]}"; do
     if [[ -d ${_path} ]]; then
-        if ! printf "%s" "${_path}" | grep -q "${PATH}"; then
-            PATH="${_path}:${PATH}"
-        fi
+        # Prepend only if not already present (fork-free membership test)
+        case ":${PATH}:" in
+            *":${_path}:"*) ;;
+            *) PATH="${_path}:${PATH}" ;;
+        esac
     fi
 done
 
 
 # Link libpq if installed and postgresql is not
-if [[ -d "$(brew --prefix)/opt/libpq/bin" ]] && [[ ! -d "$(brew --prefix)/opt/postgresql/bin" ]]; then
-        PATH="$(brew --prefix)/opt/libpq/bin:${PATH}"
+if [[ -d "{{ $brewPrefix }}/opt/libpq/bin" ]] && [[ ! -d "{{ $brewPrefix }}/opt/postgresql/bin" ]]; then
+        PATH="{{ $brewPrefix }}/opt/libpq/bin:${PATH}"
 fi
 
 
-eval "$($(brew --prefix)/bin/brew shellenv)"
+eval "$({{ $brewPrefix }}/bin/brew shellenv)"
 
 
 # shellcheck disable=SC1091
@@ -42,9 +48,9 @@ if [[ -n ${BASH} ]] && [ -f "/usr/local/etc/profile.d/bash_completion.sh" ]; the
     source "/usr/local/etc/profile.d/bash_completion.sh"
 fi
 
-if [ -f "$(brew --repository)/bin/src-hilite-lesspipe.sh" ]; then
+if [ -f "{{ $brewRepo }}/bin/src-hilite-lesspipe.sh" ]; then
     export LESSOPEN
-    LESSOPEN="| $(brew --repository)/bin/src-hilite-lesspipe.sh %s"
+    LESSOPEN="| {{ $brewRepo }}/bin/src-hilite-lesspipe.sh %s"
     export LESS=' -R -z-4'
 fi
 

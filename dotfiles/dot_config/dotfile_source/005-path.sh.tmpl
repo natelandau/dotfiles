@@ -15,9 +15,11 @@ _myPaths=(
 
 for _path in "${_myPaths[@]}"; do
     if [[ -d ${_path} ]]; then
-        if ! printf "%s" "${_path}" | grep -q "${PATH}"; then
-            PATH="${_path}:${PATH}"
-        fi
+        # Prepend only if not already present (fork-free membership test)
+        case ":${PATH}:" in
+            *":${_path}:"*) ;;
+            *) PATH="${_path}:${PATH}" ;;
+        esac
     fi
 done
 

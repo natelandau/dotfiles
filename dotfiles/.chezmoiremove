@@ -36,6 +36,10 @@
 /.config/dotfile_source/third-party/npm.sh
 /.config/dotfile_source/third-party/usrbin.sh
 
+# --- Powerlevel10k config relocated to ~/.config/zsh/p10k.zsh ---
+# (was auto-sourced from dotfile_source; now sourced explicitly by 001-plugins.zsh)
+/.config/dotfile_source/030-prompt.zsh
+
 # --- App configs removed or relocated ---
 /.config/agent-safehouse/local-overrides.sb
 /.config/jdfile/config.toml
