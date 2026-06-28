@@ -93,7 +93,8 @@
     "superpowers@superpowers-marketplace": true,
     "natelandau-toolkit@natelandau-cc-plugin": true,
     "pyright-lsp@claude-plugins-official": true,
-    "swift-lsp@claude-plugins-official": true
+    "swift-lsp@claude-plugins-official": true,
+    "natelandau-recall@natelandau-cc-plugin": true
   },
   "extraKnownMarketplaces": {
     "natelandau-cc-plugin": {
