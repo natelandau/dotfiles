@@ -23,54 +23,7 @@ set -o nounset  # Disallow expansion of unset variables
 
 # Import functions
 # ######################
-_setColors_() {
-    # DESC:
-    #         Sets colors use for alerts.
-    # ARGS:
-    #         None
-    # OUTS:
-    #         None
-    # USAGE:
-    #         printf "%s\n" "${blue}Some text${reset}"
-
-    if tput setaf 1 >/dev/null 2>&1; then
-        bold=$(tput bold)
-        underline=$(tput smul)
-        reverse=$(tput rev)
-        reset=$(tput sgr0)
-
-        if [[ $(tput colors) -ge 256 ]] >/dev/null 2>&1; then
-            white=$(tput setaf 231)
-            blue=$(tput setaf 38)
-            yellow=$(tput setaf 11)
-            green=$(tput setaf 82)
-            red=$(tput setaf 9)
-            purple=$(tput setaf 171)
-            gray=$(tput setaf 250)
-        else
-            white=$(tput setaf 7)
-            blue=$(tput setaf 38)
-            yellow=$(tput setaf 3)
-            green=$(tput setaf 2)
-            red=$(tput setaf 9)
-            purple=$(tput setaf 13)
-            gray=$(tput setaf 7)
-        fi
-    else
-        bold="\033[4;37m"
-        reset="\033[0m"
-        underline="\033[4;37m"
-        # shellcheck disable=SC2034
-        reverse=""
-        white="\033[0;37m"
-        blue="\033[0;34m"
-        yellow="\033[0;33m"
-        green="\033[1;32m"
-        red="\033[0;31m"
-        purple="\033[0;35m"
-        gray="\033[0;37m"
-    fi
-}
+{{ template "shared_colors.bash" . }}
 _setColors_
 
 _alert_() {
@@ -346,6 +299,15 @@ _trapCleanup_() {
 }
 
 _hasJQ_() {
+    # DESC:
+    #         Ensure the 'jq' binary is available, installing it via the platform
+    #         package manager if it is missing.
+    # ARGS:
+    #         None
+    # OUTS:
+    #         Installs jq when absent; warns to stdout before installing
+    # USAGE:
+    #         _hasJQ_
 
     if [[ ! $(command -v jq) ]]; then
         warning "Must install jq prior to running script"
@@ -448,4 +410,219 @@ _uvBinaryPath_() {
     else
         return 1
     fi
+}
+
+_setPATH_() {
+    # DESC:
+    #         Add directories to $PATH so script can find executables
+    # ARGS:
+    #         $@ - One or more paths
+    # OPTS:
+    #         -x - Fail if directories are not found
+    # OUTS:
+    #         0: Success
+    #         1: Failure
+    #         Adds items to $PATH
+    # USAGE:
+    #         _setPATH_ "/usr/local/bin" "${HOME}/bin" "$(npm bin)"
+
+    [[ $# == 0 ]] && fatal "Missing required argument to ${FUNCNAME[0]}"
+
+    local opt
+    local OPTIND=1
+    local _failIfNotFound=false
+
+    while getopts ":xX" opt; do
+        case ${opt} in
+            x | X) _failIfNotFound=true ;;
+            *)
+                {
+                    error "Unrecognized option '${1}' passed to _backupFile_" "${LINENO}"
+                    return 1
+                }
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    local _newPath
+
+    for _newPath in "$@"; do
+        if [ -d "${_newPath}" ]; then
+            if ! printf "%s" "${PATH}" | grep -Eq "(^|:)${_newPath}($|:)"; then
+                if PATH="${_newPath}:${PATH}"; then
+                    debug "Added '${_newPath}' to PATH"
+                else
+                    debug "'${_newPath}' already in PATH"
+                fi
+            else
+                debug "_setPATH_: '${_newPath}' already exists in PATH"
+            fi
+        else
+            debug "_setPATH_: can not find: ${_newPath}"
+            if [[ ${_failIfNotFound} == true ]]; then
+                return 1
+            fi
+            continue
+        fi
+    done
+    return 0
+}
+
+_useGNUutils_() {
+    # DESC:
+    #					Add GNU utilities to PATH to allow consistent use of sed/grep/tar/etc. on MacOS
+    # ARGS:
+    #					None
+    # OUTS:
+    #					0 if successful
+    #         1 if unsuccessful
+    #         PATH: Adds GNU utilities to the path
+    # USAGE:
+    #					# if ! _useGNUUtils_; then exit 1; fi
+    # NOTES:
+    #					GNU utilities can be added to MacOS using Homebrew
+
+    ! declare -f "_setPATH_" &>/dev/null && fatal "${FUNCNAME[0]} needs function _setPATH_"
+
+    if _setPATH_ \
+        "/usr/local/opt/gnu-tar/libexec/gnubin" \
+        "/usr/local/opt/coreutils/libexec/gnubin" \
+        "/usr/local/opt/gnu-sed/libexec/gnubin" \
+        "/usr/local/opt/grep/libexec/gnubin" \
+        "/usr/local/opt/findutils/libexec/gnubin" \
+        "/opt/homebrew/opt/findutils/libexec/gnubin" \
+        "/opt/homebrew/opt/gnu-sed/libexec/gnubin" \
+        "/opt/homebrew/opt/grep/libexec/gnubin" \
+        "/opt/homebrew/opt/coreutils/libexec/gnubin" \
+        "/opt/homebrew/opt/gnu-tar/libexec/gnubin"; then
+        return 0
+    else
+        return 1
+    fi
+
+}
+
+_execute_() {
+    # DESC:
+    #         Executes commands while respecting global DRYRUN, VERBOSE, LOGGING, and QUIET flags
+    # ARGS:
+    #         $1 (Required) - The command to be executed.  Quotation marks MUST be escaped.
+    #         $2 (Optional) - String to display after command is executed
+    # OPTS:
+    #         -v    Always print output from the execute function to STDOUT
+    #         -n    Use NOTICE level alerting (default is INFO)
+    #         -p    Pass a failed command with 'return 0'.  This effectively bypasses set -e.
+    #         -e    Bypass _alert_ functions and use 'printf RESULT'
+    #         -s    Use '_alert_ success' for successful output. (default is 'info')
+    #         -q    Do not print output (QUIET mode)
+    # OUTS:
+    #         stdout: Configurable output
+    # USE :
+    #         _execute_ "cp -R \"~/dir/somefile.txt\" \"someNewFile.txt\"" "Optional message"
+    #         _execute_ -sv "mkdir \"some/dir\""
+    # NOTE:
+    #         If $DRYRUN=true, no commands are executed and the command that would have been executed
+    #         is printed to STDOUT using dryrun level alerting
+    #         If $VERBOSE=true, the command's native output is printed to stdout. This can be forced
+    #         with '_execute_ -v'
+
+    local _localVerbose=false
+    local _passFailures=false
+    local _echoResult=false
+    local _echoSuccessResult=false
+    local _quietMode=false
+    local _echoNoticeResult=false
+    local opt
+
+    local OPTIND=1
+    while getopts ":vVpPeEsSqQnN" opt; do
+        case ${opt} in
+            v | V) _localVerbose=true ;;
+            p | P) _passFailures=true ;;
+            e | E) _echoResult=true ;;
+            s | S) _echoSuccessResult=true ;;
+            q | Q) _quietMode=true ;;
+            n | N) _echoNoticeResult=true ;;
+            *)
+                {
+                    error "Unrecognized option '$1' passed to _execute_. Exiting."
+                    _safeExit_
+                }
+                ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    [[ $# == 0 ]] && fatal "Missing required argument to ${FUNCNAME[0]}"
+
+    local _command="${1}"
+    local _executeMessage="${2:-$1}"
+
+    local _saveVerbose=${VERBOSE}
+    if "${_localVerbose}"; then
+        VERBOSE=true
+    fi
+
+    if "${DRYRUN:-}"; then
+        if "${_quietMode}"; then
+            VERBOSE=${_saveVerbose}
+            return 0
+        fi
+        if [ -n "${2:-}" ]; then
+            dryrun "${1} (${2})" "$(caller)"
+        else
+            dryrun "${1}" "$(caller)"
+        fi
+    elif ${VERBOSE:-}; then
+        if eval "${_command}"; then
+            if "${_quietMode}"; then
+                VERBOSE=${_saveVerbose}
+            elif "${_echoResult}"; then
+                printf "%s\n" "${_executeMessage}"
+            elif "${_echoSuccessResult}"; then
+                success "${_executeMessage}"
+            elif "${_echoNoticeResult}"; then
+                notice "${_executeMessage}"
+            else
+                info "${_executeMessage}"
+            fi
+        else
+            if "${_quietMode}"; then
+                VERBOSE=${_saveVerbose}
+            elif "${_echoResult}"; then
+                printf "%s\n" "warning: ${_executeMessage}"
+            else
+                warning "${_executeMessage}"
+            fi
+            VERBOSE=${_saveVerbose}
+            "${_passFailures}" && return 0 || return 1
+        fi
+    else
+        if eval "${_command}" >/dev/null 2>&1; then
+            if "${_quietMode}"; then
+                VERBOSE=${_saveVerbose}
+            elif "${_echoResult}"; then
+                printf "%s\n" "${_executeMessage}"
+            elif "${_echoSuccessResult}"; then
+                success "${_executeMessage}"
+            elif "${_echoNoticeResult}"; then
+                notice "${_executeMessage}"
+            else
+                info "${_executeMessage}"
+            fi
+        else
+            if "${_quietMode}"; then
+                VERBOSE=${_saveVerbose}
+            elif "${_echoResult}"; then
+                printf "%s\n" "error: ${_executeMessage}"
+            else
+                warning "${_executeMessage}"
+            fi
+            VERBOSE=${_saveVerbose}
+            "${_passFailures}" && return 0 || return 1
+        fi
+    fi
+    VERBOSE=${_saveVerbose}
+    return 0
 }

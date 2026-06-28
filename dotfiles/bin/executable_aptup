@@ -17,7 +17,7 @@ import sys
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 from nclutils import pp
@@ -30,7 +30,7 @@ from typer import rich_utils
 # ############## CONSTANTS ##############
 
 PACKAGE_NAME = (
-    __package__.replace("_", "-").replace(".", "-").replace(" ", "-") if __package__ else "sabc"
+    __package__.replace("_", "-").replace(".", "-").replace(" ", "-") if __package__ else "aptup"
 )
 CONFIG_DIR = Path(os.getenv("XDG_CONFIG_HOME", "~/.config")).expanduser().absolute() / PACKAGE_NAME
 
@@ -49,7 +49,7 @@ class AptupConfig:
     exclude_packages: list[str] = field(default_factory=list)
 
 
-def _load_toml() -> dict:
+def _load_toml() -> dict[str, Any]:
     """Load config from TOML file if it exists.
 
     Returns:
@@ -68,14 +68,14 @@ def _load_toml() -> dict:
         return {}
 
 
-def _load_env_overrides() -> dict:
+def _load_env_overrides() -> dict[str, list[str]]:
     """Load config overrides from APTUP_* environment variables.
 
     Returns:
         A dict of config field names to override values.
 
     """
-    overrides: dict = {}
+    overrides: dict[str, list[str]] = {}
 
     if val := os.environ.get("APTUP_EXCLUDE_PACKAGES"):
         overrides["exclude_packages"] = val.split(",")
@@ -164,11 +164,12 @@ def fetch_upgradable_packages(*, stream: bool = False) -> tuple[list[str], list[
             if "Listing" in line:
                 continue
 
-            if strip_ansi(line).split("/")[0] in config.exclude_packages:
-                excluded_packages.append(strip_ansi(line).split("/")[0])
+            pkg_name = strip_ansi(line).split("/")[0]
+            if pkg_name in config.exclude_packages:
+                excluded_packages.append(pkg_name)
                 continue
 
-            packages.append(strip_ansi(line).split("/")[0])
+            packages.append(pkg_name)
 
     return [x for x in packages if x], excluded_packages, Text.from_ansi(output.stdout)
 
@@ -185,18 +186,16 @@ def _select_packages(pkgs: list[str]) -> list[str]:
         list[str]: List of packages that were selected and upgraded
 
     """
-    selected_pkgs = (
-        choose_multiple_from_list(list(set(pkgs)), "Select packages to upgrade") if pkgs else []
-    )
-
     if not pkgs:
         pp.success("No upgradable packages found")
         raise typer.Exit(code=0)
+
+    selected_pkgs = choose_multiple_from_list(list(set(pkgs)), "Select packages to upgrade")
     if not selected_pkgs:
         pp.success("No packages selected for upgrade")
         raise typer.Exit(code=0)
 
-    return selected_pkgs or []
+    return selected_pkgs
 
 
 def _upgrade_package(package: str, *, stream: bool = False, dry_run: bool = False) -> None:
@@ -303,7 +302,7 @@ def run(
         ),
     ] = False,
 ) -> None:
-    """Small wrapper around apt-get to upgrade selectedpackages."""
+    """Small wrapper around apt-get to upgrade selected packages."""
     pp.configure(verbosity=verbose)
     _guard_statements()
 

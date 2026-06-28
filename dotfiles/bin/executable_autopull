@@ -1,6 +1,6 @@
 #!/usr/bin/env -S uv run --script --quiet
 
-"""Pull changes to all git repositories withinin a specified directory."""
+"""Pull changes to all git repositories within a specified directory."""
 
 # /// script
 # requires-python = ">=3.12"
@@ -20,7 +20,6 @@ from typer import rich_utils
 
 # ############## CLI ##############
 
-app = typer.Typer()
 rich_utils.STYLE_HELPTEXT = ""
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 app = typer.Typer(rich_markup_mode="rich", context_settings=CONTEXT_SETTINGS, add_completion=False)
@@ -58,7 +57,7 @@ def run(  # noqa: C901, PLR0912
     *,
     quiet: Annotated[bool, typer.Option("--quiet", "-q", help="Quiet mode.")] = False,
 ) -> None:
-    """Pull changes to all git repositories withinin a specified directory. If no directory is specified, the current working directory is used."""
+    """Pull changes to all git repositories within a specified directory. If no directory is specified, the current working directory is used."""
     pp.configure(verbosity=verbose, quiet=quiet)
 
     directory = Path.cwd() if not directory else Path(directory).expanduser().resolve()

@@ -49,7 +49,7 @@ _promptGit_() {
     fi
 }
 
-export PS1="\[$WHITE\]________________________________________________________________________________\n| \
+export PS1="\[$white\]________________________________________________________________________________\n| \
 \[${bold}${purple}\]\u \[$white\]at \[$yellow\]\h \
 \[$white\]in \[$green\]\w\[$white\]\$([[ -n \$(git branch 2> /dev/null) ]] && echo \" on \")\
 \[$purple\]\$(_promptGit_ \"$purple\")\[$white\]\[$reset\] \

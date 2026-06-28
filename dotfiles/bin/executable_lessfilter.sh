@@ -19,9 +19,7 @@ if command -v pygmentize &>/dev/null; then
             ;;
 
         *)
-            if grep -q "#\!/bin/bash" "$1" 2>/dev/null; then
-                pygmentize -f terminal256 -O style=native -g "$1"
-            elif grep -q "#!/usr/bin/env bash" "$1" 2>/dev/null; then
+            if grep -qE "#!(/bin/bash|/usr/bin/env bash)" "$1" 2>/dev/null; then
                 pygmentize -f terminal256 -O style=native -g "$1"
             else
                 exit 1

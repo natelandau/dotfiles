@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 
-# Upgrade Python package dependencies using uv package manager.
-#
-# Reads dependencies from pyproject.toml and upgrades each package to its latest version
-# while preserving any extras. Handles both regular dependencies and dev dependencies.
-# Uses uv to remove and reinstall packages with latest versions.
-#
-# Inspired by: https://gist.github.com/yhoiseth/c80c1e44a7036307e424fce616eed25e
+"""Upgrade Python package dependencies to their latest versions using uv.
 
+Read dependencies from pyproject.toml and reinstall each package at its latest version while
+preserving any extras, covering both regular and dev dependencies. Useful for refreshing a
+project's pinned versions in a single pass.
 
+Inspired by: https://gist.github.com/yhoiseth/c80c1e44a7036307e424fce616eed25e
+"""
+
+import re
 import subprocess
 from pathlib import Path
-from re import match
 from typing import Any
 
 import tomllib
@@ -50,7 +50,7 @@ def upgrade_dependencies(dependencies: list[str], *, dev: bool = False) -> None:
         dev (bool): Whether these are development dependencies. Defaults to False.
     """
     for dependency in dependencies:
-        package_match = match(PACKAGE_PATTERN, dependency)
+        package_match = re.match(PACKAGE_PATTERN, dependency)
         if package_match is None:
             continue
         package = package_match.group(1)

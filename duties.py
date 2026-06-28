@@ -13,9 +13,9 @@ from duty import duty
 if TYPE_CHECKING:
     from duty.context import Context
 
-PY_SRC_PATHS = (Path(_) for _ in ("src/", "tests/", "duties.py", "scripts/") if Path(_).exists())
-PY_SRC_LIST = tuple(str(_) for _ in PY_SRC_PATHS)
-CI = os.environ.get("CI", "0") in {"1", "true", "yes", ""}
+PY_SRC_PATHS = (Path(p) for p in ("src/", "tests/", "duties.py", "scripts/") if Path(p).exists())
+PY_SRC_LIST = tuple(str(p) for p in PY_SRC_PATHS)
+CI = os.environ.get("CI", "0") in {"1", "true", "yes"}
 
 
 def strip_ansi(text: str) -> str:

@@ -18,12 +18,12 @@ if [ -x "$(command -v figlet)" ]; then
         figlet "$(hostname)"
     fi
 else
-    echo "$(hostname)"
+    hostname
 fi
 
 ### System info
 ###########################################################
-IFS=" " read -r LOAD1 LOAD5 LOAD15 <<<"$(cat /proc/loadavg | awk '{ print $1,$2,$3 }')"
+IFS=" " read -r LOAD1 LOAD5 LOAD15 <<<"$(awk '{ print $1,$2,$3 }' /proc/loadavg)"
 # get free memory
 IFS=" " read -r USED AVAIL TOTAL <<<"$(free -htm | grep "Mem" | awk {'print $3,$7,$2'})"
 # get processes
@@ -32,7 +32,7 @@ PROCESS_ALL=$(echo "$PROCESS" | awk {'print $2'} | awk '{ SUM += $1} END { print
 PROCESS_ROOT=$(echo "$PROCESS" | grep root | awk {'print $2'})
 PROCESS_USER=$(echo "$PROCESS" | grep -v root | awk {'print $2'} | awk '{ SUM += $1} END { print SUM }')
 # get processors
-PROCESSOR_NAME=$(grep "model name" /proc/cpuinfo | cut -d ' ' -f3- | awk {'print $0'} | head -1)
+PROCESSOR_NAME=$(grep "model name" /proc/cpuinfo | cut -d ' ' -f3- | head -1)
 PROCESSOR_COUNT=$(grep -ioP 'processor\t:' /proc/cpuinfo | wc -l)
 
 W="\e[0;39m"

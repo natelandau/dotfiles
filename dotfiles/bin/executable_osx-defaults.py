@@ -129,10 +129,7 @@ def run_command(  # noqa: C901
         return "".join(output_lines)
 
     if pushd:
-        if not isinstance(pushd, Path):
-            pushd = Path(pushd)
-
-        pushd = pushd.expanduser().absolute()
+        pushd = Path(pushd).expanduser().absolute()
 
         if not pushd.exists():
             console.print(f"Directory {pushd} does not exist", style="error")
@@ -145,10 +142,13 @@ def run_command(  # noqa: C901
 
 
 class CommandType(Enum):
-    """Enumeration for command types. The value is the command name.
+    """Enumerate the command families a Setting can run through; each value is the executable name.
 
     Attributes:
-        DEFAULTS: Command is a macOS defaults command.
+        DEFAULTS: The macOS `defaults` command.
+        PLISTBUDDY: The `/usr/libexec/PlistBuddy` command for direct plist edits.
+        PMSET: The `pmset` power-management command.
+        CHFLAGS: The `chflags` file-flags command.
     """
 
     DEFAULTS = "defaults"
@@ -159,11 +159,14 @@ class CommandType(Enum):
 
 @dataclass
 class Setting:
-    """A class to represent a setting.
+    """Pair a macOS default command with the display and execution metadata needed to apply it.
 
     Attributes:
-        command (str): The command to run.
-        description (str): A description of the setting.
+        command (str): The full shell command to run.
+        description (str): Human-readable description of what the setting changes.
+        section (str): Grouping label used to sort and report settings. Defaults to "Other".
+        type (CommandType): Which command family runs this setting. Defaults to CommandType.DEFAULTS.
+        sudo (bool): Whether the command must run with elevated privileges. Defaults to False.
     """
 
     command: str
@@ -195,7 +198,7 @@ class Setting:
         return f"{self.section}: {self.description}" if self.section else self.description
 
 
-commands = [
+COMMANDS = [
     Setting(
         command=f"chflags nohidden {Path.home()}/Library",
         description="Show ~/Library",
@@ -632,11 +635,6 @@ commands = [
         section="Dock",
     ),
     Setting(
-        command="defaults write com.apple.dock expose-animation-duration -float 0.1",
-        description="Speed up expose animations",
-        section="Dock",
-    ),
-    Setting(
         command="defaults write com.apple.dock autohide-time-modifier -float 0",
         description="Speed up hiding/showing",
         section="Dock",
@@ -1002,7 +1000,7 @@ def main() -> None:
     console.print("Some changes require a logout/restart to take effect")
 
     try:
-        for cmd in sorted(commands, key=lambda x: x.section):
+        for cmd in sorted(COMMANDS, key=lambda x: x.section):
             console.print(f"✔ {cmd.full_description}", style="secondary")
             run_command(cmd=cmd.type.value, args=cmd.args, quiet=False, sudo=cmd.sudo)
     except KeyboardInterrupt as e:

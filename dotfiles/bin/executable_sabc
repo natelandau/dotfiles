@@ -18,7 +18,7 @@ import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 from time import sleep
-from typing import Annotated, Final
+from typing import Annotated, Any, Final
 
 import httpx
 import typer
@@ -61,7 +61,7 @@ class SabcConfig:
             raise ValueError(msg)
 
 
-def _load_toml() -> dict:
+def _load_toml() -> dict[str, Any]:
     """Load config from TOML file if it exists.
 
     Returns:
@@ -79,13 +79,13 @@ def _load_toml() -> dict:
         return {}
 
 
-def _load_env_overrides() -> dict:
+def _load_env_overrides() -> dict[str, str]:
     """Load config overrides from SABNZBD_* environment variables.
 
     Returns:
         A dict of config field names to override values.
     """
-    overrides: dict = {}
+    overrides: dict[str, str] = {}
 
     if val := os.environ.get("SABNZBD_API_KEY"):
         overrides["sabnzbd_api_key"] = val
@@ -97,7 +97,7 @@ def _load_env_overrides() -> dict:
 
 
 def _build_config() -> SabcConfig:
-    """Build a the config from defaults, TOML file, and env var overrides."""
+    """Build the config from defaults, TOML file, and env var overrides."""
     toml_data = _load_toml()
     values = dict(toml_data)
     env_overrides = _load_env_overrides()

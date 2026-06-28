@@ -18,15 +18,16 @@ ffe() {
 mcd() {
     # Create a directory and enter it
     mkdir -pv "$1"
-    cd "$1" || exit
+    cd "$1" || return 1
 }
 
 su() {
-    # su: Do sudo to a command, or do sudo to the last typed command if no argument given
+    # su: With no arguments, re-run the previous command with sudo; with arguments,
+    # defer to the real su so user-switching (e.g. `su -`, `su someuser`) still works.
     if [[ $# == 0 ]]; then
         sudo "$(history -p '!!')"
     else
-        sudo "$@"
+        command su "$@"
     fi
 }
 
