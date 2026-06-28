@@ -1,5 +1,3 @@
-{{- if lookPath "vidcleaner" -}}
-
 # Languages to keep (list of ISO 639-1 codes)
 langs_to_keep = ["en"]
 
@@ -33,5 +31,4 @@ sonarr_api_key = "{{- onepasswordRead .secrets.sonarr_api_key }}"
 sonarr_url     = "{{- onepasswordRead .secrets.sonarr_url }}"
 tmdb_api_key   = "{{- onepasswordRead .secrets.tmdb_api_key }}"
 
-{{- end }}
 {{- end }}

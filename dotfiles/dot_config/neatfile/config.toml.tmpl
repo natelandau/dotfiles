@@ -1,4 +1,3 @@
-{{- if and .personal_computer (lookPath "neatfile") -}}
 date_format = "%Y-%m-%d"
 ignore_dotfiles = true
 ignore_file_regex = ''
@@ -96,5 +95,3 @@ transform_case = "title"
         path      = "{{ .chezmoi.homeDir }}/work-docs/theSkimm"
         stopwords = ["pptx"]
         type      = "folder"
-
-{{ end -}}

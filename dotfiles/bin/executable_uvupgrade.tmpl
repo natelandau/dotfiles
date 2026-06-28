@@ -1,4 +1,3 @@
-{{- if and (lookPath "uv") (.dev_computer) -}}
 #!/usr/bin/env python3
 
 # Upgrade Python package dependencies using uv package manager.
@@ -91,5 +90,3 @@ def uv(command: str, package: str, extra: str | None = None, dev: bool = False) 
 
 if __name__ == "__main__":
     main()
-
-{{- end }}

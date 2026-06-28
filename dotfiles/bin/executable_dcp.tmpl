@@ -1,5 +1,3 @@
-{{- if and (lookPath "docker") (not (joinPath .chezmoi.homeDir ".local/bin/dcp" | stat)) -}}
-
 #!/usr/bin/env bash
 # shellcheck source-path=SCRIPTDIR/../shell-scripting-templates/utilities
 # shellcheck source-path=SCRIPTDIR/../../shell-scripting-templates/utilities
@@ -642,5 +640,3 @@ _mainScript_
 
 # Exit cleanly
 _safeExit_
-
-{{ end -}}

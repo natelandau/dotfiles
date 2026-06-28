@@ -1,0 +1,15 @@
+# Config paths managed only when their tool is on PATH.
+# Key = binary passed to lookPath; value = paths to ignore when it is absent.
+# Consumed by the range loop in .chezmoiignore. Only single-tool gates belong
+# here; compound conditions (role flags, or-groups, OS checks) stay explicit
+# in .chezmoiignore.
+
+[tool_configs]
+claude = [".claude", ".config/ccstatusline"]
+cursor = [".cursor", "Library/Application Support/Cursor"]
+ghostty = [".config/ghostty"]
+halp = [".config/halp"]
+mise = [".config/mise"]
+nd = [".config/nd"]
+npm = [".config/npm"]
+vidcleaner = [".config/vid-cleaner"]
