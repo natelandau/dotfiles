@@ -107,14 +107,16 @@ jobs:
             - name: Verify state is converged
               # verify exits non-zero if any target still differs after apply, which
               # is the real idempotency test the file lists below can't provide.
+              # Exclude scripts: unconditional run_ scripts always re-run, so verify
+              # always reports them pending regardless of whether anything changed.
               # On failure, name the offending targets and show the diff.
               run: |
-                  if ! chezmoi verify; then
+                  if ! chezmoi verify --exclude=scripts; then
                       echo "::group::chezmoi status"
-                      chezmoi status || true
+                      chezmoi status --exclude=scripts || true
                       echo "::endgroup::"
                       echo "::group::chezmoi diff"
-                      chezmoi diff || true
+                      chezmoi diff --exclude=scripts || true
                       echo "::endgroup::"
                       exit 1
                   fi
