@@ -1,13 +1,19 @@
 # gh-copilot aliases (ghcs/ghce). Baked at chezmoi apply time so we don't fork
 # gh several times (including a network-touching `gh auth status`) on every
-# shell startup. Regenerated whenever the extension is present at `chezmoi apply`.
+# shell startup. The whole gh interaction runs inside one sh script that always
+# exits 0, so a missing, unauthenticated, or erroring gh degrades to "no aliases"
+# instead of aborting `chezmoi apply` (chezmoi's `output` is fatal on non-zero).
 # More info: https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-the-command-line
 {{- if lookPath "gh" }}
-{{- if output "gh" "extension" "list" | contains "copilot" }}
-if [[ -n ${ZSH_NAME} ]]; then
-{{ output "gh" "copilot" "alias" "--" "zsh" | trim }}
-elif [[ -n ${BASH} ]]; then
-{{ output "gh" "copilot" "alias" "--" "bash" | trim }}
-fi
-{{- end }}
+{{ output "sh" "-c" `
+# Bail quietly unless gh is runnable and the copilot extension is installed.
+command -v gh >/dev/null 2>&1 || exit 0
+gh extension list 2>/dev/null | grep -q copilot || exit 0
+# Emit a runtime shell switch so the right alias set loads in zsh vs bash.
+printf 'if [[ -n ${ZSH_NAME} ]]; then\n'
+gh copilot alias -- zsh 2>/dev/null
+printf 'elif [[ -n ${BASH} ]]; then\n'
+gh copilot alias -- bash 2>/dev/null
+printf 'fi\n'
+` | trim }}
 {{- end }}

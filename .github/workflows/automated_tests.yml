@@ -89,6 +89,10 @@ jobs:
             # Run chezmoi apply
             # ----------------------------------------------
             - name: Run chezmoi apply
+              env:
+                  # gh refuses to run in Actions without a token; templates that shell
+                  # out to gh at apply time need one present.
+                  GH_TOKEN: ${{ github.token }}
               run: |
                   ./bin/chezmoi apply
 
