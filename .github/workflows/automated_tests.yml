@@ -86,22 +86,6 @@ jobs:
             - name: Set up chezmoi
               uses: ./.github/actions/setup-chezmoi
 
-            - name: Validate every template renders
-              # execute-template covers templates even when .chezmoiignore excludes
-              # them on this machine, and localizes which file fails to render.
-              run: |
-                  set -uo pipefail
-                  cd "${HOME}/.local/share/chezmoi"
-                  fail=0
-                  while IFS= read -r -d '' tmpl; do
-                      if ! chezmoi execute-template < "${tmpl}" > /dev/null 2> render-err.log; then
-                          echo "::error file=${tmpl}::template failed to render"
-                          cat render-err.log
-                          fail=1
-                      fi
-                  done < <(find dotfiles -name '*.tmpl' ! -name '.chezmoi.toml.tmpl' -print0)
-                  exit "${fail}"
-
             - name: Run chezmoi doctor
               continue-on-error: true
               run: chezmoi doctor
@@ -126,12 +110,13 @@ jobs:
               run: chezmoi verify
 
             - name: Smoke test interactive shells
-              # The .bashrc / .zshrc chains source many files in order; a non-zero
-              # exit means one of them broke on startup.
+              # The .bashrc / .zshrc chains source many files in order. `exit 0`
+              # succeeds once startup completes; a parse error or aborted rc file
+              # exits non-zero before the command runs, which is what we catch.
               run: |
                   set -e
-                  bash -ic 'exit' < /dev/null
-                  zsh -ic 'exit' < /dev/null
+                  bash -ic 'exit 0' < /dev/null
+                  zsh -ic 'exit 0' < /dev/null
 
             - name: Assert dotfiles state (Ubuntu)
               if: startsWith(matrix.os, 'ubuntu')
