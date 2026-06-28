@@ -107,7 +107,17 @@ jobs:
             - name: Verify state is converged
               # verify exits non-zero if any target still differs after apply, which
               # is the real idempotency test the file lists below can't provide.
-              run: chezmoi verify
+              # On failure, name the offending targets and show the diff.
+              run: |
+                  if ! chezmoi verify; then
+                      echo "::group::chezmoi status"
+                      chezmoi status || true
+                      echo "::endgroup::"
+                      echo "::group::chezmoi diff"
+                      chezmoi diff || true
+                      echo "::endgroup::"
+                      exit 1
+                  fi
 
             - name: Smoke test interactive shells
               # The .bashrc / .zshrc chains source many files in order. `exit 0`
