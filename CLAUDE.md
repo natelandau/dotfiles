@@ -13,6 +13,7 @@ Personal dotfiles managed with [Chezmoi](https://www.chezmoi.io/). Supports macO
 - `dotfiles/dot_config/dotfile_source/` - Shell source files loaded by `.bashrc`/`.zshrc`
 - `dotfiles/dot_config/dotfile_source/third-party/` - Shell integrations for third-party tools
 - `duties.py` - Project task runner (using `duty` library)
+- `.github/workflows/automated_tests.yml` - CI tests (lint + `chezmoi apply` on Ubuntu/macOS), sharing logic via composite actions in `.github/actions/`
 
 ## Commands
 

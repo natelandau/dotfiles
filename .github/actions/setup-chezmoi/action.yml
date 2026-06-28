@@ -1,0 +1,47 @@
+---
+name: Set up chezmoi for CI
+description: Install the latest chezmoi, stage the repo as the source dir, and write a CI config file
+
+inputs:
+    github-user:
+        description: "Value for the github_user template variable"
+        required: false
+        default: "natelandau"
+
+runs:
+    using: composite
+    steps:
+        - name: Install latest chezmoi
+          shell: bash
+          run: |
+              sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "${HOME}/bin"
+              echo "${HOME}/bin" >> "${GITHUB_PATH}"
+              "${HOME}/bin/chezmoi" --version
+
+        - name: Stage repository as the chezmoi source dir
+          shell: bash
+          run: |
+              mkdir -p "${HOME}/.local/share/chezmoi"
+              cp -a "${GITHUB_WORKSPACE}/." "${HOME}/.local/share/chezmoi/"
+
+        - name: Write CI config file
+          shell: bash
+          # Mirrors a real chezmoi.toml [data] block. is_ci_workflow=true gates out
+          # steps that can't run on a runner (Homebrew casks, mas, mise tools, osx
+          # defaults, 1Password secrets) so apply exercises the file/template paths.
+          run: |
+              mkdir -p "${HOME}/.config/chezmoi"
+              cat > "${HOME}/.config/chezmoi/chezmoi.toml" << EOF
+              [data]
+                  dev_computer      = false
+                  email             = "test@test.com"
+                  github_user       = "${{ inputs.github-user }}"
+                  homelab_member    = false
+                  is_ci_workflow    = true # Set true only in CI test
+                  personal_computer = false
+                  use_secrets       = false
+                  xdgCacheDir       = "${HOME}/.cache"
+                  xdgConfigDir      = "${HOME}/.config"
+                  xdgDataDir        = "${HOME}/.local/share"
+                  xdgStateDir       = "${HOME}/.local/state"
+              EOF
