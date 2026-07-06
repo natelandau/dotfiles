@@ -101,7 +101,8 @@
       "source": {
         "source": "github",
         "repo": "natelandau/cc-plugin"
-      }
+      },
+      "autoUpdate": true
     }
   },
   "tui": "fullscreen",

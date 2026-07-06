@@ -16,6 +16,7 @@ from typing import Annotated
 
 import typer
 from nclutils import fs, git, pp
+from nclutils.sh import ShellCommandError
 from typer import rich_utils
 
 # ############## CLI ##############
@@ -75,49 +76,66 @@ def run(  # noqa: C901, PLR0912
         pp.error(f"No git repositories found under {directory}")
         raise typer.Exit(code=1)
 
+    failures: list[Path] = []
     for repo in repositories:
+        sync_error: ShellCommandError | None = None
         with pp.step(str(repo)) as step:
-            repo_state = git.get_repo_state(repo)
-            if repo_state.branch != git.default_branch(repo):
-                step.sub(f"Repository is on a non-default branch ({repo_state.branch}). Skipping.")
-                step.skip(f"- {repo}")
-
-                continue
-
-            if dry_run or fetch_only:
-                git.fetch(repo, stream=verbose > 1)
+            try:
                 repo_state = git.get_repo_state(repo)
-                if repo_state.behind > 0:
-                    if dry_run:
-                        step.sub(
-                            f"[dryrun] would pull changes from {repo_state.upstream}, behind {repo_state.behind} commits"
-                        )
+                if repo_state.branch != git.default_branch(repo):
+                    step.sub(
+                        f"Repository is on a non-default branch ({repo_state.branch}). Skipping."
+                    )
+                    step.skip(f"- {repo}")
+
                     continue
 
-            result = git.sync_branch(
-                repo,
-                stash=True,
-                allow_rebase=True,
-                stream=verbose > 1,
-                on_conflict="abort",
-            )
-            match result.action:
-                case "up_to_date":
-                    continue
-                case "fast_forwarded":
-                    step.sub(f"- Fast-forwarded by {result.behind_before} commits")
-                    continue
-                case "rebased":
-                    step.sub(f"- Rebased by {result.behind_before} commits")
-                    continue
-                case "aborted":
-                    for conflict in result.conflicts:
-                        step.sub(f"- Conflict: {conflict}")
-                    step.fail(f"- {repo}")
-                case _:
-                    step.set_failed(f"- {repo}")
-                    step.sub(f"- Unknown action: {result.action}")
-                    continue
+                if dry_run or fetch_only:
+                    git.fetch(repo, stream=verbose > 1)
+                    repo_state = git.get_repo_state(repo)
+                    if repo_state.behind > 0:
+                        if dry_run:
+                            step.sub(
+                                f"[dryrun] would pull changes from {repo_state.upstream}, behind {repo_state.behind} commits"
+                            )
+                        continue
+
+                result = git.sync_branch(
+                    repo,
+                    stash=True,
+                    allow_rebase=True,
+                    stream=verbose > 1,
+                    on_conflict="abort",
+                )
+                match result.action:
+                    case "up_to_date":
+                        continue
+                    case "fast_forwarded":
+                        step.sub(f"- Fast-forwarded by {result.behind_before} commits")
+                        continue
+                    case "rebased":
+                        step.sub(f"- Rebased by {result.behind_before} commits")
+                        continue
+                    case "aborted":
+                        for conflict in result.conflicts:
+                            step.sub(f"- Conflict: {conflict}")
+                        step.fail(f"- {repo}")
+                    case _:
+                        step.sub(f"- Unknown action: {result.action}")
+                        step.fail(f"- {repo}")
+            # A git command failed (e.g. auth or network error). Record it and mark the
+            # step failed; it is reported below and the run continues to the next repo.
+            except ShellCommandError as e:
+                sync_error = e
+                step.fail(f"- {repo}", exception=e)
+
+        if sync_error is not None:
+            pp.error(f"Git command failed in {repo}:\n{sync_error}")
+            failures.append(repo)
+
+    if failures:
+        pp.error(f"Failed to sync {len(failures)} of {len(repositories)} repositories.")
+        raise typer.Exit(code=1)
 
 
 def main() -> None:

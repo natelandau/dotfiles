@@ -1,11 +1,5 @@
 [remote_servers]
 
-    [remote_servers.adabot]
-        add_to_ssh_config = true
-        name              = "adabot"
-        op_id             = "n3esm2nreiwiytm35jviqwco7m"
-        tailscale_ip      = true
-
     [remote_servers.bso]
         add_to_ssh_config = true
         name              = "bso"
