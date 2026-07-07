@@ -59,3 +59,17 @@
 
 # --- Remove iterm2 ---
 .config/applications/iterm2
+
+# Remove each tool's config dir unless the tool is on PATH.
+# Mapping lives in .chezmoidata/tool_configs.toml; add a line there for a new tool.
+{{ range $tool, $paths := .tool_configs }}
+{{-   if not (lookPath $tool) }}
+{{-     range $paths }}
+{{ . }}
+{{-     end }}
+{{-   end }}
+{{- end }}
+
+# Retire the old per-destination SSH keys, now that hosts authenticate with
+# the per-device ~/.ssh/id_ed25519. The keys remain in 1Password.
+.ssh_keys

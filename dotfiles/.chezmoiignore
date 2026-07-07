@@ -74,8 +74,3 @@ bin/dcp
 {{ if not (or (lookPath "code") (lookPath "code-insiders")) }}
 Library/Application Support/Code
 {{ end }}
-
-{{ if .is_synology }}
-.claude
-.cursor
-{{ end }}

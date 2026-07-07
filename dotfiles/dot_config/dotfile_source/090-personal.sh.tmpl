@@ -13,29 +13,31 @@ pr() {
 alias vc="vidcleaner"
 alias vcmine="vidcleaner clean --vp9 --replace"
 alias vcdown="vidcleaner clean --downmix --replace"
-alias vc265="vidcleaner clean --downmix--h265 --replace"
+alias vc265="vidcleaner clean --downmix --h265 --replace"
 {{- end }}
 
 # Local navigational Shortcuts
-{{- if .dev_computer }}
-alias homelab='cd ${HOME}/homelab'
-{{ end }}
-
-{{- if .personal_computer -}}
-alias work='cd ${HOME}/work-docs'
-alias personal='cd ${HOME}/personal-files'
-{{- end }}
+if [[ -d "${HOME}/homelab" ]]; then
+    alias homelab='cd ${HOME}/homelab'
+fi
+if [[ -d "${HOME}/work-docs" ]]; then
+    alias work='cd ${HOME}/work-docs'
+fi
+if [[ -d "${HOME}/personal-files" ]]; then
+    alias personal='cd ${HOME}/personal-files'
+fi
 
 alias repos='cd {{ .directories.repos_dir }}'
 
 {{ if .use_secrets -}}
 # SSH Shortcuts
-{{ range .remote_servers -}}
-{{- if not (lookPath .name) }}
-alias {{ .name }}="ssh {{ .name }}"
-{{- if .tailscale_ip }}
-alias t{{ .name }}="ssh t{{ .name }}"
-{{- end }}
-{{- end }}
+{{- $servers := onepasswordRead .documents.ssh_servers | fromToml }}
+{{- range $name, $s := $servers }}
+{{-   if not (lookPath $name) }}
+alias {{ $name }}="ssh {{ $name }}"
+{{-     if get $s "tailscale_hostname" }}
+alias t{{ $name }}="ssh t{{ $name }}"
+{{-     end }}
+{{-   end }}
 {{- end }}
 {{- end }}

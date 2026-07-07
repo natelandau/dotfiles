@@ -1,7 +1,11 @@
 {{- if .personal_computer -}}
-alias vnc="open vnc://10.0.0.4"
+
 {{- if .use_secrets }}
-alias tvnc='open vnc://{{ range (onepassword .remote_servers.macmini.op_id).fields }}{{ if eq .label "tailscale_ip" }}{{ .value }}{{ end }}{{ end }}'
+{{-   $mini := get (onepasswordRead .documents.ssh_servers | fromToml) "mini" }}
+{{-   if $mini }}
+alias vnc="open vnc://{{ get $mini "hostname" }}"
+alias tvnc='open vnc://{{ get $mini "tailscale_hostname" }}'
+{{-   end }}
 {{- end }}
 {{- end }}
 
