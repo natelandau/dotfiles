@@ -1,15 +1,15 @@
 {{- if .personal_computer -}}
 
-{{- if .use_secrets }}
-{{-   $mini := get (onepasswordRead .documents.ssh_servers | fromToml) "mini" }}
-{{-   if $mini }}
+    {{- if .use_secrets }}
+        {{-   $mini := get (onepasswordRead .documents.ssh_servers | fromToml) "mini" }}
+        {{-   if $mini }}
 alias vnc="open vnc://{{ get $mini "hostname" }}"
 alias tvnc='open vnc://{{ get $mini "tailscale_hostname" }}'
-{{-   end }}
-{{- end }}
+        {{-   end }}
+    {{- end }}
+
 {{- end }}
 
-{{- if and (.homelab_member) (not (.personal_computer)) -}}
 
 {{- if "/mnt/pi-cluster" | lstat }}
 alias cluster="cd /mnt/pi-cluster/"
@@ -17,18 +17,25 @@ alias localfs="cd /mnt/usbDrive/"
 alias backups="cd /mnt/pi-cluster/service-data-backups"
 alias media="cd /mnt/media"
 alias mine="cd /mnt/nate"
-{{- if lookPath "lnav" }}
-alias blogs='lnav /mnt/pi-cluster/logs'
-{{- end }}
+{{- else if "/Volumes/pi-cluster" | lstat }}
+alias cluster="cd /Volumes/pi-cluster/"
+alias localfs="cd /Volumes/usbDrive/"
+alias backups="cd /Volumes/pi-cluster/service-data-backups"
+alias media="cd /Volumes/media"
+alias mine="cd /Volumes/nate"
 {{- else if "/System/Volumes/Data/mnt/pi-cluster" | lstat }}
 alias cluster="cd /System/Volumes/Data/mnt/pi-cluster"
 alias localfs='cd ${HOME}/Library/docker'
 alias backups="cd /System/Volumes/Data/mnt/pi-cluster/service-data-backups"
 alias media="cd /System/Volumes/Data/mnt/media"
 alias mine="cd /System/Volumes/Data/mnt/nate"
-{{- if lookPath "lnav" }}
-alias blogs="lnav /System/Volumes/Data/mnt/pi-cluster/logs"
-{{- end }}
 {{- end }}
 
+
+{{- if and (lookPath "lnav") ("/mnt/pi-cluster/logs" | lstat) }}
+alias blogs='lnav /mnt/pi-cluster/logs'
+{{- else if and (lookPath "lnav") ("/System/Volumes/Data/mnt/pi-cluster/logs" | lstat) }}
+alias blogs="lnav /System/Volumes/Data/mnt/pi-cluster/logs"
+{{- else if and (lookPath "lnav") ("/Volumes/pi-cluster/logs" | lstat) }}
+alias blogs='lnav /Volumes/pi-cluster/logs'
 {{- end }}

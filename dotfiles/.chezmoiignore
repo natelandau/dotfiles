@@ -9,7 +9,7 @@ README.md
 {{ if ne .chezmoi.os "darwin" }}
 Library/Application Support
 Library
-.config/applicationse
+.config/applications
 bin/osx-defaults.py
 {{ if not .personal_computer }}
 .librewolf
