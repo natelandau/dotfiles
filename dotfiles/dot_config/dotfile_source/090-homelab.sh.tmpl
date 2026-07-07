@@ -4,7 +4,7 @@
 {{-   $mini := get (onepasswordRead .documents.ssh_servers | fromToml) "mini" }}
 {{-   if $mini }}
 alias vnc="open vnc://{{ get $mini "hostname" }}"
-alias tvnc='open vnc://{{ get $mini "tailscale_ip" }}'
+alias tvnc='open vnc://{{ get $mini "tailscale_hostname" }}'
 {{-   end }}
 {{- end }}
 {{- end }}

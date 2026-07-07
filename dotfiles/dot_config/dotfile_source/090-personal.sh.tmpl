@@ -35,7 +35,7 @@ alias repos='cd {{ .directories.repos_dir }}'
 {{- range $name, $s := $servers }}
 {{-   if not (lookPath $name) }}
 alias {{ $name }}="ssh {{ $name }}"
-{{-     if get $s "tailscale_ip" }}
+{{-     if get $s "tailscale_hostname" }}
 alias t{{ $name }}="ssh t{{ $name }}"
 {{-     end }}
 {{-   end }}

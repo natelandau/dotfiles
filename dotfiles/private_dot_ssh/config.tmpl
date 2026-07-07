@@ -13,7 +13,7 @@ Include ~/.orbstack/ssh/config
 # Host aliases render from a single 1Password note (see
 # .chezmoidata/onepassword.toml -> documents.ssh_servers): a TOML document keyed
 # by alias name. Only `hostname` is required; `user` defaults to natelandau and
-# `port` to 22. Add `tailscale_ip` to also emit a t<alias> host on the tailnet.
+# `port` to 22. Add `tailscale_hostname` to also emit a t<alias> host on the tailnet.
 {{- if .use_secrets }}
 {{- $servers := onepasswordRead .documents.ssh_servers | fromToml }}
 {{- range $name, $s := $servers }}
@@ -24,7 +24,7 @@ Host {{ $name }}
     Port {{ get $s "port" | default 22 }}
     IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
-{{-   $ts := get $s "tailscale_ip" }}
+{{-   $ts := get $s "tailscale_hostname" }}
 {{-   if $ts }}
 
 Host t{{ $name }}
