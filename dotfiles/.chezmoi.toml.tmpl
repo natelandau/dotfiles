@@ -8,6 +8,13 @@
        exists on every DSM system; the exact hostname is a fallback. */ -}}
 {{- $is_synology := or (stat "/etc/synoinfo.conf") (eq .chezmoi.hostname "Synology") -}}
 
+{{ if $is_synology -}}
+# Synology mounts /tmp with noexec, so chezmoi cannot run scripts from the
+# default temp dir (fork/exec ... permission denied). Write them to chezmoi's
+# own cache dir on the home volume, which is mounted exec.
+scriptTempDir = {{ .chezmoi.cacheDir | quote }}
+{{ end -}}
+
 [data]
     dev_computer      = {{ $dev_computer }}
     email             = {{ $email | quote }}
