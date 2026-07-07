@@ -7,6 +7,7 @@
 
 [ssh_authorized_keys]
     blackbook  = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3elpdNwc6uPx7Y6g999IdjNnn+2vuDv634je10YyDu blackbook"
+    mf1        = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJPOGRecKejIxXMo5We3iYl5vzjopPHNuL2We4euZVOi mf1"
     mini       = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPhyBcr+awEbYqnl7JqVvLNA5hN2ulNqL0KXLGUgscYL macmini"
     shellfish  = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGdokJ8KENeUd8BkGvt7OArXnWNHKPHUfucJI4uf8zg+ shellfish ios"
     skimmbook2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICk5qrlaTiuNwjV/zc/1IVHRvHQ/2zAisIl/EemfQZMP skimmbook"

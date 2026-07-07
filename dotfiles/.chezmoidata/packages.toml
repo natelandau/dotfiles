@@ -45,8 +45,7 @@
     [packages.python.homelab_member]
         packages = ["nomadctl"]
     [packages.python.personal_computer]
-        # 'GITEA_ADDRESS' is overwritten by the 'gitea_address' secret
-        packages = ["git+GITEA_ADDRESS/natelandau/usrbin", "nomadctl", "vid-cleaner"]
+        packages = ["nomadctl", "vid-cleaner"]
 [packages.homebrew]
     # atuin/bat/bottom/doggo/fd/git-delta/lazygit/rip2/zoxide moved to mise ([packages.mise]);
     # uninstall the Homebrew copies so mise owns them on macOS. (eza stays on brew: it has

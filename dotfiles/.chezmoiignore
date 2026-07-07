@@ -9,7 +9,8 @@ README.md
 {{ if ne .chezmoi.os "darwin" }}
 Library/Application Support
 Library
-.config/applications
+.config/applicationse
+bin/osx-defaults.py
 {{ if not .personal_computer }}
 .librewolf
 {{ end }}
@@ -63,7 +64,7 @@ bin/dcp
 .config/secrets-sync
 {{ end }}
 
-{{ if not (or (lookPath "dcp") (lookPath "autopull") (lookPath "nd") (lookPath "brewup")) }}
+{{ if not (or (lookPath "dcp") (lookPath "brewup")) }}
 .config/usrbin
 {{ end }}
 

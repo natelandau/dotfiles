@@ -13,6 +13,12 @@
 /bin/osx-defaults.sh
 /bin/pull_all_repos
 
+# -- Legacy scripts removed --
+bin/uvupgrade
+{{ if ne .chezmoi.os "darwin" }}
+bin/osx-defaults.py
+{{ end }}
+
 # --- Legacy trees relocated by the XDG migration ---
 # Old ~/.shell tree -> ~/.config/dotfile_source
 /.shell
