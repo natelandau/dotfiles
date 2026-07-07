@@ -6,12 +6,6 @@
         op_id             = "urcyjy4hxj6js5lnuplbx4iaem"
         tailscale_ip      = false
 
-    [remote_servers.git]
-        add_to_ssh_config = false
-        name              = "git"
-        op_id             = "jrfjs6mzlrm2jq5242td4li3u4"
-        tailscale_ip      = false
-
     [remote_servers.imac]
         add_to_ssh_config = true
         name              = "imac"
