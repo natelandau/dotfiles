@@ -66,7 +66,10 @@ fi
 # Load Completions
 #############################################
 autoload -Uz compinit
-compinit -d "{{ .xdgCacheDir }}/zsh/zcompdump-${ZSH_VERSION}"
+# Synology keeps home dirs group-writable by DSM default, so compinit flags them
+# as "insecure" and prompts on every login. -u trusts them (they are the user's
+# own dirs) to keep login non-interactive there; other hosts keep the strict check.
+compinit {{ if .is_synology }}-u {{ end }}-d "{{ .xdgCacheDir }}/zsh/zcompdump-${ZSH_VERSION}"
 
 # SOURCE Dotfiles
 #############################################
