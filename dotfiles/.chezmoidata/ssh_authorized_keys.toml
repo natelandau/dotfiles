@@ -6,9 +6,7 @@
 # chezmoi renders these into ~/.ssh/authorized_keys via private_dot_ssh/private_authorized_keys.tmpl
 
 [ssh_authorized_keys]
-    blackbook = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3elpdNwc6uPx7Y6g999IdjNnn+2vuDv634je10YyDu blackbook"
-    mini      = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPhyBcr+awEbYqnl7JqVvLNA5hN2ulNqL0KXLGUgscYL macmini"
-    shellfish = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGdokJ8KENeUd8BkGvt7OArXnWNHKPHUfucJI4uf8zg+ shellfish ios"
-
-    # skimmbook2 = "REPLACE_ME"
-    # imac       = "REPLACE_ME"
+    blackbook  = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3elpdNwc6uPx7Y6g999IdjNnn+2vuDv634je10YyDu blackbook"
+    mini       = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPhyBcr+awEbYqnl7JqVvLNA5hN2ulNqL0KXLGUgscYL macmini"
+    shellfish  = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGdokJ8KENeUd8BkGvt7OArXnWNHKPHUfucJI4uf8zg+ shellfish ios"
+    skimmbook2 = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICk5qrlaTiuNwjV/zc/1IVHRvHQ/2zAisIl/EemfQZMP skimmbook"
