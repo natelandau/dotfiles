@@ -55,7 +55,7 @@ bin/dcp
 .config/neatfile
 {{ end }}
 
-{{ if not (or (and (eq .chezmoi.os "linux") (eq .chezmoi.osRelease.id "debian") (gt .chezmoi.osRelease.versionID "11" )) (eq .chezmoi.os "darwin")) }}
+{{ if not (or (and (eq .chezmoi.os "linux") (eq (index .chezmoi.osRelease "id") "debian") (gt (index .chezmoi.osRelease "versionID") "11" )) (eq .chezmoi.os "darwin")) }}
 .config/nano
 {{ end }}
 
@@ -71,6 +71,11 @@ bin/dcp
 .local/share/git_stopwords
 {{ end }}
 
-{{- if not (or (lookPath "code") (lookPath "code-insiders")) -}}
+{{ if not (or (lookPath "code") (lookPath "code-insiders")) }}
 Library/Application Support/Code
+{{ end }}
+
+{{ if .is_synology }}
+.claude
+.cursor
 {{ end }}

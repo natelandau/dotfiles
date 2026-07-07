@@ -1,3 +1,4 @@
+{{- if not .is_synology -}}
 #!/usr/bin/env bash
 
 # The following line will force this script to run monthly
@@ -18,3 +19,4 @@ if [[ -n ${UV_PATH} ]]; then
 fi
 
 _safeExit_
+{{- end }}

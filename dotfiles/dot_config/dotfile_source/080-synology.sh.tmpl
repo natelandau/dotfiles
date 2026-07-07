@@ -1,4 +1,4 @@
-{{- if eq .chezmoi.hostname "synology" }}
+{{- if .is_synology }}
 
 PATH=/opt/bin:${PATH}
 alias sablog="multitail -i /volume1/docker/sabnzbd/logs/preProcessing.log -i /volume1/docker/sabnzbd/logs/postProcessing.log -i ~/logs/removeNZBs.log" # sabnzbd logs

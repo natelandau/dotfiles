@@ -1,4 +1,4 @@
-{{- if not .is_ci_workflow -}}
+{{- if and (not .is_ci_workflow) (not .is_synology) -}}
 #!/usr/bin/env bash
 
 {{ template "shared_script_utils.bash" . }}

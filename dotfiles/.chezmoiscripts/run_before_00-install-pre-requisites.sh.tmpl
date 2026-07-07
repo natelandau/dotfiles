@@ -16,7 +16,7 @@ if [[ -e "/opt/homebrew/bin/brew" && ! $(command -v brew) ]]; then
 fi
 {{ end }}
 
-{{ if eq .chezmoi.os "linux" }}
+{{ if and (eq .chezmoi.os "linux") (not .is_synology) }}
 
 install=false
 
@@ -39,13 +39,18 @@ done
 
 # Install missing packages
 if ${install}; then
-    header "Updating package list"
-    sudo apt update
+    # Only apt is supported here; a non-apt Linux (e.g. Synology) can't self-install these.
+    if ! command -v apt-get &>/dev/null; then
+        warning "Missing prerequisites (${to_install[*]}) but apt-get was not found; install them manually."
+    else
+        header "Updating package list"
+        sudo apt update
 
-    for pkg in "${to_install[@]}"; do
-        header "Installing ${pkg}"
-        sudo apt install -y "${pkg}"
-    done
+        for pkg in "${to_install[@]}"; do
+            header "Installing ${pkg}"
+            sudo apt install -y "${pkg}"
+        done
+    fi
 fi
 
 {{ end }}

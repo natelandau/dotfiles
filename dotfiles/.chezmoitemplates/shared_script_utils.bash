@@ -313,7 +313,13 @@ _hasJQ_() {
         warning "Must install jq prior to running script"
 
         {{- if eq .chezmoi.os "linux" }}
-        sudo apt install -y jq
+        # Only apt-based Linux can self-install here; a non-apt host (e.g. Synology)
+        # would abort the whole apply under set -e, so warn instead.
+        if command -v apt-get &>/dev/null; then
+            sudo apt install -y jq
+        else
+            warning "jq is missing and apt-get was not found; install jq manually."
+        fi
         {{- else if eq .chezmoi.os "darwin" }}
         brew install jq
         {{ end }}

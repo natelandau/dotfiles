@@ -3,6 +3,10 @@
 {{- $homelab_member := promptBoolOnce . "homelab_member" "Is this computer in the homelab? (true/false)" -}}
 {{- $dev_computer := promptBoolOnce . "dev_computer" "Do you do development on this computer? (true/false)" -}}
 {{- $email := promptStringOnce . "email" "Email address" -}}
+{{- /* Synology DSM is Linux but has no apt/brew and reports an empty osRelease, so
+       the package and install scripts must be skipped there. /etc/synoinfo.conf
+       exists on every DSM system; the exact hostname is a fallback. */ -}}
+{{- $is_synology := or (stat "/etc/synoinfo.conf") (eq .chezmoi.hostname "Synology") -}}
 
 [data]
     dev_computer      = {{ $dev_computer }}
@@ -10,6 +14,7 @@
     github_user       = "natelandau"
     homelab_member    = {{ $homelab_member }}
     is_ci_workflow    = false # Set true only in CI test
+    is_synology       = {{ if $is_synology }}true{{ else }}false{{ end }}
     personal_computer = {{ $personal_computer }}
     use_secrets       = {{ $use_secrets }}
     xdgCacheDir       = "{{ .chezmoi.homeDir }}/.cache"
