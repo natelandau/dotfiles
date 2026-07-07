@@ -59,3 +59,13 @@
 
 # --- Remove iterm2 ---
 .config/applications/iterm2
+
+# Remove each tool's config dir unless the tool is on PATH.
+# Mapping lives in .chezmoidata/tool_configs.toml; add a line there for a new tool.
+{{ range $tool, $paths := .tool_configs }}
+{{-   if not (lookPath $tool) }}
+{{-     range $paths }}
+{{ . }}
+{{-     end }}
+{{-   end }}
+{{- end }}
