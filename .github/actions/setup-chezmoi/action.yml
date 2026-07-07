@@ -38,6 +38,7 @@ runs:
                   github_user       = "${{ inputs.github-user }}"
                   homelab_member    = false
                   is_ci_workflow    = true # Set true only in CI test
+                  is_synology       = false
                   personal_computer = false
                   use_secrets       = false
                   xdgCacheDir       = "${HOME}/.cache"
