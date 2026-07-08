@@ -115,5 +115,18 @@
         "@upstash/context7-mcp@latest"
       ]
     }
+  },
+  "lspServers": {
+    "python": {
+      "command": "pyright-langserver",
+      "args": [
+        "--stdio"
+      ],
+      "extensionToLanguage": {
+        ".py": "python",
+        ".pyi": "python"
+      },
+      "diagnostics": false
+    }
   }
 }
