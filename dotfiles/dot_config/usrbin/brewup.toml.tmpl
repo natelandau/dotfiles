@@ -2,16 +2,17 @@
 # Target location for Applications, mimics --appdir.
 # app_dir = ""
 
-# List of packages to exclude from updates
+# List of packages to exclude from updates (typically b/c they autoupdate)
 exclude_updades = [
     "1password",
     "arq",
+    "claude",
+    "cursor",
+    "dia",
     "discord",
     "docker",
-    "docker-compose",
     "fmail2",
     "fork",
-    "mongodb-compass",
     "raycast",
     "syncthing",
     "visual-studio-code",
@@ -22,7 +23,7 @@ exclude_updades = [
 # homebrew_command = ""
 
 # List of casks to open after updating
-reopen = ["raycast", "slack", "syncthing"]
+reopen = ["raycast", "syncthing"]
 
 # List of casks to unquarantine after updating
 unquarantine = ["librewolf"]
