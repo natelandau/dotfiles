@@ -1,0 +1,17 @@
+{{- if and (.use_secrets) (or (.personal_computer) (.dev_computer)) }}
+{{- /* Credentials for the self-hosted Gitea PyPI registry. uv derives auth from
+       the index name: an index named "gitea" reads UV_INDEX_GITEA_{USERNAME,PASSWORD}.
+       Baked at apply time from 1Password, like the other secrets in this repo. */ -}}
+export UV_INDEX_GITEA_USERNAME="natelandau"
+export UV_INDEX_GITEA_PASSWORD="{{- onepasswordRead .secrets.gitea_pat }}"
+
+# Install a CLI tool that lives only on the private Gitea index. Passing the
+# index per-command (rather than a global uv index that every uv operation would
+# query) keeps normal `uv tool install` resolving from PyPI. uv checks the named
+# index before PyPI, so the tool resolves from Gitea while its deps fall through
+# to PyPI. Usage: uvt-gitea secrets-sync
+uvt-gitea() {
+    # DESC:		Install a CLI tool that lives only on the private Gitea index with uv.
+    uv tool install --index gitea={{ onepasswordRead .secrets.gitea_address }}/api/packages/natelandau/pypi/simple "$@"
+}
+{{- end }}
