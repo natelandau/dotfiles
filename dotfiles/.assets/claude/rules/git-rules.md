@@ -28,6 +28,7 @@ description: Global Git workflow rules. Use this when working with git and git w
 - Don't capitalize the first letter of the subject
 - No dot (.) at the end of the subject
 - The body explains the motivation for the change. Explain the WHY not the WHAT.
+- Breaking changes need two things: an exclamation mark in the subject and a BREAKING CHANGE section in the body.
 
 ## Git Worktree Rules
 

@@ -5,9 +5,16 @@ description: When and how to write inline code comments in any language
 
 ## How to write inline comments
 
-- Only comment to explain _why_, not _what_ — assume the reader knows the language.
-- Comments should be short and to the point
-- Never change or remove `noqa` or `type: ignore` comments unless the user explicitly asks you to do so or they are incorrect
+- Only comment to explain _why_, not _what_ - assume the reader knows the language.
+- A comment that captures intent, a gotcha, a trade-off, a workaround, or the name of
+  a non-obvious algorithm ("Fisher-Yates shuffle"), something the code cannot say for
+  itself, earns its place.
+- Explaining _why_ is not enough on its own: if the reason is already obvious from the codebase
+  or general knowledge, don't include it
+- Comments should be short and to the point tighten to the shortest phrasing that still carries
+  the reason
+- Never change or remove `noqa` or `type: ignore` comments unless the user explicitly
+  asks you to do so or they are incorrect
 
 ### Examples of good inline comment usage
 

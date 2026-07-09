@@ -9,3 +9,4 @@
     - `SKIP: needs sign-off` — the fix is irreversible or breaks a public contract, so it needs my explicit go-ahead. Add these to the backlog.
       These are the ONLY valid skips. "Pre-existing," "not introduced by this diff," "out of scope," "spans other files," "to keep this change focused," and "worth a follow-up" are NOT valid skips. If your reason is one of those or a paraphrase, the disposition is FIX.
 - Size is not scope. A large but correct fix gets done, as a SEPARATE commit if it would muddy the current one. You may make multiple commits. Never substitute "noted for follow-up" for doing a fix you could do now, and never park a fixable item on the backlog to avoid the work.
+- Pull requests titles and descriptions must follow the commit message format. They will be squashed into a single commit when merged.
