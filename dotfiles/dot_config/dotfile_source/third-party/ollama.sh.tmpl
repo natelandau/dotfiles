@@ -1,0 +1,11 @@
+{{- if lookPath "claude" }}
+
+claude_local() {
+    # DESC:	  Use local Ollama models for Claude Code
+
+    export ANTHROPIC_AUTH_TOKEN=ollama
+    export ANTHROPIC_BASE_URL=http://localhost:11434
+    printf "✓ Using local Ollama models for Claude Code\n"
+}
+
+{{- end }}

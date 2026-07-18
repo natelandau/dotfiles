@@ -38,7 +38,6 @@
       "Bash(wc:*)",
       "mcp__plugin_context7_context7__resolve-library-id",
       "mcp__plugin_context7_context7__query-docs",
-      "Write(//tmp/**)",
       "Edit(//tmp/**)",
       "Read(//tmp/**)"
     ],
@@ -74,6 +73,7 @@
       "/private/tmp"
     ]
   },
+  "model": "opus[1m]",
   "statusLine": {
     "type": "command",
     "command": "npx -y ccstatusline@latest",
