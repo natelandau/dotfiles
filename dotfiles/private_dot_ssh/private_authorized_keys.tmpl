@@ -1,6 +1,0 @@
-# ##### Chezmoi Managed - do not edit #####
-# Rendered from .chezmoidata/ssh_authorized_keys.toml
-{{ range $device, $key := .ssh_authorized_keys -}}
-# {{ $device }}
-{{ $key }}
-{{ end -}}

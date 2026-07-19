@@ -1,0 +1,31 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- /*
+  chezmoi manages only the delimited block below. Any keys a host has outside
+  that block (added out-of-band) are preserved on every apply, so applying can
+  never remove an unmanaged key and lock us out. Managed keys stay authoritative:
+  the block is regenerated from .chezmoidata/ssh_authorized_keys.toml each apply,
+  so adding or removing a device there still adds or revokes it here.
+
+  The legacy branch handles migration: the previous template owned the whole
+  file, so when its header is present but our markers are not, we discard the
+  old contents entirely and regenerate rather than preserving them as unmanaged.
+*/ -}}
+{{- $begin  := "# >>> chezmoi managed keys >>>" -}}
+{{- $end    := "# <<< chezmoi managed keys <<<" -}}
+{{- $legacy := "# ##### Chezmoi Managed - do not edit #####" -}}
+{{- $stdin := .chezmoi.stdin -}}
+{{- /* Discard a legacy full-file managed body; otherwise keep everything outside our block. */ -}}
+{{- $preserved := "" -}}
+{{- if or (contains $begin $stdin) (not (contains $legacy $stdin)) -}}
+{{-   $preserved = $stdin | replaceAllRegex (printf "(?s)\\n*%s.*?%s\\n*" $begin $end) "\n" | trim -}}
+{{- end -}}
+{{- $managed := "" -}}
+{{- range $device, $key := .ssh_authorized_keys -}}
+{{-   $managed = printf "%s# %s\n%s\n" $managed $device $key -}}
+{{- end -}}
+{{ if $preserved }}{{ $preserved }}
+
+{{ end }}{{ $begin }}
+# Rendered from .chezmoidata/ssh_authorized_keys.toml - do not edit inside this block
+{{ $managed -}}
+{{ $end }}
