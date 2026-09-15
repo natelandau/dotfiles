@@ -1,0 +1,24 @@
+# Copy to ~/.claude/sessionmemory.toml (global) or
+# <project>/.claude/sessionmemory.toml (per-project; project wins).
+# All keys are optional; omitting the file uses the defaults shown.
+
+[vault]
+# Where the vault lives, for the hooks and the CLI alike. Only needed when
+# SESSIONMEMORY_VAULT is not exported:
+# a hook does not inherit an interactive shell's profile, so a root set in
+# .zshrc is invisible to a session started from a GUI launcher.
+root = "~/repos/sessionmemory-vault"
+
+[inject]
+enabled = true                # set false to stop SessionStart memory injection
+
+[sweep]
+enabled = true                # set false to stop the end-of-session sweep
+model = "claude-sonnet-4-6"   # model for the headless sweep
+min_exchanges = 5            # skip the sweep below this many real messages (user + assistant)
+# The next two are measured on your messages only, so a long agent reply to one
+# short instruction never clears them. Below either floor the whole sweep is
+# skipped: no learning, no backlog item, no log.
+min_user_messages = 3         # skip the sweep below this many messages from you
+min_user_chars = 400          # skip the sweep below this many characters from you, in total
+save_transcript = true        # save the sweep's own claude session (for API-usage auditing); false discards it

@@ -33,6 +33,8 @@ description: Global Git workflow rules. Use this when working with git and git w
 ## Git Worktree Rules
 
 - **Always `cd` into the worktree directory** before running any non-git commands (tests, builds, linters, etc.).
+- **`cd` into the worktree once, in its own Bash call.** The working directory persists between Bash calls, so later commands must not re-chain `cd`. A compound command that contains `cd` followed by a file read with a relative path (`cd <worktree> && grep ... file`, or the same on separate lines) cannot be validated against the configured `Read()` deny rules and forces a manual approval prompt.
+- **Read files in a worktree with the Read and Grep tools, or with absolute paths in Bash.** Absolute paths validate statically; relative paths after a `cd` do not.
 - Before creating a project-local worktree directory, verify it is git-ignored with `git check-ignore -q .worktrees`. If not ignored, add it to `.gitignore` first.
 - Create worktrees with: `git worktree add .worktrees/<branch-name> -b <branch-name>`
 - After creating a worktree, `cd` into it immediately and run the project's dependency install and test suite to verify a clean baseline before starting work.
@@ -44,6 +46,11 @@ The parent project's `.venv` can leak into worktrees nested under `{project}/.wo
 
 ```bash
 git worktree add .worktrees/<branch-name> -b <branch-name>
+```
+
+Then, in a separate Bash call:
+
+```bash
 cd .worktrees/<branch-name>
 uv sync
 ```
