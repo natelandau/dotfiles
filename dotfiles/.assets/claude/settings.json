@@ -12,14 +12,27 @@
       "Bash(cat:*)",
       "Bash(date:*)",
       "Bash(echo:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr status:*)",
+      "Bash(gh pr view:*)",
       "Bash(git add:*)",
       "Bash(git check-ignore:*)",
       "Bash(git checkout:*)",
       "Bash(git commit:*)",
       "Bash(git diff:*)",
+      "Bash(git fetch:*)",
       "Bash(git log:*)",
+      "Bash(git merge --ff-only:*)",
+      "Bash(git pull --ff-only:*)",
+      "Bash(git push -u origin:*)",
+      "Bash(git push origin:*)",
+      "Bash(git rebase:*)",
       "Bash(git stash:*)",
       "Bash(git status:*)",
+      "Bash(git switch:*)",
+      "Bash(git tag:*)",
       "Bash(git worktree:*)",
       "Bash(git branch:*)",
       "Bash(grep:*)",
@@ -39,7 +52,9 @@
       "mcp__plugin_context7_context7__resolve-library-id",
       "mcp__plugin_context7_context7__query-docs",
       "Edit(//tmp/**)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Read(**/sessionmemory-vault/**)",
+      "Edit(**/sessionmemory-vault/**)"
     ],
     "deny": [
       "Bash(git add -f:*)",
@@ -53,27 +68,58 @@
       "Read(**/*.key)",
       "Read(**/*.pem)",
       "Read(~/.aws/**)",
+      "Bash(rip:*)",
       "Read(~/.ssh/**)"
     ],
     "ask": [
+      "Bash(uvx:*)",
       "Bash(chmod 777:*)",
       "Bash(eval:*)",
-      "Bash(git tag:*)",
-      "Bash(git checkout main:*)",
       "Bash(git clean -fd:*)",
-      "Bash(git push:*)",
+      "Bash(git push origin)",
+      "Bash(git push -u origin)",
+      "Bash(git push * main*)",
+      "Bash(git push *:main*)",
+      "Bash(git push */main*)",
+      "Bash(git push * master*)",
+      "Bash(git push *:master*)",
+      "Bash(git push */master*)",
+      "Bash(git push *--tags*)",
+      "Bash(git push *--all*)",
+      "Bash(git push *--mirror*)",
+      "Bash(git push *--delete*)",
+      "Bash(git push * -d *)",
+      "Bash(git rebase * main)",
+      "Bash(git rebase * master)",
       "Bash(git reset --hard:*)",
-      "Bash(git switch main:*)",
-      "Bash(rip:*)",
-      "Bash(rm -fr:*)",
-      "Bash(rm -rf:*)",
-      "Bash(git merge:*)"
+      "Bash(git switch *--discard-changes*)",
+      "Bash(git switch *-f*)",
+      "Bash(git switch *--force*)",
+      "Bash(git switch *-C *)",
+      "Bash(git checkout .*)",
+      "Bash(git checkout *-- *)",
+      "Bash(git checkout *-f*)",
+      "Bash(git checkout *-B *)"
     ],
     "additionalDirectories": [
       "/private/tmp"
     ]
   },
   "model": "opus[1m]",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/natelandau/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "npx -y ccstatusline@latest",
@@ -92,9 +138,9 @@
     "skill-creator@claude-plugins-official": true,
     "superpowers@superpowers-marketplace": true,
     "natelandau-toolkit@natelandau-cc-plugin": true,
-    "pyright-lsp@claude-plugins-official": true,
     "swift-lsp@claude-plugins-official": true,
-    "natelandau-recall@natelandau-cc-plugin": true
+    "obsidian@obsidian-skills": true,
+    "sessionmemory@sessionmemory": true
   },
   "extraKnownMarketplaces": {
     "natelandau-cc-plugin": {
@@ -103,10 +149,23 @@
         "repo": "natelandau/cc-plugin"
       },
       "autoUpdate": true
+    },
+    "obsidian-skills": {
+      "source": {
+        "source": "github",
+        "repo": "kepano/obsidian-skills"
+      }
+    },
+    "sessionmemory": {
+      "source": {
+        "source": "github",
+        "repo": "natelandau/sessionmemory"
+      }
     }
   },
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
+  "agentPushNotifEnabled": true,
   "mcpServers": {
     "context7": {
       "command": "npx",
@@ -114,19 +173,6 @@
         "-y",
         "@upstash/context7-mcp@latest"
       ]
-    }
-  },
-  "lspServers": {
-    "python": {
-      "command": "pyright-langserver",
-      "args": [
-        "--stdio"
-      ],
-      "extensionToLanguage": {
-        ".py": "python",
-        ".pyi": "python"
-      },
-      "diagnostics": false
     }
   }
 }

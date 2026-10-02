@@ -12,6 +12,7 @@
 .config/dotfile_source/0040-path.sh
 bin/osx-defaults.sh
 bin/pull_all_repos
+.claude/natelandau-recall.toml
 
 # -- Legacy scripts removed --
 bin/uvupgrade

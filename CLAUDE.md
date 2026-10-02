@@ -80,9 +80,9 @@ Package lists, server configs, and other data live in `dotfiles/.chezmoidata/*.t
 
 User-scoped Claude Code configuration (`~/.claude/`) is managed from this repo via a two-directory split:
 
-- `dotfiles/.assets/claude/` holds the **actual files**: `settings.json`, `CLAUDE.md`, and the `hooks/`, `rules/`, `commands/`, `skills/` directories.
+- `dotfiles/.assets/claude/` holds the **actual files**: `settings.json`, `CLAUDE.md`, `sessionmemory.toml`, and the `rules/` and `skills/` directories.
 - `dotfiles/dot_claude/` holds chezmoi `symlink_*.tmpl` files (one per asset), which chezmoi materializes as **symlinks** at `~/.claude/<name>` pointing into `dotfiles/.assets/claude/<name>`.
 
-After `chezmoi apply`, `~/.claude/settings.json`, `~/.claude/hooks/`, etc. are symlinks back into `.assets/claude/`. Edits to files under `dotfiles/.assets/claude/` take effect in Claude Code immediately, no re-apply needed (the symlinks already point there).
+After `chezmoi apply`, `~/.claude/settings.json`, `~/.claude/rules/`, etc. are symlinks back into `.assets/claude/`. Edits to files under `dotfiles/.assets/claude/` take effect in Claude Code immediately, no re-apply needed (the symlinks already point there).
 
 When adding a new file or directory under `dotfiles/.assets/claude/`, also add a matching `symlink_<name>.tmpl` under `dotfiles/dot_claude/` so chezmoi creates the symlink on apply.

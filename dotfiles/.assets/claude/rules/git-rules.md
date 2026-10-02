@@ -12,7 +12,11 @@ description: Global Git workflow rules. Use this when working with git and git w
 
 - The first line of the commit should never be more than 70 characters
 - Each commit message consists of a header and a body. The header has a special format that includes a type, an optional scope and a subject: `<type>(<scope>): <subject>`
-- Frame commit subjects for changelog readers, not maintainers - reference the public API, not internal class names or implementation terminology.
+- Write the subject as a changelog headline: the capability a user gains, or the failure that stops happening. Leave out file names, class names, and how it works; those go in the body.
+- Use as few words as the meaning needs. A short, plain subject beats a long, complete one.
+- Pair "improve", "update", or "enhance" with the specific thing that is better, or pick a stronger verb.
+- For `refactor`, `test`, `ci`, and `build`, which have no user-visible effect, name the area and the result for a maintainer.
+- Never mention reviews, agents, tools, conversations, or sessions in a commit message.
 - The types must be one of the following. No exceptions:
     - **build**: Changes that affect the build system or external dependencies
     - **ci**: Changes to CI configuration files and scripts
@@ -33,6 +37,8 @@ description: Global Git workflow rules. Use this when working with git and git w
 ## Git Worktree Rules
 
 - **Always `cd` into the worktree directory** before running any non-git commands (tests, builds, linters, etc.).
+- **`cd` into the worktree once, in its own Bash call.** The working directory persists between Bash calls, so later commands must not re-chain `cd`. A compound command that contains `cd` followed by a file read with a relative path (`cd <worktree> && grep ... file`, or the same on separate lines) cannot be validated against the configured `Read()` deny rules and forces a manual approval prompt.
+- **Read files in a worktree with the Read and Grep tools, or with absolute paths in Bash.** Absolute paths validate statically; relative paths after a `cd` do not.
 - Before creating a project-local worktree directory, verify it is git-ignored with `git check-ignore -q .worktrees`. If not ignored, add it to `.gitignore` first.
 - Create worktrees with: `git worktree add .worktrees/<branch-name> -b <branch-name>`
 - After creating a worktree, `cd` into it immediately and run the project's dependency install and test suite to verify a clean baseline before starting work.
@@ -44,6 +50,11 @@ The parent project's `.venv` can leak into worktrees nested under `{project}/.wo
 
 ```bash
 git worktree add .worktrees/<branch-name> -b <branch-name>
+```
+
+Then, in a separate Bash call:
+
+```bash
 cd .worktrees/<branch-name>
 uv sync
 ```
