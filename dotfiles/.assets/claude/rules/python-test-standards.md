@@ -10,7 +10,6 @@ paths:
 - Do not use unittest
 - Review existing fixtures and reuse them if possible
 - Write single sentence docstrings in imperative voice starting with "Verify"
-- Structure test body with given/when/then comments
 - Use fixture factories when tests need variants of the same data
 - Use `@pytest.mark.parametrize` to run the same test with different inputs
 - Use the `mocker` fixture from `pytest-mock` for mocking with `autospec=True`
@@ -22,22 +21,6 @@ paths:
 - Within each folder, mirror the source tree (e.g., `src/auth/login.py` → `tests/unit/auth/test_login.py`)
 
 ## Test structure
-
-Use the Given/When/Then pattern:
-
-```python
-def test_login_valid_credentials():
-    """Verify successful login with valid credentials."""
-    # Given a user
-    user = create_test_user(email="test@example.com", password="secure123")
-
-    # When the user logs in
-    result = login(email="test@example.com", password="secure123")
-
-    # Then the login is successful
-    assert result.success is True
-    assert result.user.email == "test@example.com"
-```
 
 ### Example with fixtures and mocking
 

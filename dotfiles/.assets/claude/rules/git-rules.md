@@ -12,7 +12,11 @@ description: Global Git workflow rules. Use this when working with git and git w
 
 - The first line of the commit should never be more than 70 characters
 - Each commit message consists of a header and a body. The header has a special format that includes a type, an optional scope and a subject: `<type>(<scope>): <subject>`
-- Frame commit subjects for changelog readers, not maintainers - reference the public API, not internal class names or implementation terminology.
+- Write the subject as a changelog headline: the capability a user gains, or the failure that stops happening. Leave out file names, class names, and how it works; those go in the body.
+- Use as few words as the meaning needs. A short, plain subject beats a long, complete one.
+- Pair "improve", "update", or "enhance" with the specific thing that is better, or pick a stronger verb.
+- For `refactor`, `test`, `ci`, and `build`, which have no user-visible effect, name the area and the result for a maintainer.
+- Never mention reviews, agents, tools, conversations, or sessions in a commit message.
 - The types must be one of the following. No exceptions:
     - **build**: Changes that affect the build system or external dependencies
     - **ci**: Changes to CI configuration files and scripts
