@@ -5,156 +5,18 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#   "rich",
-#   "sh",
+#   "nclutils",
 # ]
 # ///
 
 import platform
-import re
 import shlex
 import sys
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
 
-import sh  # type: ignore
-from rich.console import Console  # type: ignore
-from rich.text import Text  # type: ignore
-from rich.theme import Theme  # type: ignore
-
-custom_theme = Theme(
-    {
-        "info": "",
-        "warning": "dark_orange bold",
-        "error": "bold red",
-        "success": "bold green",
-        "debug": "cadet_blue",
-        "trace": "cadet_blue",
-        "secondary": "dim",
-        "notice": "bold",
-        "dryrun": "blue bold",
-        "critical": "bold red reverse",
-    }
-)
-console = Console(theme=custom_theme)
-
-
-def run_command(  # noqa: C901
-    cmd: str,
-    args: list[str],
-    pushd: str | Path = "",
-    okay_codes: list[int] | None = None,
-    exclude_regex: str | None = None,
-    *,
-    quiet: bool = False,
-    sudo: bool = False,
-) -> str:
-    """Execute a shell command and capture its output with ANSI color support.
-
-    Run a shell command with the specified arguments while preserving ANSI color codes and terminal formatting. Stream command output to the console in real-time unless quiet mode is enabled. Change to a different working directory before execution if pushd is specified.
-
-    Args:
-        cmd (str): The command name to execute
-        args (list[str]): Command line arguments to pass to the command
-        pushd (str | Path): Directory to change to before running the command. Empty string means current directory. Defaults to "".
-        okay_codes (list[int] | None): List of exit codes that are considered successful. Defaults to None.
-        exclude_regex (str | None): Regex to exclude lines from the output. Defaults to None.
-        quiet (bool): Whether to suppress real-time output to console. Defaults to False.
-        sudo (bool): Whether to run the command with sudo. Defaults to False.
-
-    Returns:
-        str: The complete command output as a string with ANSI color codes preserved
-    """
-    output_lines: list[str] = []
-
-    def _process_output(line: str, exclude_regex: str | None = None) -> None:
-        """Process a single line of command output.
-
-        Collect output lines for final return value and optionally display to console. Preserve ANSI color codes and formatting when displaying output.
-
-        Args:
-            line (str): A single line of output from the command execution
-            exclude_regex (str | None): Regex to exclude lines from the output. Defaults to None.
-        """
-        if exclude_regex and re.search(exclude_regex, line):
-            return
-
-        output_lines.append(str(line))
-        if not quiet:
-            console.print(Text.from_ansi(str(line)))
-
-    def _execute_command(*, sudo: bool = False) -> str:
-        """Execute the shell command and process its output.
-
-        Create and run the shell command with the configured arguments. Handle command execution errors by raising appropriate exceptions.
-
-        Args:
-            sudo (bool): Whether to run the command with sudo. Defaults to False.
-
-        Returns:
-            str: The complete command output as a string
-        """
-        try:
-            command = sh.Command(cmd)
-            if sudo:
-                with sh.contrib.sudo(k=True, _with=True):
-                    command(
-                        *args,
-                        _out=lambda line: _process_output(line, exclude_regex),
-                        _ok_code=okay_codes or [0],
-                    )
-            else:
-                command(
-                    *args,
-                    _out=lambda line: _process_output(line, exclude_regex),
-                    _ok_code=okay_codes or [0],
-                )
-        except sh.CommandNotFound:
-            console.print(f"Command not found: {cmd}", style="error")
-            sys.exit(1)
-        except sh.ErrorReturnCode as e:
-            console.print(
-                f"Above command failed with exit code {e.exit_code}",
-                style="error",
-            )
-            console.print(f"command: '{e.full_cmd}'", style="secondary")
-            if e.stdout:
-                console.print(f"stdout: {e.stdout.decode()}", style="secondary")
-            if e.stderr:
-                console.print(f"stderr: {e.stderr.decode()}", style="secondary")
-
-            return ""
-
-        return "".join(output_lines)
-
-    if pushd:
-        pushd = Path(pushd).expanduser().absolute()
-
-        if not pushd.exists():
-            console.print(f"Directory {pushd} does not exist", style="error")
-            sys.exit(1)
-
-        with sh.pushd(pushd):
-            return _execute_command(sudo=sudo)
-
-    return _execute_command(sudo=sudo)
-
-
-class CommandType(Enum):
-    """Enumerate the command families a Setting can run through; each value is the executable name.
-
-    Attributes:
-        DEFAULTS: The macOS `defaults` command.
-        PLISTBUDDY: The `/usr/libexec/PlistBuddy` command for direct plist edits.
-        PMSET: The `pmset` power-management command.
-        CHFLAGS: The `chflags` file-flags command.
-    """
-
-    DEFAULTS = "defaults"
-    PLISTBUDDY = "/usr/libexec/PlistBuddy"
-    PMSET = "pmset"
-    CHFLAGS = "chflags"
+from nclutils import pp
+from nclutils.sh import ShellCommandError, run_command, run_interactive
 
 
 @dataclass
@@ -165,28 +27,13 @@ class Setting:
         command (str): The full shell command to run.
         description (str): Human-readable description of what the setting changes.
         section (str): Grouping label used to sort and report settings. Defaults to "Other".
-        type (CommandType): Which command family runs this setting. Defaults to CommandType.DEFAULTS.
         sudo (bool): Whether the command must run with elevated privileges. Defaults to False.
     """
 
     command: str
     description: str
     section: str = "Other"
-    type: CommandType = CommandType.DEFAULTS
     sudo: bool = False
-
-    @property
-    def args(self) -> list[str]:
-        """Get the arguments for the command.
-
-        Returns:
-            list[str]: The arguments for the command.
-        """
-        tokens = shlex.split(self.command.strip())
-        if self.sudo:
-            tokens = [x for x in tokens if x.lower() != "sudo"]
-
-        return [x for x in tokens if x.lower() != self.type.value.lower()]
 
     @property
     def full_description(self) -> str:
@@ -202,42 +49,35 @@ COMMANDS = [
     Setting(
         command=f"chflags nohidden {Path.home()}/Library",
         description="Show ~/Library",
-        type=CommandType.CHFLAGS,
     ),
     Setting(
         command="chflags nohidden /Volumes",
         description="Show /Volumes",
-        type=CommandType.CHFLAGS,
         sudo=True,
     ),
     Setting(
         command="pmset -a lidwake 1",
         description="Enable lid wakeup",
-        type=CommandType.PMSET,
         sudo=True,
     ),
     Setting(
         command="pmset -a autorestart 1",
         description="Restart automatically on power loss",
-        type=CommandType.PMSET,
         sudo=True,
     ),
     Setting(
         command="pmset -a displaysleep 4",
         description="Sleep the display after 4 minutes",
-        type=CommandType.PMSET,
         sudo=True,
     ),
     Setting(
         command="pmset -c sleep 0",
         description="Disable machine sleep while charging",
-        type=CommandType.PMSET,
         sudo=True,
     ),
     Setting(
         command="pmset -b sleep 5",
         description="Set machine sleep to 5 minutes on battery",
-        type=CommandType.PMSET,
         sudo=True,
     ),
     Setting(
@@ -913,12 +753,10 @@ COMMANDS = [
         command='defaults write com.apple.BluetoothAudioAgent "Apple Bitpool Min (editable)" -int 40,',
         description="Increase sound quality for Bluetooth headphones",
         section="Bluetooth",
-        type=CommandType.DEFAULTS,
         sudo=False,
     ),
     Setting(
         command=f'/usr/libexec/PlistBuddy -c "Set DesktopViewSettings:IconViewSettings:labelOnBottom false" {Path.home()}/Library/Preferences/com.apple.finder.plist',
-        type=CommandType.PLISTBUDDY,
         description="Show item info to the right of the icons",
         section="Finder",
         sudo=False,
@@ -927,87 +765,98 @@ COMMANDS = [
         command=f'/usr/libexec/PlistBuddy -c "Set :DesktopViewSettings:IconViewSettings:arrangeBy grid" {Path.home()}/Library/Preferences/com.apple.finder.plist',
         description="Arrange icons by grid 1",
         section="Finder",
-        type=CommandType.PLISTBUDDY,
         sudo=False,
     ),
     Setting(
         command=f'/usr/libexec/PlistBuddy -c "Set :FK_StandardViewSettings:IconViewSettings:arrangeBy grid" {Path.home()}/Library/Preferences/com.apple.finder.plist',
         description="Arrange icons by grid 2",
         section="Finder",
-        type=CommandType.PLISTBUDDY,
     ),
     Setting(
         command=f'/usr/libexec/PlistBuddy -c "Set :StandardViewSettings:IconViewSettings:arrangeBy grid" {Path.home()}/Library/Preferences/com.apple.finder.plist',
         description="Arrange icons by grid 3",
         section="Finder",
-        type=CommandType.PLISTBUDDY,
     ),
     Setting(
         command=f'/usr/libexec/PlistBuddy -c "Set DesktopViewSettings:IconViewSettings:gridSpacing 100" {Path.home()}/Library/Preferences/com.apple.finder.plist',
         description="Set icon spacing to '100' 1",
         section="Finder",
-        type=CommandType.PLISTBUDDY,
         sudo=False,
     ),
     Setting(
         command=f'/usr/libexec/PlistBuddy -c "Set FK_StandardViewSettings:IconViewSettings:gridSpacing 100" {Path.home()}/Library/Preferences/com.apple.finder.plist',
         description="Set icon spacing to '100' 2",
         section="Finder",
-        type=CommandType.PLISTBUDDY,
         sudo=False,
     ),
     Setting(
         command=f'/usr/libexec/PlistBuddy -c "Set StandardViewSettings:IconViewSettings:gridSpacing 100" {Path.home()}/Library/Preferences/com.apple.finder.plist',
         description="Set icon spacing to '100' 3",
         section="Finder",
-        type=CommandType.PLISTBUDDY,
         sudo=False,
     ),
     Setting(
         command=f'/usr/libexec/PlistBuddy -c "Set :DesktopViewSettings:IconViewSettings:iconSize 40" {Path.home()}/Library/Preferences/com.apple.finder.plist',
         description="Set icon size to '40' 1",
         section="Finder",
-        type=CommandType.PLISTBUDDY,
         sudo=False,
     ),
     Setting(
         command=f'/usr/libexec/PlistBuddy -c "Set :FK_StandardViewSettings:IconViewSettings:iconSize 40" {Path.home()}/Library/Preferences/com.apple.finder.plist',
         description="Set icon size to '40' 2",
         section="Finder",
-        type=CommandType.PLISTBUDDY,
         sudo=False,
     ),
     Setting(
         command=f'/usr/libexec/PlistBuddy -c "Set :StandardViewSettings:IconViewSettings:iconSize 40" {Path.home()}/Library/Preferences/com.apple.finder.plist',
         description="Set icon size to '40' 3",
         section="Finder",
-        type=CommandType.PLISTBUDDY,
         sudo=False,
     ),
 ]
 
 
+def apply_setting(setting: Setting) -> None:
+    """Run a setting's command, reporting a failure instead of aborting the run.
+
+    One stale or unsupported setting should not keep the remaining settings from being applied.
+
+    Args:
+        setting (Setting): The setting to apply.
+    """
+    try:
+        run_command(shlex.split(setting.command), sudo=setting.sudo, stream=True)
+    except ShellCommandError as e:
+        pp.error(setting.full_description, details=[str(e).splitlines()[0]])
+    else:
+        pp.success(setting.full_description)
+
+
 def main() -> None:
     """Set MacOS Defaults."""
     if platform.system() != "Darwin":
-        console.print("This script is only for macOS")
+        pp.error("This script is only for macOS")
         return
 
-    console.rule("Setting MacOS Defaults...")
-    console.print(
-        "You may be asked to enter your password multiple times for commands which require sudo"
-    )
-    console.print("Some changes require a logout/restart to take effect")
+    pp.header("Setting MacOS Defaults")
+    pp.info("Some changes require a logout/restart to take effect")
 
     try:
-        for cmd in sorted(COMMANDS, key=lambda x: x.section):
-            console.print(f"✔ {cmd.full_description}", style="secondary")
-            run_command(cmd=cmd.type.value, args=cmd.args, quiet=False, sudo=cmd.sudo)
+        if any(setting.sudo for setting in COMMANDS):
+            # Prompt once up front; later sudo calls reuse the cached credentials
+            try:
+                run_interactive(["sudo", "-v"])
+            except ShellCommandError as e:
+                pp.error("Could not obtain sudo privileges", details=[str(e)])
+                sys.exit(1)
+
+        for setting in sorted(COMMANDS, key=lambda x: x.section):
+            apply_setting(setting)
     except KeyboardInterrupt as e:
-        console.print("Exiting...")
+        pp.info("Exiting...")
         raise SystemExit(1) from e
 
-    console.print(":rocket: Done setting MacOS Defaults")
+    pp.success("Done setting MacOS Defaults")
 
 
 if __name__ == "__main__":
