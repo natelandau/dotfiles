@@ -8,7 +8,7 @@ alias ginitsubs='git submodule update --init --recursive'          # Init and up
 alias gundo="git reset --soft HEAD^"                               # Undo last commit
 alias gss='git remote update && git status -uno'                   # Are we behind remote?
 alias gsubs='git submodule update --recursive --remote'            # Update all submodules
-alias undopush="git push -f origin HEAD^:master"                   # Undo a git push
+alias undopush='git push -f origin "HEAD^:$(git branch --show-current)"' # Undo a git push
 
 dirty_repos() {
     echo "Checking for dirty repositories under $(pwd)..."
