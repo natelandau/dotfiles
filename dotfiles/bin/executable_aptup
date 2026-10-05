@@ -21,8 +21,14 @@ from typing import Annotated, Any
 
 import typer
 from nclutils import pp
-from nclutils.questions import choose_multiple_from_list
-from nclutils.sh import ShellCommandFailedError, run_command
+from nclutils.ask import choose_multiple_from_list
+from nclutils.sh import (
+    CompletedCommand,
+    ShellCommandError,
+    ShellCommandFailedError,
+    run_command,
+    run_interactive,
+)
 from nclutils.strings import strip_ansi
 from rich.text import Text
 from typer import rich_utils
@@ -115,6 +121,21 @@ def _guard_statements() -> None:
         raise typer.Exit(code=1)
 
 
+def _run_apt(args: list[str], *, stream: bool = False) -> CompletedCommand:
+    """Run apt as root with needrestart's automatic service restarts suspended.
+
+    Automatic restarts need an interactive terminal session. The variable is passed through `env` because sudo's env_reset strips it from the caller's environment.
+
+    Args:
+        args: Arguments to pass to apt
+        stream: Whether to stream the output of the command
+
+    Returns:
+        CompletedCommand: The result of the apt command
+    """
+    return run_command(["env", "NEEDRESTART_SUSPEND=y", "apt", *args], sudo=True, stream=stream)
+
+
 def update_package_cache(*, stream: bool = False) -> Text:
     """Update the APT package cache with latest repository information.
 
@@ -132,10 +153,11 @@ def update_package_cache(*, stream: bool = False) -> Text:
     """
     with pp.step("Updating apt package cache..."):
         try:
-            output = run_command(["apt", "update", "-q"], sudo=True, stream=stream)
+            output = _run_apt(["update", "-q"], stream=stream)
         except ShellCommandFailedError as e:
             if e.result and e.result.stderr and "Permission denied" in e.result.stderr:
-                raise typer.Exit(code=1, message="You need to run this script with sudo") from e
+                pp.error("apt was denied permission; check that this account can run apt with sudo")
+                raise typer.Exit(code=1) from e
 
             pp.error("Something went wrong updating the package cache")
             if e.result and e.result.stderr:
@@ -158,7 +180,7 @@ def fetch_upgradable_packages(*, stream: bool = False) -> tuple[list[str], list[
     excluded_packages = []
 
     with pp.step("Listing upgradable packages..."):
-        output = run_command(["apt", "list", "--upgradable", "-q"], stream=stream, sudo=True)
+        output = run_command(["apt", "list", "--upgradable", "-q"], stream=stream)
 
         for line in output.stdout.split("\n"):
             if "Listing" in line:
@@ -219,7 +241,7 @@ def _upgrade_package(package: str, *, stream: bool = False, dry_run: bool = Fals
 
     with pp.step(f"Upgrade {package}"):
         try:
-            run_command(["apt", *args], stream=stream, sudo=True)
+            _run_apt(args, stream=stream)
         except ShellCommandFailedError as e:
             pp.error(
                 f"Failed to upgrade: `{package}`",
@@ -228,7 +250,7 @@ def _upgrade_package(package: str, *, stream: bool = False, dry_run: bool = Fals
             raise typer.Exit(code=1) from e
 
 
-def autoremove_packages(*, dry_run: bool = False, stream: bool = False) -> Text:
+def autoremove_packages(*, dry_run: bool = False, stream: bool = False) -> Text | None:
     """Remove automatically installed packages that are no longer needed.
 
     Clean up orphaned packages that were installed as dependencies but are no longer required.
@@ -238,7 +260,7 @@ def autoremove_packages(*, dry_run: bool = False, stream: bool = False) -> Text:
         stream: Whether to stream the output of the command
 
     Returns:
-        Text: Formatted output from apt autoremove command
+        Text | None: Formatted output from apt autoremove command, or None when the dry run is only printed
 
     Raises:
         typer.Exit: If package removal fails
@@ -254,7 +276,7 @@ def autoremove_packages(*, dry_run: bool = False, stream: bool = False) -> Text:
 
     with pp.step("Autoremoving unused packages..."):
         try:
-            output = run_command(["apt", *args], stream=stream, sudo=True)
+            output = _run_apt(args, stream=stream)
         except ShellCommandFailedError as e:
             pp.error(
                 "Failed to autoremove packages",
@@ -306,9 +328,12 @@ def run(
     pp.configure(verbosity=verbose)
     _guard_statements()
 
-    # Suspend needrestart to avoid automatic service restarts which require
-    # an interactive terminal session
-    os.environ["NEEDRESTART_SUSPEND"] = "y"
+    # Prompt before any spinner starts; a sudo password prompt can't share the line with one
+    try:
+        run_interactive(["sudo", "-v"])
+    except ShellCommandError as e:
+        pp.error("Could not obtain sudo privileges", details=[str(e)])
+        raise typer.Exit(code=1) from e
 
     update_package_cache(stream=verbose > 0)
     pkgs, excluded_pkgs, _ = fetch_upgradable_packages(stream=verbose > 0)
