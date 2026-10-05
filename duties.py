@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import re
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -16,21 +15,6 @@ if TYPE_CHECKING:
 PY_SRC_PATHS = (Path(p) for p in ("src/", "tests/", "duties.py", "scripts/") if Path(p).exists())
 PY_SRC_LIST = tuple(str(p) for p in PY_SRC_PATHS)
 CI = os.environ.get("CI", "0") in {"1", "true", "yes"}
-
-
-def strip_ansi(text: str) -> str:
-    """Remove ANSI escape sequences from a string.
-
-    Args:
-        text (str): String to remove ANSI escape sequences from.
-
-    Returns:
-        str: String without ANSI escape sequences.
-    """
-    ansi_chars = re.compile(r"(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]")
-
-    # Replace [ with \[ so rich doesn't interpret output as style tags
-    return ansi_chars.sub("", text).replace("[", r"\[")
 
 
 def pyprefix(title: str) -> str:
