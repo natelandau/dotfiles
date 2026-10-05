@@ -2,7 +2,8 @@
 
 {{ template "shared_script_utils.bash" . }}
 
-{{ if eq .chezmoi.os "darwin" }}
+{{/* Homebrew no longer supports Intel Macs */}}
+{{ if and (eq .chezmoi.os "darwin") (ne .chezmoi.arch "amd64") }}
 
 if [[ ! $(command -v brew) ]]; then
     header "🍺  Installing Homebrew"

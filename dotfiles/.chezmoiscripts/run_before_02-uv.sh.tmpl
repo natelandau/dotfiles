@@ -3,6 +3,9 @@
 
 {{ template "shared_script_utils.bash" . }}
 
+{{/* Homebrew no longer supports Intel Macs, so they use the standalone installer like Linux */ -}}
+{{ $useBrew := and (eq .chezmoi.os "darwin") (ne .chezmoi.arch "amd64") -}}
+
 _hasJQ_ # Confirm we have jq installed
 
 VERBOSE=false
@@ -46,10 +49,9 @@ if [[ -n ${UV_PATH} ]]; then
     fi
 else
     notice "Installing ${PACKAGE_NAME}"
-    {{ if eq .chezmoi.os "darwin" }}
+    {{ if $useBrew }}
     brew install uv
-    {{ end }}
-    {{ if eq .chezmoi.os "linux" }}
+    {{ else }}
     curl -LsSf https://astral.sh/uv/install.sh | sh
     {{ end }}
 
@@ -57,14 +59,11 @@ else
 fi
 
 notice "Update ${PACKAGE_NAME} to ${LATEST_VERSION}"
-{{ if eq .chezmoi.os "darwin" }}
+{{ if $useBrew }}
 brew upgrade uv
-{{ end }}
-
-{{ if eq .chezmoi.os "linux" }}
-if [[ -n ${UV_PATH} ]]; then
-    ${UV_PATH} self update
-fi
+{{ else }}
+# A Homebrew-installed uv can't self-update; warn rather than abort the apply.
+${UV_PATH} self update || warning "uv self update failed; reinstall uv with the standalone installer"
 {{ end }}
 
 _safeExit_

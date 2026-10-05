@@ -7,7 +7,7 @@ header "Checking for packages to remove"
 
 did_remove_package=false
 
-{{ if and (eq .chezmoi.os "darwin") (lookPath "brew") }}
+{{ if and (eq .chezmoi.os "darwin") (ne .chezmoi.arch "amd64") (lookPath "brew") }}
 
     {{ range $package := .packages.homebrew.to_remove }}
     # Match the package name exactly; a substring grep matches unrelated kegs/casks (e.g. "redis" vs "another-redis-desktop-manager").
