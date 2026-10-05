@@ -320,8 +320,10 @@ _hasJQ_() {
         else
             warning "jq is missing and apt-get was not found; install jq manually."
         fi
-        {{- else if eq .chezmoi.os "darwin" }}
+        {{- else if and (eq .chezmoi.os "darwin") (ne .chezmoi.arch "amd64") }}
         brew install jq
+        {{- else }}
+        warning "jq is missing and Homebrew is unavailable; install jq manually."
         {{ end }}
 
     fi
