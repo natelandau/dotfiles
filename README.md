@@ -39,12 +39,14 @@ On first init, chezmoi prompts for five answers and remembers them in its own co
 
 What the bootstrap does next, in order:
 
-1. Installs prerequisites: Homebrew on macOS, or `curl`, `unzip`, and `wget` on Linux.
+1. Installs prerequisites: Homebrew on Apple Silicon Macs, or `curl`, `unzip`, and `wget` on Linux.
 2. Installs [uv](https://docs.astral.sh/uv/) for Python tools and [mise](https://mise.jdx.dev/) for cross-platform CLI tools.
 3. Installs packages from the data files (Homebrew, APT, Mac App Store).
 4. Writes all the config files and symlinks.
 5. Runs the post-apply scripts: SSH keys, git credential manager, mise tools, and the nano config.
 6. On macOS, applies system defaults.
+
+Homebrew no longer supports Intel Macs, so on an Intel Mac the bootstrap does not install or use Homebrew. It skips the Homebrew packages and installs uv with its standalone installer. If `op` or `jq` is missing, apply prints a warning and you must install it yourself.
 
 Expect to run apply more than once on a brand-new machine. Some scripts install a tool that later scripts depend on, so the first pass installs mise, for example, and a later pass picks up the config and tools that need it. Two or three passes to a clean result is normal.
 
