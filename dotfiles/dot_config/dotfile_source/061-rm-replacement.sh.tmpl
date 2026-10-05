@@ -1,0 +1,21 @@
+{{- if eq .chezmoi.os "darwin" }}
+rmd() {
+    local -a files
+    local endopts=0
+    for a in "$@"; do
+        if (( ! endopts )) && [[ $a == -- ]]; then endopts=1; continue; fi
+        if (( ! endopts )) && [[ $a == -* ]]; then continue; fi
+        files+=("$a")
+    done
+    /usr/bin/trash "${files[@]}"
+}
+
+{{- else if lookPath "rip" }}
+
+alias rmd='rip'
+
+{{- else }}
+
+alias rmd='rm -rf'
+
+{{- end }}

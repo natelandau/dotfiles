@@ -146,7 +146,8 @@
     "natelandau-toolkit@natelandau-cc-plugin": true,
     "swift-lsp@claude-plugins-official": true,
     "obsidian@obsidian-skills": true,
-    "sessionmemory@sessionmemory": true
+    "sessionmemory@sessionmemory": true,
+    "marketing-skills@marketingskills": true
   },
   "extraKnownMarketplaces": {
     "natelandau-cc-plugin": {
@@ -166,6 +167,12 @@
       "source": {
         "source": "github",
         "repo": "natelandau/sessionmemory"
+      }
+    },
+    "marketingskills": {
+      "source": {
+        "source": "github",
+        "repo": "coreyhaines31/marketingskills"
       }
     }
   },

@@ -2,8 +2,7 @@
 # By default rip will move files to a tmp directory. To change this behavior, set RIP_GRAVEYARD to the desired directory.
 export RIP_GRAVEYARD="{{ .xdgDataDir }}/Trash"
 
-alias rm="echo Use 'rip' instead of rm."
-alias rmd='rip'
+# alias rm="echo Use 'rip' instead of rm."
 
 # Completions for zsh
 if [[ -n ${ZSH_NAME} ]]; then
@@ -14,9 +13,5 @@ if [[ -n ${ZSH_NAME} ]]; then
         rip completions zsh >"{{ .xdgDataDir }}/zsh/completions/_rip"
     fi
 fi
-
-{{- else }}
-
-alias rmd='rm -rf'
 
 {{- end }}
