@@ -274,7 +274,7 @@ COMMANDS = [
         section="Printing",
     ),
     Setting(
-        command="defaults write NSGlobalDomain com.apple.sound.uiaudio.enabled -bool false",
+        command="defaults write com.apple.systemsound 'com.apple.sound.uiaudio.enabled' -int 0",
         description="Disable UI sound effects",
         section="Sound",
     ),
