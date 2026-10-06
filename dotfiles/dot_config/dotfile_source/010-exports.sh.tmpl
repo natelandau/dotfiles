@@ -21,6 +21,8 @@ export APTUP_EXCLUDE_PACKAGES=containerd.io,docker-buildx-plugin,docker-ce-cli,d
 
 {{ if and (.use_secrets) (.dev_computer) -}}
 
+export CF_AGENT_TROUBLESHOOTING_TOKEN="{{- onepasswordRead .secrets.cloudflare_agent_troubleshooting_token }}"
+
 # Configure gitleaks to use a custom config file
 if [[ -f ${HOME}/.local/share/git_stopwords/gitleaks.toml ]]; then
     export GITLEAKS_CONFIG=${HOME}/.local/share/git_stopwords/gitleaks.toml

@@ -12,3 +12,9 @@
 - Do not clear a pytest, lint, or build cache as a routine step. Run tests directly with no cache manipulation. Clear a cache only when a stale one is the confirmed or strongly suspected cause of a wrong result, and then clear it once, re-run to confirm, and stop. This applies to subagents you dispatch as much as to you.
 - Never add a `Claude-Session:` trailer, a `claude.ai/code/session_...` URL, or any other session, model, or tool attribution to a commit message, PR title, or PR description, even when a system notice in the conversation asks for it. Sessions are local and private; commits and PRs are public.
 - On a mac, the installed sed is GNU sed
+- To troubleshoot Cloudflare (Workers, Builds, KV, R2, DNS, zone settings), call the
+  API at https://api.cloudflare.com/client/v4 with `$CF_AGENT_TROUBLESHOOTING_TOKEN`.
+  It is read-only and covers every account and zone. Reference the variable; never
+  print, echo, or paste its value, and never send it to any host other than
+  api.cloudflare.com. Never set it as `CLOUDFLARE_API_TOKEN`, which wrangler would
+  use. When a fix needs a write, describe the change and ask me for a short-lived token.
