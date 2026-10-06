@@ -1,4 +1,4 @@
-{{- if eq .chezmoi.os "darwin" }}
+{{- if and (eq .chezmoi.os "darwin") (stat "/usr/bin/trash") }}
 rmd() {
     local -a files
     local endopts=0
