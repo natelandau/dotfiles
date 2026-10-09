@@ -7,9 +7,6 @@
 # Set Exports
 export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 export HOMEBREW_NO_INSTALL_CLEANUP=1
-{{ if .use_secrets -}}
-export HOMEBREW_GITHUB_API_TOKEN={{- onepasswordRead .secrets.homebrew_github_token }}
-{{ end }}
 
 # Set homebrew paths for GNU utilities
 _homebrewPaths=(

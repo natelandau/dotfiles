@@ -1,4 +1,0 @@
-
-{{ if and (.use_secrets) (.dev_computer) -}}
-export ANTHROPIC_API_KEY="{{ onepasswordRead .secrets.anthropic_shell_access_api_key }}"
-{{- end }}

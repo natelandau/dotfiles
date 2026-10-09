@@ -147,7 +147,8 @@
     "swift-lsp@claude-plugins-official": true,
     "obsidian@obsidian-skills": true,
     "sessionmemory@sessionmemory": true,
-    "marketing-skills@marketingskills": true
+    "marketing-skills@marketingskills": true,
+    "posthog@posthog": true
   },
   "extraKnownMarketplaces": {
     "natelandau-cc-plugin": {
@@ -173,6 +174,12 @@
       "source": {
         "source": "github",
         "repo": "coreyhaines31/marketingskills"
+      }
+    },
+    "posthog": {
+      "source": {
+        "source": "github",
+        "repo": "PostHog/ai-plugin"
       }
     }
   },
