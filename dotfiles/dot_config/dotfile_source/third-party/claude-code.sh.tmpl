@@ -2,6 +2,9 @@
 # Gradual rollout of memory usage is underway. Force it to be enabled. 2026-02-23
 export CLAUDE_CODE_DISABLE_AUTO_MEMORY=0
 
+# Increase imeout for session end hooks. 2026-10-07
+export CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000
+
 alias cc="claude"
 alias ccd="claude --dangerously-skip-permissions"
 alias cch="claude --chrome"
