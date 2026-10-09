@@ -1,0 +1,27 @@
+{{- if and (.use_secrets) (or (.personal_computer) (.dev_computer)) (not .is_synology) -}}
+#!/usr/bin/env bash
+
+{{ template "shared_script_utils.bash" . }}
+
+UV_PATH="$(_uvBinaryPath_)" || {
+    error "uv is not installed"
+    _safeExit_ 1
+}
+
+header "Storing Gitea package index credentials in uv"
+
+# Fed through stdin so the PAT never appears in the process list
+if printf '%s' '{{ onepasswordRead .secrets.gitea_pat }}' \
+    | "${UV_PATH}" auth login "{{ onepasswordRead .secrets.gitea_address }}" --username natelandau --password -; then
+    # uv writes its plaintext store world-readable
+    uv_credentials_dir="${XDG_DATA_HOME:-${HOME}/.local/share}/uv/credentials"
+    chmod 700 "${uv_credentials_dir}"
+    chmod 600 "${uv_credentials_dir}/credentials.toml"
+    success "Gitea credentials stored"
+else
+    error "Could not store Gitea credentials"
+    _safeExit_ 1
+fi
+
+_safeExit_
+{{- end }}

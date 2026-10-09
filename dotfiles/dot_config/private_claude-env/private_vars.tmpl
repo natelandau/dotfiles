@@ -1,0 +1,9 @@
+{{- if and (.use_secrets) (.dev_computer) -}}
+{{- /* Loaded only by the claude() wrapper in dotfile_source/third-party/claude-code.sh.
+       Keep it outside dotfile_source and without a .sh/.zsh/.bash suffix, or every
+       shell sources it at startup. */ -}}
+CF_AGENT_TROUBLESHOOTING_TOKEN='{{ onepasswordRead .secrets.cloudflare_agent_troubleshooting_token }}'
+{{ if lookPath "sessionmemory" -}}
+SESSIONMEMORY_ANTHROPIC_API_KEY='{{ onepasswordRead .secrets.sessionmemory_anthropic_api_key }}'
+{{ end -}}
+{{ end -}}

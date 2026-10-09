@@ -39,6 +39,7 @@ bin/osx-defaults.py
 
 # --- dotfile_source third-party integrations removed ---
 .config/dotfile_source/third-party/agent-safehouse.sh
+.config/dotfile_source/third-party/anthropic.sh
 .config/dotfile_source/third-party/jdfile.sh
 .config/dotfile_source/third-party/npm.sh
 .config/dotfile_source/third-party/usrbin.sh

@@ -9,19 +9,12 @@ if [[ -d "${HOME}/repos/sessionmemory-vault" ]]; then
     export NATELANDAU_TOOLKIT_EXEMPT_PATHS="${HOME}/repos/sessionmemory-vault"
 fi
 
-{{ if and (.use_secrets) (or (.personal_computer) (.homelab_member)) -}}
-export SABNZBD_API_KEY="{{- onepasswordRead .secrets.sabnzbd_api_key }}"
-export SABNZBD_URL="{{- onepasswordRead .secrets.sabnzbd_url }}"
-{{ end }}
-
 
 {{ if eq .chezmoi.os "linux"}}
 export APTUP_EXCLUDE_PACKAGES=containerd.io,docker-buildx-plugin,docker-ce-cli,docker-ce-rootless-extras,docker-ce,docker-compose-plugin
 {{ end }}
 
 {{ if and (.use_secrets) (.dev_computer) -}}
-
-export CF_AGENT_TROUBLESHOOTING_TOKEN="{{- onepasswordRead .secrets.cloudflare_agent_troubleshooting_token }}"
 
 # Configure gitleaks to use a custom config file
 if [[ -f ${HOME}/.local/share/git_stopwords/gitleaks.toml ]]; then
@@ -32,11 +25,5 @@ fi
 if [[ -f {{ .xdgConfigDir }}/secrets-sync/.password_file ]]; then
     export ANSIBLE_VAULT_PASSWORD_FILE={{ .xdgConfigDir }}/secrets-sync/.password_file
 fi
-
-# Authenticate github cli (gh) with a personal access token
-# Commented out b/c gh copilot CLI doesn't work with a personal access token
-# export GH_TOKEN="{{ onepasswordRead .secrets.github_personal_access_token }}"
-
-
 
 {{- end }}

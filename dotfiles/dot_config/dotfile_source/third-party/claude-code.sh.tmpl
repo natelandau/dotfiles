@@ -5,6 +5,23 @@ export CLAUDE_CODE_DISABLE_AUTO_MEMORY=0
 # Increase imeout for session end hooks. 2026-10-07
 export CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS=5000
 
+{{ $claudeVars := joinPath .xdgConfigDir "claude-env/vars" -}}
+# Agent-only secrets load per invocation so other shells and their children never
+# see them. The cc/ccd/cch aliases expand to `claude`, so they go through this too.
+claude() {
+    if [[ -r "{{ $claudeVars }}" ]]; then
+        (
+            set -a
+            # shellcheck disable=SC1091
+            . "{{ $claudeVars }}"
+            set +a
+            command claude "$@"
+        )
+    else
+        command claude "$@"
+    fi
+}
+
 alias cc="claude"
 alias ccd="claude --dangerously-skip-permissions"
 alias cch="claude --chrome"
