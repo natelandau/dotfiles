@@ -48,6 +48,7 @@ __pycache__/
 
 # Agents
 .claude/settings.local.json
+CLAUDE.local.md
 .agent/
 superpowers/
 .superpowers/

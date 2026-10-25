@@ -185,6 +185,10 @@
   },
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
+  "editorMode": "normal",
+  "autoCompactEnabled": true,
+  "idleCompaction": false,
+  "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
   "mcpServers": {
     "context7": {

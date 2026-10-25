@@ -20,5 +20,5 @@ min_exchanges = 5            # skip the sweep below this many real messages (use
 # short instruction never clears them. Below either floor the whole sweep is
 # skipped: no learning, no backlog item, no log.
 min_user_messages = 3         # skip the sweep below this many messages from you
-min_user_chars = 400          # skip the sweep below this many characters from you, in total
+min_user_chars = 200          # skip the sweep below this many characters from you, in total
 save_transcript = true        # save the sweep's own claude session (for API-usage auditing); false discards it

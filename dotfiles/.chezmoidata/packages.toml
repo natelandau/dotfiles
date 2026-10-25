@@ -41,7 +41,7 @@
     [packages.python.common]
         packages = ["git-gx", "halper", "pygments"]
     [packages.python.dev_computer]
-        packages = ["ansible-core", "cookiecutter"]
+        packages = ["ansible-core", "cookiecutter", "gate-cache", "sessionmemory"]
     [packages.python.homelab_member]
         packages = ["nomadctl"]
     [packages.python.personal_computer]
