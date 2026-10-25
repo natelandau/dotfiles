@@ -1,0 +1,76 @@
+# Global config for the natelandau-toolkit Claude Code plugin.
+# A project's .claude/natelandau-toolkit.toml overrides these keys per project,
+# except exempt_paths and trusted_remote_hosts, which are read from this file only.
+# Every key is listed with its accepted values and its default.
+
+# Which tier of hooks runs.
+# Values: "minimal" | "standard" | "strict". Default: "standard".
+#   minimal:  branch-protection, protect-secrets, protect-system
+#   standard: minimal + protect-remote, confirm-recursive-rm, commit-message,
+#             config-protection, use-uv
+#   strict:   same set as standard today
+profile = "standard"
+
+# Hook ids to turn off regardless of profile. Default: [].
+# Ids: branch-protection, protect-secrets, protect-system, protect-remote,
+#      confirm-recursive-rm, commit-message, config-protection, use-uv
+disabled_hooks = []
+
+# Directory trees that skip branch-protection's protected-branch rules and the
+# commit-message hook. Destructive git commands are still blocked inside them.
+# A leading ~ is expanded; relative paths, "/", and entries with ".." are ignored.
+# NATELANDAU_TOOLKIT_EXEMPT_PATHS (":"-separated) adds to this list. Default: [].
+exempt_paths = []
+
+# Hosts protect-remote lets through without a permission prompt: hostnames, ssh
+# config aliases, IPs, or globs such as "*.lan". An all-wildcard entry is ignored.
+# Default: [].
+trusted_remote_hosts = []
+
+[hooks.branch-protection]
+    # Branches guarded in addition to main and master, which are always
+    # protected. Names or globs such as "release/*"; an all-wildcard entry is
+    # ignored. A project config adds to this list and can never remove from it.
+    # Values: list of strings. Default: [].
+    protected_branches = []
+
+[hooks.commit-message]
+    # Run the subject rules on `gh pr create|edit|merge` titles too.
+    # Values: true | false. Default: true.
+    check_pr_titles = true
+    # Regexes checked against the full commit message and the PR body; a match
+    # blocks. Default: [].
+    forbidden_patterns = [
+        '(?im)^Claude-Session:',
+        '(?im)^Co-Authored-By:.*Claude',
+        'claude\.ai/code/session_',
+    ]
+    # Block a subject whose first word is not imperative ("added", "adds").
+    # Values: true | false. Default: false.
+    force_imperative = true
+    # Block a subject ending in ".", "!", or "?".
+    # Values: true | false. Default: true.
+    forbid_trailing_punctuation = true
+    # Block a subject starting with wip, [wip], draft, [draft], or (draft).
+    # Values: true | false. Default: true.
+    forbid_wip_subject = true
+    # "conventional" requires `<type>(<scope>): <subject>`; "none" skips the
+    # type, scope, and format checks and keeps the rest.
+    # Values: "conventional" | "none". Default: "conventional".
+    format = "conventional"
+    # Longest allowed body line. URLs and git trailers are exempt.
+    # Values: integer, 0 = no limit. Default: 0.
+    max_body_line_length = 70
+    # Longest allowed first line, including type and scope.
+    # Values: integer, 0 = no limit. Default: 100.
+    max_subject_length = 70
+    # Require a `(scope)` after the type.
+    # Values: true | false. Default: false.
+    require_scope = false
+    # "lower-first" blocks a subject whose first letter is uppercase.
+    # Values: "lower-first" | "any". Default: "lower-first".
+    subject_case = "lower-first"
+    # Allowed commit types.
+    # Default: ["build", "chore", "ci", "docs", "feat", "fix", "perf",
+    #           "refactor", "revert", "style", "test"].
+    types = ["build", "ci", "docs", "feat", "fix", "perf", "refactor", "style", "test"]

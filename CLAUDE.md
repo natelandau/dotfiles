@@ -68,10 +68,6 @@ Pre-commit is configured with `prek` (a pre-commit alternative). Hooks include:
 - typos (spell checking)
 - shellcheck (shell script linting, excludes zsh files)
 
-### Commit messages
-
-Use angular-style conventional commits: `<type>(<scope>): <subject>`.
-
 ### Data files
 
 Package lists, server configs, and other data live in `dotfiles/.chezmoidata/*.toml`. Edit these files to add/remove packages or server configurations.
