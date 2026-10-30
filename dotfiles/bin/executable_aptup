@@ -328,12 +328,16 @@ def run(
     pp.configure(verbosity=verbose)
     _guard_statements()
 
-    # Prompt before any spinner starts; a sudo password prompt can't share the line with one
+    # Prompt before any spinner starts; a sudo password prompt can't share the line with one.
+    # `sudo -v` prompts unless every matching sudoers rule is NOPASSWD, so try `sudo -n` first.
     try:
-        run_interactive(["sudo", "-v"])
-    except ShellCommandError as e:
-        pp.error("Could not obtain sudo privileges", details=[str(e)])
-        raise typer.Exit(code=1) from e
+        run_command(["sudo", "-n", "true"])
+    except ShellCommandFailedError:
+        try:
+            run_interactive(["sudo", "-v"])
+        except ShellCommandError as e:
+            pp.error("Could not obtain sudo privileges", details=[str(e)])
+            raise typer.Exit(code=1) from e
 
     update_package_cache(stream=verbose > 0)
     pkgs, excluded_pkgs, _ = fetch_upgradable_packages(stream=verbose > 0)
