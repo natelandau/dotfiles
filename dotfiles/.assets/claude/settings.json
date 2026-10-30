@@ -49,8 +49,8 @@
       "Bash(uv add:*)",
       "Bash(uv sync:*)",
       "Bash(wc:*)",
-      "mcp__plugin_context7_context7__resolve-library-id",
-      "mcp__plugin_context7_context7__query-docs",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs",
       "Edit(//tmp/**)",
       "Read(//tmp/**)",
       "Read(**/sessionmemory-vault/**)",
@@ -132,23 +132,21 @@
     "padding": 0
   },
   "enabledPlugins": {
-    "context7@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
-    "hookify@claude-plugins-official": true,
+    "hookify@claude-plugins-official": false,
     "claude-md-management@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
-    "feature-dev@claude-plugins-official": true,
     "commit-commands@claude-plugins-official": true,
-    "skill-creator@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": false,
     "superpowers@superpowers-marketplace": true,
     "natelandau-toolkit@natelandau-cc-plugin": true,
     "swift-lsp@claude-plugins-official": true,
-    "obsidian@obsidian-skills": true,
+    "obsidian@obsidian-skills": false,
     "sessionmemory@sessionmemory": true,
-    "marketing-skills@marketingskills": true,
-    "posthog@posthog": true
+    "product-management@synced": false,
+    "natelandau-git@natelandau-cc-plugin": true
   },
   "extraKnownMarketplaces": {
     "natelandau-cc-plugin": {
@@ -181,6 +179,30 @@
         "source": "github",
         "repo": "PostHog/ai-plugin"
       }
+    },
+    "swiftui-agent-skill": {
+      "source": {
+        "source": "github",
+        "repo": "twostraws/SwiftUI-Agent-Skill"
+      }
+    },
+    "impeccable": {
+      "source": {
+        "source": "github",
+        "repo": "pbakaus/impeccable"
+      }
+    },
+    "swift-testing-agent-skill": {
+      "source": {
+        "source": "github",
+        "repo": "twostraws/Swift-Testing-Agent-Skill"
+      }
+    },
+    "swift-architecture-skill": {
+      "source": {
+        "source": "github",
+        "repo": "efremidze/swift-architecture-skill"
+      }
     }
   },
   "tui": "fullscreen",
@@ -189,14 +211,5 @@
   "autoCompactEnabled": true,
   "idleCompaction": false,
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": true,
-  "mcpServers": {
-    "context7": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp@latest"
-      ]
-    }
-  }
+  "agentPushNotifEnabled": true
 }

@@ -5,8 +5,8 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#     "httpx",
-#     "nclutils>=3.0.0,<4.0.0",
+#     "httpx2",
+#     "nclutils>=4.0.0,<5.0.0",
 #     "rich",
 #     "typer",
 # ]
@@ -20,7 +20,7 @@ from pathlib import Path
 from time import sleep
 from typing import Annotated, Any, Final
 
-import httpx
+import httpx2
 import typer
 from nclutils import pp
 from rich.json import JSON
@@ -160,11 +160,11 @@ class SABAPI:
         params["output"] = "json"
 
         try:
-            response = httpx.get(cls.API_URL, params=params, timeout=10)
-        except httpx.ConnectTimeout as e:
+            response = httpx2.get(cls.API_URL, params=params, timeout=10)
+        except httpx2.ConnectTimeout as e:
             pp.error(f"Request to {cls.API_URL} timed out\n{e}")
             raise typer.Exit(code=1) from e
-        except httpx.HTTPError as e:
+        except httpx2.HTTPError as e:
             pp.error(f"API Response:\n{e}")
             raise typer.Exit(code=1) from e
 

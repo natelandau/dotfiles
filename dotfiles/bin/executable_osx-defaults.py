@@ -5,7 +5,7 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#   "nclutils",
+#     "nclutils>=4.0.0,<5.0.0",
 # ]
 # ///
 
