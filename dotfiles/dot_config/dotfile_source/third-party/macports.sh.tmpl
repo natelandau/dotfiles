@@ -1,0 +1,31 @@
+{{- if eq .chezmoi.os "darwin" }}
+if [[ -x /opt/local/bin/port ]]; then
+    # Move (not just add) each dir to the front so MacPorts wins over /usr/local/bin,
+    # which /etc/paths and Homebrew's shellenv have already placed in PATH.
+    _macportsPrepend() {
+        [[ -d $1 ]] || return 0
+        PATH=":${PATH}:"
+        PATH="${PATH//:$1:/:}"
+        PATH="${PATH#:}"
+        PATH="${1}:${PATH%:}"
+    }
+
+    # Last one in ends up first: GNU tools shadow the BSD ones, and ~/.local/bin
+    # (uv tools and Pythons) stays ahead of everything.
+    for _path in \
+        "/opt/local/sbin" \
+        "/opt/local/bin" \
+        "/opt/local/libexec/gnubin" \
+        "${HOME}/.local/bin"; do
+        _macportsPrepend "${_path}"
+    done
+
+    unset -f _macportsPrepend
+    unset _path
+
+    # shellcheck disable=SC1091
+    if [[ -n ${BASH} ]] && [[ -f /opt/local/etc/profile.d/bash_completion.sh ]]; then
+        source /opt/local/etc/profile.d/bash_completion.sh
+    fi
+fi
+{{- end }}
