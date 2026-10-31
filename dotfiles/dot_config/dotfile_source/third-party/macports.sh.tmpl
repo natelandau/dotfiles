@@ -27,5 +27,9 @@ if [[ -x /opt/local/bin/port ]]; then
     if [[ -n ${BASH} ]] && [[ -f /opt/local/etc/profile.d/bash_completion.sh ]]; then
         source /opt/local/etc/profile.d/bash_completion.sh
     fi
+
+    portsup() {
+        sudo port selfupdate && sudo port upgrade outdated && sudo port reclaim
+    }
 fi
 {{- end }}
