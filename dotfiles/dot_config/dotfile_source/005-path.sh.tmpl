@@ -7,6 +7,8 @@ _myPaths=(
     "/home/linuxbrew/.linuxbrew/sbin"
     "{{ .directories.user_bin_dir }}"
     "{{ .xdgDataDir }}/cargo/bin"
+    # atuin's standalone installer, for hosts without a packaged atuin
+    "${HOME}/.atuin/bin"
     "/usr/bin/snap"
     # mise shims, so mise-managed tools are on PATH before third-party init files
     # load (e.g. atuin.sh, which runs before mise.sh activates mise interactively)
