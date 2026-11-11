@@ -351,7 +351,7 @@
     "$home/repos",
     "$home/.local/share"
   ],
-  "projectManager.git.maxDepthRecursion": 1,
+  "projectManager.git.maxDepthRecursion": 2,
   "projectManager.groupList": true,
   "projectManager.sortList": "Name",
   "python.analysis.autoFormatStrings": true,
@@ -362,7 +362,11 @@
   "python.analysis.extraPaths": [],
   "python.analysis.fixAll": [],
   "python.autoComplete.extraPaths": [],
-  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python3",
+  // This setting was broken and always reset to homebrew's python instead of the manually added
+  // "${workspaceFolder}/.venv/bin/python". I replaced this with
+  // "python-envs.defaultEnvManager": "ms-python.python:venv", which works
+  // "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python-envs.defaultEnvManager": "ms-python.python:venv",
   "python.terminal.activateEnvInCurrentTerminal": true,
   "python.terminal.activateEnvironment": false,
   "python.testing.cwd": "",
@@ -381,7 +385,6 @@
     "--preview"
   ],
   "ruff.importStrategy": "fromEnvironment",
-  "ruff.nativeServer": true,
   "search.exclude": {
     "**/.git": true,
     "**/.venv": true,
@@ -421,7 +424,7 @@
   "sortJSON.orderUnderride": [],
   "sqlite.setupDatabase": {},
   "terminal.external.osxExec": "Ghostty.app",
-  "terminal.integrated.enableMultiLinePasteWarning": false,
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
   "terminal.integrated.enablePersistentSessions": false,
   "terminal.integrated.fontFamily": "'Maple Mono NF', 'MesloLGMDZ Nerd Font', monospace",
   "terminal.integrated.fontSize": 14,
@@ -549,7 +552,6 @@
   "workbench.editor.pinnedTabsOnSeparateRow": true,
   "workbench.editorAssociations": {
     "*.csv": "gc-excelviewer-csv-editor",
-    "*.ipynb": "jupyter.notebook.ipynb"
   },
   "workbench.fontAliasing": "auto",
   "workbench.iconTheme": "material-icon-theme",
@@ -589,5 +591,14 @@
   ],
   "yaml.format.bracketSpacing": true,
   "yaml.format.printWidth": 200,
-  "workbench.colorTheme": "Nord"
+  "workbench.colorTheme": "Nord",
+  "yaml.disableSchemaDetection": [
+    "**/.github/workflows/*.yml",
+    "**/.github/workflows/*.yaml",
+    "**/.gitea/workflows/*.yml",
+    "**/.gitea/workflows/*.yaml",
+    "**/.forgejo/workflows/*.yml",
+    "**/.forgejo/workflows/*.yaml"
+  ],
+  "python.defaultInterpreterPath": "/opt/homebrew/bin/python3"
 }
