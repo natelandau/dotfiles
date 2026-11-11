@@ -10726,12 +10726,6 @@ matches:
   - trigger: "i've"
     replace: "I've"
     word: true
-  - trigger: "macos"
-    replace: "MacOS"
-    word: true
-  - trigger: "osx"
-    replace: "MacOS"
-    word: true
   - trigger: "mbps"
     replace: "Mbps"
     word: true

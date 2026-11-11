@@ -1,4 +1,4 @@
-{{- if eq .chezmoi.os "darwin" }}
+{{- if and (eq .chezmoi.os "darwin") (lookPath "port") }}
 if [[ -x /opt/local/bin/port ]]; then
     # Move (not just add) each dir to the front so MacPorts wins over /usr/local/bin,
     # which /etc/paths and Homebrew's shellenv have already placed in PATH.
