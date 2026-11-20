@@ -1,0 +1,27 @@
+{{- if (lookPath "purger") -}}
+
+# purger configuration. Every setting can also be set with a PURGER_*
+# environment variable, which wins over this file.
+
+# Plugins to leave out when no plugin is named on the command line.
+skip = []
+
+[plugins.projects]
+    # Folders that hold your projects.
+    paths = ["~/repos"]
+
+    # How many folder levels below each path to search.
+    max_depth = 6
+
+    # Leave a project alone when a file in it changed this many days ago or
+    # fewer. 0 turns the check off.
+    recent_days = 7
+
+    # Folder names, patterns, or absolute paths (starting with / or ~/) that
+    # purger never cleans. Example: [".venv", "~/repos/archive"]
+    exclude = []
+
+    # Extra folder names or patterns to offer for removal, such as ".cache".
+    include = []
+
+{{- end }}
