@@ -5,18 +5,24 @@ description: Global Git workflow rules. Use this when working with git and git w
 
 # Git global rules
 
+- Never push or merge unless explicitly asked.
+- If pre-commit hooks modify files during commit, re-stage the modified files and retry the commit.
+
 ## Git commit messages
 
-A commit subject, or a PR title that becomes one, lands in the trunk history and the release changelog. Write every commit and PR title to these rules.
+A commit subject, or a PR title that becomes one, lands in the trunk history and the release
+changelog. Write every commit and PR title to these rules.
 
 ### What a commit holds
 
-- Do not dress incidental churn (lint fixes, test tweaks, renames) as a feature. Fold it into the commit it supports unless the churn is the point.
+- Fold incidental churn (lint fixes, test tweaks, renames) into the commit it supports. Give it
+  its own commit only when the churn is the point.
 
 ### Format
 
-- The first line is `<type>(<scope>): <subject>` and is never more than 70 characters. Stop well before 70 when you can.
-- The type must be one of the following. No exceptions, and there is no `chore`:
+- The first line is `<type>(<scope>): <subject>` and is never more than 70 characters. Stop
+  well before 70 when you can.
+- The type must be one of the following. There is no `chore`:
     - **build**: Changes that affect the build system or external dependencies
     - **ci**: Changes to CI configuration files and scripts
     - **docs**: Documentation only changes
@@ -24,12 +30,15 @@ A commit subject, or a PR title that becomes one, lands in the trunk history and
     - **fix**: A bug fix
     - **perf**: A code change that improves performance
     - **refactor**: A code change that neither fixes a bug nor adds a feature
-    - **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+    - **style**: Changes that do not affect the meaning of the code (white-space, formatting,
+      missing semi-colons, etc)
     - **test**: Adding missing tests or correcting existing tests
 - The scope is the name of the package, feature, codebase, or area that is affected.
 - Use the imperative, present tense: "change", not "changed" or "changes".
 - Don't capitalize the first letter of the subject, and don't end it with a period.
-- A breaking change needs both markers: `!` before the colon in the subject, and a `BREAKING CHANGE: <impact and migration>` paragraph in the body. One marker without the other is malformed.
+- A breaking change needs both markers: `!` before the colon in the subject, and a
+  `BREAKING CHANGE: <impact and migration>` paragraph in the body. One marker without the
+  other is malformed.
 
 ### Writing the subject
 
@@ -55,9 +64,9 @@ A commit subject, or a PR title that becomes one, lands in the trunk history and
 - Pair "improve", "update", or "enhance" with the specific thing that is better, or pick
   a stronger verb.
 - Use as few words as the meaning needs. A short, plain subject beats a long, complete one.
-- No process or provenance references: "as discussed", "per review", "addresses feedback",
-  mentions of reviews, agents, tools, conversations, or sessions, or a bare ticket or PR
-  number as the payload.
+- No process or provenance references in commit messages, PR titles, or PR bodies: "as
+  discussed", "per review", "addresses feedback", mentions of reviews, agents, tools,
+  conversations, or sessions, or a bare ticket or PR number as the payload.
 - Test: would a reader scanning the log know what kind of change landed, and where?
 
 | Avoid (results or mechanics)                                           | Prefer (summary of the work)                                     |
@@ -108,9 +117,6 @@ byte for byte, so they follow the commit rules above.
 - Every claim in the description must be true of the branch and visible in the diff. No
   future work, open questions, or speculation.
 - If the repo ships a PR template, fill its structure instead of this shape.
-- No process or provenance references in PR bodies: "as discussed", "per review", "addresses
-  feedback", mentions of reviews, agents, tools, conversations, or sessions, or a bare ticket
-  or PR number as the payload.
 
 ## Attribution
 
@@ -121,25 +127,20 @@ and private; commits and PRs are public.
 
 ## Git Worktree Rules
 
-- **Always `cd` into the worktree directory** before running any non-git commands (tests,
-  builds, linters, etc.).
-- **`cd` into the worktree once, in its own Bash call.** The working directory persists
-  between Bash calls, so later commands must not re-chain `cd`. A compound command that
-  contains `cd` followed by a file read with a relative path (`cd <worktree> && grep ... file`,
-  or the same on separate lines) cannot be validated against the configured `Read()` deny
-  rules and forces a manual approval prompt.
-- **Read files in a worktree with the Read and Grep tools, or with absolute paths in Bash.**
-  Absolute paths validate statically; relative paths after a `cd` do not.
-- Before creating a project-local worktree directory, verify it is git-ignored with
-  `git check-ignore -q .worktrees`. If not ignored, add it to `.gitignore` first.
+- `cd` into the worktree before running any non-git command (tests, builds, linters).
+- `cd` once, in its own Bash call. The working directory persists, so later calls must not
+  re-chain `cd`. A compound command with `cd` followed by a relative-path file read
+  (`cd <worktree> && grep ... file`) cannot be checked against the `Read()` deny rules and
+  forces a manual approval prompt.
+- Read worktree files with the Read and Grep tools, or with absolute paths in Bash.
+- Before creating a project-local worktree directory, check it is git-ignored with
+  `git check-ignore -q .worktrees`. If not, add it to `.gitignore` first.
 
 ### Python projects in worktrees
 
-The parent project's `.venv` can leak into worktrees nested under `{project}/.worktrees/`,
-causing tool resolution failures and broken pre-commit hooks. After `cd`-ing into a new
-worktree for a Python/uv project, **always run `uv sync`** to create a worktree-local `.venv`
-before running any tools, tests, or commits. This ensures pre-commit hooks (ruff, pytest, etc.)
-resolve to the correct environment.
+After `cd` into a new worktree of a uv project, run `uv sync` before any tool, test, or commit.
+Without a worktree-local `.venv`, the parent checkout's `.venv` leaks in and breaks tool
+resolution and pre-commit hooks.
 
 ```bash
 git worktree add .worktrees/<branch-name> -b <branch-name>

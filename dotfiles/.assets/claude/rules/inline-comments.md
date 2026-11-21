@@ -1,60 +1,45 @@
 ---
 name: inline-comments-standards
-description: When and how to write inline code comments in any language
+description: When and how to write inline comments and doc comments in any language
 ---
+
+## Doc comments
+
+Applies to docstrings, JSDoc, Swift `///`, and equivalents.
+
+- Imperative voice only. Never "This function ...".
+- Explain why a developer would call it, not only what it does.
+- Omit the returns section when nothing is returned.
+- Document only errors the code raises or throws explicitly.
 
 ## How to write inline comments
 
-- Only comment to explain _why_, not _what_ - assume the reader knows the language.
-- A comment that captures intent, a gotcha, a trade-off, a workaround, or the name of
-  a non-obvious algorithm ("Fisher-Yates shuffle"), something the code cannot say for
-  itself, earns its place.
-- Explaining _why_ is not enough on its own: if the reason is already obvious from the codebase
-  or general knowledge, don't include it
-- Comments should be short and to the point tighten to the shortest phrasing that still carries
-  the reason
-- Never change or remove `noqa` or `type: ignore` comments unless the user explicitly
-  asks you to do so or they are incorrect
-- Comments are forever, written for a reader years from now who knows nothing
-  about the change's history. That reader never saw the conversation that produced the page,
-  and never saw the change that motivated it. That reader is the only one who matters, because
-  every other reader is temporary.Never reference the incident, bug, outage, conversation, or
-  review that motivated the code ("seen when X took down Y", "fixes the issue where...", "previously
-  this was..."). State the present-tense invariant, risk, or trade-off instead; the history belongs
-  in the commit message.
-- This gate fails when the moment of writing leaks into the text. Documentation
-  records the behavior that holds now. It is not a record of a change, and it is not
-  a report to whoever asked for it.
-- The test: if a comment only makes sense to someone who watched the change
-  happen, it's commit-message material, not a comment.
-- Keep inline comments to a minimum. Just because we can explain "why" we are doing something,
-  doesn't mean we should. If it's self-evident, don't comment. If it doesn't add meaningful
-  value to a future reader, don't comment.
+- Comment only what the code cannot say for itself: intent, a gotcha, a trade-off, a workaround,
+  or the name of a non-obvious algorithm. Never restate what the code does.
+- Skip the comment when the reason is obvious from the code, the codebase, or general knowledge.
+- Use the shortest phrasing that still carries the reason.
+- Never change or remove `noqa` or `type: ignore` comments unless the user asks or they are
+  incorrect.
+- Write for a reader years from now who never saw the change or the conversation behind it. State
+  the present-tense invariant, risk, or trade-off. Never reference the incident, bug, review,
+  conversation, or earlier version that motivated the code. Test: if the comment only makes sense
+  to someone who watched the change happen, it belongs in the commit message.
 
-### Examples of good inline comment usage
-
-Explain WHY certain steps are made:
+### Examples (illustrations, not templates)
 
 ```python
-# Process items in reverse to ensure the most recent data is prioritized over older data to match user expectations
-for items in reversed(items):
-    item.price = 20  # Set the price to 20 to match the competitor's pricing strategy
-```
+# Newest entries win on key collisions, matching what users see in the UI
+for entry in reversed(entries):
+    merged[entry.key] = entry
 
-Name non-obvious algorithms and clarify tricky expressions:
-
-```python
-# This loop uses the Fisher-Yates algorithm to shuffle the array
+# Fisher-Yates shuffle
 for i in range(len(arr) - 1, 0, -1):
     j = random.randint(0, i)
     arr[i], arr[j] = arr[j], arr[i]
 
 if i & (i - 1) == 0:  # True if i is 0 or a power of 2
-```
+    ...
 
-Avoid referencing specific incidents or historical context
-
-```python
 # Bad:  restart in place (seen when an OOM-killed backup took the service down)
 # Good: restart in place so a crashed sidecar can't fail the whole alloc
 ```

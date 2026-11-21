@@ -1,84 +1,49 @@
 # CLAUDE.md
 
-## Project Overview
-
-Personal dotfiles managed with [Chezmoi](https://www.chezmoi.io/). Supports macOS, Debian, and Ubuntu. Includes shell configs (ZSH/Bash), CLI tool configurations, package management (Homebrew, APT, uv), secrets management via 1Password CLI, SSH config, macOS defaults, and custom app configs.
+Personal dotfiles managed with chezmoi for macOS, Debian, Ubuntu, and Synology DSM. Source root:
+`dotfiles/` (set by `.chezmoiroot`).
 
 ## Repository Structure
 
-- `dotfiles/` - Chezmoi-managed dotfiles (uses chezmoi naming conventions like `dot_`, `.tmpl`, `symlink_`)
-- `dotfiles/.chezmoidata/` - Data files for chezmoi templates (packages, constants, servers, etc.)
+- `dotfiles/.chezmoidata/` - Data files for chezmoi templates (packages, constants, tool configs,
+  1Password references)
 - `dotfiles/.chezmoitemplates/` - Reusable chezmoi templates
-- `dotfiles/.assets/` - Static assets (claude config, Terminal themes)
+- `dotfiles/.chezmoiscripts/` - `run_before`/`run_after` install scripts, run in numeric order
+- `dotfiles/.assets/` - Static assets (Claude config, Terminal themes)
 - `dotfiles/dot_config/dotfile_source/` - Shell source files loaded by `.bashrc`/`.zshrc`
-- `dotfiles/dot_config/dotfile_source/third-party/` - Shell integrations for third-party tools
-- `duties.py` - Project task runner (using `duty` library)
-- `.github/workflows/automated_tests.yml` - CI tests (lint + `chezmoi apply` on Ubuntu/macOS), sharing logic via composite actions in `.github/actions/`
+- `duties.py` - Project task runner (`duty`)
+- `.github/workflows/automated_tests.yml` - CI: lint + `chezmoi apply` on Ubuntu and macOS, with
+  shared steps in `.github/actions/`
 
 ## Commands
 
 ```bash
-# Lint
-uv run duty lint              # Run all linting (typos + pre-commit hooks)
-uv run duty typos             # Check for typos
-uv run duty clean             # Remove .DS_Store files
-
-# Dependencies
-uv sync                       # Install/sync Python dependencies
-uv run duty update            # Update uv lock, sync, and pre-commit hooks
-
-# Chezmoi
-chezmoi apply                 # Apply dotfiles to the system
-chezmoi diff                  # Preview changes before applying
+uv run duty lint      # typos + pre-commit hooks
+uv sync               # install Python dependencies
+uv run duty update    # upgrade uv lock, sync, and pre-commit hooks
+chezmoi diff          # preview changes; run chezmoi apply only when the user asks
 ```
 
-Running `chezmoi apply` two or three times to get a clean result is expected and fine.
-Some `run_before`/`run_after` scripts install tooling (e.g. mise, then mise-managed
-binaries) that later configs or scripts depend on, so a first pass installs the tool and
-a second pass picks up the config that needs it.
+Running `chezmoi apply` 2-3 times is expected: early scripts install tools (mise, then
+mise-managed binaries) that later configs need.
 
 ## Conventions
 
-### Chezmoi file naming
-
-Files in `dotfiles/` use chezmoi naming conventions:
-
-- `dot_` prefix = `.` in target (e.g., `dot_zshrc` -> `.zshrc`)
-- `.tmpl` suffix = Go template file processed by chezmoi
-- `symlink_` prefix = symlink in target
-- `executable_` prefix = file gets executable permission
-
-### Shell source files
-
-Files in `dotfiles/dot_config/dotfile_source/` follow a numbered naming convention for load order:
-
-- `000-` through `090-` for core shell config
-- `third-party/` subdirectory for tool-specific integrations
-- `.sh` files are sourced by both bash and zsh
-- `.bash` / `.zsh` files are shell-specific
-
-### Pre-commit hooks
-
-Pre-commit is configured with `prek` (a pre-commit alternative). Hooks include:
-
-- commitizen (commit message format)
-- standard pre-commit checks (large files, merge conflicts, trailing whitespace, etc.)
-- gitleaks (secret detection)
-- committed (commit message linting)
-- typos (spell checking)
-- shellcheck (shell script linting, excludes zsh files)
-
-### Data files
-
-Package lists, server configs, and other data live in `dotfiles/.chezmoidata/*.toml`. Edit these files to add/remove packages or server configurations.
+- Chezmoi attribute prefixes must follow chezmoi's documented order (`modify_private_`, not
+  `private_modify_`).
+- Shell source files: load order is the numeric prefix (`000-` to `090-`). `.sh` loads in bash and
+  zsh; `.bash`/`.zsh` load in one shell. `third-party/` holds tool integrations.
+- Pre-commit runs through `prek`. Hooks lint commit messages (commitizen, committed) and run
+  shellcheck on everything except zsh files.
+- Add or remove packages in `dotfiles/.chezmoidata/packages.toml`.
 
 ## Claude Code configuration
 
-User-scoped Claude Code configuration (`~/.claude/`) is managed from this repo via a two-directory split:
+User-scoped Claude Code configuration (`~/.claude/`) is managed from this repo:
 
-- `dotfiles/.assets/claude/` holds the **actual files**: `settings.json`, `CLAUDE.md`, `sessionmemory.toml`, and the `rules/` and `skills/` directories.
-- `dotfiles/dot_claude/` holds chezmoi `symlink_*.tmpl` files (one per asset), which chezmoi materializes as **symlinks** at `~/.claude/<name>` pointing into `dotfiles/.assets/claude/<name>`.
-
-After `chezmoi apply`, `~/.claude/settings.json`, `~/.claude/rules/`, etc. are symlinks back into `.assets/claude/`. Edits to files under `dotfiles/.assets/claude/` take effect in Claude Code immediately, no re-apply needed (the symlinks already point there).
-
-When adding a new file or directory under `dotfiles/.assets/claude/`, also add a matching `symlink_<name>.tmpl` under `dotfiles/dot_claude/` so chezmoi creates the symlink on apply.
+- `dotfiles/.assets/claude/` holds the real files. `dotfiles/dot_claude/` holds one
+  `symlink_<name>.tmpl` per entry, which chezmoi turns into `~/.claude/<name>` ->
+  `.assets/claude/<name>`.
+- Edits under `.assets/claude/` take effect immediately; no apply needed.
+- A new file or folder under `.assets/claude/` needs a matching `symlink_<name>.tmpl` in
+  `dot_claude/`.
