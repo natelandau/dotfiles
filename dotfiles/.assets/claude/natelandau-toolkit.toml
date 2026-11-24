@@ -1,6 +1,7 @@
 # Global config for the natelandau-toolkit Claude Code plugin.
 # A project's .claude/natelandau-toolkit.toml overrides these keys per project,
-# except exempt_paths and trusted_remote_hosts, which are read from this file only.
+# except exempt_paths, trusted_remote_hosts, and heredoc_data_commands, which are
+# read from this file only.
 # Every key is listed with its accepted values and its default.
 
 # Which tier of hooks runs.
@@ -14,7 +15,7 @@ profile = "standard"
 # Hook ids to turn off regardless of profile. Default: [].
 # Ids: branch-protection, protect-secrets, protect-system, protect-remote,
 #      confirm-recursive-rm, commit-message, config-protection, use-uv
-disabled_hooks = []
+disabled_hooks = ["config-protection"]
 
 # Directory trees that skip branch-protection's protected-branch rules and the
 # commit-message hook. Destructive git commands are still blocked inside them.
@@ -26,6 +27,12 @@ exempt_paths = []
 # config aliases, IPs, or globs such as "*.lan". An all-wildcard entry is ignored.
 # Default: [].
 trusted_remote_hosts = []
+
+# Commands whose heredoc text branch-protection reads as data, not as shell
+# commands. A bare name matches the command typed without a path; an absolute
+# path matches that exact path. A shell, or a command that runs its input as
+# shell (sudo, xargs, ssh), is ignored with a warning. Default: [].
+heredoc_data_commands = ["sessionmemory"]
 
 [hooks.branch-protection]
     # Branches guarded in addition to main and master, which are always
@@ -60,10 +67,10 @@ trusted_remote_hosts = []
     format = "conventional"
     # Longest allowed body line. URLs and git trailers are exempt.
     # Values: integer, 0 = no limit. Default: 0.
-    max_body_line_length = 70
+    max_body_line_length = 60
     # Longest allowed first line, including type and scope.
     # Values: integer, 0 = no limit. Default: 100.
-    max_subject_length = 70
+    max_subject_length = 60
     # Require a `(scope)` after the type.
     # Values: true | false. Default: false.
     require_scope = false

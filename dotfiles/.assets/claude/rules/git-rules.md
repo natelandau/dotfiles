@@ -20,8 +20,8 @@ changelog. Write every commit and PR title to these rules.
 
 ### Format
 
-- The first line is `<type>(<scope>): <subject>` and is never more than 70 characters. Stop
-  well before 70 when you can.
+- The first line is `<type>(<scope>): <subject>` and is never more than 60 characters. Stop
+  well before 60 when you can.
 - The type must be one of the following. There is no `chore`:
     - **build**: Changes that affect the build system or external dependencies
     - **ci**: Changes to CI configuration files and scripts
@@ -95,7 +95,7 @@ byte for byte, so they follow the commit rules above.
   the commit subjects.
 - **Lead block:** everything above the first markdown heading. It becomes the squash commit
   body. Write one to three sentences that say what the change is and what it does, wrapped at
-  72 characters (or the project's preferred line length), with a blank line between paragraphs.
+  60 characters (or the project's preferred line length), with a blank line between paragraphs.
   No headings, checklists, or bullet lists.
     - Name the feature, command, flag, or behavior, and say what it does. A description of
       the state the branch leaves behind does not name the change.

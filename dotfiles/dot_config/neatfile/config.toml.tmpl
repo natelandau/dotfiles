@@ -1,7 +1,36 @@
+{{- if (lookPath "neatfile") -}}
+
+# neatfile configuration
+# Global settings apply to every run. A [projects.NAME] section below can
+# override any of them for that project.
+# Settings written as comments show the default value neatfile uses.
+
+# Which part comes first in an ambiguous all-number date, such as 03-04-12
+# or 120524. Options: "month", "day", "year".
+# date_first = "month"
+
+# Format of the date that neatfile adds to each filename, using Python
+# strftime codes. An empty string adds no date and removes dates from names.
+# A date that names only a month, week, quarter, half year, or year keeps a
+# short form, such as 2025-03 or 2024-Q3, instead of this format.
 date_format = "%Y-%m-%d"
+
+# Skip dotfiles (names that start with a period) when cleaning a directory.
+# true or false
 ignore_dotfiles = true
+
+# Skip files whose names match this regular expression. An empty string
+# skips nothing. Keep the single quotes so backslashes stay literal.
 ignore_file_regex = ''
+
+# File names to skip, such as recurring files that should keep their names.
 ignored_files = []
+
+# Where the date goes in the filename. Options: "before", "after".
+# insert_location = "before"
+
+# Words whose capitalization neatfile keeps exactly as written here,
+# such as acronyms and proper nouns. neatfile never removes these words.
 match_case_list = [
     "B2B",
     "B2C",
@@ -80,19 +109,72 @@ match_case_list = [
     "ZiffDavis",
     "theSkimm",
 ]
+
+# What happens to a file that already has the new name: neatfile replaces
+# it either way. true replaces it with no backup. false backs it up first.
+# true or false
 overwrite_existing = false
+
+# Separator between words in the new name.
+# Options: "ignore", "underscore", "space", "dash".
+# "ignore" keeps the separator the original name uses.
 separator = "space"
+
+# Read runs of 4 to 7 digits with no separators, such as 120524, as dates.
+# date_first decides their order. Runs of 8 digits, such as 20240512, are
+# always read as dates. true or false
+short_digit_dates = true
+
+# Split camelCase words into separate words, so "myFile" becomes "my File".
+# true or false
 split_words = true
+
+# Extra words to remove from filenames, added to the built-in filler words.
 stopwords = []
+
+# Remove filler words such as "the", "of", and "and" from filenames.
+# true or false
 strip_stopwords = true
+
+# Case of the new name. Options: "ignore", "lower", "upper", "title", "sentence".
 transform_case = "title"
 
+# Time zone for dates read from filenames and file creation times, as an
+# IANA name. Without it, neatfile uses the computer's local time zone.
+# tz = "America/New_York"
+
+# Number of recent runs that `neatfile undo` can reverse. Each run that
+# renames or moves files counts as one. 0 turns undo off.
+# Only this top level can set it, not a project section.
+# undo_history_runs = 50
+
+# Extra terms that `sort` and `process` use to match files to folders.
+# A project section can set its own list. --term flags replace this list.
+# user_terms = []
+
+# Projects: folder trees that `sort` and `process` file into.
+# Select one with --project=NAME. Each section can also override any global
+# setting above. A project's stopwords, ignored_files, and match_case_list
+# are added to the global lists; every other key replaces the global value.
 [projects]
+    # Johnny Decimal tree. neatfile always indexes its areas, categories,
+    # and subcategories, so depth does not apply.
     [projects.personal]
+        # The project's root directory.
         path = "{{ .chezmoi.homeDir }}/personal-docs"
+        # Project type. Options: "jd" (Johnny Decimal), "folder".
         type = "jd"
 
+    # Plain folder tree.
     [projects.work]
+        # The project's root directory.
         path      = "{{ .chezmoi.homeDir }}/work-docs/theSkimm"
+        # Extra words to remove from filenames in this project.
         stopwords = ["pptx"]
+        # Project type. Options: "jd" (Johnny Decimal), "folder".
         type      = "folder"
+        # Folder levels below path to index. 1 indexes only the root's
+        # subfolders. Must be 1 or more.
+        # depth = 3
+
+{{- end }}
