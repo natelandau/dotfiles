@@ -1,0 +1,93 @@
+# vid-cleaner user configuration
+#
+# Settings here override the built-in defaults. A commented-out setting uses its default,
+# shown as the commented value. Each setting can also be set for one run with a CLI flag or
+# a VIDCLEANER_<KEY> environment variable (for example VIDCLEANER_TMDB_API_KEY). The order
+# of precedence is: CLI flag, then environment variable, then this file.
+
+# ---------------------------------------------------------------------------------------
+# Audio
+# ---------------------------------------------------------------------------------------
+
+# Languages to keep, as a list of ISO 639-1 codes. Audio tracks in these languages are kept,
+# plus the original language of the video (see drop_original_audio). Audio tracks with no
+# language tag are always kept. CLI: --langs=en,fr
+# langs_to_keep = ["en"]
+
+# Drop the original-language audio when that language is not in langs_to_keep. For example,
+# with langs_to_keep = ["en"], a French film keeps only its English dub.
+# CLI: --drop-original / --no-drop-original
+# drop_original_audio = false
+
+# Keep audio and subtitle tracks tagged as commentary. When false, every commentary track is
+# removed. CLI: --keep-commentary / --no-keep-commentary
+# keep_commentary = false
+
+# Add a stereo track when the file has none, downmixed from the surround track. With --force,
+# an existing stereo track in the surround track's language is replaced.
+# CLI: --downmix / --no-downmix
+# downmix_stereo = false
+
+# ---------------------------------------------------------------------------------------
+# Subtitles
+#
+# By default, subtitles in langs_to_keep are kept only when the original audio language is
+# not in langs_to_keep (for example, English subtitles on a foreign film). Subtitles with no
+# language tag are always removed unless keep_all_subtitles is true.
+# ---------------------------------------------------------------------------------------
+
+# Keep every subtitle track, in every language. Overrides the other subtitle settings.
+# CLI: --keep-subs / --no-keep-subs
+# keep_all_subtitles = false
+
+# Always keep subtitles in langs_to_keep, even when the original audio is already in one of
+# those languages. CLI: --keep-local-subs / --no-keep-local-subs
+# keep_local_subtitles = false
+
+# Remove subtitles in langs_to_keep even when the original audio is in another language.
+# Unless keep_local_subtitles or keep_all_subtitles is true, this removes all subtitles.
+# CLI: --drop-local-subs / --no-drop-local-subs
+# drop_local_subs = false
+
+# ---------------------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------------------
+
+# Replace the original file without keeping a timestamped .bak copy. Only enable this if you
+# keep backups elsewhere. CLI: --overwrite / --no-overwrite
+# overwrite = false
+
+# How to check the new file before it replaces the original. CLI: --verify=<level>
+#   off   - no check
+#   quick - confirm the video stream, the expected audio and subtitle stream counts, and length
+#   full  - the quick check, then decode the whole file (takes minutes per file)
+# verify = "quick"
+
+# Directory for temporary files from clean and clip, and for cached ffprobe results. Must be
+# an absolute path or start with ~. `vidcleaner cache --clear` deletes its contents.
+# Default: $XDG_CACHE_HOME/vid-cleaner, or ~/.cache/vid-cleaner when XDG_CACHE_HOME is unset.
+# cache_dir = "~/.cache/vid-cleaner"
+
+# ---------------------------------------------------------------------------------------
+# Original-language lookup
+#
+# vid-cleaner finds the original language of a video from an IMDb or TMDB ID in the filename
+# (tt0245712 or {tmdb-55}) or in the container's IMDB/TMDB tags, which needs only
+# tmdb_api_key. When neither has an ID, it searches Radarr (movies) or Sonarr (TV) by title.
+# Each *_url needs its matching *_api_key. Leave a value empty to disable that service.
+# ---------------------------------------------------------------------------------------
+{{- if .use_secrets }}
+
+radarr_api_key = "{{- onepasswordRead .secrets.radarr_api_key }}"
+radarr_url     = "{{- onepasswordRead .secrets.radarr_url }}"
+sonarr_api_key = "{{- onepasswordRead .secrets.sonarr_api_key }}"
+sonarr_url     = "{{- onepasswordRead .secrets.sonarr_url }}"
+tmdb_api_key   = "{{- onepasswordRead .secrets.tmdb_api_key }}"
+{{- else }}
+
+# radarr_api_key = ""
+# radarr_url     = ""     # e.g. "http://localhost:7878"
+# sonarr_api_key = ""
+# sonarr_url     = ""     # e.g. "http://localhost:8989"
+# tmdb_api_key   = ""
+{{- end }}

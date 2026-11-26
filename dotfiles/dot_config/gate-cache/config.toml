@@ -1,2 +1,23 @@
+# gate-cache settings. Environment variables override these values.
+# https://natelandau.github.io/gate-cache/reference/configuration/
+
+# Record run stats for the dashboard. `gate-cache stats on` and `stats off` set this.
+stats_enabled = true
+
+# The directory for recorded stats. A relative path starts from this file's directory.
+# stats_data_dir = "~/gate-cache-stats"
+
+# The longest wait, in whole seconds, for another run of the same gate. 0 never waits.
+# wait_timeout = 900
+
+# What to do when the run this run waited for failed: "rerun" runs the command,
+# "report" exits with that failure.
+# wait_on_failure = "rerun"
+
+# Run about 1 in N runs that would skip, to check that the skip is still right. 0 turns this off.
+# spot_check_one_run_in = 50
+
+# Old format, read by gate-cache v0.10.0 and earlier. Remove once every copy you run
+# reads the keys above.
 [stats]
-    enabled = true
+enabled = true
